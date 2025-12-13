@@ -78,7 +78,7 @@ pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<Fin
         .unwrap_or(BrowserType::Chrome);
     let headers = generate_headers(browser_type, &ua, is_mobile);
 
-    let hello_client_id = profile.get_client_hello_str().to_string();
+    let hello_client_id = profile.get_client_hello_str();
     Ok(FingerprintResult {
         profile,
         user_agent: ua,
@@ -151,7 +151,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
         .unwrap_or(BrowserType::Chrome);
     let headers = generate_headers(browser_type_enum, &ua, is_mobile);
 
-    let hello_client_id = profile.get_client_hello_str().to_string();
+    let hello_client_id = profile.get_client_hello_str();
     Ok(FingerprintResult {
         profile,
         user_agent: ua,

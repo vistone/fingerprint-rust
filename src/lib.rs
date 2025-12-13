@@ -19,6 +19,7 @@ pub mod http2_config;
 pub mod profiles;
 pub mod random;
 pub mod tls_config;
+pub mod tls_extensions;
 pub mod types;
 pub mod useragent;
 pub mod utils;

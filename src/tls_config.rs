@@ -90,6 +90,9 @@ impl ClientHelloSpec {
             custom_extensions: HashMap::new(),
         }
     }
+}
+
+impl ClientHelloSpec {
 
     /// 创建 Chrome 指纹的 ClientHelloSpec
     pub fn chrome_103() -> Self {
@@ -265,6 +268,30 @@ impl ClientHelloSpec {
 
         spec
     }
+}
+
+/// Chrome 103 Spec Factory
+/// 对应 Go 版本的 Chrome_103 SpecFactory
+pub fn chrome_103_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::chrome_103())
+}
+
+/// Chrome 133 Spec Factory
+/// 对应 Go 版本的 Chrome_133 SpecFactory
+pub fn chrome_133_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::chrome_133())
+}
+
+/// Firefox 133 Spec Factory
+/// 对应 Go 版本的 Firefox_133 SpecFactory
+pub fn firefox_133_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::firefox_133())
+}
+
+/// Safari 16.0 Spec Factory
+/// 对应 Go 版本的 Safari_16_0 SpecFactory
+pub fn safari_16_0_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::safari_16_0())
 }
 
 impl Default for ClientHelloSpec {

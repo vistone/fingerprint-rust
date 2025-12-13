@@ -38,7 +38,7 @@ fn test_get_random_fingerprint_by_browser_chrome() {
     
     let result = result.unwrap();
     assert!(result.user_agent.contains("Chrome"), "User-Agent should contain Chrome");
-    assert!(result.hello_client_id.starts_with("chrome_"), "HelloClientID should start with chrome_");
+    assert!(result.hello_client_id.starts_with("Chrome"), "HelloClientID should start with Chrome");
 }
 
 #[test]
@@ -213,7 +213,7 @@ fn test_mapped_tls_clients() {
     #[test]
     fn test_client_profile() {
         let profile = mapped_tls_clients().get("chrome_133").unwrap();
-        assert_eq!(profile.get_client_hello_str(), "chrome_133");
+        assert_eq!(profile.get_client_hello_str(), "Chrome-133");
         assert!(!profile.get_pseudo_header_order().is_empty());
     }
 
@@ -221,11 +221,12 @@ fn test_mapped_tls_clients() {
     fn test_get_client_hello_spec() {
         let profile = mapped_tls_clients().get("chrome_133").unwrap();
         let spec = profile.get_client_hello_spec();
-        assert!(spec.is_ok());
+        assert!(spec.is_ok(), "get_client_hello_spec should succeed");
         let spec = spec.unwrap();
-        assert!(!spec.cipher_suites.is_empty());
-        assert!(!spec.elliptic_curves.is_empty());
-        assert!(!spec.extensions.is_empty());
+        assert!(!spec.cipher_suites.is_empty(), "cipher_suites should not be empty");
+        assert!(!spec.elliptic_curves.is_empty(), "elliptic_curves should not be empty");
+        assert!(!spec.extensions.is_empty(), "extensions should not be empty");
+        assert_eq!(spec.compression_methods, vec![0], "compression_methods should be [0]");
     }
 
     #[test]
