@@ -91,7 +91,7 @@ impl HTTPHeaders {
     }
 
     /// 克隆 HTTPHeaders 对象，返回一个新的副本
-    /// 
+    ///
     /// 注意：此方法名称与标准库的 `Clone::clone` 不同，以避免命名冲突
     #[allow(clippy::should_implement_trait)]
     pub fn clone(&self) -> Self {
@@ -175,13 +175,22 @@ impl HTTPHeaders {
             headers.insert("Sec-CH-UA".to_string(), self.sec_ch_ua.clone());
         }
         if !self.sec_ch_ua_mobile.is_empty() {
-            headers.insert("Sec-CH-UA-Mobile".to_string(), self.sec_ch_ua_mobile.clone());
+            headers.insert(
+                "Sec-CH-UA-Mobile".to_string(),
+                self.sec_ch_ua_mobile.clone(),
+            );
         }
         if !self.sec_ch_ua_platform.is_empty() {
-            headers.insert("Sec-CH-UA-Platform".to_string(), self.sec_ch_ua_platform.clone());
+            headers.insert(
+                "Sec-CH-UA-Platform".to_string(),
+                self.sec_ch_ua_platform.clone(),
+            );
         }
         if !self.upgrade_insecure_requests.is_empty() {
-            headers.insert("Upgrade-Insecure-Requests".to_string(), self.upgrade_insecure_requests.clone());
+            headers.insert(
+                "Upgrade-Insecure-Requests".to_string(),
+                self.upgrade_insecure_requests.clone(),
+            );
         }
 
         // 合并 HTTPHeaders 中的 Custom headers
@@ -214,7 +223,11 @@ pub fn random_language() -> String {
 }
 
 /// 根据浏览器类型和 User-Agent 生成标准 HTTP headers
-pub fn generate_headers(browser_type: BrowserType, user_agent: &str, is_mobile: bool) -> HTTPHeaders {
+pub fn generate_headers(
+    browser_type: BrowserType,
+    user_agent: &str,
+    is_mobile: bool,
+) -> HTTPHeaders {
     let user_agent = if user_agent.is_empty() {
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
     } else {
@@ -235,7 +248,9 @@ pub fn generate_headers(browser_type: BrowserType, user_agent: &str, is_mobile: 
             headers.upgrade_insecure_requests = "1".to_string();
 
             if is_mobile {
-                headers.sec_ch_ua = r#""Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120""#.to_string();
+                headers.sec_ch_ua =
+                    r#""Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120""#
+                        .to_string();
                 headers.sec_ch_ua_mobile = "?1".to_string();
                 headers.sec_ch_ua_platform = r#""Android""#.to_string();
             } else {
@@ -261,7 +276,8 @@ pub fn generate_headers(browser_type: BrowserType, user_agent: &str, is_mobile: 
             }
         }
         BrowserType::Safari => {
-            headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8".to_string();
+            headers.accept =
+                "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8".to_string();
             headers.accept_encoding = "gzip, deflate, br".to_string();
             if !is_mobile {
                 headers.sec_fetch_site = "none".to_string();
@@ -281,11 +297,13 @@ pub fn generate_headers(browser_type: BrowserType, user_agent: &str, is_mobile: 
             headers.upgrade_insecure_requests = "1".to_string();
 
             if is_mobile {
-                headers.sec_ch_ua = r#""Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8""#.to_string();
+                headers.sec_ch_ua =
+                    r#""Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8""#.to_string();
                 headers.sec_ch_ua_mobile = "?1".to_string();
                 headers.sec_ch_ua_platform = r#""Android""#.to_string();
             } else {
-                headers.sec_ch_ua = r#""Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8""#.to_string();
+                headers.sec_ch_ua =
+                    r#""Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8""#.to_string();
                 headers.sec_ch_ua_mobile = "?0".to_string();
                 headers.sec_ch_ua_platform = extract_platform(user_agent);
             }
@@ -332,7 +350,10 @@ mod tests {
     fn test_http_headers_set() {
         let mut headers = HTTPHeaders::new();
         headers.set("Cookie", "session_id=abc123");
-        assert_eq!(headers.custom.get("Cookie"), Some(&"session_id=abc123".to_string()));
+        assert_eq!(
+            headers.custom.get("Cookie"),
+            Some(&"session_id=abc123".to_string())
+        );
     }
 
     #[test]

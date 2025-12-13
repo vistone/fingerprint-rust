@@ -43,7 +43,9 @@ pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
 
 /// 随机获取一个指纹和对应的 User-Agent，并指定操作系统
 /// 如果 os 为 None，则随机选择操作系统
-pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<FingerprintResult, String> {
+pub fn get_random_fingerprint_with_os(
+    os: Option<OperatingSystem>,
+) -> Result<FingerprintResult, String> {
     let clients = mapped_tls_clients();
     if clients.is_empty() {
         return Err("no TLS client profiles available".to_string());
@@ -63,7 +65,10 @@ pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<Fin
         .clone();
 
     if profile.get_client_hello_str().is_empty() {
-        return Err(format!("profile {} is invalid (empty ClientHelloStr)", random_name));
+        return Err(format!(
+            "profile {} is invalid (empty ClientHelloStr)",
+            random_name
+        ));
     }
 
     // 获取对应的 User-Agent
@@ -75,8 +80,7 @@ pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<Fin
     // 生成标准 HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
-    let browser_type = BrowserType::from_str(&browser_type_str)
-        .unwrap_or(BrowserType::Chrome);
+    let browser_type = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
     let headers = generate_headers(browser_type, &ua, is_mobile);
 
     let hello_client_id = profile.get_client_hello_str();
@@ -90,7 +94,9 @@ pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<Fin
 
 /// 根据浏览器类型随机获取指纹和 User-Agent
 /// browser_type: "chrome", "firefox", "safari", "opera" 等
-pub fn get_random_fingerprint_by_browser(browser_type: &str) -> Result<FingerprintResult, Box<dyn std::error::Error>> {
+pub fn get_random_fingerprint_by_browser(
+    browser_type: &str,
+) -> Result<FingerprintResult, Box<dyn std::error::Error>> {
     get_random_fingerprint_by_browser_with_os(browser_type, None)
 }
 
@@ -149,8 +155,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
     // 生成标准 HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
-    let browser_type_enum = BrowserType::from_str(&browser_type_str)
-        .unwrap_or(BrowserType::Chrome);
+    let browser_type_enum = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
     let headers = generate_headers(browser_type_enum, &ua, is_mobile);
 
     let hello_client_id = profile.get_client_hello_str();

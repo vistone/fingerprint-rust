@@ -59,7 +59,7 @@ impl HTTP2PriorityParam {
 /// 创建 Chrome 的 HTTP/2 Settings
 pub fn chrome_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     let mut settings = HashMap::new();
-    
+
     // Chrome 的 HTTP/2 Settings
     settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
     settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0); // 禁用 Server Push
@@ -67,7 +67,7 @@ pub fn chrome_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     settings.insert(HTTP2SettingID::InitialWindowSize.as_u16(), 6291456);
     settings.insert(HTTP2SettingID::MaxFrameSize.as_u16(), 16384);
     settings.insert(HTTP2SettingID::MaxHeaderListSize.as_u16(), 262144);
-    
+
     // Settings 顺序（Chrome 的顺序）
     let settings_order = vec![
         HTTP2SettingID::HeaderTableSize.as_u16(),
@@ -77,14 +77,14 @@ pub fn chrome_http2_settings() -> (HTTP2Settings, Vec<u16>) {
         HTTP2SettingID::MaxFrameSize.as_u16(),
         HTTP2SettingID::MaxHeaderListSize.as_u16(),
     ];
-    
+
     (settings, settings_order)
 }
 
 /// 创建 Firefox 的 HTTP/2 Settings
 pub fn firefox_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     let mut settings = HashMap::new();
-    
+
     // Firefox 的 HTTP/2 Settings（与 Chrome 略有不同）
     settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
     settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0);
@@ -92,7 +92,7 @@ pub fn firefox_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     settings.insert(HTTP2SettingID::InitialWindowSize.as_u16(), 131072);
     settings.insert(HTTP2SettingID::MaxFrameSize.as_u16(), 16384);
     settings.insert(HTTP2SettingID::MaxHeaderListSize.as_u16(), 262144);
-    
+
     let settings_order = vec![
         HTTP2SettingID::HeaderTableSize.as_u16(),
         HTTP2SettingID::EnablePush.as_u16(),
@@ -101,14 +101,14 @@ pub fn firefox_http2_settings() -> (HTTP2Settings, Vec<u16>) {
         HTTP2SettingID::MaxFrameSize.as_u16(),
         HTTP2SettingID::MaxHeaderListSize.as_u16(),
     ];
-    
+
     (settings, settings_order)
 }
 
 /// 创建 Safari 的 HTTP/2 Settings
 pub fn safari_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     let mut settings = HashMap::new();
-    
+
     // Safari 的 HTTP/2 Settings
     settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
     settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0);
@@ -116,7 +116,7 @@ pub fn safari_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     settings.insert(HTTP2SettingID::InitialWindowSize.as_u16(), 65535);
     settings.insert(HTTP2SettingID::MaxFrameSize.as_u16(), 16777215);
     settings.insert(HTTP2SettingID::MaxHeaderListSize.as_u16(), 262144);
-    
+
     let settings_order = vec![
         HTTP2SettingID::HeaderTableSize.as_u16(),
         HTTP2SettingID::EnablePush.as_u16(),
@@ -125,7 +125,7 @@ pub fn safari_http2_settings() -> (HTTP2Settings, Vec<u16>) {
         HTTP2SettingID::MaxFrameSize.as_u16(),
         HTTP2SettingID::MaxHeaderListSize.as_u16(),
     ];
-    
+
     (settings, settings_order)
 }
 

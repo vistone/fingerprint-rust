@@ -10,13 +10,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. 获取指纹配置
     println!("1. 获取 Chrome 133 指纹配置：");
     let profile = mapped_tls_clients().get("chrome_133").unwrap();
-    
+
     // 2. 获取 TLS Client Hello Spec（真正的 TLS 指纹配置）
     println!("2. 获取 TLS Client Hello Spec：");
     let client_hello_spec = profile.get_client_hello_spec()?;
     println!("   密码套件数量: {}", client_hello_spec.cipher_suites.len());
     println!("   扩展数量: {}", client_hello_spec.extensions.len());
-    println!("   TLS 版本范围: {}-{}", client_hello_spec.tls_vers_min, client_hello_spec.tls_vers_max);
+    println!(
+        "   TLS 版本范围: {}-{}",
+        client_hello_spec.tls_vers_min, client_hello_spec.tls_vers_max
+    );
 
     // 3. 获取 HTTP/2 Settings
     println!("\n3. HTTP/2 Settings：");
@@ -34,20 +37,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 5. 比较不同浏览器的配置
     println!("\n5. 比较不同浏览器的配置：");
-    
+
     let chrome_profile = mapped_tls_clients().get("chrome_133").unwrap();
     let firefox_profile = mapped_tls_clients().get("firefox_133").unwrap();
     let safari_profile = mapped_tls_clients().get("safari_16_0").unwrap();
 
-    println!("   Chrome Pseudo Header Order: {:?}", chrome_profile.get_pseudo_header_order());
-    println!("   Firefox Pseudo Header Order: {:?}", firefox_profile.get_pseudo_header_order());
-    println!("   Safari Pseudo Header Order: {:?}", safari_profile.get_pseudo_header_order());
+    println!(
+        "   Chrome Pseudo Header Order: {:?}",
+        chrome_profile.get_pseudo_header_order()
+    );
+    println!(
+        "   Firefox Pseudo Header Order: {:?}",
+        firefox_profile.get_pseudo_header_order()
+    );
+    println!(
+        "   Safari Pseudo Header Order: {:?}",
+        safari_profile.get_pseudo_header_order()
+    );
 
     // 6. 展示如何使用 ClientHelloSpec
     println!("\n6. ClientHelloSpec 详细信息：");
     let chrome_spec = chrome_profile.get_client_hello_spec()?;
-    println!("   TLS 版本范围: {}-{}", chrome_spec.tls_vers_min, chrome_spec.tls_vers_max);
-    println!("   前5个密码套件: {:?}", &chrome_spec.cipher_suites[..chrome_spec.cipher_suites.len().min(5)]);
+    println!(
+        "   TLS 版本范围: {}-{}",
+        chrome_spec.tls_vers_min, chrome_spec.tls_vers_max
+    );
+    println!(
+        "   前5个密码套件: {:?}",
+        &chrome_spec.cipher_suites[..chrome_spec.cipher_suites.len().min(5)]
+    );
     println!("   扩展数量: {}", chrome_spec.extensions.len());
     println!("   压缩方法: {:?}", chrome_spec.compression_methods);
 

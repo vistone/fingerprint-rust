@@ -25,11 +25,17 @@ pub fn extract_chrome_version(user_agent: &str) -> String {
     // 查找 "Chrome/" 后面的版本号
     if let Some(start) = user_agent.find("Chrome/") {
         let version_start = start + 7; // "Chrome/".len()
-        if let Some(end) = user_agent[version_start..].find(|c: char| !c.is_ascii_digit() && c != '.') {
+        if let Some(end) =
+            user_agent[version_start..].find(|c: char| !c.is_ascii_digit() && c != '.')
+        {
             return user_agent[version_start..version_start + end].to_string();
         }
         // 如果没找到结束位置，返回到字符串末尾
-        return user_agent[version_start..].split_whitespace().next().unwrap_or("120").to_string();
+        return user_agent[version_start..]
+            .split_whitespace()
+            .next()
+            .unwrap_or("120")
+            .to_string();
     }
     "120".to_string() // 默认版本
 }
@@ -59,10 +65,16 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     } else if name_lower.starts_with("firefox_") {
         ("firefox".to_string(), false)
     } else if name_lower.starts_with("safari_") {
-        ("safari".to_string(), name_lower.contains("ios") || name_lower.contains("ipad"))
+        (
+            "safari".to_string(),
+            name_lower.contains("ios") || name_lower.contains("ipad"),
+        )
     } else if name_lower.starts_with("opera_") {
         ("opera".to_string(), false)
-    } else if name_lower.contains("ios") || name_lower.contains("android") || name_lower.contains("mobile") {
+    } else if name_lower.contains("ios")
+        || name_lower.contains("android")
+        || name_lower.contains("mobile")
+    {
         // 移动端应用指纹
         if name_lower.contains("ios") {
             ("safari".to_string(), true)
@@ -117,9 +129,18 @@ mod tests {
 
     #[test]
     fn test_infer_browser_from_profile_name() {
-        assert_eq!(infer_browser_from_profile_name("chrome_120"), ("chrome".to_string(), false));
-        assert_eq!(infer_browser_from_profile_name("firefox_133"), ("firefox".to_string(), false));
-        assert_eq!(infer_browser_from_profile_name("safari_ios_17_0"), ("safari".to_string(), true));
+        assert_eq!(
+            infer_browser_from_profile_name("chrome_120"),
+            ("chrome".to_string(), false)
+        );
+        assert_eq!(
+            infer_browser_from_profile_name("firefox_133"),
+            ("firefox".to_string(), false)
+        );
+        assert_eq!(
+            infer_browser_from_profile_name("safari_ios_17_0"),
+            ("safari".to_string(), true)
+        );
     }
 
     #[test]

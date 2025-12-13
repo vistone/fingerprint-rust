@@ -107,7 +107,6 @@ impl SpecMetadata {
 
     /// 获取第一个 ALPN 协议（用于签名）
     pub fn get_first_alpn(&self) -> Option<String> {
-        self.get_alpn()
-            .and_then(|alpn| alpn.first().cloned())
+        self.get_alpn().and_then(|alpn| alpn.first().cloned())
     }
 }

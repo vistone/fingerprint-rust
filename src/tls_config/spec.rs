@@ -5,20 +5,19 @@
 use crate::dicttls::{
     cipher_suites::{self as cs, GREASE_PLACEHOLDER as GREASE_CS},
     signature_schemes::{
-        self as ss,
-        ECDSA_WITH_P256_AND_SHA256, ECDSA_WITH_P384_AND_SHA384,
-        PSS_WITH_SHA256, PSS_WITH_SHA384, PSS_WITH_SHA512,
-        PKCS1_WITH_SHA256, PKCS1_WITH_SHA384, PKCS1_WITH_SHA512,
+        self as ss, ECDSA_WITH_P256_AND_SHA256, ECDSA_WITH_P384_AND_SHA384, PKCS1_WITH_SHA256,
+        PKCS1_WITH_SHA384, PKCS1_WITH_SHA512, PSS_WITH_SHA256, PSS_WITH_SHA384, PSS_WITH_SHA512,
     },
-    supported_groups::{GREASE_PLACEHOLDER as GREASE_SG, CURVE_P256, CURVE_P384, SECP521R1, X25519, X25519_MLKEM768},
+    supported_groups::{
+        CURVE_P256, CURVE_P384, GREASE_PLACEHOLDER as GREASE_SG, SECP521R1, X25519, X25519_MLKEM768,
+    },
 };
 use crate::tls_extensions::{
-    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension,
-    KeyShare, KeyShareExtension, PSKKeyExchangeModesExtension,
-    RenegotiationInfoExtension, SCTExtension, SNIExtension, SignatureAlgorithmsExtension,
-    StatusRequestExtension, SupportedCurvesExtension, SupportedPointsExtension,
-    SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension, UtlsGREASEExtension,
-    UtlsPaddingExtension,
+    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension, KeyShare,
+    KeyShareExtension, PSKKeyExchangeModesExtension, RenegotiationInfoExtension, SCTExtension,
+    SNIExtension, SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
+    SupportedPointsExtension, SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension,
+    UtlsGREASEExtension, UtlsPaddingExtension,
 };
 
 /// TLS 版本常量
@@ -87,7 +86,7 @@ impl ClientHelloSpec {
 
     /// 创建 Chrome 133 指纹的 ClientHelloSpec
     /// 对应 Go 版本的 Chrome_133 SpecFactory
-    /// 
+    ///
     /// 使用 Builder 模式可以更灵活地构建：
     /// ```rust,no_run
     /// use fingerprint::tls_config::ClientHelloSpecBuilder;
@@ -114,7 +113,7 @@ impl ClientHelloSpec {
     #[deprecated(note = "使用 ClientHelloSpecBuilder 代替")]
     pub fn chrome_133_old() -> Self {
         let mut spec = Self::new();
-        
+
         // Chrome 133 的密码套件
         spec.cipher_suites = vec![
             GREASE_CS,
@@ -151,7 +150,9 @@ impl ClientHelloSpec {
                 CURVE_P256,
                 CURVE_P384,
             ])),
-            Box::new(SupportedPointsExtension::new(vec![POINT_FORMAT_UNCOMPRESSED])),
+            Box::new(SupportedPointsExtension::new(vec![
+                POINT_FORMAT_UNCOMPRESSED,
+            ])),
             Box::new(crate::tls_extensions::SessionTicketExtension),
             Box::new(ALPNExtension::new(vec![
                 "h2".to_string(),
@@ -189,7 +190,9 @@ impl ClientHelloSpec {
                 VERSION_TLS13,
                 VERSION_TLS12,
             ])),
-            Box::new(UtlsCompressCertExtension::new(vec![CERT_COMPRESSION_BROTLI])),
+            Box::new(UtlsCompressCertExtension::new(vec![
+                CERT_COMPRESSION_BROTLI,
+            ])),
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
             Box::new(UtlsGREASEExtension::new()),
         ];
@@ -201,7 +204,7 @@ impl ClientHelloSpec {
     /// 对应 Go 版本的 Chrome_103 SpecFactory
     pub fn chrome_103() -> Self {
         let mut spec = Self::chrome_133();
-        
+
         // Chrome 103 的椭圆曲线（不包含 X25519MLKEM768）
         spec.extensions = vec![
             Box::new(UtlsGREASEExtension::new()),
@@ -209,12 +212,11 @@ impl ClientHelloSpec {
             Box::new(ExtendedMasterSecretExtension),
             Box::new(RenegotiationInfoExtension::new(RENEGOTIATE_ONCE_AS_CLIENT)),
             Box::new(SupportedCurvesExtension::new(vec![
-                GREASE_SG,
-                X25519,
-                CURVE_P256,
-                CURVE_P384,
+                GREASE_SG, X25519, CURVE_P256, CURVE_P384,
             ])),
-            Box::new(SupportedPointsExtension::new(vec![POINT_FORMAT_UNCOMPRESSED])),
+            Box::new(SupportedPointsExtension::new(vec![
+                POINT_FORMAT_UNCOMPRESSED,
+            ])),
             Box::new(crate::tls_extensions::SessionTicketExtension),
             Box::new(ALPNExtension::new(vec![
                 "h2".to_string(),
@@ -248,7 +250,9 @@ impl ClientHelloSpec {
                 VERSION_TLS13,
                 VERSION_TLS12,
             ])),
-            Box::new(UtlsCompressCertExtension::new(vec![CERT_COMPRESSION_BROTLI])),
+            Box::new(UtlsCompressCertExtension::new(vec![
+                CERT_COMPRESSION_BROTLI,
+            ])),
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
             Box::new(UtlsGREASEExtension::new()),
             Box::new(UtlsPaddingExtension::new()),
@@ -261,7 +265,7 @@ impl ClientHelloSpec {
     /// 对应 Go 版本的 Firefox_133 SpecFactory
     pub fn firefox_133() -> Self {
         let mut spec = Self::new();
-        
+
         // Firefox 133 的密码套件
         spec.cipher_suites = vec![
             cs::TLS_AES_256_GCM_SHA384,
@@ -281,12 +285,11 @@ impl ClientHelloSpec {
         // Firefox 133 的扩展（简化版本，实际需要查看 Go 版本的完整实现）
         spec.extensions = vec![
             Box::new(SupportedCurvesExtension::new(vec![
-                CURVE_P256,
-                CURVE_P384,
-                SECP521R1,
-                X25519,
+                CURVE_P256, CURVE_P384, SECP521R1, X25519,
             ])),
-            Box::new(SupportedPointsExtension::new(vec![POINT_FORMAT_UNCOMPRESSED])),
+            Box::new(SupportedPointsExtension::new(vec![
+                POINT_FORMAT_UNCOMPRESSED,
+            ])),
             Box::new(SignatureAlgorithmsExtension::new(vec![
                 PSS_WITH_SHA256,
                 PSS_WITH_SHA384,
@@ -313,7 +316,7 @@ impl ClientHelloSpec {
     /// 对应 Go 版本的 Safari_16_0 SpecFactory
     pub fn safari_16_0() -> Self {
         let mut spec = Self::new();
-        
+
         // Safari 16.0 的密码套件
         spec.cipher_suites = vec![
             cs::TLS_AES_128_GCM_SHA256,
@@ -331,11 +334,11 @@ impl ClientHelloSpec {
         // Safari 16.0 的扩展（简化版本）
         spec.extensions = vec![
             Box::new(SupportedCurvesExtension::new(vec![
-                CURVE_P256,
-                CURVE_P384,
-                X25519,
+                CURVE_P256, CURVE_P384, X25519,
             ])),
-            Box::new(SupportedPointsExtension::new(vec![POINT_FORMAT_UNCOMPRESSED])),
+            Box::new(SupportedPointsExtension::new(vec![
+                POINT_FORMAT_UNCOMPRESSED,
+            ])),
             Box::new(SignatureAlgorithmsExtension::new(vec![
                 PKCS1_WITH_SHA256,
                 PKCS1_WITH_SHA384,

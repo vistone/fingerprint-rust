@@ -7,18 +7,18 @@
 /// 根据 RFC 8701，GREASE 值的模式是：0x1a1a, 0x2a2a, 0x3a3a, ..., 0xfafa
 /// 以及 0x0a0a (特殊值)
 pub const TLS_GREASE_VALUES: [u16; 16] = [
-    0x0a0a, 0x1a1a, 0x2a2a, 0x3a3a, 0x4a4a, 0x5a5a, 0x6a6a, 0x7a7a,
-    0x8a8a, 0x9a9a, 0xaaaa, 0xbaba, 0xcaca, 0xdada, 0xeaea, 0xfafa,
+    0x0a0a, 0x1a1a, 0x2a2a, 0x3a3a, 0x4a4a, 0x5a5a, 0x6a6a, 0x7a7a, 0x8a8a, 0x9a9a, 0xaaaa, 0xbaba,
+    0xcaca, 0xdada, 0xeaea, 0xfafa,
 ];
 
 /// 检查一个值是否是 GREASE 值
-/// 
+///
 /// # 参数
 /// * `value` - 要检查的 u16 值
-/// 
+///
 /// # 返回
 /// * `true` 如果是 GREASE 值，`false` 否则
-/// 
+///
 /// # 示例
 /// ```
 /// use fingerprint::is_grease_value;
@@ -31,13 +31,13 @@ pub fn is_grease_value(value: u16) -> bool {
 }
 
 /// 从 u16 列表中过滤掉 GREASE 值
-/// 
+///
 /// # 参数
 /// * `values` - 要过滤的 u16 值列表
-/// 
+///
 /// # 返回
 /// * 过滤后的 Vec<u16>，不包含 GREASE 值
-/// 
+///
 /// # 示例
 /// ```
 /// use fingerprint::filter_grease_values;
@@ -54,10 +54,10 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
 }
 
 /// 从 u16 列表中移除 GREASE 值（原地修改）
-/// 
+///
 /// # 参数
 /// * `values` - 要修改的 u16 值列表（可变引用）
-/// 
+///
 /// # 示例
 /// ```
 /// use fingerprint::remove_grease_values;
@@ -100,7 +100,11 @@ mod tests {
     #[test]
     fn test_all_grease_values() {
         for &grease in &TLS_GREASE_VALUES {
-            assert!(is_grease_value(grease), "{} should be a GREASE value", grease);
+            assert!(
+                is_grease_value(grease),
+                "{} should be a GREASE value",
+                grease
+            );
         }
     }
 }

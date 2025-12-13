@@ -3,9 +3,9 @@
 //! 提供指纹比较和匹配功能
 //! 参考：Huginn Net 的指纹比较实现
 
+use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
-use crate::tls_config::extract::extract_signature;
 
 /// 指纹匹配结果
 #[derive(Debug, Clone, PartialEq)]
@@ -19,14 +19,14 @@ pub enum FingerprintMatch {
 }
 
 /// 比较两个 ClientHelloSpec 的相似度
-/// 
+///
 /// # 参数
 /// * `spec1` - 第一个 ClientHelloSpec
 /// * `spec2` - 第二个 ClientHelloSpec
-/// 
+///
 /// # 返回
 /// * `FingerprintMatch` - 匹配结果
-/// 
+///
 /// # 示例
 /// ```
 /// use fingerprint::{ClientHelloSpec, compare_specs};
@@ -42,14 +42,17 @@ pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> Finger
 }
 
 /// 比较两个签名的相似度
-/// 
+///
 /// # 参数
 /// * `sig1` - 第一个签名
 /// * `sig2` - 第二个签名
-/// 
+///
 /// # 返回
 /// * `FingerprintMatch` - 匹配结果
-pub fn compare_signatures(sig1: &ClientHelloSignature, sig2: &ClientHelloSignature) -> FingerprintMatch {
+pub fn compare_signatures(
+    sig1: &ClientHelloSignature,
+    sig2: &ClientHelloSignature,
+) -> FingerprintMatch {
     // 完全匹配
     if sig1 == sig2 {
         return FingerprintMatch::Exact;
@@ -64,11 +67,11 @@ pub fn compare_signatures(sig1: &ClientHelloSignature, sig2: &ClientHelloSignatu
 }
 
 /// 查找与给定签名最相似的指纹配置
-/// 
+///
 /// # 参数
 /// * `signature` - 要匹配的签名
 /// * `specs` - 候选的 ClientHelloSpec 列表
-/// 
+///
 /// # 返回
 /// * `Option<usize>` - 最相似配置的索引，如果没有找到则返回 None
 pub fn find_best_match(

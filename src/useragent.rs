@@ -60,18 +60,54 @@ impl UserAgentGenerator {
 
         // Firefox User-Agent 模板
         let firefox_templates: &[(&str, &str)] = &[
-            ("102", "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0"),
-            ("104", "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0"),
-            ("105", "Mozilla/5.0 (%s; rv:105.0) Gecko/20100101 Firefox/105.0"),
-            ("106", "Mozilla/5.0 (%s; rv:106.0) Gecko/20100101 Firefox/106.0"),
-            ("108", "Mozilla/5.0 (%s; rv:108.0) Gecko/20100101 Firefox/108.0"),
-            ("110", "Mozilla/5.0 (%s; rv:110.0) Gecko/20100101 Firefox/110.0"),
-            ("117", "Mozilla/5.0 (%s; rv:117.0) Gecko/20100101 Firefox/117.0"),
-            ("120", "Mozilla/5.0 (%s; rv:120.0) Gecko/20100101 Firefox/120.0"),
-            ("123", "Mozilla/5.0 (%s; rv:123.0) Gecko/20100101 Firefox/123.0"),
-            ("132", "Mozilla/5.0 (%s; rv:132.0) Gecko/20100101 Firefox/132.0"),
-            ("133", "Mozilla/5.0 (%s; rv:133.0) Gecko/20100101 Firefox/133.0"),
-            ("135", "Mozilla/5.0 (%s; rv:135.0) Gecko/20100101 Firefox/135.0"),
+            (
+                "102",
+                "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0",
+            ),
+            (
+                "104",
+                "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0",
+            ),
+            (
+                "105",
+                "Mozilla/5.0 (%s; rv:105.0) Gecko/20100101 Firefox/105.0",
+            ),
+            (
+                "106",
+                "Mozilla/5.0 (%s; rv:106.0) Gecko/20100101 Firefox/106.0",
+            ),
+            (
+                "108",
+                "Mozilla/5.0 (%s; rv:108.0) Gecko/20100101 Firefox/108.0",
+            ),
+            (
+                "110",
+                "Mozilla/5.0 (%s; rv:110.0) Gecko/20100101 Firefox/110.0",
+            ),
+            (
+                "117",
+                "Mozilla/5.0 (%s; rv:117.0) Gecko/20100101 Firefox/117.0",
+            ),
+            (
+                "120",
+                "Mozilla/5.0 (%s; rv:120.0) Gecko/20100101 Firefox/120.0",
+            ),
+            (
+                "123",
+                "Mozilla/5.0 (%s; rv:123.0) Gecko/20100101 Firefox/123.0",
+            ),
+            (
+                "132",
+                "Mozilla/5.0 (%s; rv:132.0) Gecko/20100101 Firefox/132.0",
+            ),
+            (
+                "133",
+                "Mozilla/5.0 (%s; rv:133.0) Gecko/20100101 Firefox/133.0",
+            ),
+            (
+                "135",
+                "Mozilla/5.0 (%s; rv:135.0) Gecko/20100101 Firefox/135.0",
+            ),
         ];
 
         for (version, template) in firefox_templates {

@@ -74,7 +74,10 @@ impl TLSExtension for UtlsGREASEExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
         buf[0] = (self.value >> 8) as u8;
         buf[1] = (self.value & 0xff) as u8;
@@ -122,7 +125,10 @@ impl TLSExtension for SNIExtension {
         }
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -177,7 +183,10 @@ impl TLSExtension for StatusRequestExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -234,7 +243,10 @@ impl TLSExtension for SupportedCurvesExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -294,7 +306,10 @@ impl TLSExtension for SupportedPointsExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -351,7 +366,10 @@ impl TLSExtension for SignatureAlgorithmsExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -415,7 +433,10 @@ impl TLSExtension for ALPNExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -473,7 +494,10 @@ impl TLSExtension for ExtendedMasterSecretExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -510,7 +534,10 @@ impl TLSExtension for SessionTicketExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -556,7 +583,10 @@ impl TLSExtension for SupportedVersionsExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -615,7 +645,10 @@ impl TLSExtension for PSKKeyExchangeModesExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -678,7 +711,10 @@ impl TLSExtension for KeyShareExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -734,7 +770,10 @@ impl TLSExtension for SCTExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -779,7 +818,10 @@ impl TLSExtension for RenegotiationInfoExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -834,7 +876,10 @@ impl TLSExtension for ApplicationSettingsExtensionNew {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -900,7 +945,10 @@ impl TLSExtension for UtlsCompressCertExtension {
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -950,7 +998,10 @@ impl TLSExtension for UtlsPreSharedKeyExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -997,7 +1048,10 @@ impl TLSExtension for GREASEEncryptedClientHelloExtension {
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         if buf.len() < self.len() {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -1096,7 +1150,10 @@ impl TLSExtension for UtlsPaddingExtension {
         }
         let len = self.len();
         if buf.len() < len {
-            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
         }
 
         // Extension ID
@@ -1143,15 +1200,21 @@ pub fn extension_from_id(id: ExtensionID) -> Option<Box<dyn TLSExtension>> {
         EXT_TYPE_SUPPORTED_GROUPS => Some(Box::new(SupportedCurvesExtension::new(vec![]))),
         EXT_TYPE_EC_POINT_FORMATS => Some(Box::new(SupportedPointsExtension::new(vec![]))),
         EXT_TYPE_SIGNATURE_ALGORITHMS => Some(Box::new(SignatureAlgorithmsExtension::new(vec![]))),
-        EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION => Some(Box::new(ALPNExtension::new(vec![]))),
+        EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION => {
+            Some(Box::new(ALPNExtension::new(vec![])))
+        }
         EXT_TYPE_EXTENDED_MASTER_SECRET => Some(Box::new(ExtendedMasterSecretExtension)),
         EXT_TYPE_SESSION_TICKET => Some(Box::new(SessionTicketExtension)),
         EXT_TYPE_SUPPORTED_VERSIONS => Some(Box::new(SupportedVersionsExtension::new(vec![]))),
-        EXT_TYPE_PSK_KEY_EXCHANGE_MODES => Some(Box::new(PSKKeyExchangeModesExtension::new(vec![]))),
+        EXT_TYPE_PSK_KEY_EXCHANGE_MODES => {
+            Some(Box::new(PSKKeyExchangeModesExtension::new(vec![])))
+        }
         EXT_TYPE_KEY_SHARE => Some(Box::new(KeyShareExtension::new(vec![]))),
         EXT_TYPE_SIGNED_CERTIFICATE_TIMESTAMP => Some(Box::new(SCTExtension)),
         EXT_TYPE_RENEGOTIATION_INFO => Some(Box::new(RenegotiationInfoExtension::new(1))),
-        EXT_TYPE_APPLICATION_SETTINGS_NEW => Some(Box::new(ApplicationSettingsExtensionNew::new(vec![]))),
+        EXT_TYPE_APPLICATION_SETTINGS_NEW => {
+            Some(Box::new(ApplicationSettingsExtensionNew::new(vec![])))
+        }
         EXT_TYPE_COMPRESS_CERTIFICATE => Some(Box::new(UtlsCompressCertExtension::new(vec![]))),
         EXT_TYPE_PRE_SHARED_KEY => Some(Box::new(UtlsPreSharedKeyExtension)),
         EXT_TYPE_ECH => Some(Box::new(GREASEEncryptedClientHelloExtension::new())),

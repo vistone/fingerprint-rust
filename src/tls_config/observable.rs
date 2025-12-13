@@ -4,9 +4,9 @@
 //! 参考：Huginn Net Profiler 的 TlsClientObserved 设计
 
 use crate::dicttls::supported_groups::CurveID;
+use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
-use crate::tls_config::extract::extract_signature;
 
 /// TLS ClientHello 可观察数据
 /// 包含所有可以从 ClientHello 中观察到的信息
@@ -74,7 +74,6 @@ impl TlsClientObserved {
         self.cipher_suites.contains(&suite)
     }
 }
-
 
 #[cfg(test)]
 mod tests {

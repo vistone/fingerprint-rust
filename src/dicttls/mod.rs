@@ -13,4 +13,6 @@ pub use extensions::*;
 pub use signature_schemes::*;
 // 注意：supported_groups 中的 GREASE_PLACEHOLDER 与 cipher_suites 中的冲突
 // 使用时需要明确指定模块路径
-pub use supported_groups::{CURVE_P256, CURVE_P384, SECP256R1, SECP384R1, SECP521R1, X25519, X25519_MLKEM768, X448};
+pub use supported_groups::{
+    CURVE_P256, CURVE_P384, SECP256R1, SECP384R1, SECP521R1, X25519, X25519_MLKEM768, X448,
+};

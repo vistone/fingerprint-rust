@@ -63,21 +63,25 @@ impl ClientHelloSignature {
     pub fn has_grease(&self) -> bool {
         self.cipher_suites.iter().any(|&v| is_grease_value(v))
             || self.extensions.iter().any(|&v| is_grease_value(v))
-            || self.signature_algorithms.iter().any(|&v| is_grease_value(v))
+            || self
+                .signature_algorithms
+                .iter()
+                .any(|&v| is_grease_value(v))
     }
 
     /// 比较两个签名是否相似（忽略 GREASE 值）
-    /// 
+    ///
     /// # 参数
     /// * `other` - 要比较的另一个签名
-    /// 
+    ///
     /// # 返回
     /// * `true` 如果签名相似（忽略 GREASE 后相同），`false` 否则
     pub fn similar_to(&self, other: &Self) -> bool {
         self.version == other.version
             && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
             && self.extensions_without_grease() == other.extensions_without_grease()
-            && self.signature_algorithms_without_grease() == other.signature_algorithms_without_grease()
+            && self.signature_algorithms_without_grease()
+                == other.signature_algorithms_without_grease()
             && self.elliptic_curves == other.elliptic_curves
             && self.elliptic_curve_point_formats == other.elliptic_curve_point_formats
             && self.sni == other.sni

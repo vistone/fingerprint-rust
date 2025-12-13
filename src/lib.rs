@@ -31,36 +31,35 @@ pub mod types;
 pub mod useragent;
 pub mod utils;
 
+pub use headers::random_language;
 pub use headers::HTTPHeaders;
 pub use http2_config::{
     chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
     firefox_http2_settings, firefox_pseudo_header_order, safari_http2_settings,
     safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
 };
-pub use profiles::{mapped_tls_clients, ClientProfile, ClientHelloID};
-pub use tls_config::{
-    ClientHelloSpec, ClientHelloSpecBuilder, ClientHelloSignature, TlsClientObserved,
-    compare_signatures, compare_specs, extract_signature, find_best_match,
-    filter_grease_values, is_grease_value, remove_grease_values, FingerprintMatch, FingerprintStats,
-    Ja4Fingerprint, Ja4Payload, Ja4RawFingerprint, Ja4Signature, TlsVersion,
-    TLS_GREASE_VALUES,
-};
-pub use tls_extensions::{
-    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension,
-    GREASEEncryptedClientHelloExtension, KeyShare, KeyShareExtension, PSKKeyExchangeModesExtension,
-    RenegotiationInfoExtension, SCTExtension, SNIExtension, SignatureAlgorithmsExtension,
-    StatusRequestExtension, SupportedCurvesExtension, SupportedPointsExtension,
-    SupportedVersionsExtension, TLSExtension, TLSExtensionWriter, UtlsCompressCertExtension,
-    UtlsGREASEExtension, UtlsPaddingExtension, UtlsPreSharedKeyExtension, extension_from_id,
-};
+pub use profiles::{mapped_tls_clients, ClientHelloID, ClientProfile};
 pub use random::{
     get_random_fingerprint, get_random_fingerprint_by_browser,
-    get_random_fingerprint_by_browser_with_os, get_random_fingerprint_with_os,
-    FingerprintResult,
+    get_random_fingerprint_by_browser_with_os, get_random_fingerprint_with_os, FingerprintResult,
+};
+pub use tls_config::{
+    compare_signatures, compare_specs, extract_signature, filter_grease_values, find_best_match,
+    is_grease_value, remove_grease_values, ClientHelloSignature, ClientHelloSpec,
+    ClientHelloSpecBuilder, FingerprintMatch, FingerprintStats, Ja4Fingerprint, Ja4Payload,
+    Ja4RawFingerprint, Ja4Signature, TlsClientObserved, TlsVersion, TLS_GREASE_VALUES,
+};
+pub use tls_extensions::{
+    extension_from_id, ALPNExtension, ApplicationSettingsExtensionNew,
+    ExtendedMasterSecretExtension, GREASEEncryptedClientHelloExtension, KeyShare,
+    KeyShareExtension, PSKKeyExchangeModesExtension, RenegotiationInfoExtension, SCTExtension,
+    SNIExtension, SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
+    SupportedPointsExtension, SupportedVersionsExtension, TLSExtension, TLSExtensionWriter,
+    UtlsCompressCertExtension, UtlsGREASEExtension, UtlsPaddingExtension,
+    UtlsPreSharedKeyExtension,
 };
 pub use types::{BrowserType, OperatingSystem, OperatingSystems};
 pub use useragent::{
-    get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os,
-    random_os, UserAgentGenerator,
+    get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os, random_os,
+    UserAgentGenerator,
 };
-pub use headers::random_language;

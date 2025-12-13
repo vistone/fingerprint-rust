@@ -54,8 +54,16 @@ fn main() {
             result.headers.set("Cookie", "session_id=abc123");
             result.headers.set("Authorization", "Bearer token123");
             let headers_map = result.headers.to_map();
-            println!("   Cookie: {}", headers_map.get("Cookie").unwrap_or(&"未设置".to_string()));
-            println!("   Authorization: {}", headers_map.get("Authorization").unwrap_or(&"未设置".to_string()));
+            println!(
+                "   Cookie: {}",
+                headers_map.get("Cookie").unwrap_or(&"未设置".to_string())
+            );
+            println!(
+                "   Authorization: {}",
+                headers_map
+                    .get("Authorization")
+                    .unwrap_or(&"未设置".to_string())
+            );
         }
         Err(e) => println!("   错误: {}", e),
     }

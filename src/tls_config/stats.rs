@@ -153,7 +153,6 @@ impl FingerprintStats {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

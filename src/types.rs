@@ -14,7 +14,7 @@ pub enum BrowserType {
 
 impl BrowserType {
     /// 从字符串转换为浏览器类型
-    /// 
+    ///
     /// 注意：此方法名称与标准库的 `FromStr::from_str` 不同，以避免命名冲突
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
