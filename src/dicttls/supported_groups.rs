@@ -5,6 +5,7 @@
 
 /// TLS 支持的组常量
 /// 对应 Go 版本的 tls.CurveID 常量
+#[allow(clippy::module_inception)]
 pub mod supported_groups {
     // 椭圆曲线
     pub const SECP256R1: u16 = 0x0017; // 23

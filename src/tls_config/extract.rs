@@ -51,28 +51,28 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
         }
 
         // 提取椭圆曲线
-        if let Some(ref ext_meta) = metadata.extension_metadata.get(
+        if let Some(ext_meta) = metadata.extension_metadata.get(
             &crate::dicttls::extensions::EXT_TYPE_SUPPORTED_GROUPS
         ) {
-            if let Some(ref curves) = ext_meta.elliptic_curves {
+            if let Some(curves) = &ext_meta.elliptic_curves {
                 signature.elliptic_curves = curves.clone();
             }
         }
 
         // 提取椭圆曲线点格式
-        if let Some(ref ext_meta) = metadata.extension_metadata.get(
+        if let Some(ext_meta) = metadata.extension_metadata.get(
             &crate::dicttls::extensions::EXT_TYPE_EC_POINT_FORMATS
         ) {
-            if let Some(ref formats) = ext_meta.elliptic_curve_point_formats {
+            if let Some(formats) = &ext_meta.elliptic_curve_point_formats {
                 signature.elliptic_curve_point_formats = formats.clone();
             }
         }
 
         // 提取签名算法
-        if let Some(ref ext_meta) = metadata.extension_metadata.get(
+        if let Some(ext_meta) = metadata.extension_metadata.get(
             &crate::dicttls::extensions::EXT_TYPE_SIGNATURE_ALGORITHMS
         ) {
-            if let Some(ref algs) = ext_meta.signature_algorithms {
+            if let Some(algs) = &ext_meta.signature_algorithms {
                 signature.signature_algorithms = algs.clone();
             }
         }

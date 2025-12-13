@@ -206,7 +206,7 @@ impl Ja4Signature {
         // 对于排序版本：移除 SNI (0x0000) 和 ALPN (0x0010) 并排序
         // 对于原始版本：保留 SNI/ALPN 并保持原始顺序
         if !original_order {
-            extensions_for_c.retain(|&ext| ext != 0x0000 && ext != 0x0010);
+            extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010);
             extensions_for_c.sort_unstable();
         }
 

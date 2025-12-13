@@ -330,7 +330,7 @@ impl Default for UserAgentGenerator {
 static DEFAULT_GENERATOR: OnceLock<UserAgentGenerator> = OnceLock::new();
 
 fn get_default_generator() -> &'static UserAgentGenerator {
-    DEFAULT_GENERATOR.get_or_init(|| UserAgentGenerator::new())
+    DEFAULT_GENERATOR.get_or_init(UserAgentGenerator::new)
 }
 
 /// 随机选择一个操作系统

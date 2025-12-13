@@ -77,12 +77,14 @@ impl FingerprintStats {
 
         // 获取最常见的密码套件
         let mut cipher_vec: Vec<(u16, usize)> = cipher_suite_counts.into_iter().collect();
-        cipher_vec.sort_by(|a, b| b.1.cmp(&a.1));
+        cipher_vec.sort_by_key(|(_, count)| *count);
+        cipher_vec.reverse();
         stats.top_cipher_suites = cipher_vec.into_iter().take(10).collect();
 
         // 获取最常见的扩展
         let mut ext_vec: Vec<(u16, usize)> = extension_counts.into_iter().collect();
-        ext_vec.sort_by(|a, b| b.1.cmp(&a.1));
+        ext_vec.sort_by_key(|(_, count)| *count);
+        ext_vec.reverse();
         stats.top_extensions = ext_vec.into_iter().take(10).collect();
 
         stats
@@ -137,12 +139,14 @@ impl FingerprintStats {
 
         // 获取最常见的密码套件
         let mut cipher_vec: Vec<(u16, usize)> = cipher_suite_counts.into_iter().collect();
-        cipher_vec.sort_by(|a, b| b.1.cmp(&a.1));
+        cipher_vec.sort_by_key(|(_, count)| *count);
+        cipher_vec.reverse();
         stats.top_cipher_suites = cipher_vec.into_iter().take(10).collect();
 
         // 获取最常见的扩展
         let mut ext_vec: Vec<(u16, usize)> = extension_counts.into_iter().collect();
-        ext_vec.sort_by(|a, b| b.1.cmp(&a.1));
+        ext_vec.sort_by_key(|(_, count)| *count);
+        ext_vec.reverse();
         stats.top_extensions = ext_vec.into_iter().take(10).collect();
 
         stats

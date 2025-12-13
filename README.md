@@ -9,6 +9,9 @@
 
 - ✅ **真实浏览器指纹**：66 个真实浏览器指纹（Chrome、Firefox、Safari、Opera）
 - ✅ **真实 TLS 配置**：完整的 TLS Client Hello Spec（密码套件、椭圆曲线、扩展等）
+- ✅ **JA4 指纹生成**：完整的 JA4 TLS 客户端指纹生成（sorted 和 unsorted 版本）
+- ✅ **指纹比较**：支持指纹相似度比较和最佳匹配查找
+- ✅ **GREASE 处理**：完整的 GREASE 值过滤和处理
 - ✅ **HTTP/2 配置**：完整的 HTTP/2 Settings、Pseudo Header Order、Header Priority
 - ✅ **移动端支持**：iOS、Android 移动端指纹
 - ✅ **User-Agent 匹配**：自动生成匹配的 User-Agent
@@ -136,6 +139,21 @@ pub fn get_random_fingerprint_by_browser_with_os(
     os: Option<OperatingSystem>,
 ) -> Result<FingerprintResult, Box<dyn Error>>
 
+// TLS 指纹配置
+pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature
+pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> FingerprintMatch
+pub fn compare_signatures(sig1: &ClientHelloSignature, sig2: &ClientHelloSignature) -> FingerprintMatch
+pub fn find_best_match(signature: &ClientHelloSignature, specs: &[ClientHelloSpec]) -> Option<usize>
+
+// JA4 指纹生成
+pub fn generate_ja4(signature: &Ja4Signature) -> Ja4Payload
+pub fn generate_ja4_original(signature: &Ja4Signature) -> Ja4Payload
+
+// GREASE 处理
+pub fn is_grease_value(value: u16) -> bool
+pub fn filter_grease_values(values: &[u16]) -> Vec<u16>
+pub fn remove_grease_values(values: &[u16]) -> Vec<u16>
+
 // User-Agent
 pub fn get_user_agent_by_profile_name(profile_name: &str) -> Result<String, String>
 pub fn get_user_agent_by_profile_name_with_os(
@@ -261,13 +279,82 @@ let profile = mapped_tls_clients().get("chrome_133").unwrap();
 // 获取真实的 TLS Client Hello Spec
 let client_hello_spec = profile.get_client_hello_spec()?;
 println!("密码套件: {:?}", client_hello_spec.cipher_suites);
-println!("椭圆曲线: {:?}", client_hello_spec.elliptic_curves);
-println!("ALPN: {:?}", client_hello_spec.alpn_protocols);
+println!("扩展数量: {}", client_hello_spec.extensions.len());
+
+// 提取签名并生成 JA4 指纹
+let signature = extract_signature(&client_hello_spec);
+let ja4_signature = Ja4Signature {
+    version: signature.version,
+    cipher_suites: signature.cipher_suites,
+    extensions: signature.extensions,
+    signature_algorithms: signature.signature_algorithms,
+    sni: signature.sni,
+    alpn: signature.alpn,
+};
+let ja4 = ja4_signature.generate_ja4();
+println!("JA4: {}", ja4.full.value());
+println!("JA4 Raw: {}", ja4.raw.value());
 
 // 获取 HTTP/2 配置
 let settings = profile.get_settings();
 let pseudo_header_order = profile.get_pseudo_header_order();
 println!("Pseudo Header Order: {:?}", pseudo_header_order);
+```
+
+### JA4 指纹生成示例
+
+```rust
+use fingerprint::{ClientHelloSpec, extract_signature, Ja4Signature};
+
+// 从 ClientHelloSpec 提取签名
+let spec = ClientHelloSpec::chrome_133();
+let signature = extract_signature(&spec);
+
+// 创建 JA4 签名
+let ja4_sig = Ja4Signature {
+    version: signature.version,
+    cipher_suites: signature.cipher_suites,
+    extensions: signature.extensions,
+    signature_algorithms: signature.signature_algorithms,
+    sni: signature.sni,
+    alpn: signature.alpn,
+};
+
+// 生成 JA4 指纹（排序版本）
+let ja4 = ja4_sig.generate_ja4();
+println!("JA4: {}", ja4.full.value());
+println!("JA4 Raw: {}", ja4.raw.value());
+
+// 生成 JA4 指纹（原始顺序版本）
+let ja4_original = ja4_sig.generate_ja4_original();
+println!("JA4 Original: {}", ja4_original.full.value());
+```
+
+### 指纹比较示例
+
+```rust
+use fingerprint::{ClientHelloSpec, compare_specs, find_best_match, extract_signature};
+
+// 比较两个指纹
+let spec1 = ClientHelloSpec::chrome_133();
+let spec2 = ClientHelloSpec::chrome_103();
+let match_result = compare_specs(&spec1, &spec2);
+match match_result {
+    FingerprintMatch::Exact => println!("完全匹配"),
+    FingerprintMatch::Similar => println!("相似匹配"),
+    FingerprintMatch::None => println!("不匹配"),
+}
+
+// 查找最佳匹配
+let signature = extract_signature(&spec1);
+let candidates = vec![
+    ClientHelloSpec::chrome_103(),
+    ClientHelloSpec::chrome_133(),
+    ClientHelloSpec::firefox_133(),
+];
+if let Some(index) = find_best_match(&signature, &candidates) {
+    println!("最佳匹配索引: {}", index);
+}
 ```
 
 ## 测试
@@ -287,6 +374,8 @@ cargo run --example basic
 
 - `rand = "0.8"` - 随机数生成
 - `once_cell = "1.19"` - 线程安全的单例
+- `sha2 = "0.10"` - SHA256 哈希（用于 JA4 指纹生成）
+- `thiserror = "2.0"` - 错误处理（可选）
 
 ## 许可证
 

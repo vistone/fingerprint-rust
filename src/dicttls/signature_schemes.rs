@@ -5,6 +5,7 @@
 
 /// TLS 签名方案常量
 /// 对应 Go 版本的 tls.SignatureScheme 常量
+#[allow(clippy::module_inception)]
 pub mod signature_schemes {
     // RSA PKCS1
     pub const RSA_PKCS1_SHA256: u16 = 0x0401;

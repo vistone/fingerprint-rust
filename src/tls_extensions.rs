@@ -12,6 +12,9 @@ use std::io;
 /// TLS 扩展 ID
 pub type ExtensionID = u16;
 
+/// Padding length calculation function type
+pub type PaddingLengthFn = Box<dyn Fn(usize) -> (usize, bool)>;
+
 /// Key Share Entry
 /// 对应 Go 版本的 tls.KeyShare
 #[derive(Debug, Clone)]
@@ -26,6 +29,12 @@ pub trait TLSExtension: std::fmt::Debug {
     /// 获取扩展的长度（包括头部）
     /// 对应 Go 版本的 Len() int
     fn len(&self) -> usize;
+
+    /// 检查扩展是否为空
+    /// 默认实现：长度为 0 时为空
+    fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
     /// 读取扩展数据到字节缓冲区
     /// 对应 Go 版本的 Read(p []byte) (n int, err error)
@@ -245,8 +254,8 @@ impl TLSExtension for SupportedCurvesExtension {
 
         // Curves
         for (i, curve) in self.curves.iter().enumerate() {
-            buf[6 + 2 * i] = (*curve >> 8) as u8;
-            buf[7 + 2 * i] = (*curve & 0xff) as u8;
+            buf[6 + 2 * i] = (curve >> 8) as u8;
+            buf[7 + 2 * i] = (curve & 0xff) as u8;
         }
 
         Ok(len)
@@ -362,8 +371,8 @@ impl TLSExtension for SignatureAlgorithmsExtension {
 
         // Algorithms
         for (i, scheme) in self.supported_signature_algorithms.iter().enumerate() {
-            buf[6 + 2 * i] = (*scheme >> 8) as u8;
-            buf[7 + 2 * i] = (*scheme & 0xff) as u8;
+            buf[6 + 2 * i] = (scheme >> 8) as u8;
+            buf[7 + 2 * i] = (scheme & 0xff) as u8;
         }
 
         Ok(len)
@@ -566,8 +575,8 @@ impl TLSExtension for SupportedVersionsExtension {
 
         // Versions
         for (i, version) in self.versions.iter().enumerate() {
-            buf[5 + 2 * i] = (*version >> 8) as u8;
-            buf[6 + 2 * i] = (*version & 0xff) as u8;
+            buf[5 + 2 * i] = (version >> 8) as u8;
+            buf[6 + 2 * i] = (version & 0xff) as u8;
         }
 
         Ok(len)
@@ -1024,7 +1033,7 @@ impl Default for GREASEEncryptedClientHelloExtension {
 pub struct UtlsPaddingExtension {
     pub padding_len: usize,
     pub will_pad: bool,
-    pub get_padding_len: Option<Box<dyn Fn(usize) -> (usize, bool)>>,
+    pub get_padding_len: Option<PaddingLengthFn>,
 }
 
 impl std::fmt::Debug for UtlsPaddingExtension {

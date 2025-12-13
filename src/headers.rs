@@ -91,6 +91,9 @@ impl HTTPHeaders {
     }
 
     /// 克隆 HTTPHeaders 对象，返回一个新的副本
+    /// 
+    /// 注意：此方法名称与标准库的 `Clone::clone` 不同，以避免命名冲突
+    #[allow(clippy::should_implement_trait)]
     pub fn clone(&self) -> Self {
         Self {
             accept: self.accept.clone(),

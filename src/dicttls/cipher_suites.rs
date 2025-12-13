@@ -5,6 +5,7 @@
 
 /// TLS 密码套件常量
 /// 对应 Go 版本的 tls.TLS_* 常量
+#[allow(clippy::module_inception)]
 pub mod cipher_suites {
     // TLS 1.3 密码套件
     pub const TLS_AES_128_GCM_SHA256: u16 = 0x1301;

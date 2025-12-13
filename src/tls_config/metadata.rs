@@ -42,7 +42,7 @@ impl SpecMetadata {
         let metadata = self
             .extension_metadata
             .entry(crate::dicttls::extensions::EXT_TYPE_SERVER_NAME)
-            .or_insert_with(ExtensionMetadata::default);
+            .or_default();
         metadata.sni = Some(sni);
     }
 
@@ -51,7 +51,7 @@ impl SpecMetadata {
         let metadata = self
             .extension_metadata
             .entry(crate::dicttls::extensions::EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION)
-            .or_insert_with(ExtensionMetadata::default);
+            .or_default();
         metadata.alpn = Some(alpn);
     }
 
@@ -60,7 +60,7 @@ impl SpecMetadata {
         let metadata = self
             .extension_metadata
             .entry(crate::dicttls::extensions::EXT_TYPE_SUPPORTED_GROUPS)
-            .or_insert_with(ExtensionMetadata::default);
+            .or_default();
         metadata.elliptic_curves = Some(curves);
     }
 
@@ -69,7 +69,7 @@ impl SpecMetadata {
         let metadata = self
             .extension_metadata
             .entry(crate::dicttls::extensions::EXT_TYPE_EC_POINT_FORMATS)
-            .or_insert_with(ExtensionMetadata::default);
+            .or_default();
         metadata.elliptic_curve_point_formats = Some(formats);
     }
 
@@ -78,7 +78,7 @@ impl SpecMetadata {
         let metadata = self
             .extension_metadata
             .entry(crate::dicttls::extensions::EXT_TYPE_SIGNATURE_ALGORITHMS)
-            .or_insert_with(ExtensionMetadata::default);
+            .or_default();
         metadata.signature_algorithms = Some(algorithms);
     }
 
@@ -87,7 +87,7 @@ impl SpecMetadata {
         let metadata = self
             .extension_metadata
             .entry(crate::dicttls::extensions::EXT_TYPE_SUPPORTED_VERSIONS)
-            .or_insert_with(ExtensionMetadata::default);
+            .or_default();
         metadata.supported_versions = Some(versions);
     }
 
@@ -108,6 +108,6 @@ impl SpecMetadata {
     /// 获取第一个 ALPN 协议（用于签名）
     pub fn get_first_alpn(&self) -> Option<String> {
         self.get_alpn()
-            .and_then(|alpn| alpn.first().map(|s| s.clone()))
+            .and_then(|alpn| alpn.first().cloned())
     }
 }

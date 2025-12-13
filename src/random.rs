@@ -53,7 +53,8 @@ pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<Fin
     let names: Vec<String> = clients.keys().cloned().collect();
 
     // 随机选择一个（线程安全）
-    let random_name = random_choice_string(&names.iter().map(|s| s.as_str()).collect::<Vec<_>>())
+    let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
+    let random_name = random_choice_string(&name_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
 
     let profile = clients
@@ -126,7 +127,8 @@ pub fn get_random_fingerprint_by_browser_with_os(
     }
 
     // 随机选择一个（线程安全）
-    let random_name = random_choice_string(&candidates.iter().map(|s| s.as_str()).collect::<Vec<_>>())
+    let candidate_refs: Vec<&str> = candidates.iter().map(|s| s.as_str()).collect();
+    let random_name = random_choice_string(&candidate_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
 
     let profile = clients
