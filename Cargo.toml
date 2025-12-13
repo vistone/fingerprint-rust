@@ -1,0 +1,15 @@
+[package]
+name = "fingerprint"
+version = "1.0.0"
+edition = "2021"
+authors = ["fingerprint-rust"]
+description = "一个独立的浏览器 TLS 指纹库，从 golang 版本迁移而来"
+license = "BSD-3-Clause"
+repository = "https://github.com/vistone/fingerprint"
+
+[dependencies]
+rand = "0.8"
+once_cell = "1.19"
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }

@@ -1,2 +1,258 @@
 # fingerprint-rust
-严格按照https://github.com/vistone/fingerprint这个golang版本的，采用rust语言 编写一套出来，按照组件的模式实现，严格遵循rust的语言标准。全面的细致的做好测试。
+
+[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/vistone/fingerprint)
+
+一个独立的浏览器 TLS 指纹库，从 [golang 版本](https://github.com/vistone/fingerprint) 迁移而来。
+
+## 特性
+
+- ✅ **真实浏览器指纹**：66 个真实浏览器指纹（Chrome、Firefox、Safari、Opera）
+- ✅ **移动端支持**：iOS、Android 移动端指纹
+- ✅ **HTTP/2 & HTTP/3**：完整的 HTTP/2 配置，兼容 HTTP/3
+- ✅ **User-Agent 匹配**：自动生成匹配的 User-Agent
+- ✅ **标准 HTTP Headers**：完整的标准 HTTP 请求头
+- ✅ **全球语言支持**：30+ 种语言的 Accept-Language
+- ✅ **操作系统随机化**：随机选择操作系统
+- ✅ **高性能**：零分配的关键操作，并发安全
+- ✅ **独立库**：不依赖其他 TLS 客户端库
+- ✅ **Rust 标准**：严格遵循 Rust 语言标准和最佳实践
+
+## 安装
+
+在 `Cargo.toml` 中添加：
+
+```toml
+[dependencies]
+fingerprint = { path = "." }
+```
+
+或者从 crates.io（如果发布）：
+
+```toml
+[dependencies]
+fingerprint = "1.0.0"
+```
+
+## 快速开始
+
+### 最简单的方式（推荐）⭐
+
+```rust
+use fingerprint::*;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 一行代码，获取指纹和完整的 HTTP Headers
+    let result = get_random_fingerprint()?;
+    
+    // result.profile - TLS 指纹配置
+    // result.headers - 完整的 HTTP Headers（包括 User-Agent、Accept-Language）
+    // result.hello_client_id - Client Hello ID
+    
+    println!("User-Agent: {}", result.user_agent);
+    println!("Profile: {}", result.hello_client_id);
+    
+    // 使用 Headers
+    let headers_map = result.headers.to_map();
+    for (key, value) in headers_map.iter() {
+        println!("{}: {}", key, value);
+    }
+    
+    Ok(())
+}
+```
+
+### 指定浏览器类型
+
+```rust
+use fingerprint::*;
+
+// 随机获取 Chrome 指纹
+let result = get_random_fingerprint_by_browser("chrome")?;
+
+// 指定浏览器和操作系统
+let result = get_random_fingerprint_by_browser_with_os(
+    "firefox",
+    Some(OperatingSystem::Windows10),
+)?;
+```
+
+### 自定义 Headers
+
+```rust
+use fingerprint::*;
+
+let mut result = get_random_fingerprint()?;
+
+// 设置自定义 header
+result.headers.set("Cookie", "session_id=abc123");
+result.headers.set("Authorization", "Bearer token");
+
+// 批量设置
+result.headers.set_headers(&[
+    ("Cookie", "session_id=abc123"),
+    ("X-API-Key", "your-api-key"),
+]);
+
+// 自动合并，直接使用
+let headers = result.headers.to_map();
+```
+
+## 支持的指纹
+
+### 浏览器指纹（66 个）
+
+**Chrome 系列** (19 个)
+- Chrome 103, 104, 105, 106, 107, 108, 109, 110, 111, 112
+- Chrome 116_PSK, 116_PSK_PQ, 117, 120, 124
+- Chrome 130_PSK, 131, 131_PSK, 133, 133_PSK
+
+**Firefox 系列** (12 个)
+- Firefox 102, 104, 105, 106, 108, 110, 117, 120, 123, 132, 133, 135
+
+**Safari 系列** (9 个)
+- Safari 15.6.1, 16.0, iPad 15.6
+- Safari iOS 15.5, 15.6, 16.0, 17.0, 18.0, 18.5
+
+**Opera 系列** (3 个)
+- Opera 89, 90, 91
+
+**移动端和自定义** (23 个)
+- Zalando (2), Nike (2), MMS (3), Mesh (4), Confirmed (3)
+- OkHttp4 Android (7), Cloudflare (1)
+
+## API 参考
+
+### 核心函数
+
+```rust
+// 随机指纹（推荐）
+pub fn get_random_fingerprint() -> Result<FingerprintResult, String>
+pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<FingerprintResult, String>
+pub fn get_random_fingerprint_by_browser(browser_type: &str) -> Result<FingerprintResult, Box<dyn Error>>
+pub fn get_random_fingerprint_by_browser_with_os(
+    browser_type: &str,
+    os: Option<OperatingSystem>,
+) -> Result<FingerprintResult, Box<dyn Error>>
+
+// User-Agent
+pub fn get_user_agent_by_profile_name(profile_name: &str) -> Result<String, String>
+pub fn get_user_agent_by_profile_name_with_os(
+    profile_name: &str,
+    os: OperatingSystem,
+) -> Result<String, String>
+pub fn random_os() -> OperatingSystem
+pub fn random_language() -> String
+
+// Headers
+pub fn generate_headers(
+    browser_type: BrowserType,
+    user_agent: &str,
+    is_mobile: bool,
+) -> HTTPHeaders
+```
+
+### 数据结构
+
+```rust
+pub struct FingerprintResult {
+    pub profile: ClientProfile,      // TLS 指纹配置
+    pub user_agent: String,          // 对应的 User-Agent
+    pub hello_client_id: String,      // Client Hello ID
+    pub headers: HTTPHeaders,        // 标准 HTTP 请求头
+}
+
+pub struct HTTPHeaders {
+    pub accept: String,
+    pub accept_language: String,
+    pub accept_encoding: String,
+    pub user_agent: String,
+    pub sec_fetch_site: String,
+    pub sec_fetch_mode: String,
+    pub sec_fetch_user: String,
+    pub sec_fetch_dest: String,
+    pub sec_ch_ua: String,
+    pub sec_ch_ua_mobile: String,
+    pub sec_ch_ua_platform: String,
+    pub upgrade_insecure_requests: String,
+    pub custom: HashMap<String, String>,  // 自定义 headers
+}
+```
+
+### 操作系统
+
+```rust
+pub enum OperatingSystem {
+    Windows10, Windows11,           // Windows
+    MacOS13, MacOS14, MacOS15,     // macOS
+    Linux, LinuxUbuntu, LinuxDebian, // Linux
+}
+```
+
+### 浏览器类型
+
+```rust
+pub enum BrowserType {
+    Chrome, Firefox, Safari, Opera, Edge,
+}
+```
+
+## 项目结构
+
+```
+/workspace/
+├── src/              # 源代码
+│   ├── lib.rs        # 库入口
+│   ├── types.rs      # 类型定义
+│   ├── utils.rs      # 工具函数
+│   ├── headers.rs    # HTTP Headers
+│   ├── useragent.rs  # User-Agent 生成
+│   ├── random.rs     # 随机指纹
+│   └── profiles.rs   # 指纹配置
+├── tests/            # 集成测试
+├── examples/         # 示例代码
+├── docs/             # 文档
+├── bin/              # 编译输出（自动生成）
+└── README.md
+```
+
+## 示例
+
+查看 `examples/` 目录获取更多示例：
+- `examples/basic.rs` - 基础使用
+- `examples/useragent.rs` - User-Agent 生成
+- `examples/headers.rs` - Headers 使用
+
+运行示例：
+
+```bash
+cargo run --example basic
+cargo run --example useragent
+cargo run --example headers
+```
+
+## 测试
+
+```bash
+# 运行所有测试
+cargo test
+
+# 运行集成测试
+cargo test --test integration_test
+
+# 运行示例
+cargo run --example basic
+```
+
+## 依赖
+
+- `rand = "0.8"` - 随机数生成
+- `once_cell = "1.19"` - 线程安全的单例
+
+## 许可证
+
+BSD 3-Clause License。原始代码来自 [vistone/fingerprint](https://github.com/vistone/fingerprint)。
+
+## 相关项目
+
+- [fingerprint (Go)](https://github.com/vistone/fingerprint) - Go 版本的指纹库
