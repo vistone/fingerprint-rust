@@ -15,9 +15,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("2. 获取 TLS Client Hello Spec：");
     let client_hello_spec = profile.get_client_hello_spec()?;
     println!("   密码套件数量: {}", client_hello_spec.cipher_suites.len());
-    println!("   椭圆曲线数量: {}", client_hello_spec.elliptic_curves.len());
     println!("   扩展数量: {}", client_hello_spec.extensions.len());
-    println!("   ALPN 协议: {:?}", client_hello_spec.alpn_protocols);
+    println!("   TLS 版本范围: {}-{}", client_hello_spec.tls_vers_min, client_hello_spec.tls_vers_max);
 
     // 3. 获取 HTTP/2 Settings
     println!("\n3. HTTP/2 Settings：");
@@ -47,10 +46,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 6. 展示如何使用 ClientHelloSpec
     println!("\n6. ClientHelloSpec 详细信息：");
     let chrome_spec = chrome_profile.get_client_hello_spec()?;
-    println!("   TLS 版本: {:?}", chrome_spec.tls_versions);
+    println!("   TLS 版本范围: {}-{}", chrome_spec.tls_vers_min, chrome_spec.tls_vers_max);
     println!("   前5个密码套件: {:?}", &chrome_spec.cipher_suites[..chrome_spec.cipher_suites.len().min(5)]);
-    println!("   椭圆曲线: {:?}", chrome_spec.elliptic_curves);
-    println!("   签名算法数量: {}", chrome_spec.signature_algorithms.len());
+    println!("   扩展数量: {}", chrome_spec.extensions.len());
+    println!("   压缩方法: {:?}", chrome_spec.compression_methods);
 
     // 7. HTTP/2 Header Priority
     println!("\n7. HTTP/2 Header Priority：");

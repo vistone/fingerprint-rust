@@ -224,7 +224,6 @@ fn test_mapped_tls_clients() {
         assert!(spec.is_ok(), "get_client_hello_spec should succeed");
         let spec = spec.unwrap();
         assert!(!spec.cipher_suites.is_empty(), "cipher_suites should not be empty");
-        assert!(!spec.elliptic_curves.is_empty(), "elliptic_curves should not be empty");
         assert!(!spec.extensions.is_empty(), "extensions should not be empty");
         assert_eq!(spec.compression_methods, vec![0], "compression_methods should be [0]");
     }

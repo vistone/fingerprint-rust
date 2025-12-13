@@ -32,7 +32,15 @@ pub use http2_config::{
     safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
 };
 pub use profiles::{mapped_tls_clients, ClientProfile, ClientHelloID};
-pub use tls_config::{ClientHelloSpec, Extension, KeyShareEntry};
+pub use tls_config::ClientHelloSpec;
+pub use tls_extensions::{
+    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension,
+    GREASEEncryptedClientHelloExtension, KeyShare, KeyShareExtension, PSKKeyExchangeModesExtension,
+    RenegotiationInfoExtension, SCTExtension, SNIExtension, SignatureAlgorithmsExtension,
+    StatusRequestExtension, SupportedCurvesExtension, SupportedPointsExtension,
+    SupportedVersionsExtension, TLSExtension, TLSExtensionWriter, UtlsCompressCertExtension,
+    UtlsGREASEExtension, UtlsPreSharedKeyExtension, extension_from_id,
+};
 pub use random::{
     get_random_fingerprint, get_random_fingerprint_by_browser,
     get_random_fingerprint_by_browser_with_os, get_random_fingerprint_with_os,

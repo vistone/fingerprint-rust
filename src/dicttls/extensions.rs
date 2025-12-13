@@ -6,25 +6,27 @@
 /// TLS 扩展类型常量
 /// 对应 Go 版本的 tls.Extension* 常量
 pub mod extension_types {
-    pub const SERVER_NAME: u16 = 0;
-    pub const STATUS_REQUEST: u16 = 5;
-    pub const SUPPORTED_GROUPS: u16 = 10;
-    pub const EC_POINT_FORMATS: u16 = 11;
-    pub const SIGNATURE_ALGORITHMS: u16 = 13;
-    pub const ALPN: u16 = 16;
-    pub const SCT: u16 = 18;
-    pub const PADDING: u16 = 21;
-    pub const EXTENDED_MASTER_SECRET: u16 = 23;
-    pub const SESSION_TICKET: u16 = 35;
-    pub const SUPPORTED_VERSIONS: u16 = 43;
-    pub const PSK_KEY_EXCHANGE_MODES: u16 = 45;
-    pub const KEY_SHARE: u16 = 51;
-    pub const RENEGOTIATION_INFO: u16 = 65281;
+    pub const EXT_TYPE_SERVER_NAME: u16 = 0;
+    pub const EXT_TYPE_STATUS_REQUEST: u16 = 5;
+    pub const EXT_TYPE_SUPPORTED_GROUPS: u16 = 10;
+    pub const EXT_TYPE_EC_POINT_FORMATS: u16 = 11;
+    pub const EXT_TYPE_SIGNATURE_ALGORITHMS: u16 = 13;
+    pub const EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION: u16 = 16;
+    pub const EXT_TYPE_SIGNED_CERTIFICATE_TIMESTAMP: u16 = 18;
+    pub const EXT_TYPE_PADDING: u16 = 21;
+    pub const EXT_TYPE_EXTENDED_MASTER_SECRET: u16 = 23;
+    pub const EXT_TYPE_SESSION_TICKET: u16 = 35;
+    pub const EXT_TYPE_SUPPORTED_VERSIONS: u16 = 43;
+    pub const EXT_TYPE_PSK_KEY_EXCHANGE_MODES: u16 = 45;
+    pub const EXT_TYPE_KEY_SHARE: u16 = 51;
+    pub const EXT_TYPE_RENEGOTIATION_INFO: u16 = 65281;
+    pub const EXT_TYPE_PRE_SHARED_KEY: u16 = 41;
+    pub const EXT_TYPE_COMPRESS_CERTIFICATE: u16 = 27;
+    pub const EXT_TYPE_ECH: u16 = 0xfe0d;
 
     // 非 IANA 分配的扩展
-    pub const APPLICATION_SETTINGS: u16 = 17513;
-    pub const APPLICATION_SETTINGS_NEW: u16 = 17613;
-    pub const ECH: u16 = 0xfe0d;
+    pub const EXT_TYPE_APPLICATION_SETTINGS: u16 = 17513;
+    pub const EXT_TYPE_APPLICATION_SETTINGS_NEW: u16 = 17613;
 }
 
 pub use extension_types::*;

@@ -28,6 +28,10 @@ pub mod signature_schemes {
 
 pub use signature_schemes::*;
 
+/// SignatureScheme 类型别名
+/// 对应 Go 版本的 tls.SignatureScheme
+pub type SignatureScheme = u16;
+
 /// 为了与 Go 版本保持一致，提供别名
 /// 对应 Go 版本的 tls.ECDSAWithP256AndSHA256
 pub const ECDSA_WITH_P256_AND_SHA256: u16 = signature_schemes::ECDSA_WITH_P256_AND_SHA256;

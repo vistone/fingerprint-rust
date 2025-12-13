@@ -19,6 +19,10 @@ pub mod supported_groups {
 
 pub use supported_groups::*;
 
+/// CurveID 类型别名
+/// 对应 Go 版本的 tls.CurveID
+pub type CurveID = u16;
+
 /// 为了与 Go 版本保持一致，提供别名
 /// 对应 Go 版本的 tls.CurveP256
 pub const CURVE_P256: u16 = supported_groups::SECP256R1;
