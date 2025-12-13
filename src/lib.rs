@@ -39,7 +39,7 @@ pub use tls_extensions::{
     RenegotiationInfoExtension, SCTExtension, SNIExtension, SignatureAlgorithmsExtension,
     StatusRequestExtension, SupportedCurvesExtension, SupportedPointsExtension,
     SupportedVersionsExtension, TLSExtension, TLSExtensionWriter, UtlsCompressCertExtension,
-    UtlsGREASEExtension, UtlsPreSharedKeyExtension, extension_from_id,
+    UtlsGREASEExtension, UtlsPaddingExtension, UtlsPreSharedKeyExtension, extension_from_id,
 };
 pub use random::{
     get_random_fingerprint, get_random_fingerprint_by_browser,

@@ -18,6 +18,7 @@ use crate::tls_extensions::{
     RenegotiationInfoExtension, SCTExtension, SNIExtension, SignatureAlgorithmsExtension,
     StatusRequestExtension, SupportedCurvesExtension, SupportedPointsExtension,
     SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension, UtlsGREASEExtension,
+    UtlsPaddingExtension,
 };
 
 /// TLS 版本常量
@@ -217,12 +218,11 @@ impl ClientHelloSpec {
                 GREASE_SG,
                 VERSION_TLS13,
                 VERSION_TLS12,
-                VERSION_TLS11,
-                VERSION_TLS10,
             ])),
             Box::new(UtlsCompressCertExtension::new(vec![CERT_COMPRESSION_BROTLI])),
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
             Box::new(UtlsGREASEExtension::new()),
+            Box::new(UtlsPaddingExtension::new()),
         ];
 
         spec

@@ -1019,6 +1019,112 @@ impl Default for GREASEEncryptedClientHelloExtension {
     }
 }
 
+/// Padding 扩展
+/// 对应 Go 版本的 &tls.UtlsPaddingExtension{}
+pub struct UtlsPaddingExtension {
+    pub padding_len: usize,
+    pub will_pad: bool,
+    pub get_padding_len: Option<Box<dyn Fn(usize) -> (usize, bool)>>,
+}
+
+impl std::fmt::Debug for UtlsPaddingExtension {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("UtlsPaddingExtension")
+            .field("padding_len", &self.padding_len)
+            .field("will_pad", &self.will_pad)
+            .field("get_padding_len", &self.get_padding_len.is_some())
+            .finish()
+    }
+}
+
+impl Clone for UtlsPaddingExtension {
+    fn clone(&self) -> Self {
+        Self {
+            padding_len: self.padding_len,
+            will_pad: self.will_pad,
+            get_padding_len: None, // 不克隆函数指针
+        }
+    }
+}
+
+impl UtlsPaddingExtension {
+    pub fn new() -> Self {
+        Self {
+            padding_len: 0,
+            will_pad: false,
+            get_padding_len: None,
+        }
+    }
+
+    /// BoringPaddingStyle
+    /// 对应 Go 版本的 BoringPaddingStyle 函数
+    pub fn boring_padding_style(unpadded_len: usize) -> (usize, bool) {
+        if unpadded_len > 0xff && unpadded_len < 0x200 {
+            let mut padding_len = 0x200 - unpadded_len;
+            if padding_len >= 4 + 1 {
+                padding_len -= 4;
+            } else {
+                padding_len = 1;
+            }
+            return (padding_len, true);
+        }
+        (0, false)
+    }
+}
+
+impl TLSExtension for UtlsPaddingExtension {
+    fn len(&self) -> usize {
+        if self.will_pad {
+            4 + self.padding_len // extension_id (2) + length (2) + padding
+        } else {
+            0
+        }
+    }
+
+    fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
+        if !self.will_pad {
+            return Ok(0);
+        }
+        let len = self.len();
+        if buf.len() < len {
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "buffer too short"));
+        }
+
+        // Extension ID
+        buf[0] = (EXT_TYPE_PADDING >> 8) as u8;
+        buf[1] = (EXT_TYPE_PADDING & 0xff) as u8;
+
+        // Extension length
+        buf[2] = (self.padding_len >> 8) as u8;
+        buf[3] = (self.padding_len & 0xff) as u8;
+
+        // Padding bytes (zeros)
+        for i in 0..self.padding_len {
+            buf[4 + i] = 0;
+        }
+
+        Ok(len)
+    }
+
+    fn extension_id(&self) -> ExtensionID {
+        EXT_TYPE_PADDING
+    }
+}
+
+impl TLSExtensionWriter for UtlsPaddingExtension {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        // 设置 BoringPaddingStyle
+        self.get_padding_len = Some(Box::new(Self::boring_padding_style));
+        Ok(buf.len())
+    }
+}
+
+impl Default for UtlsPaddingExtension {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// 从扩展 ID 创建扩展实例
 /// 对应 Go 版本的 ExtensionFromID 函数
 pub fn extension_from_id(id: ExtensionID) -> Option<Box<dyn TLSExtension>> {
