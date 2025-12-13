@@ -23,9 +23,17 @@
 #[macro_use]
 mod macros;
 mod builder;
+mod comparison;
+mod extract;
+mod grease;
+mod signature;
 mod spec;
 
 pub use builder::ClientHelloSpecBuilder;
+pub use comparison::{compare_signatures, compare_specs, find_best_match, FingerprintMatch};
+pub use extract::extract_signature;
+pub use grease::{filter_grease_values, is_grease_value, remove_grease_values, TLS_GREASE_VALUES};
+pub use signature::ClientHelloSignature;
 pub use spec::{
     chrome_103_spec, chrome_133_spec, firefox_133_spec, safari_16_0_spec,
     ClientHelloSpec, CipherSuiteID,

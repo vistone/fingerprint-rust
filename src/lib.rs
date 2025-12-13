@@ -32,7 +32,11 @@ pub use http2_config::{
     safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
 };
 pub use profiles::{mapped_tls_clients, ClientProfile, ClientHelloID};
-pub use tls_config::{ClientHelloSpec, ClientHelloSpecBuilder};
+pub use tls_config::{
+    ClientHelloSpec, ClientHelloSpecBuilder, ClientHelloSignature,
+    compare_signatures, compare_specs, extract_signature, find_best_match,
+    filter_grease_values, is_grease_value, remove_grease_values, FingerprintMatch, TLS_GREASE_VALUES,
+};
 pub use tls_extensions::{
     ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension,
     GREASEEncryptedClientHelloExtension, KeyShare, KeyShareExtension, PSKKeyExchangeModesExtension,
