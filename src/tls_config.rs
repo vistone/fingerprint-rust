@@ -2,6 +2,17 @@
 //!
 //! 提供真实的 TLS Client Hello 配置，对应 Go 版本的 utls.ClientHelloID
 
+use crate::dicttls::{
+    cipher_suites::{self as cs, GREASE_PLACEHOLDER as GREASE_CS},
+    extensions::*,
+    signature_schemes::{
+        self as ss,
+        ECDSA_WITH_P256_AND_SHA256, ECDSA_WITH_P384_AND_SHA384,
+        PSS_WITH_SHA256, PSS_WITH_SHA384, PSS_WITH_SHA512,
+        PKCS1_WITH_SHA256, PKCS1_WITH_SHA384, PKCS1_WITH_SHA512,
+    },
+    supported_groups::{GREASE_PLACEHOLDER as GREASE_SG, CURVE_P256, CURVE_P384, SECP521R1, X25519, X25519_MLKEM768},
+};
 use std::collections::HashMap;
 
 /// TLS 版本
@@ -47,20 +58,46 @@ pub struct ClientHelloSpec {
 }
 
 /// TLS 扩展
+/// 对应 Go 版本的 tls.TLSExtension
 #[derive(Debug, Clone)]
 pub enum Extension {
+    /// GREASE 扩展（对应 &tls.UtlsGREASEExtension{}）
+    GREASE,
+    /// Server Name Indication（对应 &tls.SNIExtension{}）
     ServerName(Vec<String>),
+    /// Status Request（对应 &tls.StatusRequestExtension{}）
     StatusRequest,
+    /// Supported Curves（对应 &tls.SupportedCurvesExtension{}）
     SupportedCurves(Vec<u16>),
+    /// Supported Points（对应 &tls.SupportedPointsExtension{}）
     SupportedPoints(Vec<u8>),
+    /// Signature Algorithms（对应 &tls.SignatureAlgorithmsExtension{}）
     SignatureAlgorithms(Vec<u16>),
+    /// ALPN（对应 &tls.ALPNExtension{}）
     ALPN(Vec<String>),
+    /// Extended Master Secret（对应 &tls.ExtendedMasterSecretExtension{}）
     ExtendedMasterSecret,
+    /// Session Ticket（对应 &tls.SessionTicketExtension{}）
     SessionTicket,
+    /// Supported Versions（对应 &tls.SupportedVersionsExtension{}）
     SupportedVersions(Vec<u16>),
-    Cookie(Vec<u8>),
+    /// PSK Key Exchange Modes（对应 &tls.PSKKeyExchangeModesExtension{}）
     PSKKeyExchangeModes(Vec<u8>),
+    /// Key Share（对应 &tls.KeyShareExtension{}）
     KeyShare(Vec<KeyShareEntry>),
+    /// SCT（对应 &tls.SCTExtension{}）
+    SCT,
+    /// Renegotiation Info（对应 &tls.RenegotiationInfoExtension{}）
+    RenegotiationInfo(u8),
+    /// Application Settings New（对应 &tls.ApplicationSettingsExtensionNew{}）
+    ApplicationSettingsNew(Vec<String>),
+    /// Compress Certificate（对应 &tls.UtlsCompressCertExtension{}）
+    CompressCertificate(Vec<u16>),
+    /// GREASE ECH（对应 tls.BoringGREASEECH()）
+    GREASEECH,
+    /// Pre-Shared Key（对应 &tls.UtlsPreSharedKeyExtension{}）
+    PreSharedKey,
+    /// 自定义扩展
     Custom { id: u16, data: Vec<u8> },
 }
 
@@ -94,163 +131,211 @@ impl ClientHelloSpec {
 
 impl ClientHelloSpec {
 
-    /// 创建 Chrome 指纹的 ClientHelloSpec
+    /// 创建 Chrome 103 指纹的 ClientHelloSpec
+    /// 对应 Go 版本的 Chrome_103 SpecFactory
     pub fn chrome_103() -> Self {
         let mut spec = Self::new();
         
-        // Chrome 103 的密码套件
+        // Chrome 103 的密码套件（使用 dicttls 常量）
         spec.cipher_suites = vec![
-            0x1301, // TLS_AES_128_GCM_SHA256
-            0x1302, // TLS_AES_256_GCM_SHA384
-            0x1303, // TLS_CHACHA20_POLY1305_SHA256
-            0xc02f, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-            0xc030, // TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-            0xc02b, // TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-            0xc02c, // TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-            0xcca8, // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
-            0xcca9, // TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
-            0xc013, // TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
-            0xc014, // TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
-            0xc009, // TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA
-            0xc00a, // TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA
-            0x009c, // TLS_RSA_WITH_AES_128_GCM_SHA256
-            0x009d, // TLS_RSA_WITH_AES_256_GCM_SHA384
-            0x002f, // TLS_RSA_WITH_AES_128_CBC_SHA
-            0x0035, // TLS_RSA_WITH_AES_256_CBC_SHA
+            GREASE_CS,
+            cs::TLS_AES_128_GCM_SHA256,
+            cs::TLS_AES_256_GCM_SHA384,
+            cs::TLS_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+            cs::TLS_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_RSA_WITH_AES_128_CBC_SHA,
+            cs::TLS_RSA_WITH_AES_256_CBC_SHA,
         ];
 
-        // 椭圆曲线
+        // 压缩方法
+        spec.compression_methods = vec![COMPRESSION_NONE];
+
+        // 椭圆曲线（用于 SupportedCurves 扩展）
         spec.elliptic_curves = vec![
-            0x001d, // secp256r1
-            0x0017, // secp384r1
-            0x0018, // secp521r1
-            0x0019, // x25519
-            0x001a, // x448
+            GREASE_SG,
+            X25519,
+            CURVE_P256,
+            CURVE_P384,
         ];
 
-        // 签名算法
+        // 签名算法（用于 SignatureAlgorithms 扩展）
         spec.signature_algorithms = vec![
-            0x0804, // rsa_pss_rsae_sha256
-            0x0805, // rsa_pss_rsae_sha384
-            0x0806, // rsa_pss_rsae_sha512
-            0x0401, // rsa_pkcs1_sha256
-            0x0501, // rsa_pkcs1_sha384
-            0x0601, // rsa_pkcs1_sha512
-            0x0201, // ecdsa_secp256r1_sha256
-            0x0202, // ecdsa_secp384r1_sha384
-            0x0203, // ecdsa_secp521r1_sha512
-            0x0807, // ed25519
-            0x0808, // ed448
+            ECDSA_WITH_P256_AND_SHA256,
+            PSS_WITH_SHA256,
+            PKCS1_WITH_SHA256,
+            ECDSA_WITH_P384_AND_SHA384,
+            PSS_WITH_SHA384,
+            PKCS1_WITH_SHA384,
+            PSS_WITH_SHA512,
+            PKCS1_WITH_SHA512,
         ];
 
-        // ALPN
+        // ALPN 协议
         spec.alpn_protocols = vec![
             "h2".to_string(),
             "http/1.1".to_string(),
         ];
 
-        // 扩展
+        // 支持的版本（Chrome 133）
+        spec.supported_versions = vec![
+            GREASE_SG, // 使用 supported_groups 的 GREASE
+            VERSION_TLS13,
+            VERSION_TLS12,
+        ];
+
+        // PSK 密钥交换模式
+        spec.psk_key_exchange_modes = vec![PSK_MODE_DHE];
+
+        // 扩展列表（注意：顺序很重要！）
+        // Chrome 103 的扩展顺序（简化版本，实际需要更详细的实现）
         spec.extensions = vec![
-            Extension::SupportedCurves(spec.elliptic_curves.clone()),
-            Extension::SupportedPoints(vec![0, 1, 2]), // 未压缩, ansiX962_compressed_prime, ansiX962_compressed_char2
+            Extension::GREASE, // UtlsGREASEExtension
+            Extension::SessionTicket,
             Extension::SignatureAlgorithms(spec.signature_algorithms.clone()),
+            Extension::ApplicationSettingsNew(vec!["h2".to_string()]), // ApplicationSettingsExtensionNew
+            Extension::KeyShare(vec![
+                KeyShareEntry { group: GREASE_SG, data: vec![0] },
+                KeyShareEntry { group: X25519, data: vec![] }, // 实际需要生成密钥
+            ]),
+            Extension::SCT, // SCTExtension
+            Extension::SupportedPoints(vec![POINT_FORMAT_UNCOMPRESSED]),
+            Extension::SupportedVersions(spec.supported_versions.clone()),
+            Extension::StatusRequest,
             Extension::ALPN(spec.alpn_protocols.clone()),
+            Extension::ServerName(vec![]), // SNIExtension (会在实际使用时填充)
+            Extension::GREASEECH, // BoringGREASEECH()
+            Extension::CompressCertificate(vec![CERT_COMPRESSION_BROTLI]),
+            Extension::SupportedCurves(spec.elliptic_curves.clone()),
+            Extension::PSKKeyExchangeModes(spec.psk_key_exchange_modes.clone()),
             Extension::ExtendedMasterSecret,
-            Extension::SupportedVersions(vec![0x0304]), // TLS 1.3
-            Extension::PSKKeyExchangeModes(vec![0, 1]), // psk_ke, psk_dhe_ke
+            Extension::RenegotiationInfo(RENEGOTIATE_ONCE_AS_CLIENT),
+            Extension::GREASE, // UtlsGREASEExtension
         ];
 
         spec
     }
 
     /// 创建 Chrome 133 指纹的 ClientHelloSpec
+    /// 对应 Go 版本的 Chrome_133 SpecFactory
+    /// 注意：Chrome 133 的扩展顺序与 Chrome 103 不同！
     pub fn chrome_133() -> Self {
-        // Chrome 133 与 Chrome 103 基本相同，但可能有一些细微差别
-        Self::chrome_103()
-    }
-
-    /// 创建 Firefox 指纹的 ClientHelloSpec
-    pub fn firefox_133() -> Self {
-        let mut spec = Self::new();
+        let mut spec = Self::chrome_103();
         
-        // Firefox 的密码套件（与 Chrome 略有不同）
+        // Chrome 133 的密码套件（与 103 相同）
         spec.cipher_suites = vec![
-            0x1302, // TLS_AES_256_GCM_SHA384
-            0x1301, // TLS_AES_128_GCM_SHA256
-            0x1303, // TLS_CHACHA20_POLY1305_SHA256
-            0xc02c, // TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-            0xc02b, // TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-            0xc030, // TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
-            0xc02f, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-            0xcca9, // TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
-            0xcca8, // TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
+            GREASE_CS,
+            cs::TLS_AES_128_GCM_SHA256,
+            cs::TLS_AES_256_GCM_SHA384,
+            cs::TLS_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+            cs::TLS_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_RSA_WITH_AES_128_CBC_SHA,
+            cs::TLS_RSA_WITH_AES_256_CBC_SHA,
         ];
 
-        // Firefox 的椭圆曲线
+        // Chrome 133 的椭圆曲线（包含 X25519MLKEM768）
         spec.elliptic_curves = vec![
-            0x001d, // secp256r1
-            0x0017, // secp384r1
-            0x0018, // secp521r1
-            0x0019, // x25519
+            GREASE_SG,
+            X25519_MLKEM768,
+            X25519,
+            CURVE_P256,
+            CURVE_P384,
         ];
 
-        // Firefox 的签名算法
-        spec.signature_algorithms = vec![
-            0x0804, // rsa_pss_rsae_sha256
-            0x0805, // rsa_pss_rsae_sha384
-            0x0806, // rsa_pss_rsae_sha512
-            0x0401, // rsa_pkcs1_sha256
-            0x0501, // rsa_pkcs1_sha384
-            0x0601, // rsa_pkcs1_sha512
-            0x0201, // ecdsa_secp256r1_sha256
-            0x0202, // ecdsa_secp384r1_sha384
-            0x0203, // ecdsa_secp521r1_sha512
-        ];
-
+        // Chrome 133 的 ALPN（包含 h3）
         spec.alpn_protocols = vec![
+            "h3".to_string(),
             "h2".to_string(),
             "http/1.1".to_string(),
         ];
 
+        // Chrome 133 的扩展顺序（与 Chrome 103 不同！）
+        // 根据 Go 版本的实现，Chrome_133 的扩展顺序是：
         spec.extensions = vec![
-            Extension::SupportedCurves(spec.elliptic_curves.clone()),
-            Extension::SupportedPoints(vec![0]),
-            Extension::SignatureAlgorithms(spec.signature_algorithms.clone()),
-            Extension::ALPN(spec.alpn_protocols.clone()),
-            Extension::ExtendedMasterSecret,
-            Extension::SupportedVersions(vec![0x0304]),
+            Extension::GREASE, // &tls.UtlsGREASEExtension{}
+            Extension::SessionTicket, // &tls.SessionTicketExtension{}
+            Extension::SignatureAlgorithms(spec.signature_algorithms.clone()), // &tls.SignatureAlgorithmsExtension{}
+            Extension::ApplicationSettingsNew(vec!["h3".to_string(), "h2".to_string()]), // &tls.ApplicationSettingsExtensionNew{}
+            Extension::KeyShare(vec![
+                KeyShareEntry { group: GREASE_SG, data: vec![0] },
+                KeyShareEntry { group: X25519_MLKEM768, data: vec![] },
+                KeyShareEntry { group: X25519, data: vec![] },
+            ]), // &tls.KeyShareExtension{}
+            Extension::SCT, // &tls.SCTExtension{}
+            Extension::SupportedPoints(vec![POINT_FORMAT_UNCOMPRESSED]), // &tls.SupportedPointsExtension{}
+            Extension::SupportedVersions(spec.supported_versions.clone()), // &tls.SupportedVersionsExtension{}
+            Extension::StatusRequest, // &tls.StatusRequestExtension{}
+            Extension::ALPN(spec.alpn_protocols.clone()), // &tls.ALPNExtension{}
+            Extension::ServerName(vec![]), // &tls.SNIExtension{}
+            Extension::GREASEECH, // tls.BoringGREASEECH()
+            Extension::CompressCertificate(vec![CERT_COMPRESSION_BROTLI]), // &tls.UtlsCompressCertExtension{}
+            Extension::SupportedCurves(spec.elliptic_curves.clone()), // &tls.SupportedCurvesExtension{}
+            Extension::PSKKeyExchangeModes(spec.psk_key_exchange_modes.clone()), // &tls.PSKKeyExchangeModesExtension{}
+            Extension::ExtendedMasterSecret, // &tls.ExtendedMasterSecretExtension{}
+            Extension::RenegotiationInfo(RENEGOTIATE_ONCE_AS_CLIENT), // &tls.RenegotiationInfoExtension{}
+            Extension::GREASE, // &tls.UtlsGREASEExtension{}
         ];
 
         spec
     }
 
-    /// 创建 Safari 指纹的 ClientHelloSpec
-    pub fn safari_16_0() -> Self {
+    /// 创建 Firefox 133 指纹的 ClientHelloSpec
+    /// 对应 Go 版本的 Firefox_133 SpecFactory
+    pub fn firefox_133() -> Self {
         let mut spec = Self::new();
         
-        // Safari 的密码套件
+        // Firefox 133 的密码套件（使用 dicttls 常量）
         spec.cipher_suites = vec![
-            0x1301, // TLS_AES_128_GCM_SHA256
-            0x1302, // TLS_AES_256_GCM_SHA384
-            0x1303, // TLS_CHACHA20_POLY1305_SHA256
-            0xc02b, // TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
-            0xc02f, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
-            0xc02c, // TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
-            0xc030, // TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+            cs::TLS_AES_256_GCM_SHA384,
+            cs::TLS_AES_128_GCM_SHA256,
+            cs::TLS_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
         ];
 
+        // 压缩方法
+        spec.compression_methods = vec![COMPRESSION_NONE];
+
+        // Firefox 的椭圆曲线
         spec.elliptic_curves = vec![
-            0x001d, // secp256r1
-            0x0017, // secp384r1
-            0x0019, // x25519
+            CURVE_P256, // secp256r1
+            CURVE_P384, // secp384r1
+            SECP521R1,
+            X25519,
         ];
 
+        // Firefox 的签名算法
         spec.signature_algorithms = vec![
-            0x0401, // rsa_pkcs1_sha256
-            0x0501, // rsa_pkcs1_sha384
-            0x0601, // rsa_pkcs1_sha512
-            0x0201, // ecdsa_secp256r1_sha256
-            0x0202, // ecdsa_secp384r1_sha384
+            PSS_WITH_SHA256,
+            PSS_WITH_SHA384,
+            PSS_WITH_SHA512,
+            PKCS1_WITH_SHA256,
+            PKCS1_WITH_SHA384,
+            PKCS1_WITH_SHA512,
+            ECDSA_WITH_P256_AND_SHA256,
+            ECDSA_WITH_P384_AND_SHA384,
+            ss::ECDSA_WITH_P521_AND_SHA512,
         ];
 
         spec.alpn_protocols = vec![
@@ -258,12 +343,71 @@ impl ClientHelloSpec {
             "http/1.1".to_string(),
         ];
 
+        spec.supported_versions = vec![VERSION_TLS13];
+        spec.psk_key_exchange_modes = vec![PSK_MODE_DHE];
+
+        // Firefox 133 的扩展（简化版本，实际需要查看 Go 版本的完整实现）
         spec.extensions = vec![
             Extension::SupportedCurves(spec.elliptic_curves.clone()),
-            Extension::SupportedPoints(vec![0]),
+            Extension::SupportedPoints(vec![POINT_FORMAT_UNCOMPRESSED]),
             Extension::SignatureAlgorithms(spec.signature_algorithms.clone()),
             Extension::ALPN(spec.alpn_protocols.clone()),
-            Extension::SupportedVersions(vec![0x0304]),
+            Extension::ExtendedMasterSecret,
+            Extension::SupportedVersions(spec.supported_versions.clone()),
+        ];
+
+        spec
+    }
+
+    /// 创建 Safari 16.0 指纹的 ClientHelloSpec
+    /// 对应 Go 版本的 Safari_16_0 SpecFactory
+    pub fn safari_16_0() -> Self {
+        let mut spec = Self::new();
+        
+        // Safari 16.0 的密码套件（使用 dicttls 常量）
+        spec.cipher_suites = vec![
+            cs::TLS_AES_128_GCM_SHA256,
+            cs::TLS_AES_256_GCM_SHA384,
+            cs::TLS_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+        ];
+
+        // 压缩方法
+        spec.compression_methods = vec![COMPRESSION_NONE];
+
+        // Safari 的椭圆曲线
+        spec.elliptic_curves = vec![
+            CURVE_P256, // secp256r1
+            CURVE_P384, // secp384r1
+            X25519,
+        ];
+
+        // Safari 的签名算法
+        spec.signature_algorithms = vec![
+            PKCS1_WITH_SHA256,
+            PKCS1_WITH_SHA384,
+            PKCS1_WITH_SHA512,
+            ECDSA_WITH_P256_AND_SHA256,
+            ECDSA_WITH_P384_AND_SHA384,
+        ];
+
+        spec.alpn_protocols = vec![
+            "h2".to_string(),
+            "http/1.1".to_string(),
+        ];
+
+        spec.supported_versions = vec![VERSION_TLS13];
+
+        // Safari 16.0 的扩展（简化版本）
+        spec.extensions = vec![
+            Extension::SupportedCurves(spec.elliptic_curves.clone()),
+            Extension::SupportedPoints(vec![POINT_FORMAT_UNCOMPRESSED]),
+            Extension::SignatureAlgorithms(spec.signature_algorithms.clone()),
+            Extension::ALPN(spec.alpn_protocols.clone()),
+            Extension::SupportedVersions(spec.supported_versions.clone()),
         ];
 
         spec

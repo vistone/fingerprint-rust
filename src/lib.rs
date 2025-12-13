@@ -14,6 +14,7 @@
 //! - ✅ **高性能**：零分配的关键操作，并发安全
 //! - ✅ **独立库**：不依赖其他 TLS 客户端库
 
+pub mod dicttls;
 pub mod headers;
 pub mod http2_config;
 pub mod profiles;
