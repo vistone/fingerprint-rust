@@ -2,12 +2,17 @@
 //!
 //! 定义了各种浏览器的 TLS 指纹配置
 
+use crate::http2_config::{
+    chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
+    firefox_http2_settings, firefox_pseudo_header_order, safari_http2_settings,
+    safari_pseudo_header_order, HTTP2PriorityParam, HTTP2Settings,
+};
+use crate::tls_config::ClientHelloSpec;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
 /// Client Hello ID 字符串表示
-/// 在 Rust 版本中，我们使用字符串来标识不同的指纹配置
-/// 实际的 TLS 客户端库（如 utls）会使用这些 ID 来生成对应的 Client Hello
+/// 对应 Go 版本的 tls.ClientHelloID
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ClientHelloID {
     pub id: String,
@@ -21,38 +26,75 @@ impl ClientHelloID {
     pub fn as_str(&self) -> &str {
         &self.id
     }
+
+    /// 转换为 ClientHelloSpec（对应 Go 版本的 ToSpec()）
+    pub fn to_spec(&self) -> Result<ClientHelloSpec, String> {
+        match self.id.as_str() {
+            "chrome_103" | "chrome_104" | "chrome_105" | "chrome_106" 
+            | "chrome_107" | "chrome_108" | "chrome_109" | "chrome_110"
+            | "chrome_111" | "chrome_112" | "chrome_116_PSK" | "chrome_116_PSK_PQ"
+            | "chrome_117" | "chrome_120" | "chrome_124" | "chrome_130_PSK"
+            | "chrome_131" | "chrome_131_PSK" | "chrome_133" | "chrome_133_PSK"
+            | "zalando_android_mobile" | "nike_android_mobile" | "mesh_android"
+            | "mesh_android_2" | "confirmed_android" | "confirmed_android_2"
+            | "okhttp4_android_7" | "okhttp4_android_8" | "okhttp4_android_9"
+            | "okhttp4_android_10" | "okhttp4_android_11" | "okhttp4_android_12"
+            | "okhttp4_android_13" | "cloudflare_custom" => {
+                Ok(ClientHelloSpec::chrome_133())
+            }
+            "firefox_102" | "firefox_104" | "firefox_105" | "firefox_106"
+            | "firefox_108" | "firefox_110" | "firefox_117" | "firefox_120"
+            | "firefox_123" | "firefox_132" | "firefox_133" | "firefox_135" => {
+                Ok(ClientHelloSpec::firefox_133())
+            }
+            "safari_15_6_1" | "safari_16_0" | "safari_ipad_15_6"
+            | "safari_ios_15_5" | "safari_ios_15_6" | "safari_ios_16_0"
+            | "safari_ios_17_0" | "safari_ios_18_0" | "safari_ios_18_5"
+            | "zalando_ios_mobile" | "nike_ios_mobile" | "mms_ios" | "mms_ios_2"
+            | "mms_ios_3" | "mesh_ios" | "mesh_ios_2" | "confirmed_ios" => {
+                Ok(ClientHelloSpec::safari_16_0())
+            }
+            "opera_89" | "opera_90" | "opera_91" => {
+                // Opera 使用 Chrome 内核
+                Ok(ClientHelloSpec::chrome_133())
+            }
+            _ => Err(format!("Unknown client hello ID: {}", self.id)),
+        }
+    }
 }
 
 /// Client Profile 配置
 /// 包含 TLS 指纹的所有配置信息
+/// 对应 Go 版本的 ClientProfile 结构
 #[derive(Debug, Clone)]
 pub struct ClientProfile {
     /// Client Hello ID
     pub client_hello_id: ClientHelloID,
-    /// HTTP/2 Settings
-    pub settings: HashMap<String, u32>,
-    /// Settings 顺序
-    pub settings_order: Vec<String>,
-    /// Pseudo Header 顺序
+    /// HTTP/2 Settings（对应 Go 版本的 map[http2.SettingID]uint32）
+    pub settings: HTTP2Settings,
+    /// Settings 顺序（对应 Go 版本的 []http2.SettingID）
+    pub settings_order: Vec<u16>,
+    /// Pseudo Header 顺序（对应 Go 版本的 []string）
     pub pseudo_header_order: Vec<String>,
-    /// Connection Flow
+    /// Connection Flow（对应 Go 版本的 uint32）
     pub connection_flow: u32,
-    /// Priorities
+    /// Priorities（对应 Go 版本的 []http2.Priority）
     pub priorities: Vec<String>,
-    /// Header Priority
-    pub header_priority: Option<String>,
+    /// Header Priority（对应 Go 版本的 *http2.PriorityParam）
+    pub header_priority: Option<HTTP2PriorityParam>,
 }
 
 impl ClientProfile {
     /// 创建新的 ClientProfile
+    /// 对应 Go 版本的 NewClientProfile 函数
     pub fn new(
         client_hello_id: ClientHelloID,
-        settings: HashMap<String, u32>,
-        settings_order: Vec<String>,
+        settings: HTTP2Settings,
+        settings_order: Vec<u16>,
         pseudo_header_order: Vec<String>,
         connection_flow: u32,
         priorities: Vec<String>,
-        header_priority: Option<String>,
+        header_priority: Option<HTTP2PriorityParam>,
     ) -> Self {
         Self {
             client_hello_id,
@@ -70,13 +112,13 @@ impl ClientProfile {
         self.client_hello_id.as_str()
     }
 
-    /// 获取 Settings
-    pub fn get_settings(&self) -> &HashMap<String, u32> {
+    /// 获取 Settings（对应 Go 版本的 GetSettings()）
+    pub fn get_settings(&self) -> &HTTP2Settings {
         &self.settings
     }
 
-    /// 获取 Settings Order
-    pub fn get_settings_order(&self) -> &[String] {
+    /// 获取 Settings Order（对应 Go 版本的 GetSettingsOrder()）
+    pub fn get_settings_order(&self) -> &[u16] {
         &self.settings_order
     }
 
@@ -95,9 +137,15 @@ impl ClientProfile {
         &self.priorities
     }
 
-    /// 获取 Header Priority
-    pub fn get_header_priority(&self) -> Option<&str> {
-        self.header_priority.as_deref()
+    /// 获取 Header Priority（对应 Go 版本的 GetHeaderPriority()）
+    pub fn get_header_priority(&self) -> Option<&HTTP2PriorityParam> {
+        self.header_priority.as_ref()
+    }
+
+    /// 获取 ClientHelloSpec（对应 Go 版本的 GetClientHelloSpec()）
+    /// 这是真正的 TLS 指纹配置，可以用于实际的 TLS 握手
+    pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
+        self.client_hello_id.to_spec()
     }
 }
 
@@ -108,38 +156,41 @@ pub fn default_client_profile() -> ClientProfile {
 
 /// Chrome 103 指纹配置
 pub fn chrome_103() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("chrome_103"),
-        HashMap::new(),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
-        vec![":method".to_string(), ":authority".to_string(), ":scheme".to_string(), ":path".to_string()],
-        15663105,
-        Vec::new(),
-        None,
+        Some(chrome_header_priority()),
     )
 }
 
 /// Chrome 133 指纹配置（默认）
 pub fn chrome_133() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("chrome_133"),
-        HashMap::new(),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
-        vec![":method".to_string(), ":authority".to_string(), ":scheme".to_string(), ":path".to_string()],
-        15663105,
-        Vec::new(),
-        None,
+        Some(chrome_header_priority()),
     )
 }
 
 /// Firefox 133 指纹配置
 pub fn firefox_133() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("firefox_133"),
-        HashMap::new(),
-        Vec::new(),
-        vec![":method".to_string(), ":path".to_string(), ":authority".to_string(), ":scheme".to_string()],
-        15663105,
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         None,
     )
@@ -147,12 +198,13 @@ pub fn firefox_133() -> ClientProfile {
 
 /// Safari 16.0 指纹配置
 pub fn safari_16_0() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("safari_16_0"),
-        HashMap::new(),
-        Vec::new(),
-        vec![":method".to_string(), ":scheme".to_string(), ":path".to_string(), ":authority".to_string()],
-        15663105,
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         None,
     )
@@ -160,14 +212,16 @@ pub fn safari_16_0() -> ClientProfile {
 
 /// Opera 91 指纹配置
 pub fn opera_91() -> ClientProfile {
+    // Opera 使用 Chrome 内核，配置与 Chrome 相同
+    let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("opera_91"),
-        HashMap::new(),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
-        vec![":method".to_string(), ":authority".to_string(), ":scheme".to_string(), ":path".to_string()],
-        15663105,
-        Vec::new(),
-        None,
+        Some(chrome_header_priority()),
     )
 }
 

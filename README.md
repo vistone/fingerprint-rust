@@ -8,15 +8,16 @@
 ## 特性
 
 - ✅ **真实浏览器指纹**：66 个真实浏览器指纹（Chrome、Firefox、Safari、Opera）
+- ✅ **真实 TLS 配置**：完整的 TLS Client Hello Spec（密码套件、椭圆曲线、扩展等）
+- ✅ **HTTP/2 配置**：完整的 HTTP/2 Settings、Pseudo Header Order、Header Priority
 - ✅ **移动端支持**：iOS、Android 移动端指纹
-- ✅ **HTTP/2 & HTTP/3**：完整的 HTTP/2 配置，兼容 HTTP/3
 - ✅ **User-Agent 匹配**：自动生成匹配的 User-Agent
 - ✅ **标准 HTTP Headers**：完整的标准 HTTP 请求头
 - ✅ **全球语言支持**：30+ 种语言的 Accept-Language
 - ✅ **操作系统随机化**：随机选择操作系统
 - ✅ **高性能**：零分配的关键操作，并发安全
-- ✅ **独立库**：不依赖其他 TLS 客户端库
 - ✅ **Rust 标准**：严格遵循 Rust 语言标准和最佳实践
+- ✅ **完整实现**：对应 Go 版本的所有功能，包括真实的 TLS 指纹配置
 
 ## 安装
 
@@ -156,11 +157,27 @@ pub fn generate_headers(
 
 ```rust
 pub struct FingerprintResult {
-    pub profile: ClientProfile,      // TLS 指纹配置
+    pub profile: ClientProfile,      // TLS 指纹配置（包含真实的 TLS Client Hello Spec）
     pub user_agent: String,          // 对应的 User-Agent
     pub hello_client_id: String,      // Client Hello ID
     pub headers: HTTPHeaders,        // 标准 HTTP 请求头
 }
+
+// 获取真实的 TLS Client Hello Spec
+let client_hello_spec = profile.get_client_hello_spec()?;
+// client_hello_spec 包含：
+// - cipher_suites: 密码套件列表
+// - elliptic_curves: 椭圆曲线列表
+// - extensions: TLS 扩展列表
+// - alpn_protocols: ALPN 协议列表
+// - signature_algorithms: 签名算法列表
+// 等等...
+
+// 获取 HTTP/2 Settings
+let settings = profile.get_settings();
+let pseudo_header_order = profile.get_pseudo_header_order();
+let header_priority = profile.get_header_priority();
+```
 
 pub struct HTTPHeaders {
     pub accept: String,
@@ -222,6 +239,7 @@ pub enum BrowserType {
 - `examples/basic.rs` - 基础使用
 - `examples/useragent.rs` - User-Agent 生成
 - `examples/headers.rs` - Headers 使用
+- `examples/tls_config.rs` - **TLS 指纹配置使用**（展示真实的 TLS Client Hello Spec）
 
 运行示例：
 
@@ -229,6 +247,27 @@ pub enum BrowserType {
 cargo run --example basic
 cargo run --example useragent
 cargo run --example headers
+cargo run --example tls_config  # 查看真实的 TLS 配置
+```
+
+### TLS 配置示例
+
+```rust
+use fingerprint::*;
+
+// 获取指纹配置
+let profile = mapped_tls_clients().get("chrome_133").unwrap();
+
+// 获取真实的 TLS Client Hello Spec
+let client_hello_spec = profile.get_client_hello_spec()?;
+println!("密码套件: {:?}", client_hello_spec.cipher_suites);
+println!("椭圆曲线: {:?}", client_hello_spec.elliptic_curves);
+println!("ALPN: {:?}", client_hello_spec.alpn_protocols);
+
+// 获取 HTTP/2 配置
+let settings = profile.get_settings();
+let pseudo_header_order = profile.get_pseudo_header_order();
+println!("Pseudo Header Order: {:?}", pseudo_header_order);
 ```
 
 ## 测试

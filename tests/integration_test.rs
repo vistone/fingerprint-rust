@@ -210,12 +210,56 @@ fn test_mapped_tls_clients() {
     assert!(clients.contains_key("opera_91"));
 }
 
-#[test]
-fn test_client_profile() {
-    let profile = mapped_tls_clients().get("chrome_133").unwrap();
-    assert_eq!(profile.get_client_hello_str(), "chrome_133");
-    assert!(!profile.get_pseudo_header_order().is_empty());
-}
+    #[test]
+    fn test_client_profile() {
+        let profile = mapped_tls_clients().get("chrome_133").unwrap();
+        assert_eq!(profile.get_client_hello_str(), "chrome_133");
+        assert!(!profile.get_pseudo_header_order().is_empty());
+    }
+
+    #[test]
+    fn test_get_client_hello_spec() {
+        let profile = mapped_tls_clients().get("chrome_133").unwrap();
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+        let spec = spec.unwrap();
+        assert!(!spec.cipher_suites.is_empty());
+        assert!(!spec.elliptic_curves.is_empty());
+        assert!(!spec.extensions.is_empty());
+    }
+
+    #[test]
+    fn test_http2_settings() {
+        let chrome_profile = mapped_tls_clients().get("chrome_133").unwrap();
+        let firefox_profile = mapped_tls_clients().get("firefox_133").unwrap();
+        
+        let chrome_settings = chrome_profile.get_settings();
+        let firefox_settings = firefox_profile.get_settings();
+        
+        assert!(!chrome_settings.is_empty());
+        assert!(!firefox_settings.is_empty());
+        
+        // Chrome 和 Firefox 的 Settings 应该不同
+        let chrome_window_size = chrome_settings.get(&4).unwrap(); // InitialWindowSize
+        let firefox_window_size = firefox_settings.get(&4).unwrap();
+        assert_ne!(chrome_window_size, firefox_window_size);
+    }
+
+    #[test]
+    fn test_pseudo_header_order_differences() {
+        let chrome_profile = mapped_tls_clients().get("chrome_133").unwrap();
+        let firefox_profile = mapped_tls_clients().get("firefox_133").unwrap();
+        let safari_profile = mapped_tls_clients().get("safari_16_0").unwrap();
+        
+        let chrome_order = chrome_profile.get_pseudo_header_order();
+        let firefox_order = firefox_profile.get_pseudo_header_order();
+        let safari_order = safari_profile.get_pseudo_header_order();
+        
+        // 不同浏览器的 Pseudo Header Order 应该不同
+        assert_ne!(chrome_order, firefox_order);
+        assert_ne!(chrome_order, safari_order);
+        assert_ne!(firefox_order, safari_order);
+    }
 
 #[test]
 fn test_concurrent_access() {

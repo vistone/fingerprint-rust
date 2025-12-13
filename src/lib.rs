@@ -15,14 +15,22 @@
 //! - ✅ **独立库**：不依赖其他 TLS 客户端库
 
 pub mod headers;
+pub mod http2_config;
 pub mod profiles;
 pub mod random;
+pub mod tls_config;
 pub mod types;
 pub mod useragent;
 pub mod utils;
 
 pub use headers::HTTPHeaders;
-pub use profiles::{mapped_tls_clients, ClientProfile};
+pub use http2_config::{
+    chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
+    firefox_http2_settings, firefox_pseudo_header_order, safari_http2_settings,
+    safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
+};
+pub use profiles::{mapped_tls_clients, ClientProfile, ClientHelloID};
+pub use tls_config::{ClientHelloSpec, Extension, KeyShareEntry};
 pub use random::{
     get_random_fingerprint, get_random_fingerprint_by_browser,
     get_random_fingerprint_by_browser_with_os, get_random_fingerprint_with_os,
