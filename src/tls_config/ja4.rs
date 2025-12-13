@@ -116,9 +116,15 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
 }
 
 /// 生成 12 字符哈希（SHA256 的前 12 个字符）
+/// 
+/// SHA256 哈希总是产生 64 个十六进制字符，所以前 12 个字符总是存在。
+/// 此函数用于 JA4 指纹生成。
 pub fn hash12(input: &str) -> String {
     let hash = Sha256::digest(input.as_bytes());
-    format!("{:x}", hash)[..12].to_string()
+    let hash_hex = format!("{:x}", hash);
+    // SHA256 哈希总是 64 个十六进制字符，所以前 12 个字符总是存在
+    // 使用 get() 方法安全地获取切片，避免潜在的 panic
+    hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
 }
 
 /// TLS ClientHello 签名（用于 JA4 生成）

@@ -1061,7 +1061,7 @@ impl UtlsPaddingExtension {
     pub fn boring_padding_style(unpadded_len: usize) -> (usize, bool) {
         if unpadded_len > 0xff && unpadded_len < 0x200 {
             let mut padding_len = 0x200 - unpadded_len;
-            if padding_len >= 4 + 1 {
+            if padding_len > 4 {
                 padding_len -= 4;
             } else {
                 padding_len = 1;

@@ -270,7 +270,7 @@ impl UserAgentGenerator {
         let (browser, version) = if profile_name_lower.starts_with("chrome_") {
             let version = profile_name_lower
                 .strip_prefix("chrome_")
-                .unwrap()
+                .unwrap_or("")
                 .split('_')
                 .next()
                 .unwrap_or("133");

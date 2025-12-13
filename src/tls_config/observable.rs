@@ -7,7 +7,6 @@ use crate::dicttls::supported_groups::CurveID;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 use crate::tls_config::extract::extract_signature;
-use crate::tls_config::version::TlsVersion;
 
 /// TLS ClientHello 可观察数据
 /// 包含所有可以从 ClientHello 中观察到的信息
@@ -80,6 +79,7 @@ impl TlsClientObserved {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::tls_config::version::TlsVersion;
 
     #[test]
     fn test_format_tls_version() {
