@@ -6,6 +6,7 @@
 
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
+use crate::tls_config::version::TlsVersion;
 
 /// 从 ClientHelloSpec 中提取签名信息
 /// 
@@ -32,7 +33,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
     signature.cipher_suites = spec.cipher_suites.clone();
 
     // 提取 TLS 版本
-    signature.version = spec.tls_vers_max; // 使用最大版本
+    signature.version = TlsVersion::from_u16(spec.tls_vers_max); // 使用最大版本
 
     // 提取扩展 ID
     signature.extensions = spec.extensions.iter().map(|ext| ext.extension_id()).collect();

@@ -36,6 +36,7 @@ pub use tls_config::{
     ClientHelloSpec, ClientHelloSpecBuilder, ClientHelloSignature, TlsClientObserved,
     compare_signatures, compare_specs, extract_signature, find_best_match,
     filter_grease_values, is_grease_value, remove_grease_values, FingerprintMatch, FingerprintStats,
+    Ja4Fingerprint, Ja4Payload, Ja4RawFingerprint, Ja4Signature, TlsVersion,
     TLS_GREASE_VALUES,
 };
 pub use tls_extensions::{

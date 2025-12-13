@@ -7,6 +7,7 @@ use crate::dicttls::supported_groups::CurveID;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 use crate::tls_config::extract::extract_signature;
+use crate::tls_config::version::TlsVersion;
 
 /// TLS ClientHello 可观察数据
 /// 包含所有可以从 ClientHello 中观察到的信息
@@ -39,7 +40,7 @@ impl TlsClientObserved {
     /// 从 ClientHelloSignature 创建可观察数据
     pub fn from_signature(signature: &ClientHelloSignature) -> Self {
         Self {
-            version: format_tls_version(signature.version),
+            version: format!("{}", signature.version),
             sni: signature.sni.clone(),
             alpn: signature.alpn.clone(),
             cipher_suites: signature.cipher_suites.clone(),
@@ -75,17 +76,6 @@ impl TlsClientObserved {
     }
 }
 
-/// 格式化 TLS 版本为字符串
-fn format_tls_version(version: u16) -> String {
-    match version {
-        0x0304 => "13".to_string(), // TLS 1.3
-        0x0303 => "12".to_string(), // TLS 1.2
-        0x0302 => "11".to_string(), // TLS 1.1
-        0x0301 => "10".to_string(), // TLS 1.0
-        0x0300 => "s3".to_string(), // SSL 3.0
-        _ => format!("{:02x}", version),
-    }
-}
 
 #[cfg(test)]
 mod tests {
@@ -93,9 +83,9 @@ mod tests {
 
     #[test]
     fn test_format_tls_version() {
-        assert_eq!(format_tls_version(0x0304), "13");
-        assert_eq!(format_tls_version(0x0303), "12");
-        assert_eq!(format_tls_version(0x0301), "10");
+        assert_eq!(format!("{}", TlsVersion::V1_3), "13");
+        assert_eq!(format!("{}", TlsVersion::V1_2), "12");
+        assert_eq!(format!("{}", TlsVersion::V1_0), "10");
     }
 
     #[test]

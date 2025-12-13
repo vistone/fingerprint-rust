@@ -27,16 +27,19 @@ mod builder;
 mod comparison;
 mod extract;
 mod grease;
+mod ja4;
 mod metadata;
 mod observable;
 mod signature;
 mod spec;
 mod stats;
+mod version;
 
 pub use builder::ClientHelloSpecBuilder;
 pub use comparison::{compare_signatures, compare_specs, find_best_match, FingerprintMatch};
 pub use extract::extract_signature;
 pub use grease::{filter_grease_values, is_grease_value, remove_grease_values, TLS_GREASE_VALUES};
+pub use ja4::{Ja4Fingerprint, Ja4Payload, Ja4RawFingerprint, Ja4Signature, first_last_alpn, hash12};
 pub use metadata::{ExtensionMetadata, SpecMetadata};
 pub use observable::TlsClientObserved;
 pub use signature::ClientHelloSignature;
@@ -48,3 +51,4 @@ pub use spec::{
     VERSION_TLS10, VERSION_TLS11, VERSION_TLS12, VERSION_TLS13,
 };
 pub use stats::FingerprintStats;
+pub use version::TlsVersion;

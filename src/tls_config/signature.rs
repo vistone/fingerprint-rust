@@ -5,13 +5,14 @@
 
 use crate::dicttls::supported_groups::CurveID;
 use crate::tls_config::grease::{filter_grease_values, is_grease_value};
+use crate::tls_config::version::TlsVersion;
 
 /// TLS ClientHello 签名
 /// 包含从 ClientHello 消息中提取的所有关键信息
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
     /// TLS 版本
-    pub version: u16,
+    pub version: TlsVersion,
     /// 密码套件列表（包含 GREASE）
     pub cipher_suites: Vec<u16>,
     /// 扩展列表（包含 GREASE）
@@ -32,7 +33,7 @@ impl ClientHelloSignature {
     /// 创建新的签名
     pub fn new() -> Self {
         Self {
-            version: 0,
+            version: TlsVersion::V1_2, // 默认 TLS 1.2
             cipher_suites: Vec::new(),
             extensions: Vec::new(),
             elliptic_curves: Vec::new(),
@@ -90,7 +91,7 @@ impl ClientHelloSignature {
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
-        self.version.hash(&mut hasher);
+        self.version.to_u16().hash(&mut hasher);
         self.cipher_suites_without_grease().hash(&mut hasher);
         self.extensions_without_grease().hash(&mut hasher);
         self.signature_algorithms_without_grease().hash(&mut hasher);
@@ -115,12 +116,12 @@ mod tests {
     #[test]
     fn test_similar_to() {
         let mut sig1 = ClientHelloSignature::new();
-        sig1.version = 0x0303;
+        sig1.version = TlsVersion::V1_2;
         sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // 包含 GREASE
         sig1.extensions = vec![0x0000, 0x0010];
 
         let mut sig2 = ClientHelloSignature::new();
-        sig2.version = 0x0303;
+        sig2.version = TlsVersion::V1_2;
         sig2.cipher_suites = vec![0x0017, 0x2a2a]; // 不同的 GREASE，但过滤后相同
         sig2.extensions = vec![0x0000, 0x0010];
 

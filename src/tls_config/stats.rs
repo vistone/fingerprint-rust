@@ -61,7 +61,7 @@ impl FingerprintStats {
             }
 
             // TLS 版本分布
-            let version_str = format_tls_version(signature.version);
+            let version_str = format!("{}", signature.version);
             *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
             // 统计密码套件
@@ -121,7 +121,7 @@ impl FingerprintStats {
             }
 
             // TLS 版本分布
-            let version_str = format_tls_version(signature.version);
+            let version_str = format!("{}", signature.version);
             *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
             // 统计密码套件
@@ -149,17 +149,6 @@ impl FingerprintStats {
     }
 }
 
-/// 格式化 TLS 版本为字符串
-fn format_tls_version(version: u16) -> String {
-    match version {
-        0x0304 => "13".to_string(), // TLS 1.3
-        0x0303 => "12".to_string(), // TLS 1.2
-        0x0302 => "11".to_string(), // TLS 1.1
-        0x0301 => "10".to_string(), // TLS 1.0
-        0x0300 => "s3".to_string(), // SSL 3.0
-        _ => format!("{:02x}", version),
-    }
-}
 
 #[cfg(test)]
 mod tests {
