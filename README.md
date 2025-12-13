@@ -1,7 +1,15 @@
 # fingerprint-rust
 
-[![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/vistone/fingerprint)
+<div align="center">
+
+[![docs](https://docs.rs/fingerprint/badge.svg)](https://docs.rs/fingerprint)
+[![crates.io](https://img.shields.io/crates/v/fingerprint.svg)](https://crates.io/crates/fingerprint)
+[![Downloads](https://img.shields.io/crates/d/fingerprint.svg)](https://crates.io/crates/fingerprint)
+[![License](https://img.shields.io/badge/license-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+[![CI](https://github.com/vistone/fingerprint/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vistone/fingerprint/actions)
+[![Pure Rust](https://img.shields.io/badge/pure-Rust-brightgreen.svg)](https://www.rust-lang.org/)
+
+</div>
 
 一个独立的浏览器 TLS 指纹库，从 [golang 版本](https://github.com/vistone/fingerprint) 迁移而来。
 
@@ -381,6 +389,12 @@ cargo run --example basic
 
 BSD 3-Clause License。原始代码来自 [vistone/fingerprint](https://github.com/vistone/fingerprint)。
 
+## 版本历史
+
+查看 [RELEASE_NOTES.md](docs/RELEASE_NOTES.md) 了解详细的版本历史。
+
 ## 相关项目
 
 - [fingerprint (Go)](https://github.com/vistone/fingerprint) - Go 版本的指纹库
+- [refraction-networking/utls](https://github.com/refraction-networking/utls) - Go TLS 指纹库参考
+- [biandratti/huginn-net](https://github.com/biandratti/huginn-net) - Rust 网络指纹库参考

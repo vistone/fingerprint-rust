@@ -17,6 +17,7 @@ Thumbs.db
 
 # Build output
 /bin/
+target/
 *.exe
 *.dll
 *.so
