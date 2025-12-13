@@ -1,6 +1,6 @@
-//! TLS 配置模块
+//! TLS ClientHelloSpec 实现
 //!
-//! 提供真实的 TLS Client Hello 配置，对应 Go 版本的 utls.ClientHelloID
+//! 提供真实的 TLS Client Hello 配置，对应 Go 版本的 utls.ClientHelloSpec
 
 use crate::dicttls::{
     cipher_suites::{self as cs, GREASE_PLACEHOLDER as GREASE_CS},
@@ -47,6 +47,8 @@ pub type CipherSuiteID = u16;
 
 /// TLS Client Hello 配置
 /// 对应 Go 版本的 tls.ClientHelloSpec
+///
+/// 注意：由于扩展是 trait 对象，Clone 实现会创建新的扩展实例
 #[derive(Debug)]
 pub struct ClientHelloSpec {
     /// 密码套件列表
@@ -81,7 +83,28 @@ impl ClientHelloSpec {
 
     /// 创建 Chrome 133 指纹的 ClientHelloSpec
     /// 对应 Go 版本的 Chrome_133 SpecFactory
+    /// 
+    /// 使用 Builder 模式可以更灵活地构建：
+    /// ```rust,no_run
+    /// use fingerprint::tls_config::ClientHelloSpecBuilder;
+    /// let spec = ClientHelloSpecBuilder::new()
+    ///     .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
+    ///     .compression_methods(vec![0])
+    ///     .extensions(ClientHelloSpecBuilder::chrome_133_extensions())
+    ///     .build();
+    /// ```
     pub fn chrome_133() -> Self {
+        use crate::tls_config::ClientHelloSpecBuilder;
+        ClientHelloSpecBuilder::new()
+            .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
+            .compression_methods(vec![COMPRESSION_NONE])
+            .extensions(ClientHelloSpecBuilder::chrome_133_extensions())
+            .build()
+    }
+
+    /// 创建 Chrome 133 指纹的 ClientHelloSpec（旧实现，保留用于兼容）
+    #[deprecated(note = "使用 ClientHelloSpecBuilder 代替")]
+    pub fn chrome_133_old() -> Self {
         let mut spec = Self::new();
         
         // Chrome 133 的密码套件
@@ -157,8 +180,6 @@ impl ClientHelloSpec {
                 GREASE_SG,
                 VERSION_TLS13,
                 VERSION_TLS12,
-                VERSION_TLS11,
-                VERSION_TLS10,
             ])),
             Box::new(UtlsCompressCertExtension::new(vec![CERT_COMPRESSION_BROTLI])),
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
