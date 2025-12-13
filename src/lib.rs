@@ -33,9 +33,10 @@ pub use http2_config::{
 };
 pub use profiles::{mapped_tls_clients, ClientProfile, ClientHelloID};
 pub use tls_config::{
-    ClientHelloSpec, ClientHelloSpecBuilder, ClientHelloSignature,
+    ClientHelloSpec, ClientHelloSpecBuilder, ClientHelloSignature, TlsClientObserved,
     compare_signatures, compare_specs, extract_signature, find_best_match,
-    filter_grease_values, is_grease_value, remove_grease_values, FingerprintMatch, TLS_GREASE_VALUES,
+    filter_grease_values, is_grease_value, remove_grease_values, FingerprintMatch, FingerprintStats,
+    TLS_GREASE_VALUES,
 };
 pub use tls_extensions::{
     ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension,

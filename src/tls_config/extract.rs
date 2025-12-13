@@ -16,8 +16,8 @@ use crate::tls_config::spec::ClientHelloSpec;
 /// * `ClientHelloSignature` - 提取的签名信息
 /// 
 /// # 注意
-/// 由于扩展是 trait 对象，我们只能提取扩展 ID，无法直接访问扩展的内部数据。
-/// 如果需要提取扩展的具体数据（如 SNI、ALPN），需要在构建 ClientHelloSpec 时保存这些信息。
+/// 如果 spec 包含 metadata，会从中提取 SNI、ALPN 等信息。
+/// 否则只能提取扩展 ID。
 /// 
 /// # 示例
 /// ```
@@ -37,8 +37,45 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
     // 提取扩展 ID
     signature.extensions = spec.extensions.iter().map(|ext| ext.extension_id()).collect();
 
-    // 注意：由于扩展是 trait 对象，我们无法直接提取扩展的内部数据
-    // 如果需要 SNI、ALPN 等数据，需要在构建时保存，或者使用辅助函数
+    // 从元数据中提取扩展的具体数据
+    if let Some(ref metadata) = spec.metadata {
+        // 提取 SNI
+        if let Some(sni) = metadata.get_sni() {
+            signature.sni = Some(sni.clone());
+        }
+
+        // 提取 ALPN（取第一个）
+        if let Some(alpn) = metadata.get_first_alpn() {
+            signature.alpn = Some(alpn);
+        }
+
+        // 提取椭圆曲线
+        if let Some(ref ext_meta) = metadata.extension_metadata.get(
+            &crate::dicttls::extensions::EXT_TYPE_SUPPORTED_GROUPS
+        ) {
+            if let Some(ref curves) = ext_meta.elliptic_curves {
+                signature.elliptic_curves = curves.clone();
+            }
+        }
+
+        // 提取椭圆曲线点格式
+        if let Some(ref ext_meta) = metadata.extension_metadata.get(
+            &crate::dicttls::extensions::EXT_TYPE_EC_POINT_FORMATS
+        ) {
+            if let Some(ref formats) = ext_meta.elliptic_curve_point_formats {
+                signature.elliptic_curve_point_formats = formats.clone();
+            }
+        }
+
+        // 提取签名算法
+        if let Some(ref ext_meta) = metadata.extension_metadata.get(
+            &crate::dicttls::extensions::EXT_TYPE_SIGNATURE_ALGORITHMS
+        ) {
+            if let Some(ref algs) = ext_meta.signature_algorithms {
+                signature.signature_algorithms = algs.clone();
+            }
+        }
+    }
 
     signature
 }

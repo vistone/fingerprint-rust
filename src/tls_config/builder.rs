@@ -83,6 +83,7 @@ impl ClientHelloSpecBuilder {
             extensions: self.extensions,
             tls_vers_min: self.tls_vers_min,
             tls_vers_max: self.tls_vers_max,
+            metadata: None,
         }
     }
 
@@ -129,8 +130,36 @@ impl ClientHelloSpecBuilder {
     }
 
     /// 构建 Chrome 133 的扩展列表
-    pub fn chrome_133_extensions() -> Vec<Box<dyn TLSExtension>> {
-        vec![
+    /// 返回扩展列表和元数据
+    pub fn chrome_133_extensions() -> (Vec<Box<dyn TLSExtension>>, crate::tls_config::metadata::SpecMetadata) {
+        let mut metadata = crate::tls_config::metadata::SpecMetadata::new();
+        
+        // 设置 ALPN
+        metadata.set_alpn(vec!["h2".to_string(), "http/1.1".to_string()]);
+        
+        // 设置椭圆曲线
+        metadata.set_elliptic_curves(vec![
+            GREASE_SG,
+            X25519_MLKEM768,
+            X25519,
+            CURVE_P256,
+            CURVE_P384,
+        ]);
+        
+        // 设置椭圆曲线点格式
+        metadata.set_elliptic_curve_point_formats(vec![POINT_FORMAT_UNCOMPRESSED]);
+        
+        // 设置签名算法
+        metadata.set_signature_algorithms(Self::chrome_signature_algorithms().to_vec());
+        
+        // 设置支持的版本
+        metadata.set_supported_versions(vec![
+            GREASE_SG,
+            VERSION_TLS13,
+            VERSION_TLS12,
+        ]);
+
+        let extensions: Vec<Box<dyn TLSExtension>> = vec![
             Box::new(UtlsGREASEExtension::new()),
             Box::new(SNIExtension::new(String::new())),
             Box::new(ExtendedMasterSecretExtension),
@@ -177,12 +206,41 @@ impl ClientHelloSpecBuilder {
             Box::new(crate::tls_extensions::GREASEEncryptedClientHelloExtension::new()),
             Box::new(UtlsGREASEExtension::new()),
             Box::new(UtlsPaddingExtension::new()),
-        ]
+        ];
+        
+        (extensions, metadata)
     }
 
     /// 构建 Chrome 103 的扩展列表（不包含 X25519MLKEM768）
-    pub fn chrome_103_extensions() -> Vec<Box<dyn TLSExtension>> {
-        vec![
+    /// 返回扩展列表和元数据
+    pub fn chrome_103_extensions() -> (Vec<Box<dyn TLSExtension>>, crate::tls_config::metadata::SpecMetadata) {
+        let mut metadata = crate::tls_config::metadata::SpecMetadata::new();
+        
+        // 设置 ALPN
+        metadata.set_alpn(vec!["h2".to_string(), "http/1.1".to_string()]);
+        
+        // 设置椭圆曲线（不包含 X25519MLKEM768）
+        metadata.set_elliptic_curves(vec![
+            GREASE_SG,
+            X25519,
+            CURVE_P256,
+            CURVE_P384,
+        ]);
+        
+        // 设置椭圆曲线点格式
+        metadata.set_elliptic_curve_point_formats(vec![POINT_FORMAT_UNCOMPRESSED]);
+        
+        // 设置签名算法
+        metadata.set_signature_algorithms(Self::chrome_signature_algorithms().to_vec());
+        
+        // 设置支持的版本
+        metadata.set_supported_versions(vec![
+            GREASE_SG,
+            VERSION_TLS13,
+            VERSION_TLS12,
+        ]);
+
+        let extensions: Vec<Box<dyn TLSExtension>> = vec![
             Box::new(UtlsGREASEExtension::new()),
             Box::new(SNIExtension::new(String::new())),
             Box::new(ExtendedMasterSecretExtension),
@@ -223,6 +281,8 @@ impl ClientHelloSpecBuilder {
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
             Box::new(UtlsGREASEExtension::new()),
             Box::new(UtlsPaddingExtension::new()),
-        ]
+        ];
+        
+        (extensions, metadata)
     }
 }

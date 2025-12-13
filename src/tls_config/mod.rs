@@ -13,10 +13,11 @@
 //! ### 使用 Builder 模式自定义配置
 //! ```rust,no_run
 //! use fingerprint::tls_config::ClientHelloSpecBuilder;
+//! let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
 //! let spec = ClientHelloSpecBuilder::new()
 //!     .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
 //!     .compression_methods(vec![0])
-//!     .extensions(ClientHelloSpecBuilder::chrome_133_extensions())
+//!     .extensions(extensions)
 //!     .build();
 //! ```
 
@@ -26,13 +27,18 @@ mod builder;
 mod comparison;
 mod extract;
 mod grease;
+mod metadata;
+mod observable;
 mod signature;
 mod spec;
+mod stats;
 
 pub use builder::ClientHelloSpecBuilder;
 pub use comparison::{compare_signatures, compare_specs, find_best_match, FingerprintMatch};
 pub use extract::extract_signature;
 pub use grease::{filter_grease_values, is_grease_value, remove_grease_values, TLS_GREASE_VALUES};
+pub use metadata::{ExtensionMetadata, SpecMetadata};
+pub use observable::TlsClientObserved;
 pub use signature::ClientHelloSignature;
 pub use spec::{
     chrome_103_spec, chrome_133_spec, firefox_133_spec, safari_16_0_spec,
@@ -41,3 +47,4 @@ pub use spec::{
     RENEGOTIATE_ONCE_AS_CLIENT, CERT_COMPRESSION_BROTLI,
     VERSION_TLS10, VERSION_TLS11, VERSION_TLS12, VERSION_TLS13,
 };
+pub use stats::FingerprintStats;

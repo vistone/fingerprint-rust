@@ -66,6 +66,9 @@ pub struct ClientHelloSpec {
     /// TLS 版本最大值
     /// 对应 Go 版本的 TLSVersMax uint16
     pub tls_vers_max: u16,
+    /// 扩展元数据（用于存储 SNI、ALPN 等数据）
+    /// 参考：Huginn Net Profiler 的设计
+    pub metadata: Option<crate::tls_config::metadata::SpecMetadata>,
 }
 
 impl ClientHelloSpec {
@@ -78,6 +81,7 @@ impl ClientHelloSpec {
             extensions: Vec::new(),
             tls_vers_min: 0,
             tls_vers_max: 0,
+            metadata: None,
         }
     }
 
@@ -87,19 +91,23 @@ impl ClientHelloSpec {
     /// 使用 Builder 模式可以更灵活地构建：
     /// ```rust,no_run
     /// use fingerprint::tls_config::ClientHelloSpecBuilder;
+    /// let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
     /// let spec = ClientHelloSpecBuilder::new()
     ///     .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
     ///     .compression_methods(vec![0])
-    ///     .extensions(ClientHelloSpecBuilder::chrome_133_extensions())
+    ///     .extensions(extensions)
     ///     .build();
     /// ```
     pub fn chrome_133() -> Self {
         use crate::tls_config::ClientHelloSpecBuilder;
-        ClientHelloSpecBuilder::new()
+        let (extensions, metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
+        let mut spec = ClientHelloSpecBuilder::new()
             .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
             .compression_methods(vec![COMPRESSION_NONE])
-            .extensions(ClientHelloSpecBuilder::chrome_133_extensions())
-            .build()
+            .extensions(extensions)
+            .build();
+        spec.metadata = Some(metadata);
+        spec
     }
 
     /// 创建 Chrome 133 指纹的 ClientHelloSpec（旧实现，保留用于兼容）
