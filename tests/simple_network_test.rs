@@ -100,6 +100,7 @@ fn test_http_vs_https() {
     let config = HttpClientConfig {
         user_agent,
         prefer_http2: false,
+        prefer_http3: false,
         ..Default::default()
     };
 
