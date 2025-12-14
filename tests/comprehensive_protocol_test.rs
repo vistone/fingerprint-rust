@@ -11,9 +11,11 @@ struct ProtocolTestResult {
     profile_name: String,
     http1_success: bool,
     http2_success: bool,
+    #[allow(dead_code)]
     http3_success: bool,
     http1_time: Option<u64>,
     http2_time: Option<u64>,
+    #[allow(dead_code)]
     http3_time: Option<u64>,
     error_msg: Option<String>,
 }
@@ -271,10 +273,12 @@ fn test_single_profile_all_protocols(profile_name: &str, url: &str) {
 
         // 测试一个已知支持 HTTP/3 的端点
         let h3_url = "https://quic.aiortc.org:443/";
-        let mut config_h3 = HttpClientConfig::default();
-        config_h3.user_agent = user_agent;
-        config_h3.prefer_http2 = false;
-        config_h3.prefer_http3 = true;
+        let config_h3 = HttpClientConfig {
+            user_agent,
+            prefer_http2: false,
+            prefer_http3: true,
+            ..Default::default()
+        };
 
         let client_h3 = HttpClient::new(config_h3);
         match client_h3.get(h3_url) {
@@ -307,10 +311,12 @@ fn test_protocol_selection() {
 
     // 1. 仅 HTTP/1.1
     println!("1. 仅启用 HTTP/1.1:");
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent.clone();
-    config.prefer_http2 = false;
-    config.prefer_http3 = false;
+    let config = HttpClientConfig {
+        user_agent: user_agent.clone(),
+        prefer_http2: false,
+        prefer_http3: false,
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
     if let Ok(response) = client.get("https://www.google.com/") {
@@ -322,10 +328,12 @@ fn test_protocol_selection() {
     #[cfg(feature = "http2")]
     {
         println!("\n2. 优先 HTTP/2:");
-        let mut config = HttpClientConfig::default();
-        config.user_agent = user_agent.clone();
-        config.prefer_http2 = true;
-        config.prefer_http3 = false;
+        let config = HttpClientConfig {
+            user_agent: user_agent.clone(),
+            prefer_http2: true,
+            prefer_http3: false,
+            ..Default::default()
+        };
 
         let client = HttpClient::new(config);
         if let Ok(response) = client.get("https://www.google.com/") {
