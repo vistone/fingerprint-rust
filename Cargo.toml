@@ -71,8 +71,8 @@ reporter = ["chrono"]  # 报告生成器
 rustls-client-hello-customizer = ["rustls-tls"]
 
 # 接入你 fork 的 rustls（方案A）：
-# - 你需要在 `vistone/rustls` 上把 PR#1 的改动 backport 到 rustls 0.21.x（与本项目依赖链一致）
-# - 然后把下面的 rev 改成你 backport 分支/commit 的 SHA
-#
-# [patch.crates-io]
-# rustls = { git = "https://github.com/vistone/rustls", rev = "<BACKPORT_COMMIT_SHA>" }
+# - 你在 `vistone/rustls` 上把 PR#1 的改动 backport 到 rustls 0.21.x（与本项目依赖链一致）
+# - 这里用 backport 的 commit SHA 覆盖 crates.io 的 rustls
+
+[patch.crates-io]
+rustls = { git = "https://github.com/vistone/rustls", rev = "e99b3d19b3f96bc7bdd126d7062adf41e95ab889" }
