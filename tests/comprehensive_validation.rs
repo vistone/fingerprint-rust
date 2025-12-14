@@ -303,12 +303,11 @@ fn validate_fingerprint_config(profile: &ClientProfile) -> bool {
 
             // TLS 版本检查 - 0 是合法的（可能表示不限制）
             // 只检查如果都设置了，范围要合理
-            if spec.tls_vers_min > 0 && spec.tls_vers_max > 0 {
-                if spec.tls_vers_min > spec.tls_vers_max {
+            if spec.tls_vers_min > 0 && spec.tls_vers_max > 0
+                && spec.tls_vers_min > spec.tls_vers_max {
                     eprintln!("  FAIL: tls_vers_min > tls_vers_max");
                     return false;
                 }
-            }
 
             true
         }

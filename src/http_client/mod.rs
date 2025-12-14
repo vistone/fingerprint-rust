@@ -141,10 +141,12 @@ impl HttpClient {
 
     /// 使用浏览器配置创建客户端
     pub fn with_profile(profile: ClientProfile, headers: HTTPHeaders, user_agent: String) -> Self {
-        let mut config = HttpClientConfig::default();
-        config.profile = Some(profile);
-        config.headers = headers;
-        config.user_agent = user_agent;
+        let config = HttpClientConfig {
+            profile: Some(profile),
+            headers,
+            user_agent,
+            ..Default::default()
+        };
         Self::new(config)
     }
 

@@ -3,10 +3,7 @@
 //! 演示如何使用我们自己的 TLS 指纹库生成 ClientHello
 //! 不依赖 rustls/native-tls
 
-use fingerprint::{
-    mapped_tls_clients,
-    tls_handshake::TLSHandshakeBuilder,
-};
+use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
 
 fn main() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
@@ -26,7 +23,10 @@ fn main() {
                 println!("  ClientHelloSpec:");
                 println!("    - 密码套件: {}", spec.cipher_suites.len());
                 println!("    - 扩展: {}", spec.extensions.len());
-                println!("    - TLS 版本: 0x{:04x} - 0x{:04x}", spec.tls_vers_min, spec.tls_vers_max);
+                println!(
+                    "    - TLS 版本: 0x{:04x} - 0x{:04x}",
+                    spec.tls_vers_min, spec.tls_vers_max
+                );
 
                 // 构建 ClientHello
                 match TLSHandshakeBuilder::build_client_hello(&spec, "www.google.com") {
@@ -34,11 +34,14 @@ fn main() {
                         println!("\n  ✅ ClientHello 生成成功！");
                         println!("    - 总大小: {} bytes", bytes.len());
                         println!("    - 前 10 bytes: {:02x?}", &bytes[..10.min(bytes.len())]);
-                        
+
                         // 验证 TLS 记录格式
                         println!("\n  TLS 记录格式:");
                         println!("    - 类型: {} (Handshake)", bytes[0]);
-                        println!("    - 版本: 0x{:02x}{:02x} (TLS 1.0 for compatibility)", bytes[1], bytes[2]);
+                        println!(
+                            "    - 版本: 0x{:02x}{:02x} (TLS 1.0 for compatibility)",
+                            bytes[1], bytes[2]
+                        );
                         let length = u16::from_be_bytes([bytes[3], bytes[4]]);
                         println!("    - 长度: {} bytes", length);
                     }
@@ -75,12 +78,7 @@ fn main() {
 
     // 示例 4: 对比不同浏览器的 ClientHello 大小
     println!("\n\n📊 示例 4: 对比不同浏览器的 ClientHello 大小\n");
-    let browsers_to_compare = vec![
-        "chrome_133",
-        "firefox_133",
-        "safari_ios_18_0",
-        "opera_91",
-    ];
+    let browsers_to_compare = vec!["chrome_133", "firefox_133", "safari_ios_18_0", "opera_91"];
 
     for browser_name in browsers_to_compare {
         if let Some(profile) = profiles.get(browser_name) {

@@ -253,7 +253,7 @@ fn test_all_chrome_versions() {
 
     println!("\n找到 {} 个 Chrome 版本\n", chrome_profiles.len());
 
-    for (i, (profile_name, profile)) in chrome_profiles.iter().enumerate() {
+    for (i, (profile_name, _profile)) in chrome_profiles.iter().enumerate() {
         println!("┌─────────────────────────────────────────────────────────┐");
         println!(
             "│ [{}/{}] 测试: {}",
@@ -266,7 +266,7 @@ fn test_all_chrome_versions() {
         // 生成 User-Agent
         let user_agent = get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| {
             // 如果无法生成，使用默认值
-            format!("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36".to_string()
         });
         println!("  User-Agent: {}", user_agent);
 
@@ -351,7 +351,7 @@ fn test_all_firefox_versions() {
 
     println!("\n找到 {} 个 Firefox 版本\n", firefox_profiles.len());
 
-    for (i, (profile_name, profile)) in firefox_profiles.iter().enumerate() {
+    for (i, (profile_name, _profile)) in firefox_profiles.iter().enumerate() {
         println!("┌─────────────────────────────────────────────────────────┐");
         println!(
             "│ [{}/{}] 测试: {}",
@@ -362,9 +362,7 @@ fn test_all_firefox_versions() {
         println!("└─────────────────────────────────────────────────────────┘");
 
         let user_agent = get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| {
-            format!(
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
-            )
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0".to_string()
         });
         println!("  User-Agent: {}", user_agent);
 
@@ -444,7 +442,7 @@ fn test_all_safari_versions() {
 
     println!("\n找到 {} 个 Safari 版本\n", safari_profiles.len());
 
-    for (i, (profile_name, profile)) in safari_profiles.iter().enumerate() {
+    for (i, (profile_name, _profile)) in safari_profiles.iter().enumerate() {
         println!("┌─────────────────────────────────────────────────────────┐");
         println!(
             "│ [{}/{}] 测试: {}",
@@ -455,7 +453,7 @@ fn test_all_safari_versions() {
         println!("└─────────────────────────────────────────────────────────┘");
 
         let user_agent = get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| {
-            format!("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15")
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15".to_string()
         });
         println!("  User-Agent: {}", user_agent);
 
@@ -531,7 +529,7 @@ fn test_all_browsers_comprehensive() {
 
     println!("\n📋 总共 {} 个浏览器配置\n", all_profiles.len());
 
-    for (i, (profile_name, profile)) in all_profiles.iter().enumerate() {
+    for (i, (profile_name, _profile)) in all_profiles.iter().enumerate() {
         println!("┌─────────────────────────────────────────────────────────┐");
         println!(
             "│ [{}/{}] 测试: {}",
@@ -542,12 +540,12 @@ fn test_all_browsers_comprehensive() {
         println!("└─────────────────────────────────────────────────────────┘");
 
         let user_agent = get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| {
-            format!("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36".to_string()
         });
         println!("  User-Agent: {}", &user_agent[..user_agent.len().min(60)]);
 
         // 推断浏览器类型
-        let browser_type = if profile_name.contains("chrome") {
+        let _browser_type = if profile_name.contains("chrome") {
             BrowserType::Chrome
         } else if profile_name.contains("firefox") {
             BrowserType::Firefox
@@ -635,7 +633,7 @@ fn test_sample_browsers() {
         let all_profiles = mapped_tls_clients();
         if let Some(profile) = all_profiles.get(profile_name) {
             let user_agent = get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| {
-                format!("Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/133")
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/133".to_string()
             });
             println!("  User-Agent: {}", user_agent);
 

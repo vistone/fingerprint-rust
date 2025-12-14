@@ -20,21 +20,19 @@ pub fn send_http1_request_with_pool(
 ) -> Result<HttpResponse> {
     // 从连接池获取连接
     let pool = pool_manager.get_pool(host, port)?;
-    
+
     // 获取 TCP 连接
     let conn = pool
         .GetTCP()
         .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
-    
+
     // 从 Connection 中提取 TcpStream
     let tcp_stream = conn
         .GetTcpConn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string()))?;
-    
+
     // 克隆 TcpStream 以便我们可以使用它
-    let mut stream = tcp_stream
-        .try_clone()
-        .map_err(|e| HttpClientError::Io(e))?;
+    let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     // 构建 HTTP 请求
     let http_request = request.build_http1_request(host, path);
@@ -42,7 +40,7 @@ pub fn send_http1_request_with_pool(
     // 发送请求
     stream
         .write_all(http_request.as_bytes())
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // 读取响应
     let mut buffer = Vec::new();
@@ -66,7 +64,7 @@ pub fn send_http1_request_with_pool(
     // 连接会自动归还到连接池（通过 Drop）
 
     // 解析响应
-    HttpResponse::parse(&buffer).map_err(|e| HttpClientError::InvalidResponse(e))
+    HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
 }
 
 #[cfg(not(feature = "connection-pool"))]
@@ -86,8 +84,8 @@ pub fn send_http1_request_with_pool(
 #[cfg(all(test, feature = "connection-pool"))]
 mod tests {
     use super::*;
-    use crate::http_client::request::HttpMethod;
     use crate::http_client::pool::PoolManagerConfig;
+    use crate::http_client::request::HttpMethod;
 
     #[test]
     #[ignore] // 需要网络
@@ -96,14 +94,8 @@ mod tests {
         let config = HttpClientConfig::default();
         let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
 
-        let result = send_http1_request_with_pool(
-            "example.com",
-            80,
-            "/",
-            &request,
-            &config,
-            &pool_manager,
-        );
+        let result =
+            send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
         // 可能会失败（网络问题），但不应该 panic
         if let Ok(response) = result {
@@ -120,24 +112,12 @@ mod tests {
         let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
 
         // 第一次请求
-        let _ = send_http1_request_with_pool(
-            "example.com",
-            80,
-            "/",
-            &request,
-            &config,
-            &pool_manager,
-        );
+        let _ =
+            send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
         // 第二次请求（应该复用连接）
-        let _ = send_http1_request_with_pool(
-            "example.com",
-            80,
-            "/",
-            &request,
-            &config,
-            &pool_manager,
-        );
+        let _ =
+            send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
         // 检查统计信息
         let stats = pool_manager.get_stats();

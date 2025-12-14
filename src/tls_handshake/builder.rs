@@ -37,10 +37,7 @@ impl TLSHandshakeBuilder {
     }
 
     /// 构建并打印调试信息
-    pub fn build_with_debug(
-        spec: &ClientHelloSpec,
-        server_name: &str,
-    ) -> Result<Vec<u8>, String> {
+    pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
         println!("\n╔══════════════════════════════════════════════════════════╗");
         println!("║          构建 TLS ClientHello（使用自己的指纹）          ║");
         println!("╚══════════════════════════════════════════════════════════╝\n");
@@ -48,7 +45,10 @@ impl TLSHandshakeBuilder {
         println!("📋 ClientHelloSpec 信息:");
         println!("  - 密码套件数: {}", spec.cipher_suites.len());
         println!("  - 扩展数: {}", spec.extensions.len());
-        println!("  - TLS 版本范围: 0x{:04x} - 0x{:04x}", spec.tls_vers_min, spec.tls_vers_max);
+        println!(
+            "  - TLS 版本范围: 0x{:04x} - 0x{:04x}",
+            spec.tls_vers_min, spec.tls_vers_max
+        );
         println!("  - 压缩方法: {:?}", spec.compression_methods);
 
         // 构建 ClientHello
@@ -67,8 +67,9 @@ impl TLSHandshakeBuilder {
         println!("📦 TLS 记录: {} bytes", record_bytes.len());
 
         println!("\n✅ TLS ClientHello 构建完成！");
-        println!("   使用我们自己的指纹: {} 密码套件, {} 扩展\n", 
-            spec.cipher_suites.len(), 
+        println!(
+            "   使用我们自己的指纹: {} 密码套件, {} 扩展\n",
+            spec.cipher_suites.len(),
             spec.extensions.len()
         );
 

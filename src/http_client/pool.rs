@@ -115,7 +115,7 @@ impl ConnectionPoolManager {
     fn create_pool_config(&self, host: &str, port: u16) -> PoolConfig {
         let host = host.to_string();
         let port = port;
-        
+
         PoolConfig {
             Mode: netconnpool::PoolMode::Client,
             MaxConnections: self.config.max_connections,
@@ -128,7 +128,7 @@ impl ConnectionPoolManager {
             HealthCheckInterval: Duration::from_secs(30),
             HealthCheckTimeout: Duration::from_secs(3),
             ConnectionLeakTimeout: Duration::from_secs(300),
-            
+
             // 提供 Dialer 函数来创建 TCP 连接
             Dialer: Some(Box::new(move || {
                 let addr = format!("{}:{}", host, port);
@@ -136,7 +136,7 @@ impl ConnectionPoolManager {
                     .map(ConnectionType::Tcp)
                     .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)
             })),
-            
+
             Listener: None,
             Acceptor: None,
             HealthChecker: None,
@@ -268,9 +268,9 @@ mod pool_tests {
         let manager = ConnectionPoolManager::default();
         let result = manager.get_pool("example.com", 80);
         assert!(result.is_ok());
-        
+
         let pool = result.unwrap();
-        
+
         // 获取一个连接
         let conn_result = pool.GetTCP();
         // 可能会失败（如果无法连接），但不应该 panic

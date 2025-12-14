@@ -22,32 +22,32 @@ pub fn send_http1_request(
     // 设置超时
     stream
         .set_read_timeout(Some(config.read_timeout))
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
     stream
         .set_write_timeout(Some(config.write_timeout))
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // 构建并发送 HTTP/1.1 请求
     let http_request = request.build_http1_request(host, path);
     stream
         .write_all(http_request.as_bytes())
-        .map_err(|e| HttpClientError::Io(e))?;
-    stream.flush().map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
+    stream.flush().map_err(HttpClientError::Io)?;
 
     // 读取响应
     let mut buffer = Vec::new();
     stream
         .read_to_end(&mut buffer)
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // 解析响应
-    HttpResponse::parse(&buffer).map_err(|e| HttpClientError::InvalidResponse(e))
+    HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::HTTPHeaders;
+    
 
     #[test]
     #[ignore] // 需要网络连接

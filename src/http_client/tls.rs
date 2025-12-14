@@ -45,10 +45,10 @@ pub fn send_https_request(
     // 设置超时
     tcp_stream
         .set_read_timeout(Some(config.read_timeout))
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
     tcp_stream
         .set_write_timeout(Some(config.write_timeout))
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // ⚠️ 临时方案：使用 rustls (默认) 或 native-tls
     // TODO: 这里应该使用自定义 TLS 实现，应用 ClientHelloSpec
@@ -117,17 +117,17 @@ pub fn send_https_request(
         let http_request = request.build_http1_request(host, path);
         tls_stream
             .write_all(http_request.as_bytes())
-            .map_err(|e| HttpClientError::Io(e))?;
-        tls_stream.flush().map_err(|e| HttpClientError::Io(e))?;
+            .map_err(HttpClientError::Io)?;
+        tls_stream.flush().map_err(HttpClientError::Io)?;
 
         // 读取响应
         let mut buffer = Vec::new();
         tls_stream
             .read_to_end(&mut buffer)
-            .map_err(|e| HttpClientError::Io(e))?;
+            .map_err(HttpClientError::Io)?;
 
         // 解析响应
-        HttpResponse::parse(&buffer).map_err(|e| HttpClientError::InvalidResponse(e))
+        HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
     }
 }
 

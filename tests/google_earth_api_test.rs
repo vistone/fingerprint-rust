@@ -6,7 +6,7 @@
 //! 验证我们自定义的 TLS 指纹系统能够成功访问真实的 Google 服务
 
 use fingerprint::{
-    mapped_tls_clients, tls_handshake::TLSHandshakeBuilder, HttpClient, HttpClientConfig,
+    mapped_tls_clients, tls_handshake::TLSHandshakeBuilder,
 };
 use std::io::{Read, Write};
 use std::net::TcpStream;
@@ -74,7 +74,7 @@ fn test_google_earth_api_with_custom_tls_all_browsers() {
 }
 
 fn test_single_browser_custom_tls(
-    browser_name: &str,
+    _browser_name: &str,
     profile: &fingerprint::ClientProfile,
 ) -> Result<String, String> {
     // 1. 生成 ClientHelloSpec
@@ -141,9 +141,7 @@ fn test_google_earth_api_http_versions() {
 
     // 测试 Chrome 133 在不同 HTTP 版本下的表现
     let profiles = mapped_tls_clients();
-    let chrome = profiles
-        .get("chrome_133")
-        .expect("找不到 Chrome 133 配置");
+    let chrome = profiles.get("chrome_133").expect("找不到 Chrome 133 配置");
 
     // HTTP/1.1 测试
     println!("🔍 测试 HTTP/1.1...");
@@ -171,9 +169,7 @@ fn test_http_version(profile: &fingerprint::ClientProfile, version: &str) {
                             println!("  ✅ ClientHello 构建成功: {} bytes", client_hello.len());
 
                             // 尝试连接
-                            if let Ok(mut stream) =
-                                TcpStream::connect("142.251.163.100:443")
-                            {
+                            if let Ok(mut stream) = TcpStream::connect("142.251.163.100:443") {
                                 if stream.write_all(&client_hello).is_ok() {
                                     let mut response = vec![0u8; 5];
                                     if stream.read_exact(&mut response).is_ok() {
@@ -220,9 +216,7 @@ fn test_google_earth_api_detailed_chrome() {
     println!("╚══════════════════════════════════════════════════════════╝\n");
 
     let profiles = mapped_tls_clients();
-    let chrome = profiles
-        .get("chrome_133")
-        .expect("找不到 Chrome 133 配置");
+    let chrome = profiles.get("chrome_133").expect("找不到 Chrome 133 配置");
 
     println!("📋 Chrome 133 配置信息:");
     println!("  - 浏览器: Chrome 133");
@@ -240,8 +234,8 @@ fn test_google_earth_api_detailed_chrome() {
 
     // 构建 TLS ClientHello
     println!("\n🔨 构建自定义 TLS ClientHello...");
-    let client_hello = TLSHandshakeBuilder::build_with_debug(&spec, TEST_HOST)
-        .expect("无法构建 ClientHello");
+    let client_hello =
+        TLSHandshakeBuilder::build_with_debug(&spec, TEST_HOST).expect("无法构建 ClientHello");
 
     println!("\n🌐 连接到 Google Earth API...");
     println!("  地址: {}", TEST_URL);
@@ -257,7 +251,10 @@ fn test_google_earth_api_detailed_chrome() {
                 .set_write_timeout(Some(std::time::Duration::from_secs(10)))
                 .ok();
 
-            println!("\n📤 发送自定义 TLS ClientHello ({} bytes)...", client_hello.len());
+            println!(
+                "\n📤 发送自定义 TLS ClientHello ({} bytes)...",
+                client_hello.len()
+            );
             match stream.write_all(&client_hello) {
                 Ok(_) => {
                     println!("  ✅ ClientHello 发送成功");
@@ -271,12 +268,16 @@ fn test_google_earth_api_detailed_chrome() {
                             let length = u16::from_be_bytes([response[3], response[4]]);
 
                             println!("  ✅ 收到服务器响应:");
-                            println!("     - 记录类型: {} ({})", record_type, match record_type {
-                                22 => "Handshake",
-                                21 => "Alert",
-                                23 => "Application Data",
-                                _ => "Unknown",
-                            });
+                            println!(
+                                "     - 记录类型: {} ({})",
+                                record_type,
+                                match record_type {
+                                    22 => "Handshake",
+                                    21 => "Alert",
+                                    23 => "Application Data",
+                                    _ => "Unknown",
+                                }
+                            );
                             println!("     - TLS 版本: 0x{:04x}", version);
                             println!("     - 数据长度: {} bytes", length);
 
@@ -297,9 +298,7 @@ fn test_google_earth_api_detailed_chrome() {
                                                     server_hello[4],
                                                     server_hello[5],
                                                 ]);
-                                                println!(
-                                                    "\n  📊 ServerHello 详情:"
-                                                );
+                                                println!("\n  📊 ServerHello 详情:");
                                                 println!(
                                                     "     - 服务器 TLS 版本: 0x{:04x}",
                                                     server_version

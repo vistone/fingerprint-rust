@@ -4,8 +4,11 @@
 
 #[cfg(feature = "connection-pool")]
 use fingerprint::{
-    get_user_agent_by_profile_name, HttpClient, HttpClientConfig, PoolManagerConfig,
+    get_user_agent_by_profile_name, HttpClient, HttpClientConfig,
 };
+
+#[cfg(feature = "connection-pool")]
+use fingerprint::http_client::PoolManagerConfig;
 
 #[cfg(feature = "connection-pool")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -15,9 +18,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 1. 创建连接池配置
     let pool_config = PoolManagerConfig {
-        max_connections: 20,        // 最大连接数
-        min_idle: 5,                // 最小空闲连接
-        enable_reuse: true,         // 启用连接复用
+        max_connections: 20, // 最大连接数
+        min_idle: 5,         // 最小空闲连接
+        enable_reuse: true,  // 启用连接复用
         ..Default::default()
     };
 
@@ -39,11 +42,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✅ HTTP 客户端已创建（启用连接池）\n");
 
     // 5. 发送多个请求到同一主机
-    let urls = vec![
-        "http://example.com/",
+    let urls = ["http://example.com/",
         "http://example.com/about",
-        "http://example.com/contact",
-    ];
+        "http://example.com/contact"];
 
     println!("📡 发送请求到 example.com:\n");
 
@@ -104,8 +105,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(stats) = client.pool_stats() {
         println!("  管理的端点数: {}", stats.len());
         for stat in stats {
-            println!("  - {}: {} 请求, {:.1}% 成功率", 
-                stat.endpoint, 
+            println!(
+                "  - {}: {} 请求, {:.1}% 成功率",
+                stat.endpoint,
                 stat.total_requests,
                 stat.success_rate()
             );

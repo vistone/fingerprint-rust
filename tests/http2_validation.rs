@@ -10,7 +10,7 @@ use fingerprint::{
 #[ignore]
 fn test_http2_google_api() {
     // 测试 HTTP/2 连接到 Google API
-    let profile = mapped_tls_clients()
+    let _profile = mapped_tls_clients()
         .get("chrome_133")
         .expect("无法获取 Chrome 133 profile");
 
@@ -46,7 +46,7 @@ fn test_all_browsers_http2() {
     let mut success_count = 0;
     let mut failed_profiles = Vec::new();
 
-    for (profile_name, profile) in profiles.iter() {
+    for (profile_name, _profile) in profiles.iter() {
         print!("测试 {} ... ", profile_name);
 
         let user_agent = get_user_agent_by_profile_name(profile_name)

@@ -4,8 +4,11 @@
 
 #[cfg(feature = "connection-pool")]
 use fingerprint::{
-    get_user_agent_by_profile_name, HttpClient, HttpClientConfig, PoolManagerConfig,
+    get_user_agent_by_profile_name, HttpClient, HttpClientConfig,
 };
+
+#[cfg(feature = "connection-pool")]
+use fingerprint::http_client::PoolManagerConfig;
 
 #[test]
 #[cfg(feature = "connection-pool")]
@@ -13,8 +16,8 @@ use fingerprint::{
 fn test_connection_pool_basic() {
     println!("\n========== 连接池基础测试 ==========\n");
 
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     // 创建带连接池的客户端
     let mut config = HttpClientConfig::default();
@@ -75,8 +78,8 @@ fn test_connection_pool_basic() {
 fn test_connection_pool_multiple_hosts() {
     println!("\n========== 多主机连接池测试 ==========\n");
 
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     let mut config = HttpClientConfig::default();
     config.user_agent = user_agent;
@@ -119,8 +122,8 @@ fn test_connection_pool_performance() {
 
     use std::time::Instant;
 
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     // 无连接池客户端
     let mut config1 = HttpClientConfig::default();

@@ -137,8 +137,7 @@ async fn send_http3_request_async(
     use bytes::Buf;
     let mut body_data = Vec::new();
     while let Some(mut chunk) = stream.recv_data().await.map_err(|e| {
-        HttpClientError::Io(std::io::Error::new(
-            std::io::ErrorKind::Other,
+        HttpClientError::Io(std::io::Error::other(
             format!("读取 body 失败: {}", e),
         ))
     })? {

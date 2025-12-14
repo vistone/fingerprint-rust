@@ -94,13 +94,13 @@ fn connect_http_proxy(
 
     stream
         .write_all(connect_request.as_bytes())
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // 读取响应
     let mut buffer = vec![0u8; 1024];
     let n = stream
         .read(&mut buffer)
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     let response = String::from_utf8_lossy(&buffer[..n]);
 
@@ -136,13 +136,13 @@ fn connect_socks5_proxy(
 
     stream
         .write_all(&auth_methods)
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // 2. 读取服务器选择的方法
     let mut response = [0u8; 2];
     stream
         .read_exact(&mut response)
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     if response[0] != 0x05 {
         return Err(HttpClientError::ConnectionFailed(
@@ -161,12 +161,12 @@ fn connect_socks5_proxy(
 
             stream
                 .write_all(&auth_request)
-                .map_err(|e| HttpClientError::Io(e))?;
+                .map_err(HttpClientError::Io)?;
 
             let mut auth_response = [0u8; 2];
             stream
                 .read_exact(&mut auth_response)
-                .map_err(|e| HttpClientError::Io(e))?;
+                .map_err(HttpClientError::Io)?;
 
             if auth_response[1] != 0x00 {
                 return Err(HttpClientError::ConnectionFailed(
@@ -199,13 +199,13 @@ fn connect_socks5_proxy(
 
     stream
         .write_all(&connect_request)
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     // 5. 读取连接响应
-    let mut connect_response = vec![0u8; 10]; // 至少10字节
+    let mut connect_response = [0u8; 10]; // 至少10字节
     stream
         .read_exact(&mut connect_response[..4])
-        .map_err(|e| HttpClientError::Io(e))?;
+        .map_err(HttpClientError::Io)?;
 
     if connect_response[1] != 0x00 {
         return Err(HttpClientError::ConnectionFailed(format!(
@@ -220,25 +220,25 @@ fn connect_socks5_proxy(
             // IPv4
             stream
                 .read_exact(&mut connect_response[4..10])
-                .map_err(|e| HttpClientError::Io(e))?;
+                .map_err(HttpClientError::Io)?;
         }
         0x03 => {
             // 域名
             let mut len = [0u8; 1];
             stream
                 .read_exact(&mut len)
-                .map_err(|e| HttpClientError::Io(e))?;
+                .map_err(HttpClientError::Io)?;
             let mut addr = vec![0u8; len[0] as usize + 2];
             stream
                 .read_exact(&mut addr)
-                .map_err(|e| HttpClientError::Io(e))?;
+                .map_err(HttpClientError::Io)?;
         }
         0x04 => {
             // IPv6
             let mut addr = vec![0u8; 18];
             stream
                 .read_exact(&mut addr)
-                .map_err(|e| HttpClientError::Io(e))?;
+                .map_err(HttpClientError::Io)?;
         }
         _ => {
             return Err(HttpClientError::ConnectionFailed(

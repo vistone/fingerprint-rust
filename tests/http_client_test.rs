@@ -27,7 +27,7 @@ fn test_http_client_creation() {
         ..Default::default()
     };
 
-    let client = HttpClient::new(config);
+    let _client = HttpClient::new(config);
 
     println!("✅ HTTP 客户端创建成功");
     println!("   User-Agent: {}", fp_result.user_agent);
@@ -36,7 +36,7 @@ fn test_http_client_creation() {
 
 #[test]
 fn test_url_parsing() {
-    let client = HttpClient::new(HttpClientConfig::default());
+    let _client = HttpClient::new(HttpClientConfig::default());
 
     // 测试各种 URL 格式
     let test_cases = vec![
@@ -55,7 +55,7 @@ fn test_url_parsing() {
     ];
 
     for (url, (exp_scheme, exp_host, exp_port, exp_path)) in test_cases {
-        let request = HttpRequest::new(HttpMethod::Get, url);
+        let _request = HttpRequest::new(HttpMethod::Get, url);
         println!("✅ 测试 URL: {}", url);
         println!(
             "   预期: {}://{}:{}{}",

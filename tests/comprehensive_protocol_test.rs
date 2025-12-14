@@ -5,7 +5,6 @@
 use fingerprint::{
     get_user_agent_by_profile_name, mapped_tls_clients, HttpClient, HttpClientConfig,
 };
-use std::collections::HashMap;
 
 #[derive(Debug)]
 struct ProtocolTestResult {
@@ -52,10 +51,10 @@ fn test_all_browsers_all_protocols() {
 
         let mut http1_success = false;
         let mut http2_success = false;
-        let mut http3_success = false;
+        let http3_success = false;
         let mut http1_time = None;
         let mut http2_time = None;
-        let mut http3_time = None;
+        let http3_time = None;
         let mut error_msg = None;
 
         // 测试 HTTP/1.1

@@ -42,7 +42,7 @@ impl ClientHelloMessage {
 
         // 生成随机数 (32 bytes)
         let mut random = Vec::with_capacity(32);
-        
+
         // 前 4 bytes: Unix 时间戳
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -90,7 +90,7 @@ impl ClientHelloMessage {
 
         for ext in extensions {
             let ext_id = ext.extension_id();
-            
+
             // 如果是 SNI 扩展（ID == 0），我们需要特殊处理
             if ext_id == 0 {
                 // 跳过重复的 SNI 扩展
@@ -98,10 +98,10 @@ impl ClientHelloMessage {
                     continue;
                 }
                 has_sni = true;
-                
+
                 // 动态构建 SNI 扩展数据
                 let sni_data = Self::build_sni_extension(server_name);
-                
+
                 // 扩展格式: ID (2 bytes) + Length (2 bytes) + Data
                 ext_bytes.extend_from_slice(&ext_id.to_be_bytes());
                 ext_bytes.extend_from_slice(&(sni_data.len() as u16).to_be_bytes());

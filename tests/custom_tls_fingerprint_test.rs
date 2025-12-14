@@ -3,10 +3,7 @@
 //! 验证我们真正使用了自己的 TLS 指纹库
 //! 不依赖 rustls/native-tls
 
-use fingerprint::{
-    mapped_tls_clients,
-    tls_handshake::TLSHandshakeBuilder,
-};
+use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
@@ -37,7 +34,10 @@ fn test_custom_tls_fingerprint_generation() {
                 // 构建 TLS ClientHello
                 match TLSHandshakeBuilder::build_client_hello(&spec, "www.example.com") {
                     Ok(client_hello_bytes) => {
-                        println!("  ✅ ClientHello 构建成功: {} bytes", client_hello_bytes.len());
+                        println!(
+                            "  ✅ ClientHello 构建成功: {} bytes",
+                            client_hello_bytes.len()
+                        );
 
                         // 验证 TLS 记录格式
                         assert_eq!(client_hello_bytes[0], 22, "应该是握手记录");
@@ -95,7 +95,10 @@ fn test_custom_tls_fingerprint_real_connection() {
             println!("  ✅ TCP 连接建立\n");
 
             // 发送我们自己构建的 ClientHello
-            println!("📤 发送自定义 TLS ClientHello ({} bytes)...", client_hello.len());
+            println!(
+                "📤 发送自定义 TLS ClientHello ({} bytes)...",
+                client_hello.len()
+            );
 
             match stream.write_all(&client_hello) {
                 Ok(_) => {
@@ -203,8 +206,5 @@ fn test_all_browser_fingerprints() {
     }
 
     // 要求至少 90% 成功率
-    assert!(
-        (success as f64 / total as f64) >= 0.9,
-        "成功率低于 90%"
-    );
+    assert!((success as f64 / total as f64) >= 0.9, "成功率低于 90%");
 }

@@ -2,7 +2,7 @@
 //! 验证 API 是否可访问，然后逐步替换为我们的自定义 TLS
 
 use fingerprint::{
-    get_user_agent_by_profile_name, mapped_tls_clients, HttpClient, HttpClientConfig, HttpMethod,
+    get_user_agent_by_profile_name, mapped_tls_clients, HttpClient, HttpClientConfig,
 };
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
@@ -15,8 +15,7 @@ fn test_google_earth_api_basic_http_client() {
     println!("╚══════════════════════════════════════════════════════════╝\n");
 
     // 使用 Chrome 133 配置
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .expect("无法生成 User-Agent");
+    let user_agent = get_user_agent_by_profile_name("chrome_133").expect("无法生成 User-Agent");
 
     let mut config = HttpClientConfig::default();
     config.user_agent = user_agent;
@@ -34,7 +33,7 @@ fn test_google_earth_api_basic_http_client() {
             println!("  - HTTP 版本: {}", response.http_version);
             println!("  - 状态码: {}", response.status_code);
             println!("  - Headers 数量: {}", response.headers.len());
-            
+
             if let Ok(body) = response.body_as_string() {
                 let preview = if body.len() > 200 {
                     format!("{}...", &body[..200])
@@ -44,7 +43,7 @@ fn test_google_earth_api_basic_http_client() {
                 println!("  - Body 大小: {} bytes", body.len());
                 println!("  - Body 预览:\n{}", preview);
             }
-            
+
             println!("\n✅ Google Earth API 可以正常访问！");
             println!("   现在的问题是: 我们需要完整的 TLS 握手实现，");
             println!("   而不仅仅是发送 ClientHello。");
@@ -99,15 +98,12 @@ fn test_all_browsers_with_http_client() {
     }
 
     // 要求至少 80% 成功率
-    assert!(
-        (success as f64 / total as f64) >= 0.8,
-        "成功率低于 80%"
-    );
+    assert!((success as f64 / total as f64) >= 0.8, "成功率低于 80%");
 }
 
 fn test_single_browser_http_client(browser_name: &str) -> Result<String, String> {
-    let user_agent = get_user_agent_by_profile_name(browser_name)
-        .map_err(|e| format!("生成 UA 失败: {}", e))?;
+    let user_agent =
+        get_user_agent_by_profile_name(browser_name).map_err(|e| format!("生成 UA 失败: {}", e))?;
 
     let mut config = HttpClientConfig::default();
     config.user_agent = user_agent;
@@ -117,7 +113,10 @@ fn test_single_browser_http_client(browser_name: &str) -> Result<String, String>
     let client = HttpClient::new(config);
 
     match client.get(TEST_URL) {
-        Ok(response) => Ok(format!("{} {}", response.http_version, response.status_code)),
+        Ok(response) => Ok(format!(
+            "{} {}",
+            response.http_version, response.status_code
+        )),
         Err(e) => Err(format!("{}", e)),
     }
 }

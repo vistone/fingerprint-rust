@@ -99,10 +99,7 @@ impl TLSRecord {
 
         let fragment = data[5..5 + length].to_vec();
 
-        Ok((
-            Self::new(content_type, version, fragment),
-            5 + length,
-        ))
+        Ok((Self::new(content_type, version, fragment), 5 + length))
     }
 }
 

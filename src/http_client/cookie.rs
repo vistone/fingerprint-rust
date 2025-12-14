@@ -126,7 +126,7 @@ impl CookieStore {
         let mut cookies = self.cookies.lock().unwrap();
         let domain_cookies = cookies
             .entry(cookie.domain.clone())
-            .or_insert_with(Vec::new);
+            .or_default();
 
         // 检查是否已存在同名 Cookie，如果存在则更新
         if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
