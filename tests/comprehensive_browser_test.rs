@@ -24,6 +24,7 @@ const TEST_PORT: u16 = 443; // HTTPS
 #[derive(Debug, Clone)]
 struct TestResult {
     profile_name: String,
+    #[allow(dead_code)]
     user_agent: String,
     success: bool,
     status_code: Option<u16>,
