@@ -23,6 +23,7 @@
 pub mod dicttls;
 pub mod headers;
 pub mod http2_config;
+pub mod http_client;
 pub mod profiles;
 pub mod random;
 pub mod tls_config;
@@ -62,4 +63,8 @@ pub use types::{BrowserType, OperatingSystem, OperatingSystems};
 pub use useragent::{
     get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os, random_os,
     UserAgentGenerator,
+};
+pub use http_client::{
+    HttpClient, HttpClientConfig, HttpClientError, HttpMethod, HttpRequest, HttpResponse,
+    TlsConnector,
 };
