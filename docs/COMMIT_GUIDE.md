@@ -89,7 +89,7 @@ git push origin v1.0.0
 
 ### 6. 创建 GitHub Release（可选）
 
-1. 访问 GitHub: https://github.com/vistone/fingerprint/releases/new
+1. 访问 GitHub: https://github.com/vistone/fingerprint-rust/releases/new
 2. 选择标签: `v1.0.0`
 3. 标题: `v1.0.0 - First Release`
 4. 描述: 复制 `docs/RELEASE_NOTES.md` 的内容

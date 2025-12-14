@@ -74,7 +74,7 @@
 
 ### 🔗 相关链接
 
-- **GitHub**: https://github.com/vistone/fingerprint
+- **GitHub**: https://github.com/vistone/fingerprint-rust
 - **文档**: https://docs.rs/fingerprint
 - **Crates.io**: https://crates.io/crates/fingerprint
 

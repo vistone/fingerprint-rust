@@ -64,10 +64,10 @@
 
 ## 🔗 GitHub 链接
 
-- **仓库**: https://github.com/vistone/fingerprint
-- **Main 分支**: https://github.com/vistone/fingerprint/tree/main
-- **Release**: https://github.com/vistone/fingerprint/releases/tag/v1.0.0
-- **Actions**: https://github.com/vistone/fingerprint/actions
+- **仓库**: https://github.com/vistone/fingerprint-rust
+- **Main 分支**: https://github.com/vistone/fingerprint-rust/tree/main
+- **Release**: https://github.com/vistone/fingerprint-rust/releases/tag/v1.0.0
+- **Actions**: https://github.com/vistone/fingerprint-rust/actions
 
 ## 📝 Badges 状态
 
@@ -87,7 +87,7 @@ README.md 中的 badges 已配置：
 ## 🎯 下一步（可选）
 
 ### 1. 创建 GitHub Release
-访问: https://github.com/vistone/fingerprint/releases/new
+访问: https://github.com/vistone/fingerprint-rust/releases/new
 - 选择标签: `v1.0.0`
 - 标题: `v1.0.0 - First Release`
 - 描述: 使用 `docs/RELEASE_NOTES.md` 的内容
