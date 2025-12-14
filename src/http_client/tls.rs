@@ -61,7 +61,11 @@ pub fn send_https_request(
         use rustls::client::ServerName;
         use std::sync::Arc;
 
-        let tls_config = super::rustls_utils::build_client_config(config.verify_tls, Vec::new());
+        let tls_config = super::rustls_utils::build_client_config(
+            config.verify_tls,
+            Vec::new(),
+            config.profile.as_ref(),
+        );
         let server_name = ServerName::try_from(host)
             .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
 
@@ -91,7 +95,11 @@ pub fn send_https_request(
         use std::sync::Arc;
 
         // 构建 TLS 配置（尊重 verify_tls）
-        let tls_config = super::rustls_utils::build_client_config(config.verify_tls, Vec::new());
+        let tls_config = super::rustls_utils::build_client_config(
+            config.verify_tls,
+            Vec::new(),
+            config.profile.as_ref(),
+        );
 
         let server_name = ServerName::try_from(host)
             .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;

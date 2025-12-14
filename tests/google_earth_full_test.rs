@@ -6,9 +6,6 @@
 use fingerprint::{get_user_agent_by_profile_name, HttpClient, HttpClientConfig};
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
-const TEST_HOST: &str = "kh.google.com";
-const TEST_PORT: u16 = 443;
-const TEST_PATH: &str = "/rt/earth/PlanetoidMetadata";
 
 /// 测试 HTTP/1.1
 #[test]

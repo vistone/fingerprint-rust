@@ -42,8 +42,11 @@ async fn send_http3_request_async(
     let start = Instant::now();
 
     // 1. 配置 QUIC 客户端
-    let tls_config =
-        super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
+    let tls_config = super::rustls_utils::build_client_config(
+        config.verify_tls,
+        vec![b"h3".to_vec()],
+        config.profile.as_ref(),
+    );
 
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 

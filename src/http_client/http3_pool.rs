@@ -45,8 +45,11 @@ pub async fn send_http3_request_with_pool(
         .ok_or_else(|| HttpClientError::ConnectionFailed("DNS 解析无结果".to_string()))?;
 
     // 创建 QUIC 客户端配置
-    let tls_config =
-        super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
+    let tls_config = super::rustls_utils::build_client_config(
+        config.verify_tls,
+        vec![b"h3".to_vec()],
+        config.profile.as_ref(),
+    );
 
     let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
