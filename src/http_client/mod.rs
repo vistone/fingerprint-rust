@@ -272,10 +272,10 @@ impl HttpClient {
                 let rt = tokio::runtime::Runtime::new()
                     .map_err(|e| HttpClientError::Http3Error(format!("创建运行时失败: {}", e)))?;
 
-                #[cfg(all(feature = "connection-pool", feature = "http3"))]
+                #[cfg(feature = "connection-pool")]
                 {
                     if let Some(pool_manager) = &self.pool_manager {
-                        return rt.block_on(self::http3_pool::send_http3_request_with_pool(
+                        return rt.block_on(http3_pool::send_http3_request_with_pool(
                             host,
                             port,
                             path,
@@ -304,10 +304,10 @@ impl HttpClient {
                 let rt = tokio::runtime::Runtime::new()
                     .map_err(|e| HttpClientError::Http2Error(format!("创建运行时失败: {}", e)))?;
 
-                #[cfg(all(feature = "connection-pool", feature = "http2"))]
+                #[cfg(feature = "connection-pool")]
                 {
                     if let Some(pool_manager) = &self.pool_manager {
-                        return rt.block_on(self::http2_pool::send_http2_request_with_pool(
+                        return rt.block_on(http2_pool::send_http2_request_with_pool(
                             host,
                             port,
                             path,
