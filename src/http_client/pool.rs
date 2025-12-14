@@ -36,6 +36,7 @@ impl Default for ConnectionPoolManager {
 /// 连接池管理器（无连接池功能时的占位）
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
+    #[allow(dead_code)]
     config: PoolManagerConfig,
 }
 
