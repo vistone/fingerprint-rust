@@ -15,7 +15,10 @@
 //! ```
 
 use crate::tls_config::ClientHelloSpec;
-use crate::tls_extensions::TLSExtension;
+use crate::tls_extensions::{TLSExtension, KeyShareExtension, UtlsPaddingExtension};
+use crate::dicttls::supported_groups::{X25519, CURVE_P256, CURVE_P384};
+use ring::agreement;
+use ring::rand::{self as ring_rand, SecureRandom};
 
 /// ClientHello 消息
 #[derive(Debug, Clone)]
@@ -39,26 +42,15 @@ impl ClientHelloMessage {
     pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Self {
         // 使用 TLS 1.2 作为客户端版本（为了兼容性）
         let client_version = spec.tls_vers_max.max(0x0303);
+        let rng = ring_rand::SystemRandom::new();
 
         // 生成随机数 (32 bytes)
-        let mut random = Vec::with_capacity(32);
+        let mut random = vec![0u8; 32];
+        rng.fill(&mut random).unwrap();
 
-        // 前 4 bytes: Unix 时间戳
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .unwrap()
-            .as_secs() as u32;
-        random.extend_from_slice(&timestamp.to_be_bytes());
-
-        // 后 28 bytes: 随机数
-        use rand::Rng;
-        let mut rng = rand::thread_rng();
-        for _ in 0..28 {
-            random.push(rng.gen());
-        }
-
-        // 空的会话 ID（新会话）
-        let session_id = Vec::new();
+        // TLS 1.3 兼容模式：必须发送非空的 Session ID (32 bytes)
+        let mut session_id = vec![0u8; 32];
+        rng.fill(&mut session_id).unwrap();
 
         // 密码套件
         let cipher_suites = spec.cipher_suites.clone();
@@ -71,7 +63,10 @@ impl ClientHelloMessage {
         };
 
         // 序列化扩展
-        let extensions = Self::serialize_extensions(&spec.extensions, server_name);
+        // 计算 Base Length (不包含 Extension Length 字段本身 2 bytes)
+        let base_len = 2 + 32 + 1 + session_id.len() + 2 + cipher_suites.len() * 2 + 1 + compression_methods.len();
+        
+        let extensions = Self::serialize_extensions(&spec.extensions, server_name, base_len);
 
         Self {
             client_version,
@@ -84,9 +79,13 @@ impl ClientHelloMessage {
     }
 
     /// 序列化扩展
-    fn serialize_extensions(extensions: &[Box<dyn TLSExtension>], server_name: &str) -> Vec<u8> {
+    fn serialize_extensions(extensions: &[Box<dyn TLSExtension>], server_name: &str, base_len: usize) -> Vec<u8> {
         let mut ext_bytes = Vec::new();
         let mut has_sni = false;
+        let rng = ring_rand::SystemRandom::new();
+
+        // 检查是否存在 PreSharedKey 扩展 (ID 41)
+        let has_psk = extensions.iter().any(|e| e.extension_id() == 41);
 
         for ext in extensions {
             let ext_id = ext.extension_id();
@@ -107,6 +106,54 @@ impl ClientHelloMessage {
                 ext_bytes.extend_from_slice(&(sni_data.len() as u16).to_be_bytes());
                 ext_bytes.extend_from_slice(&sni_data);
                 continue;
+            }
+
+            // 如果是 PSK Key Exchange Modes (ID 45)，但没有 PreSharedKey，则必须跳过
+            if ext_id == 45 && !has_psk {
+                continue;
+            }
+
+            // 过滤 ECH (ID 0xfe0d = 65037)
+            if ext_id == 65037 {
+                continue;
+            }
+
+            // 特殊处理 Padding 扩展 (ID 21)
+            if ext_id == 21 {
+                // 计算当前总长度 (Handshake Header 4 bytes + ClientHello Base + Extensions Length 2 bytes + Current Extensions)
+                // 注意：Record Header 5 bytes 不包含在握手消息长度中，但 Padding 通常是为了对齐 Record Payload 或 Handshake Payload
+                // BoringPaddingStyle 似乎是针对 ClientHello 消息总长度（不含 Record Header）
+                // 或者是包含 Record Header？
+                // Go uTLS: prefixLen = 4 (Handshake header) + len(hello.marshal()) - len(paddingExt)
+                // 这里我们计算的是 Handshake Payload 的一部分。
+                // 假设我们希望 Handshake Message 总长度对齐。
+                
+                let current_len = 4 + base_len + 2 + ext_bytes.len() + 4; // +4 for Padding Header (ID+Len)
+                let (padding_len, will_pad) = UtlsPaddingExtension::boring_padding_style(current_len);
+                
+                if will_pad {
+                    ext_bytes.extend_from_slice(&ext_id.to_be_bytes());
+                    ext_bytes.extend_from_slice(&(padding_len as u16).to_be_bytes());
+                    ext_bytes.extend(std::iter::repeat(0).take(padding_len));
+                }
+                continue;
+            }
+
+            // 特殊处理 KeyShare 扩展 (ID == 51, 0x0033)
+            // 需要为真实的曲线生成公钥
+            if ext_id == 51 {
+                if let Some(ks_ext) = ext.as_any().downcast_ref::<KeyShareExtension>() {
+                    // 生成带有真实公钥的 KeyShare 扩展
+                    let real_ks_ext = Self::generate_real_keyshare_extension(ks_ext, &rng);
+                    
+                    // 序列化
+                    let ext_len = real_ks_ext.len();
+                    let mut ext_data = vec![0u8; ext_len];
+                    if real_ks_ext.read(&mut ext_data).is_ok() {
+                        ext_bytes.extend_from_slice(&ext_data);
+                    }
+                    continue;
+                }
             }
 
             // 其他扩展：正常序列化
@@ -134,6 +181,49 @@ impl ClientHelloMessage {
         }
 
         ext_bytes
+    }
+
+    /// 生成真实的 KeyShare 扩展（填充公钥）
+    fn generate_real_keyshare_extension(
+        original: &KeyShareExtension,
+        rng: &ring_rand::SystemRandom,
+    ) -> KeyShareExtension {
+        let mut new_shares = Vec::new();
+
+        for share in &original.key_shares {
+            let mut new_share = share.clone();
+
+            // 如果不是 GREASE 且数据为空，则生成密钥
+            // GREASE check: (val & 0x0f0f) == 0x0a0a
+            let is_grease = (share.group & 0x0f0f) == 0x0a0a;
+            
+            if !is_grease && share.data.is_empty() {
+                // 生成密钥
+                if share.group == X25519 {
+                    if let Ok(my_private_key) = agreement::EphemeralPrivateKey::generate(&agreement::X25519, rng) {
+                        if let Ok(my_public_key) = my_private_key.compute_public_key() {
+                            new_share.data = my_public_key.as_ref().to_vec();
+                        }
+                    }
+                } else if share.group == CURVE_P256 {
+                    if let Ok(my_private_key) = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, rng) {
+                        if let Ok(my_public_key) = my_private_key.compute_public_key() {
+                            new_share.data = my_public_key.as_ref().to_vec();
+                        }
+                    }
+                } else if share.group == CURVE_P384 {
+                    if let Ok(my_private_key) = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P384, rng) {
+                        if let Ok(my_public_key) = my_private_key.compute_public_key() {
+                            new_share.data = my_public_key.as_ref().to_vec();
+                        }
+                    }
+                }
+            }
+            
+            new_shares.push(new_share);
+        }
+
+        KeyShareExtension::new(new_shares)
     }
 
     /// 构建 SNI 扩展数据（不包含扩展 ID 和长度字段）
