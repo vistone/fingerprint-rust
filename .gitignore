@@ -33,3 +33,6 @@ docs/reports/validation_report_*.txt
 # Core dump files
 core
 core.*
+
+# Vendor/Third-party code
+vendor/rustls/
