@@ -8,6 +8,7 @@ use crate::dicttls::extensions::*;
 use crate::dicttls::signature_schemes::SignatureScheme;
 use crate::dicttls::supported_groups::CurveID;
 use std::io;
+use std::any::Any;
 
 /// TLS 扩展 ID
 pub type ExtensionID = u16;
@@ -25,7 +26,7 @@ pub struct KeyShare {
 
 /// TLS 扩展 trait
 /// 对应 Go 版本的 tls.TLSExtension 接口
-pub trait TLSExtension: std::fmt::Debug {
+pub trait TLSExtension: std::fmt::Debug + Any {
     /// 获取扩展的长度（包括头部）
     /// 对应 Go 版本的 Len() int
     fn len(&self) -> usize;
@@ -42,6 +43,9 @@ pub trait TLSExtension: std::fmt::Debug {
 
     /// 获取扩展 ID
     fn extension_id(&self) -> ExtensionID;
+
+    /// 转换为 Any trait object，用于向下转型
+    fn as_any(&self) -> &dyn Any;
 }
 
 /// TLS 扩展 Writer trait
@@ -88,6 +92,10 @@ impl TLSExtension for UtlsGREASEExtension {
 
     fn extension_id(&self) -> ExtensionID {
         self.value
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -162,6 +170,10 @@ impl TLSExtension for SNIExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_SERVER_NAME
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for SNIExtension {
@@ -213,6 +225,10 @@ impl TLSExtension for StatusRequestExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_STATUS_REQUEST
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -276,6 +292,10 @@ impl TLSExtension for SupportedCurvesExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_SUPPORTED_GROUPS
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for SupportedCurvesExtension {
@@ -333,6 +353,10 @@ impl TLSExtension for SupportedPointsExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_EC_POINT_FORMATS
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -398,6 +422,10 @@ impl TLSExtension for SignatureAlgorithmsExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_SIGNATURE_ALGORITHMS
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -473,6 +501,10 @@ impl TLSExtension for ALPNExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for ALPNExtension {
@@ -514,6 +546,10 @@ impl TLSExtension for ExtendedMasterSecretExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_EXTENDED_MASTER_SECRET
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for ExtendedMasterSecretExtension {
@@ -553,6 +589,10 @@ impl TLSExtension for SessionTicketExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_SESSION_TICKET
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -615,6 +655,10 @@ impl TLSExtension for SupportedVersionsExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_SUPPORTED_VERSIONS
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for SupportedVersionsExtension {
@@ -672,6 +716,10 @@ impl TLSExtension for PSKKeyExchangeModesExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_PSK_KEY_EXCHANGE_MODES
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -749,6 +797,10 @@ impl TLSExtension for KeyShareExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_KEY_SHARE
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for KeyShareExtension {
@@ -789,6 +841,10 @@ impl TLSExtension for SCTExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_SIGNED_CERTIFICATE_TIMESTAMP
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -840,6 +896,10 @@ impl TLSExtension for RenegotiationInfoExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_RENEGOTIATION_INFO
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -916,6 +976,10 @@ impl TLSExtension for ApplicationSettingsExtensionNew {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_APPLICATION_SETTINGS_NEW
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for ApplicationSettingsExtensionNew {
@@ -978,6 +1042,10 @@ impl TLSExtension for UtlsCompressCertExtension {
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_COMPRESS_CERTIFICATE
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl TLSExtensionWriter for UtlsCompressCertExtension {
@@ -1017,6 +1085,10 @@ impl TLSExtension for UtlsPreSharedKeyExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_PRE_SHARED_KEY
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -1067,6 +1139,10 @@ impl TLSExtension for GREASEEncryptedClientHelloExtension {
 
     fn extension_id(&self) -> ExtensionID {
         self.value
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -1174,6 +1250,10 @@ impl TLSExtension for UtlsPaddingExtension {
 
     fn extension_id(&self) -> ExtensionID {
         EXT_TYPE_PADDING
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
