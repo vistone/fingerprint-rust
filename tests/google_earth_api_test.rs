@@ -13,6 +13,7 @@ use std::net::TcpStream;
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 const TEST_HOST: &str = "kh.google.com";
+#[allow(dead_code)]
 const TEST_PATH: &str = "/rt/earth/PlanetoidMetadata";
 
 #[test]

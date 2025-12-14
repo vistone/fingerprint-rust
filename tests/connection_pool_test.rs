@@ -20,8 +20,10 @@ fn test_connection_pool_basic() {
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     // 创建带连接池的客户端
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
+    let config = HttpClientConfig {
+        user_agent,
+        ..Default::default()
+    };
 
     let pool_config = PoolManagerConfig {
         max_connections: 10,
@@ -86,7 +88,7 @@ fn test_connection_pool_multiple_hosts() {
 
     let client = HttpClient::with_pool(config, PoolManagerConfig::default());
 
-    let urls = vec![
+    let urls = [
         "http://example.com/",
         "http://httpbin.org/get",
         "http://example.com/", // 重复，应该复用连接
@@ -126,13 +128,17 @@ fn test_connection_pool_performance() {
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     // 无连接池客户端
-    let mut config1 = HttpClientConfig::default();
-    config1.user_agent = user_agent.clone();
+    let config1 = HttpClientConfig {
+        user_agent: user_agent.clone(),
+        ..Default::default()
+    };
     let client_no_pool = HttpClient::new(config1);
 
     // 有连接池客户端
-    let mut config2 = HttpClientConfig::default();
-    config2.user_agent = user_agent;
+    let config2 = HttpClientConfig {
+        user_agent,
+        ..Default::default()
+    };
     let client_with_pool = HttpClient::with_pool(config2, PoolManagerConfig::default());
 
     let test_count = 5;

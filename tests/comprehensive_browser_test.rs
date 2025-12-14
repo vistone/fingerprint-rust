@@ -18,6 +18,7 @@ use std::time::{Duration, Instant};
 /// 测试目标 URL
 const TEST_URL: &str = "kh.google.com";
 const TEST_PATH: &str = "/rt/earth/PlanetoidMetadata";
+#[allow(dead_code)]
 const TEST_PORT: u16 = 443; // HTTPS
 
 /// 测试结果
@@ -31,6 +32,7 @@ struct TestResult {
     response_size: usize,
     duration: Duration,
     error_message: Option<String>,
+    #[allow(dead_code)]
     http_version: String,
 }
 

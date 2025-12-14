@@ -33,8 +33,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_agent = get_user_agent_by_profile_name("chrome_133")?;
 
     // 3. 创建 HTTP 客户端配置
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
+    let config = HttpClientConfig {
+        user_agent,
+        ..Default::default()
+    };
 
     // 4. 创建带连接池的 HTTP 客户端
     let client = HttpClient::with_pool(config, pool_config);
@@ -82,7 +84,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 7. 测试多主机连接池
     println!("📡 测试多主机连接池:\n");
 
-    let multi_urls = vec![
+    let multi_urls = [
         "http://example.com/",
         "http://httpbin.org/get",
         "http://example.com/", // 重复 URL，应该复用连接

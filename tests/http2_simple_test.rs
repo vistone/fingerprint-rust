@@ -11,10 +11,12 @@ fn test_http2_example() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
-    config.prefer_http2 = true;
-    config.prefer_http3 = false;
+    let config = HttpClientConfig {
+        user_agent,
+        prefer_http2: true,
+        prefer_http3: false,
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
 
@@ -52,9 +54,11 @@ fn test_http2_cloudflare() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
-    config.prefer_http2 = true;
+    let config = HttpClientConfig {
+        user_agent,
+        prefer_http2: true,
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
 
