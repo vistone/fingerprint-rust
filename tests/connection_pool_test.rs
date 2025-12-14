@@ -3,9 +3,7 @@
 //! 验证 netconnpool 集成和连接复用
 
 #[cfg(feature = "connection-pool")]
-use fingerprint::{
-    get_user_agent_by_profile_name, HttpClient, HttpClientConfig,
-};
+use fingerprint::{get_user_agent_by_profile_name, HttpClient, HttpClientConfig};
 
 #[cfg(feature = "connection-pool")]
 use fingerprint::http_client::PoolManagerConfig;

@@ -47,7 +47,6 @@ pub fn send_http1_request(
 #[cfg(test)]
 mod tests {
     use super::*;
-    
 
     #[test]
     #[ignore] // 需要网络连接

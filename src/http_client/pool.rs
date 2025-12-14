@@ -91,7 +91,6 @@ impl ConnectionPoolManager {
         Self { config }
     }
 
-
     /// 获取或创建连接池
     #[cfg(feature = "connection-pool")]
     pub fn get_pool(&self, host: &str, port: u16) -> Result<Arc<Pool>> {

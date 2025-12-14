@@ -3,9 +3,7 @@
 //! 演示如何使用 netconnpool 进行连接复用
 
 #[cfg(feature = "connection-pool")]
-use fingerprint::{
-    get_user_agent_by_profile_name, HttpClient, HttpClientConfig,
-};
+use fingerprint::{get_user_agent_by_profile_name, HttpClient, HttpClientConfig};
 
 #[cfg(feature = "connection-pool")]
 use fingerprint::http_client::PoolManagerConfig;
@@ -44,9 +42,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("✅ HTTP 客户端已创建（启用连接池）\n");
 
     // 5. 发送多个请求到同一主机
-    let urls = ["http://example.com/",
+    let urls = [
+        "http://example.com/",
         "http://example.com/about",
-        "http://example.com/contact"];
+        "http://example.com/contact",
+    ];
 
     println!("📡 发送请求到 example.com:\n");
 

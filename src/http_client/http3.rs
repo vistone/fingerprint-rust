@@ -136,11 +136,11 @@ async fn send_http3_request_async(
     // 接收 body
     use bytes::Buf;
     let mut body_data = Vec::new();
-    while let Some(mut chunk) = stream.recv_data().await.map_err(|e| {
-        HttpClientError::Io(std::io::Error::other(
-            format!("读取 body 失败: {}", e),
-        ))
-    })? {
+    while let Some(mut chunk) = stream
+        .recv_data()
+        .await
+        .map_err(|e| HttpClientError::Io(std::io::Error::other(format!("读取 body 失败: {}", e))))?
+    {
         // 使用 Buf trait 读取数据
         let chunk_len = chunk.remaining();
         let mut chunk_bytes = vec![0u8; chunk_len];

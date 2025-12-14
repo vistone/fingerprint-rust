@@ -365,7 +365,8 @@ fn test_all_firefox_versions() {
         println!("└─────────────────────────────────────────────────────────┘");
 
         let user_agent = get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| {
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0".to_string()
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0"
+                .to_string()
         });
         println!("  User-Agent: {}", user_agent);
 

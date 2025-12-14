@@ -17,9 +17,11 @@ fn test_google_earth_api_basic_http_client() {
     // 使用 Chrome 133 配置
     let user_agent = get_user_agent_by_profile_name("chrome_133").expect("无法生成 User-Agent");
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
-    config.prefer_http2 = true;
+    let config = HttpClientConfig {
+        user_agent,
+        prefer_http2: true,
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
 

@@ -5,9 +5,7 @@
 //!
 //! 验证我们自定义的 TLS 指纹系统能够成功访问真实的 Google 服务
 
-use fingerprint::{
-    mapped_tls_clients, tls_handshake::TLSHandshakeBuilder,
-};
+use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
 use std::io::{Read, Write};
 use std::net::TcpStream;
 

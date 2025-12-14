@@ -98,9 +98,7 @@ fn connect_http_proxy(
 
     // 读取响应
     let mut buffer = vec![0u8; 1024];
-    let n = stream
-        .read(&mut buffer)
-        .map_err(HttpClientError::Io)?;
+    let n = stream.read(&mut buffer).map_err(HttpClientError::Io)?;
 
     let response = String::from_utf8_lossy(&buffer[..n]);
 
@@ -225,20 +223,14 @@ fn connect_socks5_proxy(
         0x03 => {
             // 域名
             let mut len = [0u8; 1];
-            stream
-                .read_exact(&mut len)
-                .map_err(HttpClientError::Io)?;
+            stream.read_exact(&mut len).map_err(HttpClientError::Io)?;
             let mut addr = vec![0u8; len[0] as usize + 2];
-            stream
-                .read_exact(&mut addr)
-                .map_err(HttpClientError::Io)?;
+            stream.read_exact(&mut addr).map_err(HttpClientError::Io)?;
         }
         0x04 => {
             // IPv6
             let mut addr = vec![0u8; 18];
-            stream
-                .read_exact(&mut addr)
-                .map_err(HttpClientError::Io)?;
+            stream.read_exact(&mut addr).map_err(HttpClientError::Io)?;
         }
         _ => {
             return Err(HttpClientError::ConnectionFailed(

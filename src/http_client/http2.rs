@@ -109,9 +109,7 @@ async fn send_http2_request_async(
 
     while let Some(chunk) = body_stream.data().await {
         let chunk = chunk.map_err(|e| {
-            HttpClientError::Io(std::io::Error::other(
-                format!("读取 body 失败: {}", e),
-            ))
+            HttpClientError::Io(std::io::Error::other(format!("读取 body 失败: {}", e)))
         })?;
         body_data.extend_from_slice(&chunk);
 
