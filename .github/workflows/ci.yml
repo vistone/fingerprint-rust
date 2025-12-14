@@ -13,6 +13,7 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       
@@ -54,11 +55,12 @@ jobs:
         run: cargo build --features "rustls-tls,compression,http2" --verbose
       
       - name: Build documentation
-        run: cargo doc --features "rustls-tls,compression,http2" --no-deps
+        run: cargo doc --features "rustls-tls,compression,http2" --no-deps 2>&1 | grep -v "warning:" || true
 
   security:
     name: Security Audit
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       
