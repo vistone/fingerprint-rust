@@ -17,10 +17,12 @@ fn test_http2_google_api() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
-    config.prefer_http2 = true;
-    config.prefer_http3 = false;
+    let config = HttpClientConfig {
+        user_agent,
+        prefer_http2: true,
+        prefer_http3: false,
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
 
@@ -52,10 +54,12 @@ fn test_all_browsers_http2() {
         let user_agent = get_user_agent_by_profile_name(profile_name)
             .unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
-        let mut config = HttpClientConfig::default();
-        config.user_agent = user_agent;
-        config.prefer_http2 = true;
-        config.prefer_http3 = false;
+        let config = HttpClientConfig {
+            user_agent,
+            prefer_http2: true,
+            prefer_http3: false,
+            ..Default::default()
+        };
 
         let client = HttpClient::new(config);
 
@@ -117,9 +121,11 @@ fn test_http2_vs_http1() {
         get_user_agent_by_profile_name(profile_name).unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     // HTTP/1.1 测试
-    let mut config_h1 = HttpClientConfig::default();
-    config_h1.user_agent = user_agent.clone();
-    config_h1.prefer_http2 = false;
+    let config_h1 = HttpClientConfig {
+        user_agent: user_agent.clone(),
+        prefer_http2: false,
+        ..Default::default()
+    };
     let client_h1 = HttpClient::new(config_h1);
 
     let start_h1 = std::time::Instant::now();
@@ -129,9 +135,11 @@ fn test_http2_vs_http1() {
     let time_h1 = start_h1.elapsed().as_millis();
 
     // HTTP/2 测试
-    let mut config_h2 = HttpClientConfig::default();
-    config_h2.user_agent = user_agent;
-    config_h2.prefer_http2 = true;
+    let config_h2 = HttpClientConfig {
+        user_agent,
+        prefer_http2: true,
+        ..Default::default()
+    };
     let client_h2 = HttpClient::new(config_h2);
 
     let start_h2 = std::time::Instant::now();

@@ -105,10 +105,12 @@ fn test_single_browser_http_client(browser_name: &str) -> Result<String, String>
     let user_agent =
         get_user_agent_by_profile_name(browser_name).map_err(|e| format!("生成 UA 失败: {}", e))?;
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
-    config.prefer_http2 = true;
-    config.read_timeout = std::time::Duration::from_secs(10);
+    let config = HttpClientConfig {
+        user_agent,
+        prefer_http2: true,
+        read_timeout: std::time::Duration::from_secs(10),
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
 
