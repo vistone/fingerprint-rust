@@ -1,20 +1,19 @@
-//! rustls ClientHello 定制（可选，走“路线 A”：复用 rustls，仅尽量影响 ClientHello）
+//! rustls ClientHello 定制器（路线 A）
 //!
-//! 背景：上游 crates.io 的 rustls 并不提供“任意重排扩展编码顺序/自定义 GREASE/Padding”等完整 uTLS 能力。
-//! 因此本模块在 **不依赖 rustls fork** 的前提下，做“best-effort”的 ClientHello 指纹贴近：
-//! - 按 `ClientHelloSpec` 设置 **cipher suites 顺序**（rustls 支持的子集）
-//! - 按 spec 设置 **KX groups（曲线）顺序**（rustls 支持的子集）
-//! - 按 spec 设置 **TLS 版本集合**（TLS1.2/TLS1.3）
-//!
-//! 说明：
-//! - 这并不能 1:1 复刻 uTLS（缺少扩展顺序/内容级别的完全控制），但这是“路线 A”可稳定落地的第一步。
+//! 使用 `vistone/rustls` 的 backport（0.21）来获得 ClientHello customizer hook：
+//! - **扩展编码顺序重排**：按 `ClientHelloSpec.extensions` 的顺序尽量贴近浏览器
+//! - 另外我们也会从 spec 提取 “cipher suites / kx groups / versions” 供 builder 使用（见 `ProfileClientHelloParams`）
+
+use std::sync::Arc;
 
 use crate::dicttls::supported_groups;
-use crate::tls_config::{is_grease_value, VERSION_TLS12, VERSION_TLS13};
+use crate::tls_config::{is_grease_value, TLS_GREASE_VALUES, VERSION_TLS12, VERSION_TLS13};
 use crate::tls_extensions::{KeyShareExtension, SupportedCurvesExtension, SupportedVersionsExtension};
 use crate::{ClientHelloSpec, ClientProfile};
 
-/// 从 `ClientProfile` 提取“可用于 rustls builder 的指纹参数”。
+use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer, ExtensionType};
+
+/// 从 `ClientHelloSpec` 提取“可用于 rustls builder”的参数（cipher suites / kx groups / versions）。
 #[derive(Debug, Clone)]
 pub struct ProfileClientHelloParams {
     pub cipher_suite_ids: Vec<u16>,
@@ -43,7 +42,6 @@ impl ProfileClientHelloParams {
             if let Some(sc) = ext.as_any().downcast_ref::<SupportedCurvesExtension>() {
                 kx_group_ids.extend(sc.curves.iter().copied().filter(|id| !is_grease_value(*id)));
             } else if let Some(ks) = ext.as_any().downcast_ref::<KeyShareExtension>() {
-                // KeyShare 也能反映 group 顺序；若 curves 没给（或给的不全），作为补充。
                 for k in &ks.key_shares {
                     if !is_grease_value(k.group) {
                         kx_group_ids.push(k.group);
@@ -54,7 +52,6 @@ impl ProfileClientHelloParams {
             }
         }
 
-        // 去重但保持顺序
         fn dedup_keep_order(v: &mut Vec<u16>) {
             let mut out = Vec::with_capacity(v.len());
             for x in v.drain(..) {
@@ -68,7 +65,6 @@ impl ProfileClientHelloParams {
         dedup_keep_order(&mut kx_group_ids);
         dedup_keep_order(&mut versions);
 
-        // 如果 spec 没给 supported_versions，用 min/max 兜底
         if versions.is_empty() {
             if spec.tls_vers_max >= VERSION_TLS13 && spec.tls_vers_min <= VERSION_TLS13 {
                 versions.push(VERSION_TLS13);
@@ -78,7 +74,6 @@ impl ProfileClientHelloParams {
             }
         }
 
-        // 如果 spec 没给 curves/keyshare，用 rustls 常见顺序兜底（按我们库里常量）
         if kx_group_ids.is_empty() {
             kx_group_ids = vec![
                 supported_groups::X25519,
@@ -92,5 +87,87 @@ impl ProfileClientHelloParams {
             kx_group_ids,
             versions,
         }
+    }
+}
+
+/// 从 `ClientHelloSpec` 计算“期望的扩展顺序”（以 u16 表示）。
+///
+/// - 去重：同一扩展类型只保留第一次出现
+/// - GREASE：把重复的 GREASE 占位符映射成不同的 GREASE 值
+fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
+    let mut out: Vec<u16> = Vec::with_capacity(spec.extensions.len());
+    let mut grease_cursor = 0usize;
+
+    for ext in &spec.extensions {
+        let mut id = ext.extension_id();
+
+        if is_grease_value(id) {
+            for _ in 0..TLS_GREASE_VALUES.len() {
+                let candidate = TLS_GREASE_VALUES[grease_cursor % TLS_GREASE_VALUES.len()];
+                grease_cursor += 1;
+                if !out.contains(&candidate) {
+                    id = candidate;
+                    break;
+                }
+            }
+        }
+
+        if !out.contains(&id) {
+            out.push(id);
+        }
+    }
+
+    out
+}
+
+/// 将 rustls 当前 `used` 的扩展顺序，按 `desired`（来自 spec）重排。
+fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<ExtensionType> {
+    let mut out: Vec<ExtensionType> = Vec::with_capacity(used.len());
+
+    for id in desired {
+        let ty = ExtensionType::from(*id);
+        if used.contains(&ty) && !out.contains(&ty) {
+            out.push(ty);
+        }
+    }
+
+    for ty in used {
+        if !out.contains(&ty) {
+            out.push(ty);
+        }
+    }
+
+    out
+}
+
+/// 基于 `ClientProfile` 的 ClientHello 扩展顺序定制器。
+#[derive(Debug)]
+pub struct ProfileClientHelloCustomizer {
+    desired_extension_ids: Vec<u16>,
+}
+
+impl ProfileClientHelloCustomizer {
+    pub fn try_from_profile(profile: &ClientProfile) -> Option<Self> {
+        let spec = profile.get_client_hello_spec().ok()?;
+        Some(Self {
+            desired_extension_ids: desired_extension_ids_from_spec(&spec),
+        })
+    }
+
+    pub fn into_arc(self) -> Arc<Self> {
+        Arc::new(self)
+    }
+}
+
+impl ClientHelloCustomizer for ProfileClientHelloCustomizer {
+    fn customize_client_hello(
+        &self,
+        _ctx: ClientHelloContext<'_>,
+        hello: &mut ClientHello<'_>,
+    ) -> Result<(), rustls::Error> {
+        let used = hello.extension_encoding_order();
+        let order = reorder_used_extensions(used, &self.desired_extension_ids);
+        hello.set_extension_encoding_order(order)?;
+        Ok(())
     }
 }

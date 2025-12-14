@@ -13,7 +13,7 @@ use std::sync::Arc;
 use crate::ClientProfile;
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-use super::rustls_client_hello_customizer::ProfileClientHelloParams;
+use super::rustls_client_hello_customizer::{ProfileClientHelloCustomizer, ProfileClientHelloParams};
 
 /// 构建 rustls 根证书存储（Mozilla roots）
 pub fn build_root_store() -> rustls::RootCertStore {
@@ -132,6 +132,14 @@ pub fn build_client_config(
 
     cfg.alpn_protocols = alpn_protocols;
     apply_verify_tls(&mut cfg, verify_tls);
+
+    // 可选：按指纹 spec 重排 ClientHello 的扩展编码顺序（需要 rustls backport/fork）。
+    #[cfg(feature = "rustls-client-hello-customizer")]
+    if let Some(profile) = profile {
+        if let Some(customizer) = ProfileClientHelloCustomizer::try_from_profile(profile) {
+            cfg = cfg.with_client_hello_customizer(customizer.into_arc());
+        }
+    }
 
     cfg
 }
