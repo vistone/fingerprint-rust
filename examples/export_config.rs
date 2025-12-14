@@ -6,7 +6,7 @@
 //! 示例：
 //! cargo run --example export_config chrome_133 chrome_133.json
 
-use fingerprint::{mapped_tls_clients, export::export_config_json};
+use fingerprint::{export::export_config_json, mapped_tls_clients};
 use std::env;
 use std::fs;
 use std::io::Write;
@@ -25,14 +25,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     let profile_name = &args[1];
-    let output_file = if args.len() > 2 {
-        Some(&args[2])
-    } else {
-        None
-    };
+    let output_file = if args.len() > 2 { Some(&args[2]) } else { None };
 
     let profiles = mapped_tls_clients();
-    let profile = profiles.get(profile_name.as_str())
+    let profile = profiles
+        .get(profile_name.as_str())
         .ok_or_else(|| format!("Profile not found: {}", profile_name))?;
 
     let spec = profile.get_client_hello_spec()?;
@@ -41,7 +38,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     if let Some(path) = output_file {
         let mut file = fs::File::create(path)?;
         file.write_all(json.as_bytes())?;
-        println!("Exported configuration for '{}' to '{}'", profile_name, path);
+        println!(
+            "Exported configuration for '{}' to '{}'",
+            profile_name, path
+        );
     } else {
         println!("{}", json);
     }

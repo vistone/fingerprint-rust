@@ -46,7 +46,10 @@ pub use http_client::{
     HttpResponse, ProxyConfig, ProxyType, ReportFormat, ReportSection, SameSite, TlsConnector,
     ValidationReport,
 };
-pub use profiles::{mapped_tls_clients, ClientHelloID, ClientProfile};
+pub use profiles::{
+    chrome_103, chrome_133, default_client_profile, firefox_133, mapped_tls_clients, opera_91,
+    safari_16_0, ClientHelloID, ClientProfile,
+};
 pub use random::{
     get_random_fingerprint, get_random_fingerprint_by_browser,
     get_random_fingerprint_by_browser_with_os, get_random_fingerprint_with_os, FingerprintResult,

@@ -5,7 +5,7 @@
 use crate::tls_config::ClientHelloSpec;
 use crate::tls_extensions::*;
 // use crate::dicttls::extensions::*; // Unused
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 /// 导出的配置结构体
 #[derive(Serialize, Deserialize, Debug)]
@@ -43,12 +43,9 @@ pub enum ExportExtension {
     RenegotiationInfo(u8),
     ApplicationSettings(Vec<String>),
     CompressCertificate(Vec<u16>),
-    PreSharedKey, 
+    PreSharedKey,
     GREASE(u16),
-    Padding {
-        padding_len: usize,
-        will_pad: bool,
-    },
+    Padding { padding_len: usize, will_pad: bool },
     ECH(u16),
     Unknown(u16),
 }
@@ -66,96 +63,106 @@ impl From<&ClientHelloSpec> for ExportConfig {
             compression_methods: spec.compression_methods.clone(),
             tls_vers_min: spec.tls_vers_min,
             tls_vers_max: spec.tls_vers_max,
-            extensions: spec.extensions.iter().map(|ext| {
-                // 使用 as_any 进行向下转型
-                let any_ext = ext.as_any();
+            extensions: spec
+                .extensions
+                .iter()
+                .map(|ext| {
+                    // 使用 as_any 进行向下转型
+                    let any_ext = ext.as_any();
 
-                if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {
-                    return ExportExtension::GREASE(e.value);
-                }
-                
-                if let Some(_e) = any_ext.downcast_ref::<SNIExtension>() {
-                    return ExportExtension::SNI;
-                }
+                    if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {
+                        return ExportExtension::GREASE(e.value);
+                    }
 
-                if let Some(_e) = any_ext.downcast_ref::<StatusRequestExtension>() {
-                    return ExportExtension::StatusRequest;
-                }
+                    if let Some(_e) = any_ext.downcast_ref::<SNIExtension>() {
+                        return ExportExtension::SNI;
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<SupportedCurvesExtension>() {
-                    return ExportExtension::SupportedCurves(e.curves.clone());
-                }
+                    if let Some(_e) = any_ext.downcast_ref::<StatusRequestExtension>() {
+                        return ExportExtension::StatusRequest;
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<SupportedPointsExtension>() {
-                    return ExportExtension::SupportedPoints(e.supported_points.clone());
-                }
+                    if let Some(e) = any_ext.downcast_ref::<SupportedCurvesExtension>() {
+                        return ExportExtension::SupportedCurves(e.curves.clone());
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<SignatureAlgorithmsExtension>() {
-                    // SignatureScheme 是 u16
-                    return ExportExtension::SignatureAlgorithms(e.supported_signature_algorithms.clone());
-                }
+                    if let Some(e) = any_ext.downcast_ref::<SupportedPointsExtension>() {
+                        return ExportExtension::SupportedPoints(e.supported_points.clone());
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<ALPNExtension>() {
-                    return ExportExtension::ALPN(e.alpn_protocols.clone());
-                }
+                    if let Some(e) = any_ext.downcast_ref::<SignatureAlgorithmsExtension>() {
+                        // SignatureScheme 是 u16
+                        return ExportExtension::SignatureAlgorithms(
+                            e.supported_signature_algorithms.clone(),
+                        );
+                    }
 
-                if let Some(_e) = any_ext.downcast_ref::<ExtendedMasterSecretExtension>() {
-                    return ExportExtension::ExtendedMasterSecret;
-                }
+                    if let Some(e) = any_ext.downcast_ref::<ALPNExtension>() {
+                        return ExportExtension::ALPN(e.alpn_protocols.clone());
+                    }
 
-                if let Some(_e) = any_ext.downcast_ref::<SessionTicketExtension>() {
-                    return ExportExtension::SessionTicket;
-                }
+                    if let Some(_e) = any_ext.downcast_ref::<ExtendedMasterSecretExtension>() {
+                        return ExportExtension::ExtendedMasterSecret;
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<SupportedVersionsExtension>() {
-                    return ExportExtension::SupportedVersions(e.versions.clone());
-                }
+                    if let Some(_e) = any_ext.downcast_ref::<SessionTicketExtension>() {
+                        return ExportExtension::SessionTicket;
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<PSKKeyExchangeModesExtension>() {
-                    return ExportExtension::PSKKeyExchangeModes(e.modes.clone());
-                }
+                    if let Some(e) = any_ext.downcast_ref::<SupportedVersionsExtension>() {
+                        return ExportExtension::SupportedVersions(e.versions.clone());
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<KeyShareExtension>() {
-                    let shares = e.key_shares.iter().map(|ks| ExportKeyShare {
-                        group: ks.group,
-                        data_hex: hex::encode(&ks.data),
-                    }).collect();
-                    return ExportExtension::KeyShare(shares);
-                }
+                    if let Some(e) = any_ext.downcast_ref::<PSKKeyExchangeModesExtension>() {
+                        return ExportExtension::PSKKeyExchangeModes(e.modes.clone());
+                    }
 
-                if let Some(_e) = any_ext.downcast_ref::<SCTExtension>() {
-                    return ExportExtension::SCT;
-                }
+                    if let Some(e) = any_ext.downcast_ref::<KeyShareExtension>() {
+                        let shares = e
+                            .key_shares
+                            .iter()
+                            .map(|ks| ExportKeyShare {
+                                group: ks.group,
+                                data_hex: hex::encode(&ks.data),
+                            })
+                            .collect();
+                        return ExportExtension::KeyShare(shares);
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<RenegotiationInfoExtension>() {
-                    return ExportExtension::RenegotiationInfo(e.renegotiation);
-                }
+                    if let Some(_e) = any_ext.downcast_ref::<SCTExtension>() {
+                        return ExportExtension::SCT;
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<ApplicationSettingsExtensionNew>() {
-                    return ExportExtension::ApplicationSettings(e.supported_protocols.clone());
-                }
+                    if let Some(e) = any_ext.downcast_ref::<RenegotiationInfoExtension>() {
+                        return ExportExtension::RenegotiationInfo(e.renegotiation);
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<UtlsCompressCertExtension>() {
-                    return ExportExtension::CompressCertificate(e.algorithms.clone());
-                }
+                    if let Some(e) = any_ext.downcast_ref::<ApplicationSettingsExtensionNew>() {
+                        return ExportExtension::ApplicationSettings(e.supported_protocols.clone());
+                    }
 
-                if let Some(_e) = any_ext.downcast_ref::<UtlsPreSharedKeyExtension>() {
-                    return ExportExtension::PreSharedKey;
-                }
+                    if let Some(e) = any_ext.downcast_ref::<UtlsCompressCertExtension>() {
+                        return ExportExtension::CompressCertificate(e.algorithms.clone());
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<GREASEEncryptedClientHelloExtension>() {
-                    return ExportExtension::ECH(e.value);
-                }
+                    if let Some(_e) = any_ext.downcast_ref::<UtlsPreSharedKeyExtension>() {
+                        return ExportExtension::PreSharedKey;
+                    }
 
-                if let Some(e) = any_ext.downcast_ref::<UtlsPaddingExtension>() {
-                    return ExportExtension::Padding {
-                        padding_len: e.padding_len,
-                        will_pad: e.will_pad,
-                    };
-                }
+                    if let Some(e) = any_ext.downcast_ref::<GREASEEncryptedClientHelloExtension>() {
+                        return ExportExtension::ECH(e.value);
+                    }
 
-                ExportExtension::Unknown(ext.extension_id())
-            }).collect(),
+                    if let Some(e) = any_ext.downcast_ref::<UtlsPaddingExtension>() {
+                        return ExportExtension::Padding {
+                            padding_len: e.padding_len,
+                            will_pad: e.will_pad,
+                        };
+                    }
+
+                    ExportExtension::Unknown(ext.extension_id())
+                })
+                .collect(),
         }
     }
 }

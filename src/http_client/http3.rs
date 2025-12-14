@@ -6,7 +6,7 @@
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 
 #[cfg(feature = "http3")]
-use quinn::{ClientConfig, Endpoint};
+use quinn::{ClientConfig, Endpoint, TransportConfig};
 
 #[cfg(feature = "http3")]
 use tokio::runtime::Runtime;
@@ -37,7 +37,7 @@ async fn send_http3_request_async(
 ) -> Result<HttpResponse> {
     use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
     use std::sync::Arc;
-    use std::time::Instant;
+    use std::time::{Duration, Instant};
 
     let start = Instant::now();
 
@@ -59,7 +59,23 @@ async fn send_http3_request_async(
     // 设置 ALPN 协议为 h3
     tls_config.alpn_protocols = vec![b"h3".to_vec()];
 
-    let client_config = ClientConfig::new(Arc::new(tls_config));
+    let mut client_config = ClientConfig::new(Arc::new(tls_config));
+
+    // 优化传输配置以提升性能
+    let mut transport = TransportConfig::default();
+    transport.initial_rtt(Duration::from_millis(100));
+    transport.max_idle_timeout(Some(Duration::from_secs(60).try_into().unwrap()));
+    transport.keep_alive_interval(Some(Duration::from_secs(10)));
+
+    // 增大接收窗口以提升吞吐量
+    transport.stream_receive_window((1024 * 1024u32).into()); // 1MB
+    transport.receive_window((10 * 1024 * 1024u32).into()); // 10MB
+
+    // 允许更多并发流
+    transport.max_concurrent_bidi_streams(100u32.into());
+    transport.max_concurrent_uni_streams(100u32.into());
+
+    client_config.transport_config(Arc::new(transport));
 
     // 2. 创建 QUIC endpoint
     let mut endpoint = Endpoint::client(SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0))
@@ -87,10 +103,11 @@ async fn send_http3_request_async(
         .await
         .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/3 连接失败: {}", e)))?;
 
-    // 在后台驱动连接 (注意：旧版本的 h3 可能不需要主动 await driver)
+    // 在后台驱动连接 - 关键修复！driver 必须持续运行
     tokio::spawn(async move {
-        // 对于某些版本的 h3，driver 不需要显式驱动
-        // 保留这个结构用于未来版本
+        // 让 driver 在后台持续运行以处理 QUIC 连接
+        // 不要提前 drop，让它自然运行直到连接关闭
+        tokio::time::sleep(Duration::from_secs(300)).await; // 5分钟超时
         drop(driver);
     });
 
@@ -188,6 +205,7 @@ pub fn send_http3_request(
 
 #[cfg(all(test, feature = "http3"))]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

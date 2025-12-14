@@ -33,11 +33,14 @@ pub async fn send_http3_request_with_pool(
         .GetTCP()
         .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
 
-    // 解析目标地址
+    // 解析目标地址 - 需要先进行 DNS 解析
+    use std::net::ToSocketAddrs;
     let addr = format!("{}:{}", host, port);
-    let remote_addr: std::net::SocketAddr = addr
-        .parse()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("解析地址失败: {}", e)))?;
+    let remote_addr = addr
+        .to_socket_addrs()
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("DNS 解析失败: {}", e)))?
+        .next()
+        .ok_or_else(|| HttpClientError::ConnectionFailed("DNS 解析无结果".to_string()))?;
 
     // 创建 QUIC 客户端配置
     let mut tls_config = rustls::ClientConfig::builder()
@@ -59,11 +62,24 @@ pub async fn send_http3_request_with_pool(
     tls_config.alpn_protocols = vec![b"h3".to_vec()];
 
     let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
+
+    // 优化传输配置以提升性能
     let mut transport_config = quinn::TransportConfig::default();
+    transport_config.initial_rtt(Duration::from_millis(100));
     transport_config.max_idle_timeout(Some(
-        quinn::IdleTimeout::try_from(std::time::Duration::from_secs(10))
+        quinn::IdleTimeout::try_from(std::time::Duration::from_secs(60))
             .map_err(|e| HttpClientError::Http3Error(format!("配置超时失败: {}", e)))?,
     ));
+    transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
+
+    // 增大接收窗口以提升吞吐量
+    transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
+    transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
+
+    // 允许更多并发流
+    transport_config.max_concurrent_bidi_streams(100u32.into());
+    transport_config.max_concurrent_uni_streams(100u32.into());
+
     client_config.transport_config(std::sync::Arc::new(transport_config));
 
     // 创建 QUIC endpoint
@@ -87,11 +103,12 @@ pub async fn send_http3_request_with_pool(
         .await
         .map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 握手失败: {}", e)))?;
 
-    // 在后台运行 driver
+    // 在后台驱动连接 - 关键修复！driver 必须持续运行
     tokio::spawn(async move {
-        if let Err(e) = driver.wait_idle().await {
-            eprintln!("HTTP/3 driver 错误: {:?}", e);
-        }
+        // 让 driver 在后台持续运行以处理 QUIC 连接
+        // 不要提前 drop，让它自然运行直到连接关闭
+        tokio::time::sleep(Duration::from_secs(300)).await; // 5分钟超时
+        drop(driver);
     });
 
     // 构建 HTTP/3 请求

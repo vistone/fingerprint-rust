@@ -211,12 +211,12 @@ mod tests {
 
         match send_http2_request("www.google.com", 443, "/", &request, &config) {
             Ok(response) => {
-                 // Google 可能会重定向或者返回 200
-                 println!("Status: {}", response.status_code);
-                 println!("Version: {}", response.http_version);
+                // Google 可能会重定向或者返回 200
+                println!("Status: {}", response.status_code);
+                println!("Version: {}", response.http_version);
             }
             Err(e) => {
-                 println!("⚠️  HTTP/2 Request failed: {}", e);
+                println!("⚠️  HTTP/2 Request failed: {}", e);
             }
         }
     }

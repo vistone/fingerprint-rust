@@ -61,9 +61,9 @@ mod tests {
         let response = send_http1_request("example.com", 80, "/", &request, &config).unwrap();
 
         if response.status_code == 200 {
-             assert!(response.is_success());
+            assert!(response.is_success());
         } else {
-             println!("⚠️  Server returned {}", response.status_code);
+            println!("⚠️  Server returned {}", response.status_code);
         }
     }
 }
