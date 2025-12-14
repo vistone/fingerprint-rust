@@ -25,3 +25,11 @@ target/
 
 # Test artifacts
 *.log
+
+# Validation reports (temporary)
+validation_report_*.txt
+docs/reports/validation_report_*.txt
+
+# Core dump files
+core
+core.*
