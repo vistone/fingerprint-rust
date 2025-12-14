@@ -200,10 +200,10 @@ impl HttpClient {
         // 简单的 URL 解析
         let url = url.trim();
 
-        let (scheme, rest) = if url.starts_with("https://") {
-            ("https", &url[8..])
-        } else if url.starts_with("http://") {
-            ("http", &url[7..])
+        let (scheme, rest) = if let Some(stripped) = url.strip_prefix("https://") {
+            ("https", stripped)
+        } else if let Some(stripped) = url.strip_prefix("http://") {
+            ("http", stripped)
         } else {
             return Err(HttpClientError::InvalidUrl("缺少协议".to_string()));
         };

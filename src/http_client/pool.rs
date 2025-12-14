@@ -26,10 +26,24 @@ pub struct ConnectionPoolManager {
     config: PoolManagerConfig,
 }
 
+#[cfg(feature = "connection-pool")]
+impl Default for ConnectionPoolManager {
+    fn default() -> Self {
+        Self::new(PoolManagerConfig::default())
+    }
+}
+
 /// 连接池管理器（无连接池功能时的占位）
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
     config: PoolManagerConfig,
+}
+
+#[cfg(not(feature = "connection-pool"))]
+impl Default for ConnectionPoolManager {
+    fn default() -> Self {
+        Self::new(PoolManagerConfig::default())
+    }
 }
 
 /// 连接池管理器配置
@@ -77,10 +91,6 @@ impl ConnectionPoolManager {
         Self { config }
     }
 
-    /// 创建默认管理器
-    pub fn default() -> Self {
-        Self::new(PoolManagerConfig::default())
-    }
 
     /// 获取或创建连接池
     #[cfg(feature = "connection-pool")]
@@ -114,7 +124,6 @@ impl ConnectionPoolManager {
     #[cfg(feature = "connection-pool")]
     fn create_pool_config(&self, host: &str, port: u16) -> PoolConfig {
         let host = host.to_string();
-        let port = port;
 
         PoolConfig {
             Mode: netconnpool::PoolMode::Client,
