@@ -84,32 +84,59 @@ impl ClientHelloMessage {
     }
 
     /// 序列化扩展
-    fn serialize_extensions(extensions: &[Box<dyn TLSExtension>], _server_name: &str) -> Vec<u8> {
+    fn serialize_extensions(extensions: &[Box<dyn TLSExtension>], server_name: &str) -> Vec<u8> {
         let mut ext_bytes = Vec::new();
+        let mut has_sni = false;
 
         for ext in extensions {
-            // 获取扩展长度
-            let ext_len = ext.len();
-            if ext_len == 0 {
+            let ext_id = ext.extension_id();
+            
+            // 如果是 SNI 扩展（ID == 0），我们需要特殊处理
+            if ext_id == 0 {
+                // 跳过重复的 SNI 扩展
+                if has_sni {
+                    continue;
+                }
+                has_sni = true;
+                
+                // 动态构建 SNI 扩展数据
+                let sni_data = Self::build_sni_extension(server_name);
+                
+                // 扩展格式: ID (2 bytes) + Length (2 bytes) + Data
+                ext_bytes.extend_from_slice(&ext_id.to_be_bytes());
+                ext_bytes.extend_from_slice(&(sni_data.len() as u16).to_be_bytes());
+                ext_bytes.extend_from_slice(&sni_data);
                 continue;
             }
 
-            // 读取扩展数据
+            // 其他扩展：正常序列化
+            let ext_len = ext.len();
+            if ext_len == 0 {
+                // 空扩展也需要写入 ID 和长度
+                ext_bytes.extend_from_slice(&ext_id.to_be_bytes());
+                ext_bytes.extend_from_slice(&0u16.to_be_bytes());
+                continue;
+            }
+
+            // 读取扩展数据（包含 ID 和长度）
             let mut ext_data = vec![0u8; ext_len];
             if ext.read(&mut ext_data).is_ok() {
                 ext_bytes.extend_from_slice(&ext_data);
             }
         }
 
-        // 如果有 SNI 扩展（检查是否有 extension_id == 0）
-        // 确保 SNI 扩展包含正确的服务器名称
-        // 注意：实际上扩展已经包含了完整的数据，这里只是验证
+        // 如果没有 SNI 扩展，添加一个
+        if !has_sni && !server_name.is_empty() {
+            let sni_data = Self::build_sni_extension(server_name);
+            ext_bytes.extend_from_slice(&0u16.to_be_bytes()); // SNI extension ID
+            ext_bytes.extend_from_slice(&(sni_data.len() as u16).to_be_bytes());
+            ext_bytes.extend_from_slice(&sni_data);
+        }
 
         ext_bytes
     }
 
-    /// 构建 SNI 扩展数据
-    #[allow(dead_code)]
+    /// 构建 SNI 扩展数据（不包含扩展 ID 和长度字段）
     fn build_sni_extension(server_name: &str) -> Vec<u8> {
         let mut data = Vec::new();
 
