@@ -9,6 +9,75 @@ use std::net::TcpStream;
 #[allow(unused_imports)]
 use std::sync::Arc;
 
+#[cfg(all(feature = "rustls-tls", not(feature = "native-tls-impl")))]
+fn build_rustls_config(verify_tls: bool) -> rustls::ClientConfig {
+    use rustls::{ClientConfig, RootCertStore};
+
+    // 构建根证书存储
+    let mut root_store = RootCertStore::empty();
+    root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
+        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
+            ta.subject,
+            ta.spki,
+            ta.name_constraints,
+        )
+    }));
+
+    let mut cfg = ClientConfig::builder()
+        .with_safe_defaults()
+        .with_root_certificates(root_store)
+        .with_no_client_auth();
+
+    // 若用户显式关闭校验，则安装一个“接受所有证书”的 verifier
+    // ⚠️ 这会显著降低安全性，仅用于抓包/调试/内网场景。
+    if !verify_tls {
+        use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
+        use rustls::{Certificate, Error as RustlsError, ServerName};
+        use std::time::SystemTime;
+
+        #[derive(Debug)]
+        struct NoCertificateVerification;
+
+        impl ServerCertVerifier for NoCertificateVerification {
+            fn verify_server_cert(
+                &self,
+                _end_entity: &Certificate,
+                _intermediates: &[Certificate],
+                _server_name: &ServerName,
+                _scts: &mut dyn Iterator<Item = &[u8]>,
+                _ocsp_response: &[u8],
+                _now: SystemTime,
+            ) -> std::result::Result<ServerCertVerified, RustlsError> {
+                Ok(ServerCertVerified::assertion())
+            }
+
+            fn verify_tls12_signature(
+                &self,
+                _message: &[u8],
+                _cert: &Certificate,
+                _dss: &rustls::DigitallySignedStruct,
+            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
+                Ok(HandshakeSignatureValid::assertion())
+            }
+
+            fn verify_tls13_signature(
+                &self,
+                _message: &[u8],
+                _cert: &Certificate,
+                _dss: &rustls::DigitallySignedStruct,
+            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
+                Ok(HandshakeSignatureValid::assertion())
+            }
+        }
+
+        // rustls 0.21 的危险接口
+        cfg.dangerous()
+            .set_certificate_verifier(Arc::new(NoCertificateVerification));
+    }
+
+    cfg
+}
+
 /// TLS 连接器
 ///
 /// 当前使用 native-tls，将来可替换为自定义 TLS 实现
@@ -58,37 +127,23 @@ pub fn send_https_request(
     #[cfg(all(feature = "rustls-tls", not(feature = "native-tls-impl")))]
     {
         use rustls::client::ServerName;
-        use rustls::{ClientConfig, ClientConnection, RootCertStore};
         use std::sync::Arc;
 
-        // 构建根证书存储
-        let mut root_store = RootCertStore::empty();
-        root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-            rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-                ta.subject,
-                ta.spki,
-                ta.name_constraints,
-            )
-        }));
-
-        // 构建 TLS 配置
-        let tls_config = ClientConfig::builder()
-            .with_safe_defaults()
-            .with_root_certificates(root_store)
-            .with_no_client_auth();
+        // 构建 TLS 配置（尊重 verify_tls）
+        let tls_config = build_rustls_config(config.verify_tls);
 
         let server_name = ServerName::try_from(host)
             .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
 
-        let conn = ClientConnection::new(Arc::new(tls_config), server_name)
+        let conn = rustls::ClientConnection::new(Arc::new(tls_config), server_name)
             .map_err(|e| HttpClientError::TlsError(format!("TLS 连接创建失败: {}", e)))?;
 
         let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
         // 发送 HTTP 请求
-        let http_request = request.build_http1_request(host, path);
+        let http_request = request.build_http1_request_bytes(host, path);
         tls_stream
-            .write_all(http_request.as_bytes())
+            .write_all(&http_request)
             .map_err(HttpClientError::Io)?;
         tls_stream.flush().map_err(HttpClientError::Io)?;
 

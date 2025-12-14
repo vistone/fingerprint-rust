@@ -8,6 +8,7 @@ const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 const TEST_ROUNDS: usize = 10; // 每个协议测试10次
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct PerformanceMetrics {
     protocol: String,
     total_time_ms: Vec<u64>,

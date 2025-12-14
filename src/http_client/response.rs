@@ -6,6 +6,7 @@
 //! - 完整的 HTTP/1.1 响应解析
 
 use std::collections::HashMap;
+#[cfg(feature = "compression")]
 use std::io::Read;
 
 /// HTTP 响应
@@ -202,25 +203,47 @@ impl HttpResponse {
 
     /// 解压 gzip
     fn decompress_gzip(data: &[u8]) -> Result<Vec<u8>, String> {
+        #[cfg(not(feature = "compression"))]
+        {
+            let _ = data;
+            return Err("gzip 解压需要启用 feature: compression".to_string());
+        }
+
+        #[cfg(feature = "compression")]
         use flate2::read::GzDecoder;
 
+        #[cfg(feature = "compression")]
         let mut decoder = GzDecoder::new(data);
+        #[cfg(feature = "compression")]
         let mut result = Vec::new();
+        #[cfg(feature = "compression")]
         decoder
             .read_to_end(&mut result)
             .map_err(|e| format!("gzip 解压失败: {}", e))?;
+        #[cfg(feature = "compression")]
         Ok(result)
     }
 
     /// 解压 deflate
     fn decompress_deflate(data: &[u8]) -> Result<Vec<u8>, String> {
+        #[cfg(not(feature = "compression"))]
+        {
+            let _ = data;
+            return Err("deflate 解压需要启用 feature: compression".to_string());
+        }
+
+        #[cfg(feature = "compression")]
         use flate2::read::DeflateDecoder;
 
+        #[cfg(feature = "compression")]
         let mut decoder = DeflateDecoder::new(data);
+        #[cfg(feature = "compression")]
         let mut result = Vec::new();
+        #[cfg(feature = "compression")]
         decoder
             .read_to_end(&mut result)
             .map_err(|e| format!("deflate 解压失败: {}", e))?;
+        #[cfg(feature = "compression")]
         Ok(result)
     }
 
@@ -250,8 +273,11 @@ impl HttpResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(feature = "compression")]
     use flate2::write::GzEncoder;
+    #[cfg(feature = "compression")]
     use flate2::Compression;
+    #[cfg(feature = "compression")]
     use std::io::Write;
 
     #[test]
@@ -310,6 +336,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "compression")]
     fn test_gzip_compression() {
         let data = "Hello Gzip World";
         let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
@@ -327,6 +354,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "compression")]
     fn test_chunked_and_gzip() {
         let data = "Hello Chunked Gzip World";
         let mut encoder = GzEncoder::new(Vec::new(), Compression::default());

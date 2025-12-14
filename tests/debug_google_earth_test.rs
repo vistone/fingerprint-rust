@@ -36,7 +36,7 @@ fn test_http1_with_debug() {
             println!("  Body 大小: {} bytes", response.body.len());
 
             // 打印前 200 字节的 body
-            if response.body.len() > 0 {
+            if !response.body.is_empty() {
                 let preview_len = response.body.len().min(200);
                 println!("  Body 预览: {:?}", &response.body[..preview_len]);
             }

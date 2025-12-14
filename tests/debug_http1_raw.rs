@@ -35,7 +35,7 @@ fn test_raw_http1_request() {
     println!("设置 ALPN: http/1.1");
 
     let server_name = ServerName::try_from("kh.google.com").unwrap();
-    let mut conn = ClientConnection::new(Arc::new(tls_config), server_name).unwrap();
+    let conn = ClientConnection::new(Arc::new(tls_config), server_name).unwrap();
 
     let mut tls_stream = rustls::StreamOwned::new(conn, tcp);
     println!("✅ TLS 握手开始");
@@ -99,7 +99,7 @@ fn test_with_chunked_reading() {
 
     println!("\n═══ HTTP/1.1 分块读取测试 ═══\n");
 
-    let mut tcp = TcpStream::connect("kh.google.com:443").expect("TCP 连接失败");
+    let tcp = TcpStream::connect("kh.google.com:443").expect("TCP 连接失败");
     tcp.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
     tcp.set_write_timeout(Some(Duration::from_secs(10)))
         .unwrap();

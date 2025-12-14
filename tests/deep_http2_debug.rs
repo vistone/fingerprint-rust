@@ -7,7 +7,6 @@
 async fn test_http2_handshake_only() {
     use rustls::{ClientConfig, RootCertStore, ServerName};
     use std::sync::Arc;
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpStream;
     use tokio_rustls::TlsConnector;
 
@@ -38,7 +37,7 @@ async fn test_http2_handshake_only() {
     let connector = TlsConnector::from(Arc::new(tls_config));
     let server_name = ServerName::try_from("kh.google.com").unwrap();
 
-    let mut tls_stream = connector
+    let tls_stream = connector
         .connect(server_name, tcp)
         .await
         .expect("TLS 握手失败");
@@ -126,7 +125,7 @@ async fn test_http2_handshake_only() {
 
             println!("✅ Body 总大小: {} bytes", body_data.len());
 
-            assert!(body_data.len() > 0, "Body 不应该为空");
+            assert!(!body_data.is_empty(), "Body 不应该为空");
         }
         Err(e) => {
             println!("❌ 接收响应失败: {:?}", e);

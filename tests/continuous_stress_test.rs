@@ -206,10 +206,10 @@ fn test_continuous_all_protocols_marathon() {
                 let client = HttpClient::new(config);
                 let start = Instant::now();
 
-                let stats = match protocol_name {
-                    &"HTTP/1.1" => &mut h1_stats,
-                    &"HTTP/2" => &mut h2_stats,
-                    &"HTTP/3" => &mut h3_stats,
+                let stats = match *protocol_name {
+                    "HTTP/1.1" => &mut h1_stats,
+                    "HTTP/2" => &mut h2_stats,
+                    "HTTP/3" => &mut h3_stats,
                     _ => unreachable!(),
                 };
 

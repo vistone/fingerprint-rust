@@ -1,6 +1,8 @@
 //! 简单的 Google Earth API 测试（使用 reqwest）
 //! 用来验证端点是否可访问
 
+#![cfg(feature = "async")]
+
 #[tokio::test]
 #[ignore]
 async fn test_with_reqwest() {

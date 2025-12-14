@@ -18,7 +18,7 @@ sha2 = "0.10"
 thiserror = "2.0"
 
 # HTTP 客户端依赖 (可选)
-rustls = { version = "0.21", optional = true }
+rustls = { version = "0.21", optional = true, features = ["dangerous_configuration"] }
 webpki-roots = { version = "0.25", optional = true }
 native-tls = { version = "0.2", optional = true }
 flate2 = { version = "1.0", optional = true }  # gzip/deflate 解压

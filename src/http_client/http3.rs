@@ -59,6 +59,52 @@ async fn send_http3_request_async(
     // 设置 ALPN 协议为 h3
     tls_config.alpn_protocols = vec![b"h3".to_vec()];
 
+    // 尊重 verify_tls（仅用于调试/内网，生产建议始终为 true）
+    if !config.verify_tls {
+        use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
+        use rustls::{Certificate, Error as RustlsError, ServerName};
+        use std::time::SystemTime;
+
+        #[derive(Debug)]
+        struct NoCertificateVerification;
+
+        impl ServerCertVerifier for NoCertificateVerification {
+            fn verify_server_cert(
+                &self,
+                _end_entity: &Certificate,
+                _intermediates: &[Certificate],
+                _server_name: &ServerName,
+                _scts: &mut dyn Iterator<Item = &[u8]>,
+                _ocsp_response: &[u8],
+                _now: SystemTime,
+            ) -> std::result::Result<ServerCertVerified, RustlsError> {
+                Ok(ServerCertVerified::assertion())
+            }
+
+            fn verify_tls12_signature(
+                &self,
+                _message: &[u8],
+                _cert: &Certificate,
+                _dss: &rustls::DigitallySignedStruct,
+            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
+                Ok(HandshakeSignatureValid::assertion())
+            }
+
+            fn verify_tls13_signature(
+                &self,
+                _message: &[u8],
+                _cert: &Certificate,
+                _dss: &rustls::DigitallySignedStruct,
+            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
+                Ok(HandshakeSignatureValid::assertion())
+            }
+        }
+
+        tls_config
+            .dangerous()
+            .set_certificate_verifier(Arc::new(NoCertificateVerification));
+    }
+
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
     // 优化传输配置以提升性能
@@ -103,12 +149,10 @@ async fn send_http3_request_async(
         .await
         .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/3 连接失败: {}", e)))?;
 
-    // 在后台驱动连接 - 关键修复！driver 必须持续运行
+    // 在后台驱动连接：h3 0.0.4 的 driver 需要被持续 poll_close
     tokio::spawn(async move {
-        // 让 driver 在后台持续运行以处理 QUIC 连接
-        // 不要提前 drop，让它自然运行直到连接关闭
-        tokio::time::sleep(Duration::from_secs(300)).await; // 5分钟超时
-        drop(driver);
+        let mut driver = driver;
+        let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
     });
 
     // 6. 构建请求

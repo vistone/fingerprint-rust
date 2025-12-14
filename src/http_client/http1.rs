@@ -28,9 +28,9 @@ pub fn send_http1_request(
         .map_err(HttpClientError::Io)?;
 
     // 构建并发送 HTTP/1.1 请求
-    let http_request = request.build_http1_request(host, path);
+    let http_request = request.build_http1_request_bytes(host, path);
     stream
-        .write_all(http_request.as_bytes())
+        .write_all(&http_request)
         .map_err(HttpClientError::Io)?;
     stream.flush().map_err(HttpClientError::Io)?;
 

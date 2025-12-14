@@ -119,15 +119,13 @@ async fn test_http3_step_by_step() {
         }
     };
 
-    let (mut driver, mut send_request) = h3_conn;
+    let (driver, mut send_request) = h3_conn;
 
     // 在后台驱动连接 - 关键！
     // h3 的 driver 需要持续运行以处理底层 QUIC 连接
     let driver_handle = tokio::spawn(async move {
-        // 持续驱动直到连接关闭或出错
-        // 注意：不要主动 await driver，让它在后台运行
-        tokio::time::sleep(std::time::Duration::from_secs(60)).await;
-        drop(driver); // 60秒后清理
+        let mut driver = driver;
+        let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
     });
 
     // 4. 构建并发送请求
@@ -222,7 +220,7 @@ async fn test_http3_step_by_step() {
     driver_handle.abort();
 
     assert_eq!(resp.status(), 200);
-    assert!(body_data.len() > 0);
+    assert!(!body_data.is_empty());
 }
 
 #[cfg(not(feature = "http3"))]

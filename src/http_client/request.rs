@@ -86,6 +86,9 @@ impl HttpRequest {
     }
 
     /// 构建 HTTP/1.1 请求字符串
+    ///
+    /// 注意：该方法会把 body 当作 UTF-8 文本拼接到字符串中，**不适用于二进制 body**。
+    /// 如需发送二进制数据，请使用 `build_http1_request_bytes`。
     pub fn build_http1_request(&self, host: &str, path: &str) -> String {
         let mut request = format!("{} {} HTTP/1.1\r\n", self.method.as_str(), path);
 
@@ -105,7 +108,11 @@ impl HttpRequest {
         }
 
         // Connection: close (HTTP/1.1)
-        if !self.headers.contains_key("Connection") {
+        if !self
+            .headers
+            .keys()
+            .any(|k| k.eq_ignore_ascii_case("connection"))
+        {
             request.push_str("Connection: close\r\n");
         }
 
@@ -118,6 +125,50 @@ impl HttpRequest {
         }
 
         request
+    }
+
+    /// 构建 HTTP/1.1 请求字节（推荐）
+    ///
+    /// - **输入**：`host`（用于 Host 头）、`path`（请求路径，包含 query 也可）
+    /// - **输出**：完整的 HTTP/1.1 请求 bytes（headers + body）
+    ///
+    /// 相比 `build_http1_request`，该方法不会对 body 做 UTF-8 假设，适用于二进制 body。
+    pub fn build_http1_request_bytes(&self, host: &str, path: &str) -> Vec<u8> {
+        let mut head = format!("{} {} HTTP/1.1\r\n", self.method.as_str(), path);
+
+        // Host header (必需)
+        head.push_str(&format!("Host: {}\r\n", host));
+
+        // 添加其他 headers（排除 Host）
+        for (key, value) in &self.headers {
+            if !key.eq_ignore_ascii_case("host") {
+                head.push_str(&format!("{}: {}\r\n", key, value));
+            }
+        }
+
+        // Content-Length (如果有 body)
+        let body_len = self.body.as_ref().map(|b| b.len()).unwrap_or(0);
+        if body_len > 0 {
+            head.push_str(&format!("Content-Length: {}\r\n", body_len));
+        }
+
+        // Connection: close (默认)
+        if !self
+            .headers
+            .keys()
+            .any(|k| k.eq_ignore_ascii_case("connection"))
+        {
+            head.push_str("Connection: close\r\n");
+        }
+
+        // 结束 headers
+        head.push_str("\r\n");
+
+        let mut out = head.into_bytes();
+        if let Some(ref body) = self.body {
+            out.extend_from_slice(body);
+        }
+        out
     }
 }
 

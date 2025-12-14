@@ -146,7 +146,7 @@ async fn send_http2_request_async(
 async fn perform_tls_handshake(
     tcp: tokio::net::TcpStream,
     host: &str,
-    _config: &HttpClientConfig,
+    config: &HttpClientConfig,
 ) -> Result<tokio_rustls::client::TlsStream<tokio::net::TcpStream>> {
     use rustls::{ClientConfig, RootCertStore, ServerName};
     use std::sync::Arc;
@@ -169,6 +169,52 @@ async fn perform_tls_handshake(
 
     // 关键：设置 ALPN 协议为 h2，这是 HTTP/2 over TLS 所必需的
     tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+
+    // 尊重 verify_tls（仅用于调试/内网，生产建议始终为 true）
+    if !config.verify_tls {
+        use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
+        use rustls::{Certificate, Error as RustlsError, ServerName as RustlsServerName};
+        use std::time::SystemTime;
+
+        #[derive(Debug)]
+        struct NoCertificateVerification;
+
+        impl ServerCertVerifier for NoCertificateVerification {
+            fn verify_server_cert(
+                &self,
+                _end_entity: &Certificate,
+                _intermediates: &[Certificate],
+                _server_name: &RustlsServerName,
+                _scts: &mut dyn Iterator<Item = &[u8]>,
+                _ocsp_response: &[u8],
+                _now: SystemTime,
+            ) -> std::result::Result<ServerCertVerified, RustlsError> {
+                Ok(ServerCertVerified::assertion())
+            }
+
+            fn verify_tls12_signature(
+                &self,
+                _message: &[u8],
+                _cert: &Certificate,
+                _dss: &rustls::DigitallySignedStruct,
+            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
+                Ok(HandshakeSignatureValid::assertion())
+            }
+
+            fn verify_tls13_signature(
+                &self,
+                _message: &[u8],
+                _cert: &Certificate,
+                _dss: &rustls::DigitallySignedStruct,
+            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
+                Ok(HandshakeSignatureValid::assertion())
+            }
+        }
+
+        tls_config
+            .dangerous()
+            .set_certificate_verifier(Arc::new(NoCertificateVerification));
+    }
 
     let connector = TlsConnector::from(Arc::new(tls_config));
 

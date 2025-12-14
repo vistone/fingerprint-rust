@@ -79,8 +79,10 @@ fn test_example_com() {
 #[test]
 #[ignore]
 fn test_google_earth_simple() {
-    let mut headers = fingerprint::HTTPHeaders::default();
-    headers.accept = "*/*".to_string();
+    let headers = fingerprint::HTTPHeaders {
+        accept: "*/*".to_string(),
+        ..Default::default()
+    };
 
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36".to_string(),
@@ -99,7 +101,7 @@ fn test_google_earth_simple() {
                 println!("  {}: {}", k, v);
             }
             println!("Body 大小: {}", resp.body.len());
-            if resp.body.len() > 0 {
+            if !resp.body.is_empty() {
                 println!(
                     "Body (前 100 bytes): {:?}",
                     &resp.body[..resp.body.len().min(100)]

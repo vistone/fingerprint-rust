@@ -8,6 +8,7 @@ use std::time::Instant;
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 
 #[derive(Debug)]
+#[allow(dead_code)]
 struct ChainMetrics {
     /// 总耗时
     total_time_ms: u64,
@@ -42,7 +43,7 @@ impl ChainMetrics {
 }
 
 /// 测试单个请求的完整链路
-fn test_chain_single_request(label: &str, prefer_h2: bool, prefer_h3: bool) -> ChainMetrics {
+fn test_chain_single_request(_label: &str, prefer_h2: bool, prefer_h3: bool) -> ChainMetrics {
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36".to_string(),
         prefer_http2: prefer_h2,
