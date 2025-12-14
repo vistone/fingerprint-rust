@@ -26,7 +26,10 @@ jobs:
       - name: Install cargo-audit
         run: |
           if ! command -v cargo-audit &> /dev/null; then
-            cargo install cargo-audit --locked
+            # MSRV: 本仓库通过 rust-toolchain.toml 固定在 1.83.x。
+            # cargo-audit 新版本要求更高的 rustc（例如 0.22.0 需要 1.85+），
+            # 因此这里固定安装最后一个兼容低版本 rustc 的版本。
+            cargo install cargo-audit --locked --version 0.21.2
           fi
       
       - name: Run security audit
