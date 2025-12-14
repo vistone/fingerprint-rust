@@ -65,6 +65,7 @@ pub use tls_extensions::{
     UtlsCompressCertExtension, UtlsGREASEExtension, UtlsPaddingExtension,
     UtlsPreSharedKeyExtension,
 };
+pub use tls_handshake::TLSHandshakeBuilder;
 pub use types::{BrowserType, OperatingSystem, OperatingSystems};
 pub use useragent::{
     get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os, random_os,

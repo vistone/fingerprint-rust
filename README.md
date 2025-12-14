@@ -36,13 +36,20 @@
 
 ```toml
 [dependencies]
-fingerprint = { version = "1.0", features = ["http2", "http3", "compression"] }
+fingerprint = { version = "1.0", features = ["rustls-tls", "compression", "http2"] }
 ```
+
+**默认特性**：`rustls-tls`, `compression`, `http2`
+
+**可选特性**：
+- `http3` - HTTP/3 支持（需要 `http3` feature）
+- `connection-pool` - 连接池支持
+- `reporter` - 报告生成器
 
 ### 🎯 使用自定义 TLS 指纹（核心特性）
 
 ```rust
-use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
+use fingerprint::{mapped_tls_clients, TLSHandshakeBuilder};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. 获取浏览器配置
@@ -103,7 +110,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     println!("HTTP 版本: {}", response.http_version);
     println!("状态码: {}", response.status_code);
-    println!("Body: {}", response.body_as_string()?);
+    match response.body_as_string() {
+        Ok(body) => println!("Body: {}", body),
+        Err(e) => println!("Body 解析失败: {}", e),
+    }
     
     Ok(())
 }
@@ -161,17 +171,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### 运行测试
 
 ```bash
-# 运行所有测试
-cargo test
+# 运行库测试（推荐，不依赖 OpenSSL）
+cargo test --lib --features "rustls-tls,compression,http2"
 
-# 运行 HTTP/2 测试
-cargo test --features http2
+# 运行集成测试
+cargo test --test integration_test --features "rustls-tls,compression,http2"
 
-# 运行网络测试（需要网络连接）
-cargo test --features "http2,http3" -- --ignored
+# 运行所有测试（包括需要网络连接的测试）
+cargo test --features "rustls-tls,compression,http2" -- --ignored
 
-# 运行全面测试
-cargo test --features "http2,http3" test_all_browsers_all_protocols -- --nocapture --ignored
+# 运行特定测试
+cargo test --features "rustls-tls,compression,http2" test_name
 ```
 
 详细测试报告: [docs/FINAL_TEST_REPORT.md](docs/FINAL_TEST_REPORT.md)
@@ -229,15 +239,18 @@ cargo test --features "http2,http3" test_all_browsers_all_protocols -- --nocaptu
 
 ```toml
 [dependencies]
-fingerprint = { version = "1.0", features = ["http2", "http3", "compression"] }
+fingerprint = { version = "1.0", features = ["rustls-tls", "compression", "http2"] }
 ```
 
 ### 可用特性
 - `rustls-tls` (默认) - 使用 rustls 作为 TLS 实现
-- `native-tls` - 使用 native-tls
-- `compression` - 支持 gzip/deflate 压缩
-- `http2` - 启用 HTTP/2 支持
-- `http3` - 启用 HTTP/3 支持
+- `native-tls-impl` - 使用 native-tls（需要系统 OpenSSL）
+- `compression` (默认) - 支持 gzip/deflate 压缩
+- `http2` (默认) - 启用 HTTP/2 支持
+- `http3` - 启用 HTTP/3 支持（需要 `quinn`, `h3`, `h3-quinn`）
+- `async` - 异步运行时支持（需要 `tokio`）
+- `connection-pool` - 连接池支持（需要 `netconnpool`）
+- `reporter` - 报告生成器（需要 `chrono`）
 
 ---
 
@@ -251,21 +264,24 @@ fingerprint = { version = "1.0", features = ["http2", "http3", "compression"] }
 git clone https://github.com/vistone/fingerprint-rust.git
 cd fingerprint-rust
 
-# 运行测试
-cargo test --all-features
+# 运行测试（推荐，避免 OpenSSL 依赖问题）
+cargo test --lib --features "rustls-tls,compression,http2"
+cargo test --test integration_test --features "rustls-tls,compression,http2"
 
 # 格式化代码
 cargo fmt
 
 # 检查代码
-cargo clippy --all-features --all-targets
+cargo clippy --features "rustls-tls,compression,http2" --all-targets -- -D warnings
 ```
 
 ---
 
 ## 📜 许可证
 
-本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+本项目采用 BSD-3-Clause 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+原始代码来自 [vistone/fingerprint](https://github.com/vistone/fingerprint) (Go 版本)。
 
 ---
 
@@ -282,9 +298,9 @@ cargo clippy --all-features --all-targets
 
 ## 📊 项目状态
 
-**版本**: v1.0.0+  
+**版本**: v1.0.0  
 **状态**: ✅ 生产就绪  
-**最后更新**: 2025-12-13
+**最后更新**: 2024-12-14
 
 ### 完成情况
 - [x] 66 个浏览器指纹

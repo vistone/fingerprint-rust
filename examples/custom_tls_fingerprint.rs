@@ -3,7 +3,7 @@
 //! 演示如何使用我们自己的 TLS 指纹库生成 ClientHello
 //! 不依赖 rustls/native-tls
 
-use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
+use fingerprint::{mapped_tls_clients, TLSHandshakeBuilder};
 
 fn main() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
