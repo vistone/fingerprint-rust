@@ -281,6 +281,60 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
+        // 如果有连接池，优先使用连接池（HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1）
+        #[cfg(feature = "connection-pool")]
+        if let Some(pool_manager) = &self.pool_manager {
+            // HTTP/3 with pool（异步 -> 同步包装）
+            #[cfg(feature = "http3")]
+            if self.config.prefer_http3 {
+                let rt = tokio::runtime::Runtime::new().map_err(|e| {
+                    HttpClientError::ConnectionFailed(format!("创建运行时失败: {}", e))
+                })?;
+                return rt.block_on(async {
+                    http3_pool::send_http3_request_with_pool(
+                        host,
+                        port,
+                        path,
+                        request,
+                        &self.config,
+                        pool_manager,
+                    )
+                    .await
+                });
+            }
+
+            // HTTP/2 with pool（异步 -> 同步包装）
+            #[cfg(feature = "http2")]
+            if self.config.prefer_http2 {
+                let rt = tokio::runtime::Runtime::new().map_err(|e| {
+                    HttpClientError::ConnectionFailed(format!("创建运行时失败: {}", e))
+                })?;
+                // 注意：这里不做“自动降级”，因为 pool 场景我们更希望按用户偏好走指定协议
+                //（测试里也会严格验证版本）
+                return rt.block_on(async {
+                    http2_pool::send_http2_request_with_pool(
+                        host,
+                        port,
+                        path,
+                        request,
+                        &self.config,
+                        pool_manager,
+                    )
+                    .await
+                });
+            }
+
+            // HTTP/1.1 over TLS with pool
+            return tls::send_https_request_with_pool(
+                host,
+                port,
+                path,
+                request,
+                &self.config,
+                pool_manager,
+            );
+        }
+
         // 优先级：HTTP/3 > HTTP/2 > HTTP/1.1
 
         // 尝试 HTTP/3
