@@ -75,4 +75,4 @@ rustls-client-hello-customizer = ["rustls-tls"]
 # - 这里用 backport 的 commit SHA 覆盖 crates.io 的 rustls
 
 [patch.crates-io]
-rustls = { git = "https://github.com/vistone/rustls", rev = "e99b3d19b3f96bc7bdd126d7062adf41e95ab889" }
+rustls = { git = "https://github.com/vistone/rustls", rev = "c9390f5923a4adf6bb5a0a828e313e6f5d73e037" }

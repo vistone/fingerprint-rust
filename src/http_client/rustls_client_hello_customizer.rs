@@ -8,8 +8,6 @@
 //! - spec 里可能出现多个 GREASE 扩展（在真实浏览器中它们通常是不同的 GREASE 值）。
 //!   为避免“重复扩展类型”导致 rustls 拒绝，我们会把每个 GREASE 占位符映射成不同的 GREASE 值。
 
-#![cfg(feature = "rustls-client-hello-customizer")]
-
 use std::sync::Arc;
 
 use crate::tls_config::{is_grease_value, TLS_GREASE_VALUES};
