@@ -343,6 +343,12 @@ fn emit_client_hello_for_retry(
     transcript_buffer.add_message(&ch);
     cx.common.send_msg(ch, false);
 
+    // TLS 1.3 middlebox compatibility: send a dummy CCS after the initial ClientHello (Chrome-style).
+    // This is not used for QUIC.
+    if !cx.common.is_quic() && retryreq.is_none() && support_tls13 {
+        tls13::emit_fake_ccs(&mut input.sent_tls13_fake_ccs, cx.common);
+    }
+
     // Calculate the hash of ClientHello and use it to derive EarlyTrafficSecret
     let early_key_schedule = early_key_schedule.map(|(resuming_suite, schedule)| {
         if !cx.data.early_data.is_enabled() {

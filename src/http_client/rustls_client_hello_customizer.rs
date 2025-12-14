@@ -292,12 +292,6 @@ impl ClientHelloCustomizer for ProfileClientHelloCustomizer {
                 let _ = hello.push_raw_extension(ty, vec![0x00]);
                 continue;
             }
-
-            // GREASE ECH：0xfe0d，通常空载荷（作为 ECH grease 占位）
-            if ty.get_u16() == 0xfe0d {
-                let _ = hello.push_raw_extension(ty, Vec::new());
-                continue;
-            }
         }
 
         // 2) Padding：按 BoringPaddingStyle（uTLS/Chrome 风格）计算

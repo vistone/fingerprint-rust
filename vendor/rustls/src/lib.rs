@@ -626,6 +626,51 @@ pub mod client {
             }
         }
 
+        /// Read the payload of the `supported_versions` extension as u16 IDs.
+        pub fn supported_versions(&self) -> Option<Vec<u16>> {
+            use crate::msgs::handshake::ClientExtension;
+            let ext = self
+                .inner
+                .extensions
+                .iter()
+                .find(|e| e.get_type() == ExtensionType::SupportedVersions)?;
+            match ext {
+                ClientExtension::SupportedVersions(v) => {
+                    Some(v.iter().map(|pv| pv.get_u16()).collect())
+                }
+                _ => None,
+            }
+        }
+
+        /// Set the payload of the `supported_versions` extension.
+        ///
+        /// `versions` are IANA ProtocolVersion IDs (u16). Unknown values are allowed.
+        pub fn set_supported_versions(&mut self, versions: Vec<u16>) -> Result<(), crate::Error> {
+            use crate::enums::ProtocolVersion;
+            use crate::msgs::handshake::ClientExtension;
+
+            let Some(ext) = self
+                .inner
+                .extensions
+                .iter_mut()
+                .find(|e| e.get_type() == ExtensionType::SupportedVersions)
+            else {
+                return Err(crate::Error::General(
+                    "ClientHello missing supported_versions extension".into(),
+                ));
+            };
+
+            match ext {
+                ClientExtension::SupportedVersions(ref mut v) => {
+                    *v = versions.into_iter().map(ProtocolVersion::from).collect();
+                    Ok(())
+                }
+                _ => Err(crate::Error::General(
+                    "unexpected supported_versions extension variant".into(),
+                )),
+            }
+        }
+
         /// Override the order in which ClientHello extensions are encoded.
         ///
         /// The provided `order` must:

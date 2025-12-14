@@ -3,7 +3,7 @@
 //! 测试 https://kh.google.com/rt/earth/PlanetoidMetadata
 //! 验证 HTTP/1.1、HTTP/2、HTTP/3 都能正常工作
 
-use fingerprint::{get_user_agent_by_profile_name, HttpClient, HttpClientConfig};
+use fingerprint::{chrome_133, get_user_agent_by_profile_name, HttpClient, HttpClientConfig};
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 #[cfg(feature = "connection-pool")]
@@ -26,6 +26,7 @@ fn test_google_earth_http1() {
 
     let config = HttpClientConfig {
         user_agent,
+        profile: Some(chrome_133()),
         prefer_http2: false,
         prefer_http3: false,
         ..Default::default()
@@ -79,6 +80,7 @@ fn test_google_earth_http2() {
 
     let config = HttpClientConfig {
         user_agent,
+        profile: Some(chrome_133()),
         prefer_http2: true,
         prefer_http3: false,
         ..Default::default()
@@ -134,6 +136,7 @@ fn test_google_earth_http3() {
 
     let config = HttpClientConfig {
         user_agent,
+        profile: Some(chrome_133()),
         prefer_http2: false,
         prefer_http3: true,
         ..Default::default()
@@ -191,6 +194,7 @@ fn test_google_earth_http1_with_pool() {
 
     let config = HttpClientConfig {
         user_agent,
+        profile: Some(chrome_133()),
         prefer_http2: false,
         prefer_http3: false,
         ..Default::default()
@@ -256,6 +260,7 @@ async fn test_google_earth_http2_with_pool() {
 
     let config = HttpClientConfig {
         user_agent,
+        profile: Some(chrome_133()),
         prefer_http2: true,
         ..Default::default()
     };
@@ -312,6 +317,7 @@ async fn test_google_earth_http3_with_pool() {
 
     let config = HttpClientConfig {
         user_agent,
+        profile: Some(chrome_133()),
         prefer_http3: true,
         ..Default::default()
     };
@@ -368,6 +374,7 @@ fn test_google_earth_all_protocols() {
     println!("🔹 测试 1/3: HTTP/1.1");
     let config_h1 = HttpClientConfig {
         user_agent: user_agent.clone(),
+        profile: Some(chrome_133()),
         prefer_http2: false,
         prefer_http3: false,
         ..Default::default()
@@ -394,6 +401,7 @@ fn test_google_earth_all_protocols() {
         println!("\n🔹 测试 2/3: HTTP/2");
         let config_h2 = HttpClientConfig {
             user_agent: user_agent.clone(),
+            profile: Some(chrome_133()),
             prefer_http2: true,
             prefer_http3: false,
             ..Default::default()
@@ -421,6 +429,7 @@ fn test_google_earth_all_protocols() {
         println!("\n🔹 测试 3/3: HTTP/3");
         let config_h3 = HttpClientConfig {
             user_agent,
+            profile: Some(chrome_133()),
             prefer_http2: false,
             prefer_http3: true,
             ..Default::default()
