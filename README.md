@@ -13,10 +13,25 @@
 
 一个独立的浏览器 TLS 指纹库，从 [golang 版本](https://github.com/vistone/fingerprint) 迁移而来。
 
+## ⚠️ 重要说明
+
+**本库是 TLS 配置生成库，而非 TLS 客户端实现！**
+
+- ✅ 提供 66 个浏览器的精确 TLS ClientHello 配置
+- ✅ 生成匹配的 User-Agent 和 HTTP Headers  
+- ❌ 不包含实际的 TLS 握手实现
+
+**要应用 TLS 指纹配置，需要配合：**
+- Go 的 [uTLS](https://github.com/refraction-networking/utls)
+- Python 的 [curl_cffi](https://github.com/yifeikong/curl_cffi)
+- 或其他支持自定义 ClientHello 的 TLS 客户端
+
+详见：[TLS 指纹限制说明](docs/TLS_FINGERPRINT_LIMITATION.md)
+
 ## 特性
 
-- ✅ **真实浏览器指纹**：66 个真实浏览器指纹（Chrome、Firefox、Safari、Opera）
-- ✅ **真实 TLS 配置**：完整的 TLS Client Hello Spec（密码套件、椭圆曲线、扩展等）
+- ✅ **真实浏览器指纹配置**：66 个真实浏览器 TLS 配置（Chrome、Firefox、Safari、Opera）
+- ✅ **完整 TLS ClientHello Spec**：密码套件、椭圆曲线、扩展、GREASE 等
 - ✅ **JA4 指纹生成**：完整的 JA4 TLS 客户端指纹生成（sorted 和 unsorted 版本）
 - ✅ **指纹比较**：支持指纹相似度比较和最佳匹配查找
 - ✅ **GREASE 处理**：完整的 GREASE 值过滤和处理
@@ -45,6 +60,21 @@ fingerprint = { path = "." }
 [dependencies]
 fingerprint = "1.0.0"
 ```
+
+## 使用场景
+
+### ✅ 适合的使用场景
+
+1. **生成浏览器指纹配置**：获取准确的 TLS ClientHello 配置
+2. **HTTP 层面伪装**：User-Agent、Headers、HTTP/2 Settings
+3. **指纹分析**：JA4 生成、指纹比较、相似度计算
+4. **配合其他工具**：导出配置给 Go uTLS、Python curl_cffi 使用
+
+### ❌ 不适合的使用场景
+
+1. **直接进行 TLS 连接**：本库不包含 TLS 客户端实现
+2. **开箱即用的反检测**：需要配合支持自定义 ClientHello 的 TLS 库
+3. **独立使用绕过 TLS 指纹检测**：需要实际的 TLS 握手支持
 
 ## 快速开始
 
