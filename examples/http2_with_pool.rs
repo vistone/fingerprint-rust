@@ -3,7 +3,13 @@
 //! 演示如何使用 netconnpool 管理 HTTP/2 连接
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
-use fingerprint::{get_user_agent_by_profile_name, HttpClient, HttpClientConfig};
+use fingerprint::{get_user_agent_by_profile_name, HttpClientConfig};
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
+use fingerprint::http_client::{http2_pool, ConnectionPoolManager, PoolManagerConfig};
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
+use fingerprint::{HttpRequest, HttpMethod};
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
+use std::sync::Arc;
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 #[tokio::main]
@@ -23,13 +29,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         ..Default::default()
     };
 
-    // 3. 创建带连接池的客户端
-    let client = HttpClient::with_pool(
-        config,
-        fingerprint::http_client::PoolManagerConfig::default(),
-    );
+    // 3. 创建连接池管理器
+    let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
 
-    println!("✅ HTTP 客户端已创建（启用 HTTP/2 + 连接池）\n");
+    println!("✅ 连接池管理器已创建\n");
 
     // 4. 发送多个请求到同一主机（应该复用连接）
     let urls = [
@@ -43,7 +46,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for (i, url) in urls.iter().enumerate() {
         println!("请求 {} - {}", i + 1, url);
 
-        match client.get(url) {
+        let request = HttpRequest::new(HttpMethod::Get, url);
+        
+        // 解析 URL
+        // 简单起见，这里假设是 https 且端口 443
+        let host = "httpbin.org";
+        let port = 443;
+        let path = url.replace("https://httpbin.org", "");
+
+        match http2_pool::send_http2_request_with_pool(
+            host, 
+            port, 
+            &path, 
+            &request, 
+            &config, 
+            &pool_manager
+        ).await {
             Ok(response) => {
                 println!(
                     "  ✓ 成功: {} {}",
