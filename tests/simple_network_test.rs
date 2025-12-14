@@ -95,9 +95,11 @@ fn test_http_vs_https() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
-    config.prefer_http2 = false;
+    let config = HttpClientConfig {
+        user_agent,
+        prefer_http2: false,
+        ..Default::default()
+    };
 
     let client = HttpClient::new(config);
 
