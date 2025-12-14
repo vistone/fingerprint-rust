@@ -1,8 +1,9 @@
 # cargo-audit 配置
 [advisories]
-# 忽略"不再维护"的警告
-# 这些是间接依赖，我们无法直接控制
+# 忽略间接依赖的警告
+# 这些来自 reqwest/quinn，我们无法直接控制
 ignore = [
+    "RUSTSEC-2025-0009",  # ring 0.16.20 AES panic issue
     "RUSTSEC-2025-0010",  # ring 0.16.20 unmaintained
     "RUSTSEC-2025-0134",  # rustls-pemfile unmaintained
 ]
