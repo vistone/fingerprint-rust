@@ -38,6 +38,9 @@ bytes = { version = "1.10", optional = true }
 # 网络连接池
 netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.0", optional = true }
 
+# 时间处理
+chrono = { version = "0.4", optional = true }
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 reqwest = { version = "0.11", features = ["blocking", "json"] }
@@ -54,3 +57,4 @@ http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots"]  # HTT
 http3 = ["quinn", "h3", "h3-quinn", "tokio", "rustls", "webpki-roots", "bytes"]  # HTTP/3 支持
 async = ["tokio"]  # 异步运行时
 connection-pool = ["netconnpool"]  # 连接池支持
+reporter = ["chrono"]  # 报告生成器

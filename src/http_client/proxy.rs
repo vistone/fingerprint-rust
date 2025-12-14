@@ -4,7 +4,7 @@
 
 use super::{HttpClientError, Result};
 use std::io::{Read, Write};
-use std::net::{TcpStream, ToSocketAddrs};
+use std::net::TcpStream;
 
 /// 代理类型
 #[derive(Debug, Clone)]

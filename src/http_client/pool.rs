@@ -1,16 +1,18 @@
 //! 连接池管理
 //!
 //! 基于 netconnpool 实现连接复用和生命周期管理
-//!
-//! ⚠️ 当前功能未完成，需要进一步调试 netconnpool API
 
 use super::{HttpClientError, Result};
-use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
 #[cfg(feature = "connection-pool")]
-compile_error!("connection-pool 功能当前不可用，正在开发中");
+use std::collections::HashMap;
+
+#[cfg(feature = "connection-pool")]
+use std::net::TcpStream;
+
+#[cfg(feature = "connection-pool")]
+use std::sync::{Arc, Mutex};
 
 #[cfg(feature = "connection-pool")]
 use netconnpool::{Config as PoolConfig, ConnectionType, Pool};
@@ -92,7 +94,7 @@ impl ConnectionPoolManager {
 
         // 创建新的连接池
         let pool_config = self.create_pool_config(host, port);
-        let pool = Pool::new(pool_config)
+        let pool = Pool::NewPool(pool_config)
             .map_err(|e| HttpClientError::ConnectionFailed(format!("创建连接池失败: {:?}", e)))?;
 
         let pool = Arc::new(pool);
@@ -111,21 +113,42 @@ impl ConnectionPoolManager {
     /// 创建连接池配置
     #[cfg(feature = "connection-pool")]
     fn create_pool_config(&self, host: &str, port: u16) -> PoolConfig {
+        let host = host.to_string();
+        let port = port;
+        
         PoolConfig {
-            Host: host.to_string(),
-            Port: port,
-            ConnectionType: if port == 443 {
-                ConnectionType::Tls
-            } else {
-                ConnectionType::Tcp
-            },
+            Mode: netconnpool::PoolMode::Client,
             MaxConnections: self.config.max_connections,
-            MinIdleConnections: self.config.min_idle,
-            MaxIdleTime: self.config.idle_timeout,
+            MinConnections: self.config.min_idle,
+            MaxIdleConnections: self.config.max_connections,
             ConnectionTimeout: self.config.connect_timeout,
-            ReadTimeout: self.config.connect_timeout,
-            WriteTimeout: self.config.connect_timeout,
-            ..Default::default()
+            IdleTimeout: self.config.idle_timeout,
+            MaxLifetime: self.config.max_lifetime,
+            GetConnectionTimeout: self.config.connect_timeout,
+            HealthCheckInterval: Duration::from_secs(30),
+            HealthCheckTimeout: Duration::from_secs(3),
+            ConnectionLeakTimeout: Duration::from_secs(300),
+            
+            // 提供 Dialer 函数来创建 TCP 连接
+            Dialer: Some(Box::new(move || {
+                let addr = format!("{}:{}", host, port);
+                TcpStream::connect(&addr)
+                    .map(ConnectionType::Tcp)
+                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)
+            })),
+            
+            Listener: None,
+            Acceptor: None,
+            HealthChecker: None,
+            CloseConn: None,
+            OnCreated: None,
+            OnBorrow: None,
+            OnReturn: None,
+            EnableStats: true,
+            EnableHealthCheck: true,
+            ClearUDPBufferOnReturn: true,
+            UDPBufferClearTimeout: Duration::from_millis(100),
+            MaxBufferClearPackets: 100,
         }
     }
 
@@ -170,6 +193,9 @@ impl ConnectionPoolManager {
     #[cfg(feature = "connection-pool")]
     pub fn shutdown(&self) {
         let mut pools = self.pools.lock().unwrap();
+        for (_, pool) in pools.iter() {
+            let _ = pool.Close();
+        }
         pools.clear();
         println!("所有连接池已关闭");
     }
@@ -229,5 +255,35 @@ mod tests {
         assert_eq!(config.max_connections, 100);
         assert_eq!(config.min_idle, 10);
         assert!(config.enable_reuse);
+    }
+}
+
+#[cfg(all(test, feature = "connection-pool"))]
+mod pool_tests {
+    use super::*;
+
+    #[test]
+    #[ignore] // 需要网络
+    fn test_pool_creation_with_connection() {
+        let manager = ConnectionPoolManager::default();
+        let result = manager.get_pool("example.com", 80);
+        assert!(result.is_ok());
+        
+        let pool = result.unwrap();
+        
+        // 获取一个连接
+        let conn_result = pool.GetTCP();
+        // 可能会失败（如果无法连接），但不应该 panic
+        if let Ok(_conn) = conn_result {
+            println!("成功获取连接");
+        }
+    }
+
+    #[test]
+    fn test_pool_stats() {
+        let manager = ConnectionPoolManager::default();
+        let stats = manager.get_stats();
+        // 初始应该没有连接池
+        assert_eq!(stats.len(), 0);
     }
 }

@@ -10,6 +10,7 @@
 
 pub mod cookie;
 pub mod http1;
+pub mod http1_pool;
 pub mod http2;
 pub mod http3;
 pub mod pool;
@@ -233,6 +234,21 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
+        // 如果有连接池，使用连接池
+        #[cfg(feature = "connection-pool")]
+        {
+            if let Some(pool_manager) = &self.pool_manager {
+                return http1_pool::send_http1_request_with_pool(
+                    host,
+                    port,
+                    path,
+                    request,
+                    &self.config,
+                    pool_manager,
+                );
+            }
+        }
+        // 否则使用普通连接
         http1::send_http1_request(host, port, path, request, &self.config)
     }
 
