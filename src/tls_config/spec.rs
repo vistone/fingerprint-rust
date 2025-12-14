@@ -195,6 +195,7 @@ impl ClientHelloSpec {
             ])),
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
             Box::new(UtlsGREASEExtension::new()),
+            Box::new(UtlsPaddingExtension::new()),
         ];
 
         spec

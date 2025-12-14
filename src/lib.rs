@@ -21,6 +21,7 @@
 //! - ✅ **代码质量**：通过所有 Clippy 检查，遵循 Rust 最佳实践
 
 pub mod dicttls;
+pub mod export;
 pub mod headers;
 pub mod http2_config;
 pub mod http_client;
