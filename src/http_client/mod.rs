@@ -268,7 +268,31 @@ impl HttpClient {
         #[cfg(feature = "http3")]
         {
             if self.config.prefer_http3 {
-                return http3::send_http3_request(host, port, path, request, &self.config);
+                // HTTP/3 是异步的，需要使用 tokio runtime
+                let rt = tokio::runtime::Runtime::new()
+                    .map_err(|e| HttpClientError::Http3Error(format!("创建运行时失败: {}", e)))?;
+
+                #[cfg(feature = "connection-pool")]
+                {
+                    if let Some(pool_manager) = &self.pool_manager {
+                        return rt.block_on(http3_pool::send_http3_request_with_pool(
+                            host,
+                            port,
+                            path,
+                            request,
+                            &self.config,
+                            pool_manager,
+                        ));
+                    }
+                }
+
+                return rt.block_on(http3::send_http3_request(
+                    host,
+                    port,
+                    path,
+                    request,
+                    &self.config,
+                ));
             }
         }
 
@@ -276,7 +300,31 @@ impl HttpClient {
         #[cfg(feature = "http2")]
         {
             if self.config.prefer_http2 {
-                return http2::send_http2_request(host, port, path, request, &self.config);
+                // HTTP/2 是异步的，需要使用 tokio runtime
+                let rt = tokio::runtime::Runtime::new()
+                    .map_err(|e| HttpClientError::Http2Error(format!("创建运行时失败: {}", e)))?;
+
+                #[cfg(feature = "connection-pool")]
+                {
+                    if let Some(pool_manager) = &self.pool_manager {
+                        return rt.block_on(http2_pool::send_http2_request_with_pool(
+                            host,
+                            port,
+                            path,
+                            request,
+                            &self.config,
+                            pool_manager,
+                        ));
+                    }
+                }
+
+                return rt.block_on(http2::send_http2_request(
+                    host,
+                    port,
+                    path,
+                    request,
+                    &self.config,
+                ));
             }
         }
 
