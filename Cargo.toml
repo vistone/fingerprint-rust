@@ -5,9 +5,9 @@ edition = "2021"
 authors = ["fingerprint-rust"]
 description = "一个独立的浏览器 TLS 指纹库，从 golang 版本迁移而来"
 license = "BSD-3-Clause"
-repository = "https://github.com/vistone/fingerprint"
-documentation = "https://docs.rs/fingerprint"
-homepage = "https://github.com/vistone/fingerprint"
+repository = "https://github.com/vistone/fingerprint-rust"
+documentation = "https://docs.rs/fingerprint-rust"
+homepage = "https://github.com/vistone/fingerprint-rust"
 keywords = ["tls", "fingerprint", "browser", "http2", "ja4", "grease"]
 categories = ["network-programming", "web-programming"]
 
