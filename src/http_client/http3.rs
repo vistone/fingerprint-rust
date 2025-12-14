@@ -35,15 +35,18 @@ async fn send_http3_request_async(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    use std::net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs};
+    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
     use std::sync::Arc;
     use std::time::{Duration, Instant};
 
     let start = Instant::now();
 
     // 1. 配置 QUIC 客户端
-    let tls_config =
-        super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
+    let tls_config = super::rustls_utils::build_client_config(
+        config.verify_tls,
+        vec![b"h3".to_vec()],
+        config.profile.as_ref(),
+    );
 
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
@@ -67,19 +70,27 @@ async fn send_http3_request_async(
 
     client_config.transport_config(Arc::new(transport));
 
-    // 2. 创建 QUIC endpoint
-    let mut endpoint = Endpoint::client(SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0))
+    // 2. DNS 解析（优先 IPv4，避免 IPv4 endpoint 连接 IPv6 remote 导致 invalid remote address）
+    let addr_str = format!("{}:{}", host, port);
+    let mut addrs: Vec<SocketAddr> = addr_str
+        .to_socket_addrs()
+        .map_err(|e| HttpClientError::InvalidUrl(format!("DNS 解析失败: {}", e)))?
+        .collect();
+    if addrs.is_empty() {
+        return Err(HttpClientError::InvalidUrl("无法解析地址".to_string()));
+    }
+    addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
+    let remote_addr = addrs[0];
+
+    // 3. 创建 QUIC endpoint（按 remote 的地址族选择绑定）
+    let bind_addr = match remote_addr.ip() {
+        IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
+        IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
+    };
+    let mut endpoint = Endpoint::client(bind_addr)
         .map_err(|e| HttpClientError::ConnectionFailed(format!("创建 endpoint 失败: {}", e)))?;
 
     endpoint.set_default_client_config(client_config);
-
-    // 3. DNS 解析
-    let addr_str = format!("{}:{}", host, port);
-    let remote_addr = addr_str
-        .to_socket_addrs()
-        .map_err(|e| HttpClientError::InvalidUrl(format!("DNS 解析失败: {}", e)))?
-        .next()
-        .ok_or_else(|| HttpClientError::InvalidUrl("无法解析地址".to_string()))?;
 
     // 4. 连接到服务器
     let connection = endpoint

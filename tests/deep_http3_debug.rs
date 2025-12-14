@@ -1,5 +1,6 @@
 //! 深度调试 HTTP/3 实现
 
+#[cfg(feature = "http3")]
 use fingerprint::{HttpClient, HttpClientConfig};
 
 #[test]

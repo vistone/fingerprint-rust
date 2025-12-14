@@ -36,17 +36,28 @@ pub async fn send_http3_request_with_pool(
         .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
 
     // 解析目标地址 - 需要先进行 DNS 解析
-    use std::net::ToSocketAddrs;
+    // 注意：Endpoint 绑定的是 IPv4/IPv6 的具体栈；这里优先选 IPv4，避免出现
+    // “Endpoint 是 0.0.0.0 但 remote 是 IPv6 导致 invalid remote address”。
+    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
     let addr = format!("{}:{}", host, port);
-    let remote_addr = addr
+    let mut addrs: Vec<SocketAddr> = addr
         .to_socket_addrs()
         .map_err(|e| HttpClientError::ConnectionFailed(format!("DNS 解析失败: {}", e)))?
-        .next()
-        .ok_or_else(|| HttpClientError::ConnectionFailed("DNS 解析无结果".to_string()))?;
+        .collect();
+    if addrs.is_empty() {
+        return Err(HttpClientError::ConnectionFailed(
+            "DNS 解析无结果".to_string(),
+        ));
+    }
+    addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
+    let remote_addr = addrs[0];
 
     // 创建 QUIC 客户端配置
-    let tls_config =
-        super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
+    let tls_config = super::rustls_utils::build_client_config(
+        config.verify_tls,
+        vec![b"h3".to_vec()],
+        config.profile.as_ref(),
+    );
 
     let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
@@ -69,8 +80,12 @@ pub async fn send_http3_request_with_pool(
 
     client_config.transport_config(std::sync::Arc::new(transport_config));
 
-    // 创建 QUIC endpoint
-    let mut endpoint = quinn::Endpoint::client("0.0.0.0:0".parse().unwrap())
+    // 创建 QUIC endpoint（按 remote 的地址族选择绑定）
+    let bind_addr = match remote_addr.ip() {
+        IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
+        IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
+    };
+    let mut endpoint = quinn::Endpoint::client(bind_addr)
         .map_err(|e| HttpClientError::Http3Error(format!("创建 endpoint 失败: {}", e)))?;
     endpoint.set_default_client_config(client_config);
 

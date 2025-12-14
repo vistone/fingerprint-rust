@@ -155,6 +155,7 @@ async fn perform_tls_handshake(
     let tls_config = super::rustls_utils::build_client_config(
         config.verify_tls,
         vec![b"h2".to_vec(), b"http/1.1".to_vec()],
+        config.profile.as_ref(),
     );
 
     let connector = TlsConnector::from(Arc::new(tls_config));

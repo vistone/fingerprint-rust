@@ -9,6 +9,11 @@
 
 use std::sync::Arc;
 
+use crate::ClientProfile;
+
+#[cfg(feature = "rustls-client-hello-customizer")]
+use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
+
 /// 构建 rustls 根证书存储（Mozilla roots）
 pub fn build_root_store() -> rustls::RootCertStore {
     let mut root_store = rustls::RootCertStore::empty();
@@ -72,7 +77,15 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 }
 
 /// 构建 rustls::ClientConfig，并设置 ALPN/verify_tls。
-pub fn build_client_config(verify_tls: bool, alpn_protocols: Vec<Vec<u8>>) -> rustls::ClientConfig {
+pub fn build_client_config(
+    verify_tls: bool,
+    alpn_protocols: Vec<Vec<u8>>,
+    profile: Option<&ClientProfile>,
+) -> rustls::ClientConfig {
+    // 当未启用 rustls-client-hello-customizer 时，profile 只是一个预留参数（避免到处改签名）。
+    #[cfg(not(feature = "rustls-client-hello-customizer"))]
+    let _ = profile;
+
     let root_store = build_root_store();
     let mut cfg = rustls::ClientConfig::builder()
         .with_safe_defaults()
@@ -81,5 +94,13 @@ pub fn build_client_config(verify_tls: bool, alpn_protocols: Vec<Vec<u8>>) -> ru
 
     cfg.alpn_protocols = alpn_protocols;
     apply_verify_tls(&mut cfg, verify_tls);
+
+    // 可选：在发送 ClientHello 之前按指纹 spec 重排扩展编码顺序（需要配套 rustls fork）。
+    #[cfg(feature = "rustls-client-hello-customizer")]
+    if let Some(profile) = profile {
+        if let Some(customizer) = ProfileClientHelloCustomizer::try_from_profile(profile) {
+            cfg = cfg.with_client_hello_customizer(customizer.into_arc());
+        }
+    }
     cfg
 }

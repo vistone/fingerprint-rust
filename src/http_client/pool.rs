@@ -127,6 +127,7 @@ impl ConnectionPoolManager {
     #[cfg(feature = "connection-pool")]
     fn create_pool_config(&self, host: &str, port: u16) -> PoolConfig {
         let host = host.to_string();
+        let connect_timeout = self.config.connect_timeout;
 
         PoolConfig {
             Mode: netconnpool::PoolMode::Client,
@@ -143,10 +144,35 @@ impl ConnectionPoolManager {
 
             // 提供 Dialer 函数来创建 TCP 连接
             Dialer: Some(Box::new(move || {
-                let addr = format!("{}:{}", host, port);
-                TcpStream::connect(&addr)
-                    .map(ConnectionType::Tcp)
-                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)
+                use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
+
+                let addrs: Vec<SocketAddr> = (host.as_str(), port)
+                    .to_socket_addrs()
+                    .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
+                    .collect();
+
+                // 优先使用 IPv4，避免在“无 IPv6 路由”的环境中出现 `Network is unreachable`。
+                let mut v4 = Vec::new();
+                let mut v6 = Vec::new();
+                for a in addrs {
+                    match a.ip() {
+                        IpAddr::V4(_) => v4.push(a),
+                        IpAddr::V6(_) => v6.push(a),
+                    }
+                }
+
+                let mut last_err: Option<std::io::Error> = None;
+                for addr in v4.into_iter().chain(v6.into_iter()) {
+                    match TcpStream::connect_timeout(&addr, connect_timeout) {
+                        Ok(s) => return Ok(ConnectionType::Tcp(s)),
+                        Err(e) => last_err = Some(e),
+                    }
+                }
+
+                Err(Box::new(last_err.unwrap_or_else(|| {
+                    std::io::Error::new(std::io::ErrorKind::Other, "no resolved addresses")
+                }))
+                    as Box<dyn std::error::Error + Send + Sync>)
             })),
 
             Listener: None,

@@ -45,23 +45,11 @@ pub async fn send_http2_request_with_pool(
     let tcp_stream = tokio::net::TcpStream::from_std(tcp_stream).map_err(HttpClientError::Io)?;
 
     // TLS 握手
-    let mut root_store = rustls::RootCertStore::empty();
-    root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-            ta.subject,
-            ta.spki,
-            ta.name_constraints,
-        )
-    }));
-
-    let mut tls_config = rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates(root_store)
-        .with_no_client_auth();
-
-    // 设置 ALPN 为 h2
-    tls_config.alpn_protocols = vec![b"h2".to_vec()];
-
+    let tls_config = super::rustls_utils::build_client_config(
+        config.verify_tls,
+        vec![b"h2".to_vec()],
+        config.profile.as_ref(),
+    );
     let connector = TlsConnector::from(std::sync::Arc::new(tls_config));
     let server_name = rustls::ServerName::try_from(host)
         .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
