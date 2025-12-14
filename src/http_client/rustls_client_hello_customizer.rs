@@ -102,4 +102,3 @@ impl ClientHelloCustomizer for ProfileClientHelloCustomizer {
         Ok(())
     }
 }
-

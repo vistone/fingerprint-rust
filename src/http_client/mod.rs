@@ -23,10 +23,10 @@ pub mod proxy;
 pub mod reporter;
 pub mod request;
 pub mod response;
-#[cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
-mod rustls_utils;
 #[cfg(feature = "rustls-client-hello-customizer")]
 mod rustls_client_hello_customizer;
+#[cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
+mod rustls_utils;
 pub mod tls;
 
 pub use cookie::{Cookie, CookieStore, SameSite};
