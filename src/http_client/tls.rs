@@ -52,7 +52,7 @@ pub fn send_https_request(
     // ⚠️ 临时方案：使用 rustls (默认) 或 native-tls
     // TODO: 这里应该使用自定义 TLS 实现，应用 ClientHelloSpec
 
-    #[cfg(all(feature = "rustls-tls", not(feature = "native-tls-impl")))]
+    #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
         use rustls::{ClientConfig, ClientConnection, RootCertStore};
