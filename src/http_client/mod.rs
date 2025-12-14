@@ -41,6 +41,11 @@ pub enum HttpClientError {
     TlsError(String),
     ConnectionFailed(String),
     Timeout,
+    #[cfg(feature = "http2")]
+    Http2Error(String),
+    #[cfg(feature = "http3")]
+    Http3Error(String),
+    InvalidRequest(String),
 }
 
 impl std::fmt::Display for HttpClientError {
@@ -52,6 +57,11 @@ impl std::fmt::Display for HttpClientError {
             HttpClientError::TlsError(s) => write!(f, "TLS 错误: {}", s),
             HttpClientError::ConnectionFailed(s) => write!(f, "连接失败: {}", s),
             HttpClientError::Timeout => write!(f, "请求超时"),
+            #[cfg(feature = "http2")]
+            HttpClientError::Http2Error(s) => write!(f, "HTTP/2 错误: {}", s),
+            #[cfg(feature = "http3")]
+            HttpClientError::Http3Error(s) => write!(f, "HTTP/3 错误: {}", s),
+            HttpClientError::InvalidRequest(s) => write!(f, "无效的请求: {}", s),
         }
     }
 }
