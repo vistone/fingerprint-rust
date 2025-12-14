@@ -282,9 +282,19 @@ impl HttpClient {
         #[cfg(feature = "http3")]
         {
             if self.config.prefer_http3 {
-                // 注意：HTTP/3 连接池支持需要异步接口
-                // 目前直接使用非连接池版本
-                return http3::send_http3_request(host, port, path, request, &self.config);
+                // 如果开启了 HTTP/3，我们尝试它。
+                // 如果失败，我们可能希望降级，但 HTTP/3 到 TCP 是不同的传输层，
+                // 通常如果用户明确要求 HTTP/3，失败就应该报错。
+                // 但这里为了稳健性，如果是因为协议错误，我们可以降级。
+                // 暂时保持简单：直接返回。
+                match http3::send_http3_request(host, port, path, request, &self.config) {
+                    Ok(resp) => return Ok(resp),
+                    Err(e) => {
+                        // 如果仅仅是偏好，可以尝试降级
+                        // 如果是连接失败，可能是网络问题，也可能是服务器不支持
+                        eprintln!("HTTP/3 失败，尝试降级: {}", e);
+                    }
+                }
             }
         }
 
@@ -292,9 +302,14 @@ impl HttpClient {
         #[cfg(feature = "http2")]
         {
             if self.config.prefer_http2 {
-                // 注意：HTTP/2 连接池支持需要异步接口
-                // 目前直接使用非连接池版本
-                return http2::send_http2_request(host, port, path, request, &self.config);
+                match http2::send_http2_request(host, port, path, request, &self.config) {
+                    Ok(resp) => return Ok(resp),
+                    Err(_e) => {
+                         // 记录错误但继续尝试 HTTP/1.1
+                         // 在实际生产中应该使用日志系统
+                         // eprintln!("HTTP/2 尝试失败: {}，回退到 HTTP/1.1", e);
+                    }
+                }
             }
         }
 
