@@ -4,7 +4,6 @@
 //! TODO: 集成自定义 TLS 实现以应用 fingerprint-rust 的 ClientHelloSpec
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
-use std::io::{Read, Write};
 use std::net::TcpStream;
 
 /// TLS 连接器
@@ -84,20 +83,21 @@ pub fn send_https_request(
         let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
         // 发送 HTTP 请求
+        use std::io::{Read, Write};
         let http_request = request.build_http1_request(host, path);
         tls_stream
             .write_all(http_request.as_bytes())
-            .map_err(|e| HttpClientError::Io(e))?;
-        tls_stream.flush().map_err(|e| HttpClientError::Io(e))?;
+            .map_err(HttpClientError::Io)?;
+        tls_stream.flush().map_err(HttpClientError::Io)?;
 
         // 读取响应
         let mut buffer = Vec::new();
         tls_stream
             .read_to_end(&mut buffer)
-            .map_err(|e| HttpClientError::Io(e))?;
+            .map_err(HttpClientError::Io)?;
 
         // 解析响应
-        HttpResponse::parse(&buffer).map_err(|e| HttpClientError::InvalidResponse(e))
+        HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
     }
 
     #[cfg(all(feature = "native-tls-impl", not(feature = "rustls-tls")))]
@@ -114,6 +114,7 @@ pub fn send_https_request(
             .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
 
         // 发送 HTTP 请求
+        use std::io::{Read, Write};
         let http_request = request.build_http1_request(host, path);
         tls_stream
             .write_all(http_request.as_bytes())
