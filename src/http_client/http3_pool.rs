@@ -62,7 +62,7 @@ pub async fn send_http3_request_with_pool(
     tls_config.alpn_protocols = vec![b"h3".to_vec()];
 
     let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
-    
+
     // 优化传输配置以提升性能
     let mut transport_config = quinn::TransportConfig::default();
     transport_config.initial_rtt(Duration::from_millis(100));
@@ -71,15 +71,15 @@ pub async fn send_http3_request_with_pool(
             .map_err(|e| HttpClientError::Http3Error(format!("配置超时失败: {}", e)))?,
     ));
     transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
-    
+
     // 增大接收窗口以提升吞吐量
     transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
     transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
-    
+
     // 允许更多并发流
     transport_config.max_concurrent_bidi_streams(100u32.into());
     transport_config.max_concurrent_uni_streams(100u32.into());
-    
+
     client_config.transport_config(std::sync::Arc::new(transport_config));
 
     // 创建 QUIC endpoint

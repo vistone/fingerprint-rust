@@ -250,9 +250,9 @@ impl HttpResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::io::Write;
     use flate2::write::GzEncoder;
     use flate2::Compression;
+    use std::io::Write;
 
     #[test]
     fn test_parse_response() {
@@ -303,7 +303,10 @@ mod tests {
                     \r\n";
 
         let response = HttpResponse::parse(raw).expect("Chunked 解析失败");
-        assert_eq!(response.body_as_string().unwrap(), "Wikipedia in\r\n\r\nchunks.");
+        assert_eq!(
+            response.body_as_string().unwrap(),
+            "Wikipedia in\r\n\r\nchunks."
+        );
     }
 
     #[test]
@@ -315,7 +318,8 @@ mod tests {
 
         let mut raw = b"HTTP/1.1 200 OK\r\n\
                        Content-Encoding: gzip\r\n\
-                       \r\n".to_vec();
+                       \r\n"
+            .to_vec();
         raw.extend_from_slice(&compressed);
 
         let response = HttpResponse::parse(&raw).expect("Gzip 解析失败");
@@ -336,7 +340,8 @@ mod tests {
         let mut raw = b"HTTP/1.1 200 OK\r\n\
                        Transfer-Encoding: chunked\r\n\
                        Content-Encoding: gzip\r\n\
-                       \r\n".to_vec();
+                       \r\n"
+            .to_vec();
 
         // Chunk 1
         raw.extend_from_slice(format!("{:x}\r\n", chunk1.len()).as_bytes());

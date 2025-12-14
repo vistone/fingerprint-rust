@@ -66,15 +66,15 @@ async fn send_http3_request_async(
     transport.initial_rtt(Duration::from_millis(100));
     transport.max_idle_timeout(Some(Duration::from_secs(60).try_into().unwrap()));
     transport.keep_alive_interval(Some(Duration::from_secs(10)));
-    
+
     // 增大接收窗口以提升吞吐量
     transport.stream_receive_window((1024 * 1024u32).into()); // 1MB
     transport.receive_window((10 * 1024 * 1024u32).into()); // 10MB
-    
+
     // 允许更多并发流
     transport.max_concurrent_bidi_streams(100u32.into());
     transport.max_concurrent_uni_streams(100u32.into());
-    
+
     client_config.transport_config(Arc::new(transport));
 
     // 2. 创建 QUIC endpoint

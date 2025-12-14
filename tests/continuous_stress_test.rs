@@ -1,7 +1,9 @@
 //! 持续压力测试 - 不停的测试所有浏览器指纹
 //! 用于长时间验证稳定性和性能
 
-use fingerprint::{chrome_103, chrome_133, firefox_133, opera_91, safari_16_0, HttpClient, HttpClientConfig};
+use fingerprint::{
+    chrome_103, chrome_133, firefox_133, opera_91, safari_16_0, HttpClient, HttpClientConfig,
+};
 use std::time::{Duration, Instant};
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
@@ -61,11 +63,17 @@ impl ContinuousTestStats {
     fn print_summary(&self, label: &str) {
         println!("\n  📊 {} 统计:", label);
         println!("     总请求: {}", self.total_requests);
-        println!("     成功: {} | 失败: {}", self.success_count, self.fail_count);
+        println!(
+            "     成功: {} | 失败: {}",
+            self.success_count, self.fail_count
+        );
         println!("     成功率: {:.1}%", self.success_rate());
         if self.success_count > 0 {
             println!("     平均响应: {:.2}ms", self.avg_time());
-            println!("     最小: {}ms | 最大: {}ms", self.min_time_ms, self.max_time_ms);
+            println!(
+                "     最小: {}ms | 最大: {}ms",
+                self.min_time_ms, self.max_time_ms
+            );
         }
     }
 }
@@ -90,7 +98,7 @@ fn test_continuous_http1_10_rounds() {
 
     for round in 1..=10 {
         println!("\n🔄 轮次 {}/10", round);
-        
+
         for (name, _profile) in &browsers {
             let config = HttpClientConfig {
                 user_agent: format!("Mozilla/5.0 (compatible; {}))", name),
@@ -129,12 +137,19 @@ fn test_continuous_http1_10_rounds() {
     println!("╚══════════════════════════════════════════════════════════╝");
 
     stats.print_summary("HTTP/1.1 持续测试");
-    
+
     println!("\n  ⏱️  总耗时: {:.2}秒", total_duration.as_secs_f64());
-    println!("  📈 吞吐量: {:.2} 请求/秒", stats.total_requests as f64 / total_duration.as_secs_f64());
+    println!(
+        "  📈 吞吐量: {:.2} 请求/秒",
+        stats.total_requests as f64 / total_duration.as_secs_f64()
+    );
 
     // 断言成功率
-    assert!(stats.success_rate() >= 90.0, "成功率过低: {:.1}%", stats.success_rate());
+    assert!(
+        stats.success_rate() >= 90.0,
+        "成功率过低: {:.1}%",
+        stats.success_rate()
+    );
 }
 
 #[test]
@@ -169,7 +184,12 @@ fn test_continuous_all_protocols_marathon() {
 
     for round in 1..=total_rounds {
         if round % 10 == 0 {
-            println!("\n🔄 进度: {}/{} 轮 ({:.0}%)", round, total_rounds, (round as f64 / total_rounds as f64) * 100.0);
+            println!(
+                "\n🔄 进度: {}/{} 轮 ({:.0}%)",
+                round,
+                total_rounds,
+                (round as f64 / total_rounds as f64) * 100.0
+            );
         } else {
             print!(".");
         }
@@ -220,7 +240,8 @@ fn test_continuous_all_protocols_marathon() {
     h2_stats.print_summary("HTTP/2");
     h3_stats.print_summary("HTTP/3");
 
-    let total_requests = h1_stats.total_requests + h2_stats.total_requests + h3_stats.total_requests;
+    let total_requests =
+        h1_stats.total_requests + h2_stats.total_requests + h3_stats.total_requests;
     let total_success = h1_stats.success_count + h2_stats.success_count + h3_stats.success_count;
     let total_fail = h1_stats.fail_count + h2_stats.fail_count + h3_stats.fail_count;
 
@@ -230,13 +251,26 @@ fn test_continuous_all_protocols_marathon() {
     println!("\n  📊 总请求数: {}", total_requests);
     println!("  ✅ 总成功: {}", total_success);
     println!("  ❌ 总失败: {}", total_fail);
-    println!("  🎯 总成功率: {:.1}%", (total_success as f64 / total_requests as f64) * 100.0);
-    println!("\n  ⏱️  总耗时: {:.2}分钟", total_duration.as_secs_f64() / 60.0);
-    println!("  📈 吞吐量: {:.2} 请求/秒", total_requests as f64 / total_duration.as_secs_f64());
+    println!(
+        "  🎯 总成功率: {:.1}%",
+        (total_success as f64 / total_requests as f64) * 100.0
+    );
+    println!(
+        "\n  ⏱️  总耗时: {:.2}分钟",
+        total_duration.as_secs_f64() / 60.0
+    );
+    println!(
+        "  📈 吞吐量: {:.2} 请求/秒",
+        total_requests as f64 / total_duration.as_secs_f64()
+    );
 
     // 断言总成功率
     let overall_success_rate = (total_success as f64 / total_requests as f64) * 100.0;
-    assert!(overall_success_rate >= 90.0, "总成功率过低: {:.1}%", overall_success_rate);
+    assert!(
+        overall_success_rate >= 90.0,
+        "总成功率过低: {:.1}%",
+        overall_success_rate
+    );
 }
 
 #[test]
@@ -281,7 +315,10 @@ fn test_continuous_quick_cycle() {
             Ok(response) => {
                 let elapsed = start.elapsed().as_millis() as u64;
                 stats.add_success(elapsed);
-                println!("✅ {} {}ms (status {})", protocol, elapsed, response.status_code);
+                println!(
+                    "✅ {} {}ms (status {})",
+                    protocol, elapsed, response.status_code
+                );
             }
             Err(e) => {
                 stats.add_failure();
@@ -295,5 +332,9 @@ fn test_continuous_quick_cycle() {
     println!("\n");
     stats.print_summary("快速循环测试");
 
-    assert!(stats.success_rate() >= 85.0, "成功率过低: {:.1}%", stats.success_rate());
+    assert!(
+        stats.success_rate() >= 85.0,
+        "成功率过低: {:.1}%",
+        stats.success_rate()
+    );
 }

@@ -8,9 +8,9 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "connection-pool")]
 use std::io::{Read, Write};
 #[cfg(feature = "connection-pool")]
-use std::sync::Arc;
-#[cfg(feature = "connection-pool")]
 use std::net::TcpStream;
+#[cfg(feature = "connection-pool")]
+use std::sync::Arc;
 
 /// 使用连接池发送 HTTP/1.1 请求
 #[cfg(feature = "connection-pool")]
@@ -33,9 +33,9 @@ pub fn send_http1_request_with_pool(
     // 使用闭包执行请求，确保连接最后能被归还
     let result = (|| -> Result<HttpResponse> {
         // 从 Connection 中提取 TcpStream
-        let tcp_stream = conn
-            .GetTcpConn()
-            .ok_or_else(|| HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string()))?;
+        let tcp_stream = conn.GetTcpConn().ok_or_else(|| {
+            HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string())
+        })?;
 
         // 克隆 TcpStream 以便我们可以使用它
         let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
@@ -60,13 +60,13 @@ pub fn send_http1_request_with_pool(
         // 读取响应
         // 注意：我们必须精确读取，不能多读，否则会影响连接复用
         let mut buffer = Vec::with_capacity(4096);
-        
+
         // 1. 读取 Headers
         let headers_len = read_until_headers_end(&mut stream, &mut buffer)?;
-        
+
         // 2. 解析 Headers 以确定 Body 长度
         let (is_chunked, content_length) = parse_body_type(&buffer[..headers_len])?;
-        
+
         // 3. 读取 Body
         if is_chunked {
             read_chunked_body(&mut stream, &mut buffer)?;
@@ -76,9 +76,13 @@ pub fn send_http1_request_with_pool(
             // 假设如果没有明确指示长度，就认为 Body 为空（Keep-Alive 模式下）
             // 或者是 Close 模式读取到 EOF
             // 检查 Connection: close
-            let is_close = buffer.windows(17).any(|w| w.eq_ignore_ascii_case(b"Connection: close"));
+            let is_close = buffer
+                .windows(17)
+                .any(|w| w.eq_ignore_ascii_case(b"Connection: close"));
             if is_close {
-                 stream.read_to_end(&mut buffer).map_err(HttpClientError::Io)?;
+                stream
+                    .read_to_end(&mut buffer)
+                    .map_err(HttpClientError::Io)?;
             }
         }
 
@@ -101,9 +105,11 @@ fn read_until_headers_end(stream: &mut TcpStream, buffer: &mut Vec<u8>) -> Resul
         let n = stream.read(&mut temp).map_err(HttpClientError::Io)?;
         if n == 0 {
             if buffer.is_empty() {
-                 return Err(HttpClientError::ConnectionFailed("连接已关闭".to_string()));
+                return Err(HttpClientError::ConnectionFailed("连接已关闭".to_string()));
             }
-            return Err(HttpClientError::InvalidResponse("Headers 不完整".to_string()));
+            return Err(HttpClientError::InvalidResponse(
+                "Headers 不完整".to_string(),
+            ));
         }
         buffer.push(temp[0]);
         if buffer.len() > 64 * 1024 {
@@ -117,15 +123,19 @@ fn read_until_headers_end(stream: &mut TcpStream, buffer: &mut Vec<u8>) -> Resul
 fn parse_body_type(headers_data: &[u8]) -> Result<(bool, Option<usize>)> {
     let mut headers = [httparse::EMPTY_HEADER; 64];
     let mut req = httparse::Response::new(&mut headers);
-    let status = req.parse(headers_data).map_err(|e| HttpClientError::InvalidResponse(format!("Header 解析失败: {}", e)))?;
-    
+    let status = req
+        .parse(headers_data)
+        .map_err(|e| HttpClientError::InvalidResponse(format!("Header 解析失败: {}", e)))?;
+
     if status.is_partial() {
-         return Err(HttpClientError::InvalidResponse("Header 不完整".to_string()));
+        return Err(HttpClientError::InvalidResponse(
+            "Header 不完整".to_string(),
+        ));
     }
-    
+
     let mut is_chunked = false;
     let mut content_length = None;
-    
+
     for h in req.headers {
         if h.name.eq_ignore_ascii_case("Transfer-Encoding") {
             let val = std::str::from_utf8(h.value).unwrap_or("");
@@ -133,11 +143,11 @@ fn parse_body_type(headers_data: &[u8]) -> Result<(bool, Option<usize>)> {
                 is_chunked = true;
             }
         } else if h.name.eq_ignore_ascii_case("Content-Length") {
-             let val = std::str::from_utf8(h.value).unwrap_or("0");
-             content_length = val.trim().parse::<usize>().ok();
+            let val = std::str::from_utf8(h.value).unwrap_or("0");
+            content_length = val.trim().parse::<usize>().ok();
         }
     }
-    
+
     Ok((is_chunked, content_length))
 }
 
@@ -165,18 +175,22 @@ fn read_chunked_body(stream: &mut TcpStream, buffer: &mut Vec<u8>) -> Result<()>
                 break;
             }
             if size_line.len() > 64 {
-                return Err(HttpClientError::InvalidResponse("Chunk size 行过长".to_string()));
+                return Err(HttpClientError::InvalidResponse(
+                    "Chunk size 行过长".to_string(),
+                ));
             }
         }
-        
+
         // 写入 buffer
         buffer.extend_from_slice(&size_line);
-        
+
         // 解析 size
-        let size_str = std::str::from_utf8(&size_line).map_err(|_| HttpClientError::InvalidResponse("Chunk size 非 UTF-8".to_string()))?;
+        let size_str = std::str::from_utf8(&size_line)
+            .map_err(|_| HttpClientError::InvalidResponse("Chunk size 非 UTF-8".to_string()))?;
         let size_str = size_str.trim();
-        let size = usize::from_str_radix(size_str, 16).map_err(|_| HttpClientError::InvalidResponse("Chunk size 格式错误".to_string()))?;
-        
+        let size = usize::from_str_radix(size_str, 16)
+            .map_err(|_| HttpClientError::InvalidResponse("Chunk size 格式错误".to_string()))?;
+
         if size == 0 {
             // 最后一个 chunk，还有个 \r\n
             let mut end = [0u8; 2];
@@ -184,12 +198,12 @@ fn read_chunked_body(stream: &mut TcpStream, buffer: &mut Vec<u8>) -> Result<()>
             buffer.extend_from_slice(&end);
             break;
         }
-        
+
         // 读取数据
         let mut data = vec![0u8; size];
         stream.read_exact(&mut data).map_err(HttpClientError::Io)?;
         buffer.extend_from_slice(&data);
-        
+
         // 读取结尾 \r\n
         let mut crlf = [0u8; 2];
         stream.read_exact(&mut crlf).map_err(HttpClientError::Io)?;
@@ -225,8 +239,14 @@ mod tests {
         let config = HttpClientConfig::default();
         let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
 
-        let result =
-            send_http1_request_with_pool("httpbin.org", 80, "/get", &request, &config, &pool_manager);
+        let result = send_http1_request_with_pool(
+            "httpbin.org",
+            80,
+            "/get",
+            &request,
+            &config,
+            &pool_manager,
+        );
 
         // 可能会失败（网络问题），但不应该 panic
         if let Ok(response) = result {
@@ -244,13 +264,25 @@ mod tests {
 
         // 第一次请求
         println!("Sending 1st request...");
-        let _ =
-            send_http1_request_with_pool("httpbin.org", 80, "/get", &request, &config, &pool_manager);
+        let _ = send_http1_request_with_pool(
+            "httpbin.org",
+            80,
+            "/get",
+            &request,
+            &config,
+            &pool_manager,
+        );
 
         // 第二次请求（应该复用连接）
         println!("Sending 2nd request...");
-        let _ =
-            send_http1_request_with_pool("httpbin.org", 80, "/get", &request, &config, &pool_manager);
+        let _ = send_http1_request_with_pool(
+            "httpbin.org",
+            80,
+            "/get",
+            &request,
+            &config,
+            &pool_manager,
+        );
 
         // 检查统计信息
         let stats = pool_manager.get_stats();

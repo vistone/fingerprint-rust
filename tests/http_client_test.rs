@@ -127,7 +127,11 @@ fn test_http_get_request() {
         return;
     }
 
-    assert!(response.is_success(), "预期成功响应，实际状态码: {}", response.status_code);
+    assert!(
+        response.is_success(),
+        "预期成功响应，实际状态码: {}",
+        response.status_code
+    );
     assert_eq!(response.status_code, 200);
 }
 

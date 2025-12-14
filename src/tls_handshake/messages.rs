@@ -14,9 +14,9 @@
 //! } ClientHello;
 //! ```
 
+use crate::dicttls::supported_groups::{CURVE_P256, CURVE_P384, X25519};
 use crate::tls_config::ClientHelloSpec;
-use crate::tls_extensions::{TLSExtension, KeyShareExtension, UtlsPaddingExtension};
-use crate::dicttls::supported_groups::{X25519, CURVE_P256, CURVE_P384};
+use crate::tls_extensions::{KeyShareExtension, TLSExtension, UtlsPaddingExtension};
 use ring::agreement;
 use ring::rand::{self as ring_rand, SecureRandom};
 
@@ -64,8 +64,15 @@ impl ClientHelloMessage {
 
         // 序列化扩展
         // 计算 Base Length (不包含 Extension Length 字段本身 2 bytes)
-        let base_len = 2 + 32 + 1 + session_id.len() + 2 + cipher_suites.len() * 2 + 1 + compression_methods.len();
-        
+        let base_len = 2
+            + 32
+            + 1
+            + session_id.len()
+            + 2
+            + cipher_suites.len() * 2
+            + 1
+            + compression_methods.len();
+
         let extensions = Self::serialize_extensions(&spec.extensions, server_name, base_len);
 
         Self {
@@ -79,7 +86,11 @@ impl ClientHelloMessage {
     }
 
     /// 序列化扩展
-    fn serialize_extensions(extensions: &[Box<dyn TLSExtension>], server_name: &str, base_len: usize) -> Vec<u8> {
+    fn serialize_extensions(
+        extensions: &[Box<dyn TLSExtension>],
+        server_name: &str,
+        base_len: usize,
+    ) -> Vec<u8> {
         let mut ext_bytes = Vec::new();
         let mut has_sni = false;
         let rng = ring_rand::SystemRandom::new();
@@ -127,10 +138,11 @@ impl ClientHelloMessage {
                 // Go uTLS: prefixLen = 4 (Handshake header) + len(hello.marshal()) - len(paddingExt)
                 // 这里我们计算的是 Handshake Payload 的一部分。
                 // 假设我们希望 Handshake Message 总长度对齐。
-                
+
                 let current_len = 4 + base_len + 2 + ext_bytes.len() + 4; // +4 for Padding Header (ID+Len)
-                let (padding_len, will_pad) = UtlsPaddingExtension::boring_padding_style(current_len);
-                
+                let (padding_len, will_pad) =
+                    UtlsPaddingExtension::boring_padding_style(current_len);
+
                 if will_pad {
                     ext_bytes.extend_from_slice(&ext_id.to_be_bytes());
                     ext_bytes.extend_from_slice(&(padding_len as u16).to_be_bytes());
@@ -145,7 +157,7 @@ impl ClientHelloMessage {
                 if let Some(ks_ext) = ext.as_any().downcast_ref::<KeyShareExtension>() {
                     // 生成带有真实公钥的 KeyShare 扩展
                     let real_ks_ext = Self::generate_real_keyshare_extension(ks_ext, &rng);
-                    
+
                     // 序列化
                     let ext_len = real_ks_ext.len();
                     let mut ext_data = vec![0u8; ext_len];
@@ -196,30 +208,36 @@ impl ClientHelloMessage {
             // 如果不是 GREASE 且数据为空，则生成密钥
             // GREASE check: (val & 0x0f0f) == 0x0a0a
             let is_grease = (share.group & 0x0f0f) == 0x0a0a;
-            
+
             if !is_grease && share.data.is_empty() {
                 // 生成密钥
                 if share.group == X25519 {
-                    if let Ok(my_private_key) = agreement::EphemeralPrivateKey::generate(&agreement::X25519, rng) {
+                    if let Ok(my_private_key) =
+                        agreement::EphemeralPrivateKey::generate(&agreement::X25519, rng)
+                    {
                         if let Ok(my_public_key) = my_private_key.compute_public_key() {
                             new_share.data = my_public_key.as_ref().to_vec();
                         }
                     }
                 } else if share.group == CURVE_P256 {
-                    if let Ok(my_private_key) = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, rng) {
+                    if let Ok(my_private_key) =
+                        agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P256, rng)
+                    {
                         if let Ok(my_public_key) = my_private_key.compute_public_key() {
                             new_share.data = my_public_key.as_ref().to_vec();
                         }
                     }
                 } else if share.group == CURVE_P384 {
-                    if let Ok(my_private_key) = agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P384, rng) {
+                    if let Ok(my_private_key) =
+                        agreement::EphemeralPrivateKey::generate(&agreement::ECDH_P384, rng)
+                    {
                         if let Ok(my_public_key) = my_private_key.compute_public_key() {
                             new_share.data = my_public_key.as_ref().to_vec();
                         }
                     }
                 }
             }
-            
+
             new_shares.push(new_share);
         }
 

@@ -39,16 +39,16 @@ async fn test_http3_step_by_step() {
 
     // 优化传输配置
     let mut transport = quinn::TransportConfig::default();
-    
+
     // 增加初始窗口大小
     transport.initial_rtt(std::time::Duration::from_millis(100));
     transport.max_idle_timeout(Some(std::time::Duration::from_secs(60).try_into().unwrap()));
     transport.keep_alive_interval(Some(std::time::Duration::from_secs(10)));
-    
+
     // 调整流控制窗口 - 使用 VarInt
     transport.stream_receive_window((1024 * 1024u32).into()); // 1MB
     transport.receive_window((10 * 1024 * 1024u32).into()); // 10MB
-    
+
     // 允许更多并发流
     transport.max_concurrent_bidi_streams(100u32.into());
     transport.max_concurrent_uni_streams(100u32.into());
@@ -74,24 +74,22 @@ async fn test_http3_step_by_step() {
         .unwrap()
         .next()
         .expect("DNS 解析失败");
-    
+
     println!("  ✅ DNS 解析: {:?}", socket_addr);
 
-    let connection = match endpoint
-        .connect(socket_addr, "kh.google.com")
-    {
+    let connection = match endpoint.connect(socket_addr, "kh.google.com") {
         Ok(connecting) => {
             println!("  ✅ 开始连接...");
             match connecting.await {
                 Ok(conn) => {
                     println!("  ✅ QUIC 连接成功 ({:?})", start.elapsed());
-                    
+
                     // 打印连接信息
                     let stats = conn.stats();
                     println!("  📊 连接统计:");
                     println!("     RTT: {:?}", stats.path.rtt);
                     println!("     拥塞窗口: {} bytes", stats.path.cwnd);
-                    
+
                     conn
                 }
                 Err(e) => {
@@ -140,7 +138,10 @@ async fn test_http3_step_by_step() {
         .method(http::Method::GET)
         .uri("https://kh.google.com/rt/earth/PlanetoidMetadata")
         .version(http::Version::HTTP_3)
-        .header("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36")
+        .header(
+            "user-agent",
+            "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36",
+        )
         .header("accept", "*/*")
         .body(())
         .unwrap();

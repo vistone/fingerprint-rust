@@ -7,8 +7,8 @@
 use crate::dicttls::extensions::*;
 use crate::dicttls::signature_schemes::SignatureScheme;
 use crate::dicttls::supported_groups::CurveID;
-use std::io;
 use std::any::Any;
+use std::io;
 
 /// TLS 扩展 ID
 pub type ExtensionID = u16;

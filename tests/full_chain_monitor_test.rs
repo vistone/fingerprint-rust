@@ -35,7 +35,7 @@ impl ChainMetrics {
         println!("     总耗时: {}ms", self.total_time_ms);
         println!("     状态码: {}", self.status_code);
         println!("     Body 大小: {} bytes", self.body_size);
-        
+
         // 注意：当前实现无法分离各个环节，这里显示总时间
         println!("     链路时间: {}ms (包含所有环节)", self.total_time_ms);
     }
@@ -148,7 +148,8 @@ fn test_all_protocols_chain_comparison() {
             std::thread::sleep(std::time::Duration::from_millis(200));
         }
 
-        let avg_time: f64 = round_metrics.iter().map(|m| m.total_time_ms).sum::<u64>() as f64 / round_metrics.len() as f64;
+        let avg_time: f64 = round_metrics.iter().map(|m| m.total_time_ms).sum::<u64>() as f64
+            / round_metrics.len() as f64;
         let min_time = round_metrics.iter().map(|m| m.total_time_ms).min().unwrap();
         let max_time = round_metrics.iter().map(|m| m.total_time_ms).max().unwrap();
 
@@ -176,12 +177,18 @@ fn test_all_protocols_chain_comparison() {
             2 => "🥉",
             _ => "  ",
         };
-        println!("  {} {} - 平均: {:.2}ms (min: {}ms, max: {}ms)", medal, name, avg, min, max);
+        println!(
+            "  {} {} - 平均: {:.2}ms (min: {}ms, max: {}ms)",
+            medal, name, avg, min, max
+        );
     }
 
     let fastest = &sorted[0];
     let slowest = &sorted[sorted.len() - 1];
     let improvement = ((slowest.1 - fastest.1) / slowest.1) * 100.0;
 
-    println!("\n  ⚡ {} 比 {} 快 {:.1}%", fastest.0, slowest.0, improvement);
+    println!(
+        "\n  ⚡ {} 比 {} 快 {:.1}%",
+        fastest.0, slowest.0, improvement
+    );
 }

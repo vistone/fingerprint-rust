@@ -42,8 +42,7 @@ pub async fn send_http2_request_with_pool(
     tcp_stream
         .set_nonblocking(true)
         .map_err(HttpClientError::Io)?;
-    let tcp_stream =
-        tokio::net::TcpStream::from_std(tcp_stream).map_err(HttpClientError::Io)?;
+    let tcp_stream = tokio::net::TcpStream::from_std(tcp_stream).map_err(HttpClientError::Io)?;
 
     // TLS 握手
     let mut root_store = rustls::RootCertStore::empty();

@@ -201,9 +201,9 @@ mod tests {
         let response = send_https_request("example.com", 443, "/", &request, &config).unwrap();
 
         if response.status_code == 200 {
-             assert!(response.is_success());
+            assert!(response.is_success());
         } else {
-             println!("⚠️  Server returned {}", response.status_code);
+            println!("⚠️  Server returned {}", response.status_code);
         }
     }
 }

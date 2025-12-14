@@ -2,7 +2,10 @@
 //! 测试 Chrome 103/133, Firefox 133, Safari 16.0, Opera 91
 //! 完整链路: netconnpool → TLS 指纹 → Google API
 
-use fingerprint::{chrome_103, chrome_133, firefox_133, opera_91, safari_16_0, ClientProfile, HttpClient, HttpClientConfig};
+use fingerprint::{
+    chrome_103, chrome_133, firefox_133, opera_91, safari_16_0, ClientProfile, HttpClient,
+    HttpClientConfig,
+};
 use std::time::Instant;
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
@@ -61,16 +64,27 @@ impl BrowserTestResult {
     }
 
     fn print_summary(&self) {
-        println!("\n  📊 {} {} ({}):", self.browser_name, self.browser_version, self.protocol);
-        println!("     成功率: {}/{}", self.success_count, self.success_count + self.fail_count);
-        
+        println!(
+            "\n  📊 {} {} ({}):",
+            self.browser_name, self.browser_version, self.protocol
+        );
+        println!(
+            "     成功率: {}/{}",
+            self.success_count,
+            self.success_count + self.fail_count
+        );
+
         if !self.response_times_ms.is_empty() {
-            println!("     响应时间: 平均 {:.2}ms | 最小 {}ms | 最大 {}ms", 
-                self.avg_time(), self.min_time(), self.max_time());
+            println!(
+                "     响应时间: 平均 {:.2}ms | 最小 {}ms | 最大 {}ms",
+                self.avg_time(),
+                self.min_time(),
+                self.max_time()
+            );
             println!("     状态码: {:?}", self.status_codes);
             println!("     Body 大小: {:?} bytes", self.body_sizes);
         }
-        
+
         if self.fail_count > 0 {
             println!("     ❌ 失败次数: {}", self.fail_count);
         }
@@ -104,7 +118,7 @@ fn test_browser_fingerprint(
             return result;
         }
     };
-    
+
     // TODO: 将来需要在 HttpClientConfig 中使用 profile 来设置 TLS 指纹
 
     println!("  🔹 {} {} - {}", browser, version, protocol);
@@ -130,8 +144,12 @@ fn test_browser_fingerprint(
             Ok(response) => {
                 let elapsed = start.elapsed().as_millis() as u64;
                 result.add_success(elapsed, response.status_code, response.body.len());
-                println!("✅ {}ms, status {}, {} bytes", 
-                    elapsed, response.status_code, response.body.len());
+                println!(
+                    "✅ {}ms, status {}, {} bytes",
+                    elapsed,
+                    response.status_code,
+                    response.body.len()
+                );
             }
             Err(e) => {
                 result.add_failure();
@@ -180,10 +198,17 @@ fn test_all_browsers_http1() {
     let total_tests = results.len();
     let success_rate = (total_success as f64 / total_tests as f64) * 100.0;
 
-    println!("\n🎯 总成功率: {}/{} ({:.1}%)", total_success, total_tests, success_rate);
+    println!(
+        "\n🎯 总成功率: {}/{} ({:.1}%)",
+        total_success, total_tests, success_rate
+    );
 
     // 允许偶发的网络错误，只要成功率 >= 80% 就通过
-    assert!(success_rate >= 80.0, "浏览器指纹测试成功率过低: {:.1}%", success_rate);
+    assert!(
+        success_rate >= 80.0,
+        "浏览器指纹测试成功率过低: {:.1}%",
+        success_rate
+    );
 }
 
 #[test]
@@ -221,10 +246,17 @@ fn test_all_browsers_http2() {
     let total_tests = results.len();
     let success_rate = (total_success as f64 / total_tests as f64) * 100.0;
 
-    println!("\n🎯 总成功率: {}/{} ({:.1}%)", total_success, total_tests, success_rate);
+    println!(
+        "\n🎯 总成功率: {}/{} ({:.1}%)",
+        total_success, total_tests, success_rate
+    );
 
     // 允许偶发的网络错误，只要成功率 >= 80% 就通过
-    assert!(success_rate >= 80.0, "浏览器指纹测试成功率过低: {:.1}%", success_rate);
+    assert!(
+        success_rate >= 80.0,
+        "浏览器指纹测试成功率过低: {:.1}%",
+        success_rate
+    );
 }
 
 #[test]
@@ -337,5 +369,9 @@ fn test_all_browsers_all_protocols() {
     println!("  总请求数: {}", total_tests * TEST_ROUNDS);
 
     // 允许偶发的网络错误，只要成功率 >= 90% 就通过
-    assert!(success_rate >= 90.0, "浏览器/协议组合测试成功率过低: {:.1}%", success_rate);
+    assert!(
+        success_rate >= 90.0,
+        "浏览器/协议组合测试成功率过低: {:.1}%",
+        success_rate
+    );
 }

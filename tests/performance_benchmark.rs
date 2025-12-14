@@ -66,26 +66,30 @@ impl PerformanceMetrics {
         println!("\n╔══════════════════════════════════════════════════════════╗");
         println!("║  {} 性能报告", self.protocol);
         println!("╚══════════════════════════════════════════════════════════╝");
-        
+
         println!("\n📊 测试结果:");
-        println!("  成功: {} / {}", self.success_count, self.success_count + self.fail_count);
+        println!(
+            "  成功: {} / {}",
+            self.success_count,
+            self.success_count + self.fail_count
+        );
         println!("  失败: {}", self.fail_count);
-        
+
         if !self.total_time_ms.is_empty() {
             println!("\n⏱️  总响应时间 (ms):");
             println!("  平均: {:.2}", self.avg(&self.total_time_ms));
             println!("  最小: {}", self.min(&self.total_time_ms));
             println!("  最大: {}", self.max(&self.total_time_ms));
             println!("  中位: {:.2}", self.median(&self.total_time_ms));
-            
+
             println!("\n📦 数据大小 (bytes):");
             let body_sizes: Vec<u64> = self.body_size_bytes.iter().map(|&x| x as u64).collect();
             println!("  平均: {:.2}", self.avg(&body_sizes));
             println!("  最小: {}", self.min(&body_sizes));
             println!("  最大: {}", self.max(&body_sizes));
-            
+
             if self.success_count > 0 {
-                let throughput = (self.body_size_bytes.iter().sum::<usize>() as f64 * 1000.0) 
+                let throughput = (self.body_size_bytes.iter().sum::<usize>() as f64 * 1000.0)
                     / (self.total_time_ms.iter().sum::<u64>() as f64);
                 println!("\n🚀 吞吐量:");
                 println!("  {:.2} bytes/s", throughput);
@@ -128,7 +132,7 @@ fn benchmark_http1() {
 
     for round in 1..=TEST_ROUNDS {
         print!("  轮次 {}/{}... ", round, TEST_ROUNDS);
-        
+
         let start = Instant::now();
         match client.get(TEST_URL) {
             Ok(response) => {
@@ -141,7 +145,7 @@ fn benchmark_http1() {
                 println!("❌ 失败: {:?}", e);
             }
         }
-        
+
         // 间隔一下避免过载
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
@@ -169,7 +173,7 @@ fn benchmark_http2() {
 
     for round in 1..=TEST_ROUNDS {
         print!("  轮次 {}/{}... ", round, TEST_ROUNDS);
-        
+
         let start = Instant::now();
         match client.get(TEST_URL) {
             Ok(response) => {
@@ -182,7 +186,7 @@ fn benchmark_http2() {
                 println!("❌ 失败: {:?}", e);
             }
         }
-        
+
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
 
@@ -209,7 +213,7 @@ fn benchmark_http3() {
 
     for round in 1..=TEST_ROUNDS {
         print!("  轮次 {}/{}... ", round, TEST_ROUNDS);
-        
+
         let start = Instant::now();
         match client.get(TEST_URL) {
             Ok(response) => {
@@ -222,7 +226,7 @@ fn benchmark_http3() {
                 println!("❌ 失败: {:?}", e);
             }
         }
-        
+
         std::thread::sleep(std::time::Duration::from_millis(100));
     }
 

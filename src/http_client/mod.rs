@@ -305,9 +305,9 @@ impl HttpClient {
                 match http2::send_http2_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(_e) => {
-                         // 记录错误但继续尝试 HTTP/1.1
-                         // 在实际生产中应该使用日志系统
-                         // eprintln!("HTTP/2 尝试失败: {}，回退到 HTTP/1.1", e);
+                        // 记录错误但继续尝试 HTTP/1.1
+                        // 在实际生产中应该使用日志系统
+                        // eprintln!("HTTP/2 尝试失败: {}，回退到 HTTP/1.1", e);
                     }
                 }
             }
