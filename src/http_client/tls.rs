@@ -100,7 +100,7 @@ pub fn send_https_request(
         HttpResponse::parse(&buffer).map_err(|e| HttpClientError::InvalidResponse(e))
     }
 
-    #[cfg(feature = "native-tls-impl")]
+    #[cfg(all(feature = "native-tls-impl", not(feature = "rustls-tls")))]
     {
         use native_tls::TlsConnector as NativeTlsConnector;
 
@@ -128,6 +128,13 @@ pub fn send_https_request(
 
         // 解析响应
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
+    }
+
+    #[cfg(not(any(feature = "rustls-tls", feature = "native-tls-impl")))]
+    {
+        Err(HttpClientError::TlsError(
+            "需要启用 rustls-tls 或 native-tls-impl 特性".to_string(),
+        ))
     }
 }
 
