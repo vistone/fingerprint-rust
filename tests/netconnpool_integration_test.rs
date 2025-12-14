@@ -1,3 +1,4 @@
+#![cfg(feature = "connection-pool")]
 //! netconnpool 集成测试
 //!
 //! 使用 netconnpool-rust 库进行真实的网络连接测试
