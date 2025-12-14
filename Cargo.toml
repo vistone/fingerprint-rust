@@ -72,3 +72,5 @@ connection-pool = ["netconnpool", "httparse"]  # 连接池支持（需要 httpar
 reporter = ["chrono"]  # 报告生成器
 export = ["serde", "serde_json", "hex"]  # 配置导出功能
 crypto = ["ring"]  # 真实密钥生成（用于 TLS Handshake）
+dangerous_configuration = []  # 启用危险的 TLS 配置（禁用证书验证，仅用于调试）
+rustls-client-hello-customizer = []  # 启用 rustls ClientHello 自定义器（需要配套的 rustls fork）

@@ -7,6 +7,7 @@
 
 #![cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
 
+#[cfg(feature = "dangerous_configuration")]
 use std::sync::Arc;
 
 use crate::ClientProfile;
@@ -27,7 +28,8 @@ pub fn build_root_store() -> rustls::RootCertStore {
     root_store
 }
 
-/// 若 verify_tls=false，则安装“接受所有证书”的 verifier（危险功能，仅用于调试）
+/// 若 verify_tls=false，则安装"接受所有证书"的 verifier（危险功能，仅用于调试）
+#[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     if verify_tls {
         return;
