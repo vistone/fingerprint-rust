@@ -72,10 +72,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 }
 
 /// 构建 rustls::ClientConfig，并设置 ALPN/verify_tls。
-pub fn build_client_config(
-    verify_tls: bool,
-    alpn_protocols: Vec<Vec<u8>>,
-) -> rustls::ClientConfig {
+pub fn build_client_config(verify_tls: bool, alpn_protocols: Vec<Vec<u8>>) -> rustls::ClientConfig {
     let root_store = build_root_store();
     let mut cfg = rustls::ClientConfig::builder()
         .with_safe_defaults()
@@ -86,4 +83,3 @@ pub fn build_client_config(
     apply_verify_tls(&mut cfg, verify_tls);
     cfg
 }
-

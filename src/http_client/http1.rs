@@ -36,11 +36,9 @@ pub fn send_http1_request(
 
     // 读取响应
     let mut stream = stream;
-    let buffer = super::io::read_http1_response_bytes(
-        &mut stream,
-        super::io::DEFAULT_MAX_RESPONSE_BYTES,
-    )
-    .map_err(HttpClientError::Io)?;
+    let buffer =
+        super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
+            .map_err(HttpClientError::Io)?;
 
     // 解析响应
     HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)

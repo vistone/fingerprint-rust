@@ -47,10 +47,7 @@ fn parse_headers_for_length_and_chunked(header_bytes: &[u8]) -> (Option<usize>, 
 }
 
 /// 读取 HTTP/1.x 响应原始 bytes（headers + body）
-pub fn read_http1_response_bytes<R: Read>(
-    reader: &mut R,
-    max_bytes: usize,
-) -> io::Result<Vec<u8>> {
+pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> io::Result<Vec<u8>> {
     let mut buf: Vec<u8> = Vec::new();
     let mut tmp = [0u8; 8192];
 
@@ -107,4 +104,3 @@ pub fn read_http1_response_bytes<R: Read>(
 
     Ok(buf)
 }
-

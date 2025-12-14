@@ -149,8 +149,8 @@ async fn perform_tls_handshake(
     config: &HttpClientConfig,
 ) -> Result<tokio_rustls::client::TlsStream<tokio::net::TcpStream>> {
     use std::sync::Arc;
-    use tokio_rustls::TlsConnector;
     use tokio_rustls::rustls::ServerName;
+    use tokio_rustls::TlsConnector;
 
     let tls_config = super::rustls_utils::build_client_config(
         config.verify_tls,
