@@ -205,6 +205,7 @@ pub fn send_http3_request(
 
 #[cfg(all(test, feature = "http3"))]
 mod tests {
+    #[allow(unused_imports)]
     use super::*;
 
     #[test]

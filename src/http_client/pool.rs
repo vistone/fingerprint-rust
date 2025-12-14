@@ -96,7 +96,10 @@ impl ConnectionPoolManager {
     #[cfg(feature = "connection-pool")]
     pub fn get_pool(&self, host: &str, port: u16) -> Result<Arc<Pool>> {
         let key = format!("{}:{}", host, port);
-        let mut pools = self.pools.lock().unwrap();
+        let mut pools = self
+            .pools
+            .lock()
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("连接池锁失败: {}", e)))?;
 
         if let Some(pool) = pools.get(&key) {
             return Ok(pool.clone());
@@ -164,7 +167,13 @@ impl ConnectionPoolManager {
     /// 获取统计信息
     #[cfg(feature = "connection-pool")]
     pub fn get_stats(&self) -> Vec<PoolStats> {
-        let pools = self.pools.lock().unwrap();
+        let pools = match self.pools.lock() {
+            Ok(p) => p,
+            Err(e) => {
+                eprintln!("警告: 连接池锁失败: {}", e);
+                return Vec::new();
+            }
+        };
         pools
             .iter()
             .map(|(key, pool)| {
@@ -191,8 +200,9 @@ impl ConnectionPoolManager {
     #[cfg(feature = "connection-pool")]
     pub fn cleanup_idle(&self) {
         // netconnpool 会自动清理，这里只是提供接口
-        let pools = self.pools.lock().unwrap();
-        println!("连接池状态: {} 个端点", pools.len());
+        if let Ok(pools) = self.pools.lock() {
+            println!("连接池状态: {} 个端点", pools.len());
+        }
     }
 
     #[cfg(not(feature = "connection-pool"))]
@@ -201,12 +211,13 @@ impl ConnectionPoolManager {
     /// 关闭所有连接池
     #[cfg(feature = "connection-pool")]
     pub fn shutdown(&self) {
-        let mut pools = self.pools.lock().unwrap();
-        for (_, pool) in pools.iter() {
-            let _ = pool.Close();
+        if let Ok(mut pools) = self.pools.lock() {
+            for (_, pool) in pools.iter() {
+                let _ = pool.Close();
+            }
+            pools.clear();
+            println!("所有连接池已关闭");
         }
-        pools.clear();
-        println!("所有连接池已关闭");
     }
 
     #[cfg(not(feature = "connection-pool"))]

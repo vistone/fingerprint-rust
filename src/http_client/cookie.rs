@@ -123,14 +123,17 @@ impl CookieStore {
 
     /// 添加 Cookie
     pub fn add_cookie(&self, cookie: Cookie) {
-        let mut cookies = self.cookies.lock().unwrap();
-        let domain_cookies = cookies.entry(cookie.domain.clone()).or_default();
+        if let Ok(mut cookies) = self.cookies.lock() {
+            let domain_cookies = cookies.entry(cookie.domain.clone()).or_default();
 
-        // 检查是否已存在同名 Cookie，如果存在则更新
-        if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
-            domain_cookies[pos] = cookie;
+            // 检查是否已存在同名 Cookie，如果存在则更新
+            if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
+                domain_cookies[pos] = cookie;
+            } else {
+                domain_cookies.push(cookie);
+            }
         } else {
-            domain_cookies.push(cookie);
+            eprintln!("警告: Cookie 存储锁失败，无法添加 Cookie");
         }
     }
 
@@ -143,12 +146,25 @@ impl CookieStore {
 
     /// 获取指定域名的所有有效 Cookie
     pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
-        let cookies = self.cookies.lock().unwrap();
+        let cookies = match self.cookies.lock() {
+            Ok(c) => c,
+            Err(e) => {
+                eprintln!("警告: Cookie 存储锁失败: {}", e);
+                return Vec::new();
+            }
+        };
         let mut result = Vec::new();
 
-        // 检查完全匹配和父域名
+        // 检查完全匹配和父域名（更严格的匹配逻辑）
+        let domain_lower = domain.to_lowercase();
         for (cookie_domain, domain_cookies) in cookies.iter() {
-            if domain.ends_with(cookie_domain) || cookie_domain.ends_with(domain) {
+            let cookie_domain_lower = cookie_domain.to_lowercase();
+            // 完全匹配或 domain 是 cookie_domain 的子域名（如 example.com 匹配 .example.com）
+            if domain_lower == cookie_domain_lower
+                || (cookie_domain_lower.starts_with('.')
+                    && domain_lower.ends_with(&cookie_domain_lower))
+                || (domain_lower.ends_with(&format!(".{}", cookie_domain_lower)))
+            {
                 for cookie in domain_cookies {
                     if !cookie.is_expired() {
                         result.push(cookie.clone());
@@ -171,7 +187,7 @@ impl CookieStore {
         let matching_cookies: Vec<String> = cookies
             .iter()
             .filter(|c| path.starts_with(&c.path))
-            .map(|c| c.to_header_value())
+            .map(Cookie::to_header_value)
             .collect();
 
         if matching_cookies.is_empty() {
@@ -183,28 +199,33 @@ impl CookieStore {
 
     /// 清除指定域名的 Cookie
     pub fn clear_domain(&self, domain: &str) {
-        let mut cookies = self.cookies.lock().unwrap();
-        cookies.remove(domain);
+        if let Ok(mut cookies) = self.cookies.lock() {
+            cookies.remove(domain);
+        }
     }
 
     /// 清除所有 Cookie
     pub fn clear_all(&self) {
-        let mut cookies = self.cookies.lock().unwrap();
-        cookies.clear();
+        if let Ok(mut cookies) = self.cookies.lock() {
+            cookies.clear();
+        }
     }
 
     /// 清除过期的 Cookie
     pub fn cleanup_expired(&self) {
-        let mut cookies = self.cookies.lock().unwrap();
-        for domain_cookies in cookies.values_mut() {
-            domain_cookies.retain(|c| !c.is_expired());
+        if let Ok(mut cookies) = self.cookies.lock() {
+            for domain_cookies in cookies.values_mut() {
+                domain_cookies.retain(|c| !c.is_expired());
+            }
         }
     }
 
     /// 获取所有 Cookie 数量
     pub fn count(&self) -> usize {
-        let cookies = self.cookies.lock().unwrap();
-        cookies.values().map(|v| v.len()).sum()
+        self.cookies
+            .lock()
+            .map(|cookies| cookies.values().map(|v| v.len()).sum())
+            .unwrap_or(0)
     }
 }
 
