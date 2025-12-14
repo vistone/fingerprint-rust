@@ -60,10 +60,12 @@ fn test_all_browsers_all_protocols() {
         // 测试 HTTP/1.1
         print!("  HTTP/1.1 ... ");
         for (_name, url) in &test_urls {
-            let mut config = HttpClientConfig::default();
-            config.user_agent = user_agent.clone();
-            config.prefer_http2 = false;
-            config.prefer_http3 = false;
+            let config = HttpClientConfig {
+                user_agent: user_agent.clone(),
+                prefer_http2: false,
+                prefer_http3: false,
+                ..Default::default()
+            };
 
             let client = HttpClient::new(config);
 
@@ -82,10 +84,12 @@ fn test_all_browsers_all_protocols() {
         {
             print!("  HTTP/2   ... ");
             for (_name, url) in &test_urls {
-                let mut config = HttpClientConfig::default();
-                config.user_agent = user_agent.clone();
-                config.prefer_http2 = true;
-                config.prefer_http3 = false;
+                let config = HttpClientConfig {
+                    user_agent: user_agent.clone(),
+                    prefer_http2: true,
+                    prefer_http3: false,
+                    ..Default::default()
+                };
 
                 let client = HttpClient::new(config);
 
@@ -212,10 +216,12 @@ fn test_single_profile_all_protocols(profile_name: &str, url: &str) {
 
     // HTTP/1.1
     println!("1. HTTP/1.1 测试:");
-    let mut config_h1 = HttpClientConfig::default();
-    config_h1.user_agent = user_agent.clone();
-    config_h1.prefer_http2 = false;
-    config_h1.prefer_http3 = false;
+    let config_h1 = HttpClientConfig {
+        user_agent: user_agent.clone(),
+        prefer_http2: false,
+        prefer_http3: false,
+        ..Default::default()
+    };
 
     let client_h1 = HttpClient::new(config_h1);
     match client_h1.get(url) {
@@ -235,10 +241,12 @@ fn test_single_profile_all_protocols(profile_name: &str, url: &str) {
     #[cfg(feature = "http2")]
     {
         println!("\n2. HTTP/2 测试:");
-        let mut config_h2 = HttpClientConfig::default();
-        config_h2.user_agent = user_agent.clone();
-        config_h2.prefer_http2 = true;
-        config_h2.prefer_http3 = false;
+        let config_h2 = HttpClientConfig {
+            user_agent: user_agent.clone(),
+            prefer_http2: true,
+            prefer_http3: false,
+            ..Default::default()
+        };
 
         let client_h2 = HttpClient::new(config_h2);
         match client_h2.get(url) {

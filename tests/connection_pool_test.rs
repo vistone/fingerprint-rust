@@ -81,8 +81,10 @@ fn test_connection_pool_multiple_hosts() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
-    let mut config = HttpClientConfig::default();
-    config.user_agent = user_agent;
+    let config = HttpClientConfig {
+        user_agent,
+        ..Default::default()
+    };
 
     let client = HttpClient::with_pool(config, PoolManagerConfig::default());
 
