@@ -12,7 +12,11 @@ pub mod cookie;
 pub mod http1;
 pub mod http1_pool;
 pub mod http2;
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
+pub mod http2_pool;
 pub mod http3;
+#[cfg(all(feature = "connection-pool", feature = "http3"))]
+pub mod http3_pool;
 pub mod pool;
 pub mod proxy;
 pub mod reporter;

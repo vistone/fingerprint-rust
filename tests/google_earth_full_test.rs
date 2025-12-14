@@ -225,9 +225,10 @@ fn test_google_earth_http1_with_pool() {
     if let Some(stats) = client.pool_stats() {
         println!("\n📊 连接池统计:");
         for stat in stats {
-            println!("  主机: {}:{}", stat.host, stat.port);
+            println!("  端点: {}", stat.endpoint);
             println!("  总请求: {}", stat.total_requests);
             println!("  活跃连接: {}", stat.active_connections);
+            println!("  空闲连接: {}", stat.idle_connections);
         }
     }
 

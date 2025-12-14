@@ -68,22 +68,49 @@ pub fn send_https_request(
             )
         }));
 
-        // 构建 TLS 配置
-        let tls_config = ClientConfig::builder()
+        // 构建 TLS 配置（添加 ALPN 支持）
+        let mut tls_config = ClientConfig::builder()
             .with_safe_defaults()
             .with_root_certificates(root_store)
             .with_no_client_auth();
 
+        // 设置 ALPN 协议（优先 http/1.1，除非明确要求 HTTP/2）
+        if config.prefer_http2 {
+            tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+        } else {
+            tls_config.alpn_protocols = vec![b"http/1.1".to_vec()];
+        }
+
         let server_name = ServerName::try_from(host)
             .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
 
-        let conn = ClientConnection::new(Arc::new(tls_config), server_name)
+        let mut conn = ClientConnection::new(Arc::new(tls_config), server_name)
             .map_err(|e| HttpClientError::TlsError(format!("TLS 连接创建失败: {}", e)))?;
 
         let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
-        // 发送 HTTP 请求
+        // 完成 TLS 握手（强制完成 I/O）
         use std::io::{Read, Write};
+        tls_stream
+            .flush()
+            .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
+
+        // 检查协商的 ALPN 协议
+        let negotiated_protocol = tls_stream.conn.alpn_protocol();
+        if let Some(proto) = negotiated_protocol {
+            let proto_str = String::from_utf8_lossy(proto);
+            #[cfg(debug_assertions)]
+            eprintln!("ALPN 协商结果: {}", proto_str);
+
+            // 如果协商的是 HTTP/2，但我们不支持，返回错误
+            if proto == b"h2" && !config.prefer_http2 {
+                return Err(HttpClientError::TlsError(
+                    "服务器选择了 HTTP/2，但配置中未启用 HTTP/2 支持".to_string(),
+                ));
+            }
+        }
+
+        // 发送 HTTP 请求
         let http_request = request.build_http1_request(host, path);
         tls_stream
             .write_all(http_request.as_bytes())

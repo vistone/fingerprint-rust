@@ -19,7 +19,6 @@ pub async fn send_http3_request_with_pool(
     pool_manager: &Arc<ConnectionPoolManager>,
 ) -> Result<HttpResponse> {
     use bytes::Buf;
-    use h3::client::SendRequest;
     use h3_quinn::quinn;
     use http::{Request as HttpRequest2, Version};
 
@@ -96,7 +95,7 @@ pub async fn send_http3_request_with_pool(
     });
 
     // 构建 HTTP/3 请求
-    let uri = format!("https://{}:{}{}", host, port, path)
+    let uri: http::Uri = format!("https://{}:{}{}", host, port, path)
         .parse()
         .map_err(|e| HttpClientError::InvalidRequest(format!("无效的 URI: {}", e)))?;
 
@@ -107,6 +106,8 @@ pub async fn send_http3_request_with_pool(
             super::request::HttpMethod::Put => http::Method::PUT,
             super::request::HttpMethod::Delete => http::Method::DELETE,
             super::request::HttpMethod::Head => http::Method::HEAD,
+            super::request::HttpMethod::Options => http::Method::OPTIONS,
+            super::request::HttpMethod::Patch => http::Method::PATCH,
         })
         .uri(uri)
         .version(Version::HTTP_3)
@@ -153,22 +154,24 @@ pub async fn send_http3_request_with_pool(
 
     // 解析响应
     let status_code = response.status().as_u16();
+    let status_text = http::StatusCode::from_u16(status_code)
+        .ok()
+        .and_then(|s| s.canonical_reason())
+        .unwrap_or("Unknown")
+        .to_string();
     let headers = response
         .headers()
         .iter()
-        .map(|(k, v)| {
-            (
-                k.as_str().to_string(),
-                v.to_str().unwrap_or("").to_string(),
-            )
-        })
+        .map(|(k, v)| (k.as_str().to_string(), v.to_str().unwrap_or("").to_string()))
         .collect();
 
     Ok(HttpResponse {
         http_version: "HTTP/3".to_string(),
         status_code,
+        status_text,
         headers,
         body: body_data,
+        response_time_ms: 0, // TODO: 添加计时
     })
 }
 

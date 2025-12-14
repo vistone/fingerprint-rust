@@ -20,7 +20,6 @@ pub async fn send_http2_request_with_pool(
 ) -> Result<HttpResponse> {
     use h2::client;
     use http::{Request as HttpRequest2, Version};
-    use std::io::{Read, Write};
     use tokio_rustls::TlsConnector;
 
     // 从连接池获取连接
@@ -37,14 +36,14 @@ pub async fn send_http2_request_with_pool(
         .ok_or_else(|| HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string()))?;
 
     // 克隆 TcpStream 以便我们可以使用它
-    let tcp_stream = tcp_stream
-        .try_clone()
-        .map_err(HttpClientError::Io)?;
+    let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     // 转换为 tokio TcpStream
-    tcp_stream.set_nonblocking(true).map_err(HttpClientError::Io)?;
-    let tcp_stream = tokio::net::TcpStream::from_std(tcp_stream)
-        .map_err(|e| HttpClientError::Io(e))?;
+    tcp_stream
+        .set_nonblocking(true)
+        .map_err(HttpClientError::Io)?;
+    let tcp_stream =
+        tokio::net::TcpStream::from_std(tcp_stream).map_err(|e| HttpClientError::Io(e))?;
 
     // TLS 握手
     let mut root_store = rustls::RootCertStore::empty();
@@ -86,7 +85,7 @@ pub async fn send_http2_request_with_pool(
     });
 
     // 构建 HTTP/2 请求
-    let uri = format!("https://{}:{}{}", host, port, path)
+    let uri: http::Uri = format!("https://{}:{}{}", host, port, path)
         .parse()
         .map_err(|e| HttpClientError::InvalidRequest(format!("无效的 URI: {}", e)))?;
 
@@ -97,6 +96,8 @@ pub async fn send_http2_request_with_pool(
             super::request::HttpMethod::Put => http::Method::PUT,
             super::request::HttpMethod::Delete => http::Method::DELETE,
             super::request::HttpMethod::Head => http::Method::HEAD,
+            super::request::HttpMethod::Options => http::Method::OPTIONS,
+            super::request::HttpMethod::Patch => http::Method::PATCH,
         })
         .uri(uri)
         .version(Version::HTTP_2)
@@ -111,7 +112,7 @@ pub async fn send_http2_request_with_pool(
         .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;
 
     // 发送请求
-    let (response, mut body_stream) = client
+    let (response, _send_stream) = client
         .send_request(http2_request, true)
         .map_err(|e| HttpClientError::Http2Error(format!("发送请求失败: {}", e)))?;
 
@@ -120,33 +121,40 @@ pub async fn send_http2_request_with_pool(
         .await
         .map_err(|e| HttpClientError::Http2Error(format!("接收响应失败: {}", e)))?;
 
+    // 先提取 status 和 headers
+    let status_code = response.status().as_u16();
+    let status_text = http::StatusCode::from_u16(status_code)
+        .ok()
+        .and_then(|s| s.canonical_reason())
+        .unwrap_or("Unknown")
+        .to_string();
+    let headers: std::collections::HashMap<String, String> = response
+        .headers()
+        .iter()
+        .map(|(k, v)| (k.as_str().to_string(), v.to_str().unwrap_or("").to_string()))
+        .collect();
+
     // 读取响应体
+    let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
+
     while let Some(chunk) = body_stream.data().await {
         let chunk = chunk.map_err(|e| {
             HttpClientError::Io(std::io::Error::other(format!("读取 body 失败: {}", e)))
         })?;
         body_data.extend_from_slice(&chunk);
-    }
 
-    // 解析响应
-    let status_code = response.status().as_u16();
-    let headers = response
-        .headers()
-        .iter()
-        .map(|(k, v)| {
-            (
-                k.as_str().to_string(),
-                v.to_str().unwrap_or("").to_string(),
-            )
-        })
-        .collect();
+        // 释放流控制窗口
+        let _ = body_stream.flow_control().release_capacity(chunk.len());
+    }
 
     Ok(HttpResponse {
         http_version: "HTTP/2".to_string(),
         status_code,
+        status_text,
         headers,
         body: body_data,
+        response_time_ms: 0, // TODO: 添加计时
     })
 }
 
