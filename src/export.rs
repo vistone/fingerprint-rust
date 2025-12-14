@@ -2,12 +2,15 @@
 //!
 //! 将 ClientHelloSpec 导出为 JSON 格式，以便供其他语言（如 Go uTLS）使用。
 
+#[cfg(feature = "export")]
 use crate::tls_config::ClientHelloSpec;
+#[cfg(feature = "export")]
 use crate::tls_extensions::*;
-// use crate::dicttls::extensions::*; // Unused
+#[cfg(feature = "export")]
 use serde::{Deserialize, Serialize};
 
 /// 导出的配置结构体
+#[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExportConfig {
     pub cipher_suites: Vec<u16>,
@@ -18,6 +21,7 @@ pub struct ExportConfig {
 }
 
 /// 导出的 KeyShare
+#[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExportKeyShare {
     pub group: u16,
@@ -25,6 +29,7 @@ pub struct ExportKeyShare {
 }
 
 /// 导出的扩展枚举
+#[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum ExportExtension {
@@ -51,11 +56,13 @@ pub enum ExportExtension {
 }
 
 /// 将 ClientHelloSpec 转换为 JSON 字符串
+#[cfg(feature = "export")]
 pub fn export_config_json(spec: &ClientHelloSpec) -> Result<String, serde_json::Error> {
     let export = ExportConfig::from(spec);
     serde_json::to_string_pretty(&export)
 }
 
+#[cfg(feature = "export")]
 impl From<&ClientHelloSpec> for ExportConfig {
     fn from(spec: &ClientHelloSpec) -> Self {
         Self {
@@ -123,7 +130,20 @@ impl From<&ClientHelloSpec> for ExportConfig {
                             .iter()
                             .map(|ks| ExportKeyShare {
                                 group: ks.group,
-                                data_hex: hex::encode(&ks.data),
+                                data_hex: {
+                                    #[cfg(feature = "hex")]
+                                    {
+                                        hex::encode(&ks.data)
+                                    }
+                                    #[cfg(not(feature = "hex"))]
+                                    {
+                                        // 如果没有 hex feature，使用十六进制格式手动编码
+                                        ks.data
+                                            .iter()
+                                            .map(|b| format!("{:02x}", b))
+                                            .collect::<String>()
+                                    }
+                                },
                             })
                             .collect();
                         return ExportExtension::KeyShare(shares);

@@ -193,8 +193,14 @@ impl HttpResponse {
     /// 解压缩响应体
     fn decompress(data: &[u8], encoding: &str) -> Result<Vec<u8>, String> {
         match encoding.to_lowercase().as_str() {
+            #[cfg(feature = "compression")]
             "gzip" => Self::decompress_gzip(data),
+            #[cfg(not(feature = "compression"))]
+            "gzip" => Err("gzip 解压需要 --features compression".to_string()),
+            #[cfg(feature = "compression")]
             "deflate" => Self::decompress_deflate(data),
+            #[cfg(not(feature = "compression"))]
+            "deflate" => Err("deflate 解压需要 --features compression".to_string()),
             "br" => Self::decompress_brotli(data),
             "identity" | "" => Ok(data.to_vec()),
             _ => Err(format!("不支持的编码: {}", encoding)),
@@ -202,6 +208,7 @@ impl HttpResponse {
     }
 
     /// 解压 gzip
+    #[cfg(feature = "compression")]
     fn decompress_gzip(data: &[u8]) -> Result<Vec<u8>, String> {
         #[cfg(not(feature = "compression"))]
         {
@@ -224,7 +231,13 @@ impl HttpResponse {
         Ok(result)
     }
 
+    #[cfg(not(feature = "compression"))]
+    fn decompress_gzip(_data: &[u8]) -> Result<Vec<u8>, String> {
+        Err("压缩功能未启用，请使用 --features compression 编译".to_string())
+    }
+
     /// 解压 deflate
+    #[cfg(feature = "compression")]
     fn decompress_deflate(data: &[u8]) -> Result<Vec<u8>, String> {
         #[cfg(not(feature = "compression"))]
         {
@@ -245,6 +258,11 @@ impl HttpResponse {
             .map_err(|e| format!("deflate 解压失败: {}", e))?;
         #[cfg(feature = "compression")]
         Ok(result)
+    }
+
+    #[cfg(not(feature = "compression"))]
+    fn decompress_deflate(_data: &[u8]) -> Result<Vec<u8>, String> {
+        Err("压缩功能未启用，请使用 --features compression 编译".to_string())
     }
 
     /// 解压 brotli
