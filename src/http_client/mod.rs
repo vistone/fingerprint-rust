@@ -8,13 +8,21 @@
 //! - 支持 HTTP/1.1 和 HTTP/2
 //! - TLS 层设计为可替换
 
+pub mod cookie;
 pub mod http1;
 pub mod http2;
 pub mod http3;
+pub mod pool;
+pub mod proxy;
+pub mod reporter;
 pub mod request;
 pub mod response;
 pub mod tls;
 
+pub use cookie::{Cookie, CookieStore, SameSite};
+pub use pool::{ConnectionPoolManager, PoolManagerConfig, PoolStats};
+pub use proxy::{ProxyConfig, ProxyType};
+pub use reporter::{ReportFormat, ReportSection, ValidationReport};
 pub use request::{HttpMethod, HttpRequest};
 pub use response::HttpResponse;
 pub use tls::TlsConnector;
@@ -80,6 +88,8 @@ pub struct HttpClientConfig {
     pub prefer_http2: bool,
     /// 优先使用 HTTP/3
     pub prefer_http3: bool,
+    /// Cookie 存储（可选）
+    pub cookie_store: Option<Arc<CookieStore>>,
 }
 
 impl Default for HttpClientConfig {
@@ -95,6 +105,7 @@ impl Default for HttpClientConfig {
             verify_tls: true,
             prefer_http2: true,  // 默认优先使用 HTTP/2
             prefer_http3: false, // HTTP/3 默认关闭（需要特殊配置）
+            cookie_store: None,
         }
     }
 }
@@ -104,12 +115,27 @@ impl Default for HttpClientConfig {
 /// 使用 netconnpool 管理连接，应用 fingerprint-rust 的配置
 pub struct HttpClient {
     config: HttpClientConfig,
+    /// 连接池管理器（可选）
+    pool_manager: Option<Arc<ConnectionPoolManager>>,
 }
+
+use std::sync::Arc;
 
 impl HttpClient {
     /// 创建新的 HTTP 客户端
     pub fn new(config: HttpClientConfig) -> Self {
-        Self { config }
+        Self {
+            config,
+            pool_manager: None,
+        }
+    }
+
+    /// 创建带连接池的 HTTP 客户端
+    pub fn with_pool(config: HttpClientConfig, pool_config: PoolManagerConfig) -> Self {
+        Self {
+            config,
+            pool_manager: Some(Arc::new(ConnectionPoolManager::new(pool_config))),
+        }
     }
 
     /// 使用浏览器配置创建客户端
@@ -119,6 +145,18 @@ impl HttpClient {
         config.headers = headers;
         config.user_agent = user_agent;
         Self::new(config)
+    }
+
+    /// 获取连接池统计信息
+    pub fn pool_stats(&self) -> Option<Vec<PoolStats>> {
+        self.pool_manager.as_ref().map(|pm| pm.get_stats())
+    }
+
+    /// 清理空闲连接
+    pub fn cleanup_idle_connections(&self) {
+        if let Some(pm) = &self.pool_manager {
+            pm.cleanup_idle();
+        }
     }
 
     /// 发送 GET 请求

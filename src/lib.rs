@@ -40,8 +40,9 @@ pub use http2_config::{
     safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
 };
 pub use http_client::{
-    HttpClient, HttpClientConfig, HttpClientError, HttpMethod, HttpRequest, HttpResponse,
-    TlsConnector,
+    Cookie, CookieStore, HttpClient, HttpClientConfig, HttpClientError, HttpMethod, HttpRequest,
+    HttpResponse, ProxyConfig, ProxyType, ReportFormat, ReportSection, SameSite, TlsConnector,
+    ValidationReport,
 };
 pub use profiles::{mapped_tls_clients, ClientHelloID, ClientProfile};
 pub use random::{
