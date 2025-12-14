@@ -135,7 +135,7 @@ impl CookieStore {
                 domain_cookies.push(cookie);
             }
         } else {
-            log::warn!("Cookie 存储锁失败，无法添加 Cookie");
+            eprintln!("警告: Cookie 存储锁失败，无法添加 Cookie");
         }
     }
 
@@ -151,7 +151,7 @@ impl CookieStore {
         let cookies = match self.cookies.lock() {
             Ok(c) => c,
             Err(e) => {
-                log::warn!("Cookie 存储锁失败: {}", e);
+                eprintln!("警告: Cookie 存储锁失败: {}", e);
                 return Vec::new();
             }
         };

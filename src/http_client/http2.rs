@@ -64,7 +64,7 @@ async fn send_http2_request_async(
     // 在后台驱动 HTTP/2 连接
     tokio::spawn(async move {
         if let Err(e) = h2_conn.await {
-            log::warn!("HTTP/2 连接错误: {}", e);
+            eprintln!("警告: HTTP/2 连接错误: {}", e);
         }
     });
 
