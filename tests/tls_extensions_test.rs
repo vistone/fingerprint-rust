@@ -192,7 +192,7 @@ fn test_compress_cert_extension() {
     let algorithms = vec![0x0002];
     let ext = UtlsCompressCertExtension::new(algorithms);
     assert_eq!(ext.extension_id(), 27);
-    assert_eq!(ext.len(), 6 + 2 * 1);
+    assert_eq!(ext.len(), 6 + 2);
 
     let mut buf = vec![0u8; 8];
     let n = ext.read(&mut buf).unwrap();
