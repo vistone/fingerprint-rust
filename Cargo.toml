@@ -77,4 +77,4 @@ rustls-client-hello-customizer = []  # 启用 rustls ClientHello 自定义器（
 
 # 使用带 ClientHello Customizer 的 rustls 0.21 backport（路线 A：复用 rustls，仅定制 ClientHello）
 [patch.crates-io]
-rustls = { git = "https://github.com/vistone/rustls", branch = "backport/rustls-0.21-clienthello-customizer" }
+rustls = { path = "vendor/rustls" }
