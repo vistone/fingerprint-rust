@@ -104,8 +104,8 @@ fn test_browser_fingerprint(
 ) -> BrowserTestResult {
     let mut result = BrowserTestResult::new(browser, version, protocol);
 
-    // 获取浏览器 Profile
-    let _profile = match browser {
+    // 获取浏览器 Profile（用于启用 TLS ClientHello customizer 路径）
+    let profile = match browser {
         "Chrome" if version == "103" => chrome_103(),
         "Chrome" if version == "133" => chrome_133(),
         "Firefox" if version == "133" => firefox_133(),
@@ -118,7 +118,7 @@ fn test_browser_fingerprint(
         }
     };
 
-    // TODO: 将来需要在 HttpClientConfig 中使用 profile 来设置 TLS 指纹
+    // 使用 profile 使 rustls 握手尽量贴近浏览器指纹（路线 A）
 
     println!("  🔹 {} {} - {}", browser, version, protocol);
 
@@ -131,6 +131,7 @@ fn test_browser_fingerprint(
                 "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) {}/{}",
                 browser, version
             ),
+            profile: Some(profile.clone()),
             prefer_http2: prefer_h2,
             prefer_http3: prefer_h3,
             ..Default::default()

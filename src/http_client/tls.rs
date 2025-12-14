@@ -63,7 +63,7 @@ pub fn send_https_request(
 
         let tls_config = super::rustls_utils::build_client_config(
             config.verify_tls,
-            Vec::new(),
+            vec![b"http/1.1".to_vec()],
             config.profile.as_ref(),
         );
         let server_name = ServerName::try_from(host)
@@ -97,7 +97,7 @@ pub fn send_https_request(
         // 构建 TLS 配置（尊重 verify_tls）
         let tls_config = super::rustls_utils::build_client_config(
             config.verify_tls,
-            Vec::new(),
+            vec![b"http/1.1".to_vec()],
             config.profile.as_ref(),
         );
 
@@ -210,7 +210,7 @@ pub fn send_https_request_with_pool(
 
         let tls_config = super::rustls_utils::build_client_config(
             config.verify_tls,
-            Vec::new(),
+            vec![b"http/1.1".to_vec()],
             config.profile.as_ref(),
         );
         let server_name = ServerName::try_from(host)
