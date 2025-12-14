@@ -102,11 +102,14 @@ async fn send_http3_request_async(
         .version(http::Version::HTTP_3);
 
     // 添加 headers
-    http_request = http_request.header("host", host);
+    // 注意：不要手动添加 host header，h3 会自动从 URI 提取
     http_request = http_request.header("user-agent", &config.user_agent);
 
     for (key, value) in &request.headers {
-        http_request = http_request.header(key, value);
+        // 跳过 host header（如果用户传入了）
+        if key.to_lowercase() != "host" {
+            http_request = http_request.header(key, value);
+        }
     }
 
     let http_request = http_request

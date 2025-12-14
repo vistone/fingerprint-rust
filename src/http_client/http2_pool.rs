@@ -43,7 +43,7 @@ pub async fn send_http2_request_with_pool(
         .set_nonblocking(true)
         .map_err(HttpClientError::Io)?;
     let tcp_stream =
-        tokio::net::TcpStream::from_std(tcp_stream).map_err(|e| HttpClientError::Io(e))?;
+        tokio::net::TcpStream::from_std(tcp_stream).map_err(HttpClientError::Io)?;
 
     // TLS 握手
     let mut root_store = rustls::RootCertStore::empty();
@@ -101,12 +101,14 @@ pub async fn send_http2_request_with_pool(
         })
         .uri(uri)
         .version(Version::HTTP_2)
-        .header("host", host)
+        // 不要手动添加 host header，h2 会自动从 URI 提取
         .header("user-agent", &config.user_agent);
 
     let http2_request = request
         .headers
         .iter()
+        // 跳过 host header
+        .filter(|(k, _)| k.to_lowercase() != "host")
         .fold(http2_request, |builder, (k, v)| builder.header(k, v))
         .body(())
         .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;

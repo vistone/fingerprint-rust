@@ -84,7 +84,7 @@ pub fn send_https_request(
         let server_name = ServerName::try_from(host)
             .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
 
-        let mut conn = ClientConnection::new(Arc::new(tls_config), server_name)
+        let conn = ClientConnection::new(Arc::new(tls_config), server_name)
             .map_err(|e| HttpClientError::TlsError(format!("TLS 连接创建失败: {}", e)))?;
 
         let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
@@ -117,11 +117,21 @@ pub fn send_https_request(
             .map_err(HttpClientError::Io)?;
         tls_stream.flush().map_err(HttpClientError::Io)?;
 
-        // 读取响应
+        // 读取响应（使用分块读取避免 UnexpectedEof）
         let mut buffer = Vec::new();
-        tls_stream
-            .read_to_end(&mut buffer)
-            .map_err(HttpClientError::Io)?;
+        let mut chunk = [0u8; 8192];
+
+        loop {
+            match tls_stream.read(&mut chunk) {
+                Ok(0) => break, // 连接正常关闭
+                Ok(n) => buffer.extend_from_slice(&chunk[..n]),
+                Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
+                    // 服务器关闭连接，但我们可能已经读取了完整响应
+                    break;
+                }
+                Err(e) => return Err(HttpClientError::Io(e)),
+            }
+        }
 
         // 解析响应
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
@@ -148,11 +158,21 @@ pub fn send_https_request(
             .map_err(HttpClientError::Io)?;
         tls_stream.flush().map_err(HttpClientError::Io)?;
 
-        // 读取响应
+        // 读取响应（使用分块读取避免 UnexpectedEof）
         let mut buffer = Vec::new();
-        tls_stream
-            .read_to_end(&mut buffer)
-            .map_err(HttpClientError::Io)?;
+        let mut chunk = [0u8; 8192];
+
+        loop {
+            match tls_stream.read(&mut chunk) {
+                Ok(0) => break, // 连接正常关闭
+                Ok(n) => buffer.extend_from_slice(&chunk[..n]),
+                Err(e) if e.kind() == std::io::ErrorKind::UnexpectedEof => {
+                    // 服务器关闭连接，但我们可能已经读取了完整响应
+                    break;
+                }
+                Err(e) => return Err(HttpClientError::Io(e)),
+            }
+        }
 
         // 解析响应
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)

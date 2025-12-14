@@ -111,12 +111,14 @@ pub async fn send_http3_request_with_pool(
         })
         .uri(uri)
         .version(Version::HTTP_3)
-        .header("host", host)
+        // 不要手动添加 host header，h3 会自动从 URI 提取
         .header("user-agent", &config.user_agent);
 
     let http3_request = request
         .headers
         .iter()
+        // 跳过 host header
+        .filter(|(k, _)| k.to_lowercase() != "host")
         .fold(http3_request, |builder, (k, v)| builder.header(k, v))
         .body(())
         .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;
