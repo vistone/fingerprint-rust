@@ -250,6 +250,9 @@ impl HttpResponse {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::io::Write;
+    use flate2::write::GzEncoder;
+    use flate2::Compression;
 
     #[test]
     fn test_parse_response() {
@@ -278,5 +281,77 @@ mod tests {
         assert_eq!(response.status_code, 404);
         assert_eq!(response.status_text, "Not Found");
         assert!(!response.is_success());
+    }
+
+    #[test]
+    fn test_chunked_encoding() {
+        // Wiki (4)
+        // pedia (5)
+        // " in\r\n\r\nchunks." (14) -> E
+        let raw = b"HTTP/1.1 200 OK\r\n\
+                    Transfer-Encoding: chunked\r\n\
+                    \r\n\
+                    4\r\n\
+                    Wiki\r\n\
+                    5\r\n\
+                    pedia\r\n\
+                    E\r\n\
+                    \x20in\r\n\
+                    \r\n\
+                    chunks.\r\n\
+                    0\r\n\
+                    \r\n";
+
+        let response = HttpResponse::parse(raw).expect("Chunked 解析失败");
+        assert_eq!(response.body_as_string().unwrap(), "Wikipedia in\r\n\r\nchunks.");
+    }
+
+    #[test]
+    fn test_gzip_compression() {
+        let data = "Hello Gzip World";
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(data.as_bytes()).unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        let mut raw = b"HTTP/1.1 200 OK\r\n\
+                       Content-Encoding: gzip\r\n\
+                       \r\n".to_vec();
+        raw.extend_from_slice(&compressed);
+
+        let response = HttpResponse::parse(&raw).expect("Gzip 解析失败");
+        assert_eq!(response.body_as_string().unwrap(), data);
+    }
+
+    #[test]
+    fn test_chunked_and_gzip() {
+        let data = "Hello Chunked Gzip World";
+        let mut encoder = GzEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(data.as_bytes()).unwrap();
+        let compressed = encoder.finish().unwrap();
+
+        // 将压缩数据分块
+        let chunk1 = &compressed[0..10];
+        let chunk2 = &compressed[10..];
+
+        let mut raw = b"HTTP/1.1 200 OK\r\n\
+                       Transfer-Encoding: chunked\r\n\
+                       Content-Encoding: gzip\r\n\
+                       \r\n".to_vec();
+
+        // Chunk 1
+        raw.extend_from_slice(format!("{:x}\r\n", chunk1.len()).as_bytes());
+        raw.extend_from_slice(chunk1);
+        raw.extend_from_slice(b"\r\n");
+
+        // Chunk 2
+        raw.extend_from_slice(format!("{:x}\r\n", chunk2.len()).as_bytes());
+        raw.extend_from_slice(chunk2);
+        raw.extend_from_slice(b"\r\n");
+
+        // Last chunk
+        raw.extend_from_slice(b"0\r\n\r\n");
+
+        let response = HttpResponse::parse(&raw).expect("Chunked+Gzip 解析失败");
+        assert_eq!(response.body_as_string().unwrap(), data);
     }
 }
