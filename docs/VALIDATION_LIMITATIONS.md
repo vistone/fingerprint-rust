@@ -146,7 +146,7 @@ let result = get_random_fingerprint_by_browser("chrome")?;
 1. **GitHub 参考项目**
    - https://github.com/refraction-networking/utls
    - https://github.com/biandratti/huginn-net
-   - https://github.com/vistone/fingerprint (Go 版本)
+   - https://github.com/vistone/fingerprint-rust (Go 版本)
 
 2. **自己抓取数据**
    - 使用 Wireshark 抓包
@@ -275,7 +275,7 @@ let result = get_random_fingerprint_by_browser("chrome")?;
 
 - [utls (Go)](https://github.com/refraction-networking/utls)
 - [huginn-net (Rust)](https://github.com/biandratti/huginn-net)
-- [fingerprint (Go)](https://github.com/vistone/fingerprint)
+- [fingerprint (Go)](https://github.com/vistone/fingerprint-rust)
 
 ### 指纹检测工具
 

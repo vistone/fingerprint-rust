@@ -74,7 +74,7 @@ cargo publish
 
 ### 4. 创建 GitHub Release
 
-1. 访问 https://github.com/vistone/fingerprint/releases/new
+1. 访问 https://github.com/vistone/fingerprint-rust/releases/new
 2. 选择标签 `v1.0.0`
 3. 标题: `v1.0.0 - First Release`
 4. 描述: 使用 `docs/RELEASE_NOTES.md` 的内容
@@ -102,7 +102,7 @@ cargo publish
 ## 注意事项
 
 1. **Badges URL**: 需要根据实际的 GitHub 仓库 URL 调整
-   - 当前配置使用 `vistone/fingerprint`
+   - 当前配置使用 `vistone/fingerprint-rust`
    - 如果仓库名不同，需要修改
 
 2. **CI Workflow**: 

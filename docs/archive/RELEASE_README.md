@@ -91,7 +91,7 @@ git push origin v1.0.0
 
 ### 步骤 5: 创建 GitHub Release（可选）
 
-1. 访问: https://github.com/vistone/fingerprint/releases/new
+1. 访问: https://github.com/vistone/fingerprint-rust/releases/new
 2. 选择标签: `v1.0.0`
 3. 标题: `v1.0.0 - First Release`
 4. 描述: 复制 `docs/RELEASE_NOTES.md` 的内容
@@ -106,11 +106,11 @@ git push origin v1.0.0
 [![crates.io](https://img.shields.io/crates/v/fingerprint.svg)](https://crates.io/crates/fingerprint)
 [![Downloads](https://img.shields.io/crates/d/fingerprint.svg)](https://crates.io/crates/fingerprint)
 [![License](https://img.shields.io/badge/license-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![CI](https://github.com/vistone/fingerprint/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vistone/fingerprint/actions)
+[![CI](https://github.com/vistone/fingerprint-rust/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/vistone/fingerprint-rust/actions)
 [![Pure Rust](https://img.shields.io/badge/pure-Rust-brightgreen.svg)](https://www.rust-lang.org/)
 ```
 
-**注意**: Badges 中的 URL 使用 `vistone/fingerprint`，如果您的仓库名不同，请修改 README.md。
+**注意**: Badges 中的 URL 使用 `vistone/fingerprint-rust`，如果您的仓库名不同，请修改 README.md。
 
 ## ⚠️ 重要提示
 

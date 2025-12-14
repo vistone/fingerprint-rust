@@ -116,7 +116,7 @@ git diff
    - 如果需要推送到 `main` 或 `master`，需要先切换或合并
 
 2. **Badges URL**: README.md 中的 badges 使用以下 URL：
-   - GitHub: `vistone/fingerprint`
+   - GitHub: `vistone/fingerprint-rust`
    - 如果仓库名不同，需要修改 README.md
 
 3. **CI Workflow**: 

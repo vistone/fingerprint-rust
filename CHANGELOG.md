@@ -37,4 +37,4 @@
 - ✅ 8 个文档测试
 - ✅ 总计 75 个测试全部通过
 
-[1.0.0]: https://github.com/vistone/fingerprint/releases/tag/v1.0.0
+[1.0.0]: https://github.com/vistone/fingerprint-rust/releases/tag/v1.0.0
