@@ -186,12 +186,11 @@ pub fn send_http3_request(
     ))
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "http3"))]
 mod tests {
     use super::*;
 
     #[test]
-    #[cfg(feature = "http3")]
     #[ignore]
     fn test_http3_request() {
         let request = HttpRequest::new(
