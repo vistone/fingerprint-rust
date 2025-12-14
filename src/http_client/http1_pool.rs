@@ -5,8 +5,6 @@
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
-use std::io::{Read, Write};
-use std::sync::Arc;
 
 /// 使用连接池发送 HTTP/1.1 请求
 #[cfg(feature = "connection-pool")]
