@@ -1,12 +1,12 @@
 //! HTTP 客户端测试
-//! 
+//!
 //! 测试 fingerprint-rust + 自己的 HTTP 客户端库
-//! 
+//!
 //! 运行方式：
 //! ```bash
 //! # 本地测试（不需要网络）
 //! cargo test --test http_client_test
-//! 
+//!
 //! # 网络测试
 //! cargo test --test http_client_test -- --ignored --nocapture
 //! ```
@@ -18,7 +18,7 @@ use std::time::Instant;
 fn test_http_client_creation() {
     // 获取浏览器指纹
     let fp_result = get_random_fingerprint_by_browser("chrome").expect("生成指纹失败");
-    
+
     // 创建 HTTP 客户端配置
     let config = HttpClientConfig {
         user_agent: fp_result.user_agent.clone(),
@@ -26,9 +26,9 @@ fn test_http_client_creation() {
         profile: Some(fp_result.profile.clone()),
         ..Default::default()
     };
-    
+
     let client = HttpClient::new(config);
-    
+
     println!("✅ HTTP 客户端创建成功");
     println!("   User-Agent: {}", fp_result.user_agent);
     println!("   Profile: {}", fp_result.hello_client_id);
@@ -37,34 +37,46 @@ fn test_http_client_creation() {
 #[test]
 fn test_url_parsing() {
     let client = HttpClient::new(HttpClientConfig::default());
-    
+
     // 测试各种 URL 格式
     let test_cases = vec![
-        ("https://example.com/path", ("https", "example.com", 443, "/path")),
-        ("http://example.com:8080/api", ("http", "example.com", 8080, "/api")),
-        ("https://api.github.com/users", ("https", "api.github.com", 443, "/users")),
+        (
+            "https://example.com/path",
+            ("https", "example.com", 443, "/path"),
+        ),
+        (
+            "http://example.com:8080/api",
+            ("http", "example.com", 8080, "/api"),
+        ),
+        (
+            "https://api.github.com/users",
+            ("https", "api.github.com", 443, "/users"),
+        ),
     ];
-    
+
     for (url, (exp_scheme, exp_host, exp_port, exp_path)) in test_cases {
         let request = HttpRequest::new(HttpMethod::Get, url);
         println!("✅ 测试 URL: {}", url);
-        println!("   预期: {}://{}:{}{}", exp_scheme, exp_host, exp_port, exp_path);
+        println!(
+            "   预期: {}://{}:{}{}",
+            exp_scheme, exp_host, exp_port, exp_path
+        );
     }
 }
 
 #[test]
 fn test_http_request_builder() {
     let fp_result = get_random_fingerprint_by_browser("firefox").expect("生成指纹失败");
-    
+
     let request = HttpRequest::new(HttpMethod::Get, "https://example.com/test")
         .with_user_agent(&fp_result.user_agent)
         .with_headers(&fp_result.headers);
-    
+
     let http1_request = request.build_http1_request("example.com", "/test");
-    
+
     println!("✅ HTTP/1.1 请求构建成功");
     println!("\n{}", http1_request);
-    
+
     assert!(http1_request.contains("GET /test HTTP/1.1"));
     assert!(http1_request.contains("Host: example.com"));
     assert!(http1_request.contains(&fp_result.user_agent));
@@ -76,30 +88,30 @@ fn test_http_get_request() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║         测试 HTTP GET 请求 (使用自己的 HTTP 库)           ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
-    
+
     // 1. 获取浏览器指纹
     let fp_result = get_random_fingerprint_by_browser("chrome").expect("生成指纹失败");
     println!("📌 使用指纹: {}", fp_result.hello_client_id);
     println!("📌 User-Agent: {}", fp_result.user_agent);
-    
+
     // 2. 创建 HTTP 客户端
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),
         fp_result.headers.clone(),
         fp_result.user_agent.clone(),
     );
-    
+
     // 3. 发送 HTTP 请求
     let start = Instant::now();
     let response = client.get("http://httpbin.org/get").expect("请求失败");
     let duration = start.elapsed();
-    
+
     // 4. 验证响应
     println!("\n📊 响应结果:");
     println!("   状态码: {}", response.status_code);
     println!("   耗时: {:?}", duration);
     println!("   响应大小: {} 字节", response.body.len());
-    
+
     if let Ok(body_str) = response.body_as_string() {
         println!("\n📄 响应内容 (前 200 字符):");
         let preview = if body_str.len() > 200 {
@@ -109,7 +121,7 @@ fn test_http_get_request() {
         };
         println!("{}", preview);
     }
-    
+
     assert!(response.is_success());
     assert_eq!(response.status_code, 200);
 }
@@ -120,36 +132,36 @@ fn test_https_get_request() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║        测试 HTTPS GET 请求 (使用自己的 HTTP 库)           ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
-    
+
     // 1. 获取浏览器指纹
     let fp_result = get_random_fingerprint_by_browser("firefox").expect("生成指纹失败");
     println!("📌 使用指纹: {}", fp_result.hello_client_id);
-    
+
     // 2. 创建 HTTPS 客户端
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),
         fp_result.headers.clone(),
         fp_result.user_agent.clone(),
     );
-    
+
     // 3. 发送 HTTPS 请求
     let start = Instant::now();
     let response = client.get("https://httpbin.org/get").expect("请求失败");
     let duration = start.elapsed();
-    
+
     // 4. 验证响应
     println!("\n📊 响应结果:");
     println!("   状态码: {}", response.status_code);
     println!("   耗时: {:?}", duration);
     println!("   响应大小: {} 字节", response.body.len());
-    
+
     // 5. 检查 User-Agent 是否被正确发送
     if let Ok(body_str) = response.body_as_string() {
         if body_str.contains(&fp_result.user_agent) {
             println!("   ✅ User-Agent 正确发送");
         }
     }
-    
+
     assert!(response.is_success());
     assert_eq!(response.status_code, 200);
 }
@@ -160,29 +172,30 @@ fn test_multiple_browsers() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║          测试多个浏览器指纹 (HTTP/HTTPS)                   ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
-    
+
     let browsers = vec!["chrome", "firefox", "safari"];
-    let urls = vec![
-        "http://httpbin.org/get",
-        "https://httpbin.org/get",
-    ];
-    
+    let urls = vec!["http://httpbin.org/get", "https://httpbin.org/get"];
+
     for browser in browsers {
         println!("┌─────────────────────────────────────────────────────────┐");
         println!("│ 测试浏览器: {}", browser.to_uppercase());
         println!("└─────────────────────────────────────────────────────────┘");
-        
+
         let fp_result = get_random_fingerprint_by_browser(browser).expect("生成指纹失败");
         let client = HttpClient::with_profile(
             fp_result.profile.clone(),
             fp_result.headers.clone(),
             fp_result.user_agent.clone(),
         );
-        
+
         for url in &urls {
-            let protocol = if url.starts_with("https") { "HTTPS" } else { "HTTP" };
+            let protocol = if url.starts_with("https") {
+                "HTTPS"
+            } else {
+                "HTTP"
+            };
             print!("  → {} ... ", protocol);
-            
+
             let start = Instant::now();
             match client.get(url) {
                 Ok(response) => {
@@ -198,7 +211,7 @@ fn test_multiple_browsers() {
                 }
             }
         }
-        
+
         println!();
         std::thread::sleep(std::time::Duration::from_millis(200));
     }
@@ -210,20 +223,20 @@ fn test_google_earth_api() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║       测试 Google Earth API (使用自己的 HTTP 库)          ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
-    
+
     let fp_result = get_random_fingerprint_by_browser("chrome").expect("生成指纹失败");
     println!("📌 使用指纹: {}", fp_result.hello_client_id);
     println!("📌 User-Agent: {}", fp_result.user_agent);
-    
+
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),
         fp_result.headers.clone(),
         fp_result.user_agent.clone(),
     );
-    
+
     let url = "https://kh.google.com/rt/earth/PlanetoidMetadata";
     println!("\n🌍 访问: {}", url);
-    
+
     let start = Instant::now();
     match client.get(url) {
         Ok(response) => {
@@ -232,12 +245,12 @@ fn test_google_earth_api() {
             println!("   状态码: {} ✅", response.status_code);
             println!("   耗时: {:?}", duration);
             println!("   响应大小: {} 字节", response.body.len());
-            
+
             if let Ok(body_str) = response.body_as_string() {
                 println!("\n📄 响应内容:");
                 println!("{}", body_str);
             }
-            
+
             assert!(response.is_success());
         }
         Err(e) => {
@@ -254,15 +267,19 @@ fn test_http_response_parsing() {
                         Content-Length: 13\r\n\
                         \r\n\
                         {\"ok\":true}";
-    
+
     let response = HttpResponse::parse(raw_response).expect("解析失败");
-    
+
     println!("✅ HTTP 响应解析成功");
     println!("   状态码: {}", response.status_code);
-    println!("   Content-Type: {:?}", response.get_header("Content-Type"));
+    println!("   Content-Type: {:?}", response.get_header("content-type"));
     println!("   Body: {}", response.body_as_string().unwrap());
-    
+
     assert_eq!(response.status_code, 200);
-    assert_eq!(response.get_header("Content-Type"), Some(&"application/json".to_string()));
+    // headers 存储时会转换为小写
+    assert_eq!(
+        response.get_header("content-type"),
+        Some(&"application/json".to_string())
+    );
     assert!(response.is_success());
 }

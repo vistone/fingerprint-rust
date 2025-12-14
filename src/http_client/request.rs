@@ -51,7 +51,8 @@ impl HttpRequest {
 
     /// 添加 User-Agent
     pub fn with_user_agent(mut self, user_agent: &str) -> Self {
-        self.headers.insert("User-Agent".to_string(), user_agent.to_string());
+        self.headers
+            .insert("User-Agent".to_string(), user_agent.to_string());
         self
     }
 
@@ -78,7 +79,8 @@ impl HttpRequest {
 
     /// 设置 JSON 请求体
     pub fn with_json_body(mut self, json: &str) -> Self {
-        self.headers.insert("Content-Type".to_string(), "application/json".to_string());
+        self.headers
+            .insert("Content-Type".to_string(), "application/json".to_string());
         self.body = Some(json.as_bytes().to_vec());
         self
     }
@@ -86,7 +88,7 @@ impl HttpRequest {
     /// 构建 HTTP/1.1 请求字符串
     pub fn build_http1_request(&self, host: &str, path: &str) -> String {
         let mut request = format!("{} {} HTTP/1.1\r\n", self.method.as_str(), path);
-        
+
         // Host header (必需)
         request.push_str(&format!("Host: {}\r\n", host));
 
@@ -130,7 +132,7 @@ mod tests {
             .with_header("Accept", "text/html");
 
         let http1_request = request.build_http1_request("example.com", "/test");
-        
+
         assert!(http1_request.contains("GET /test HTTP/1.1"));
         assert!(http1_request.contains("Host: example.com"));
         assert!(http1_request.contains("User-Agent: TestAgent/1.0"));
@@ -140,11 +142,11 @@ mod tests {
     #[test]
     fn test_post_with_body() {
         let body = b"test data";
-        let request = HttpRequest::new(HttpMethod::Post, "http://example.com/api")
-            .with_body(body.to_vec());
+        let request =
+            HttpRequest::new(HttpMethod::Post, "http://example.com/api").with_body(body.to_vec());
 
         let http1_request = request.build_http1_request("example.com", "/api");
-        
+
         assert!(http1_request.contains("POST /api HTTP/1.1"));
         assert!(http1_request.contains("Content-Length: 9"));
         assert!(http1_request.contains("test data"));

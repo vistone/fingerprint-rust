@@ -23,6 +23,18 @@ webpki-roots = { version = "0.25", optional = true }
 native-tls = { version = "0.2", optional = true }
 flate2 = { version = "1.0", optional = true }  # gzip/deflate 解压
 
+# HTTP/2 支持
+h2 = { version = "0.4", optional = true }
+http = { version = "1.1", optional = true }
+tokio = { version = "1.40", features = ["full"], optional = true }
+tokio-rustls = { version = "0.24", optional = true }
+
+# HTTP/3 支持 (使用兼容的版本组合)
+quinn = { version = "0.10", optional = true }
+h3 = { version = "0.0.4", optional = true }
+h3-quinn = { version = "0.0.5", optional = true }
+bytes = { version = "1.10", optional = true }
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 reqwest = { version = "0.11", features = ["blocking", "json"] }
@@ -32,7 +44,10 @@ netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0
 chrono = "0.4"  # 用于生成时间戳报告
 
 [features]
-default = ["rustls-tls", "compression"]
+default = ["rustls-tls", "compression", "http2"]
 rustls-tls = ["rustls", "webpki-roots"]
 native-tls-impl = ["native-tls"]
 compression = ["flate2"]  # 启用压缩支持
+http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots"]  # HTTP/2 支持
+http3 = ["quinn", "h3", "h3-quinn", "tokio", "rustls", "webpki-roots", "bytes"]  # HTTP/3 支持
+async = ["tokio"]  # 异步运行时

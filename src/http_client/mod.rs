@@ -1,7 +1,7 @@
 //! HTTP 客户端模块
-//! 
+//!
 //! 结合 netconnpool + fingerprint-rust 实现完整的 HTTP 客户端
-//! 
+//!
 //! 特性：
 //! - 使用 netconnpool 管理连接
 //! - 应用 fingerprint-rust 的配置
@@ -10,11 +10,12 @@
 
 pub mod http1;
 pub mod http2;
+pub mod http3;
 pub mod request;
 pub mod response;
 pub mod tls;
 
-pub use request::{HttpRequest, HttpMethod};
+pub use request::{HttpMethod, HttpRequest};
 pub use response::HttpResponse;
 pub use tls::TlsConnector;
 
@@ -75,6 +76,10 @@ pub struct HttpClientConfig {
     pub max_redirects: usize,
     /// 是否验证 TLS 证书
     pub verify_tls: bool,
+    /// 优先使用 HTTP/2
+    pub prefer_http2: bool,
+    /// 优先使用 HTTP/3
+    pub prefer_http3: bool,
 }
 
 impl Default for HttpClientConfig {
@@ -88,12 +93,14 @@ impl Default for HttpClientConfig {
             write_timeout: Duration::from_secs(30),
             max_redirects: 10,
             verify_tls: true,
+            prefer_http2: true,  // 默认优先使用 HTTP/2
+            prefer_http3: false, // HTTP/3 默认关闭（需要特殊配置）
         }
     }
 }
 
 /// HTTP 客户端
-/// 
+///
 /// 使用 netconnpool 管理连接，应用 fingerprint-rust 的配置
 pub struct HttpClient {
     config: HttpClientConfig,
@@ -151,7 +158,7 @@ impl HttpClient {
     fn parse_url(&self, url: &str) -> Result<(String, String, u16, String)> {
         // 简单的 URL 解析
         let url = url.trim();
-        
+
         let (scheme, rest) = if url.starts_with("https://") {
             ("https", &url[8..])
         } else if url.starts_with("http://") {
@@ -191,7 +198,7 @@ impl HttpClient {
         http1::send_http1_request(host, port, path, request, &self.config)
     }
 
-    /// 发送 HTTPS 请求
+    /// 发送 HTTPS 请求（支持 HTTP/1.1、HTTP/2、HTTP/3）
     fn send_https_request(
         &self,
         host: &str,
@@ -199,8 +206,25 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
-        // TODO: 使用自定义 TLS 实现
-        // 当前使用 native-tls 作为临时方案
+        // 优先级：HTTP/3 > HTTP/2 > HTTP/1.1
+
+        // 尝试 HTTP/3
+        #[cfg(feature = "http3")]
+        {
+            if self.config.prefer_http3 {
+                return http3::send_http3_request(host, port, path, request, &self.config);
+            }
+        }
+
+        // 尝试 HTTP/2
+        #[cfg(feature = "http2")]
+        {
+            if self.config.prefer_http2 {
+                return http2::send_http2_request(host, port, path, request, &self.config);
+            }
+        }
+
+        // 回退到 HTTP/1.1 + TLS
         tls::send_https_request(host, port, path, request, &self.config)
     }
 }
@@ -212,7 +236,7 @@ mod tests {
     #[test]
     fn test_parse_url() {
         let client = HttpClient::new(HttpClientConfig::default());
-        
+
         let (scheme, host, port, path) = client.parse_url("https://example.com/path").unwrap();
         assert_eq!(scheme, "https");
         assert_eq!(host, "example.com");

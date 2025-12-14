@@ -1,5 +1,5 @@
 //! HTTP/1.1 实现
-//! 
+//!
 //! 使用 netconnpool 管理 TCP 连接，发送 HTTP/1.1 请求
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
@@ -41,8 +41,7 @@ pub fn send_http1_request(
         .map_err(|e| HttpClientError::Io(e))?;
 
     // 解析响应
-    HttpResponse::parse(&buffer)
-        .map_err(|e| HttpClientError::InvalidResponse(e))
+    HttpResponse::parse(&buffer).map_err(|e| HttpClientError::InvalidResponse(e))
 }
 
 #[cfg(test)]

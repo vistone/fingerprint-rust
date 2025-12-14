@@ -39,6 +39,10 @@ pub use http2_config::{
     firefox_http2_settings, firefox_pseudo_header_order, safari_http2_settings,
     safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
 };
+pub use http_client::{
+    HttpClient, HttpClientConfig, HttpClientError, HttpMethod, HttpRequest, HttpResponse,
+    TlsConnector,
+};
 pub use profiles::{mapped_tls_clients, ClientHelloID, ClientProfile};
 pub use random::{
     get_random_fingerprint, get_random_fingerprint_by_browser,
@@ -63,8 +67,4 @@ pub use types::{BrowserType, OperatingSystem, OperatingSystems};
 pub use useragent::{
     get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os, random_os,
     UserAgentGenerator,
-};
-pub use http_client::{
-    HttpClient, HttpClientConfig, HttpClientError, HttpMethod, HttpRequest, HttpResponse,
-    TlsConnector,
 };

@@ -1,5 +1,5 @@
 //! TLS 连接支持
-//! 
+//!
 //! 当前使用 rustls 作为临时方案
 //! TODO: 集成自定义 TLS 实现以应用 fingerprint-rust 的 ClientHelloSpec
 
@@ -8,7 +8,7 @@ use std::io::{Read, Write};
 use std::net::TcpStream;
 
 /// TLS 连接器
-/// 
+///
 /// 当前使用 native-tls，将来可替换为自定义 TLS 实现
 pub struct TlsConnector {
     // TODO: 添加自定义 TLS 配置
@@ -27,7 +27,7 @@ impl Default for TlsConnector {
 }
 
 /// 发送 HTTPS 请求
-/// 
+///
 /// ⚠️ 警告：当前使用 native-tls，TLS 指纹不可自定义
 /// TODO: 实现自定义 TLS ClientHello
 pub fn send_https_request(
@@ -52,7 +52,7 @@ pub fn send_https_request(
 
     // ⚠️ 临时方案：使用 rustls (默认) 或 native-tls
     // TODO: 这里应该使用自定义 TLS 实现，应用 ClientHelloSpec
-    
+
     #[cfg(all(feature = "rustls-tls", not(feature = "native-tls-impl")))]
     {
         use rustls::client::ServerName;
