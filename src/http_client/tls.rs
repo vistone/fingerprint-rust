@@ -4,79 +4,10 @@
 //! TODO: 集成自定义 TLS 实现以应用 fingerprint-rust 的 ClientHelloSpec
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::net::TcpStream;
 #[allow(unused_imports)]
 use std::sync::Arc;
-
-#[cfg(all(feature = "rustls-tls", not(feature = "native-tls-impl")))]
-fn build_rustls_config(verify_tls: bool) -> rustls::ClientConfig {
-    use rustls::{ClientConfig, RootCertStore};
-
-    // 构建根证书存储
-    let mut root_store = RootCertStore::empty();
-    root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-            ta.subject,
-            ta.spki,
-            ta.name_constraints,
-        )
-    }));
-
-    let mut cfg = ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates(root_store)
-        .with_no_client_auth();
-
-    // 若用户显式关闭校验，则安装一个“接受所有证书”的 verifier
-    // ⚠️ 这会显著降低安全性，仅用于抓包/调试/内网场景。
-    if !verify_tls {
-        use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
-        use rustls::{Certificate, Error as RustlsError, ServerName};
-        use std::time::SystemTime;
-
-        #[derive(Debug)]
-        struct NoCertificateVerification;
-
-        impl ServerCertVerifier for NoCertificateVerification {
-            fn verify_server_cert(
-                &self,
-                _end_entity: &Certificate,
-                _intermediates: &[Certificate],
-                _server_name: &ServerName,
-                _scts: &mut dyn Iterator<Item = &[u8]>,
-                _ocsp_response: &[u8],
-                _now: SystemTime,
-            ) -> std::result::Result<ServerCertVerified, RustlsError> {
-                Ok(ServerCertVerified::assertion())
-            }
-
-            fn verify_tls12_signature(
-                &self,
-                _message: &[u8],
-                _cert: &Certificate,
-                _dss: &rustls::DigitallySignedStruct,
-            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
-                Ok(HandshakeSignatureValid::assertion())
-            }
-
-            fn verify_tls13_signature(
-                &self,
-                _message: &[u8],
-                _cert: &Certificate,
-                _dss: &rustls::DigitallySignedStruct,
-            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
-                Ok(HandshakeSignatureValid::assertion())
-            }
-        }
-
-        // rustls 0.21 的危险接口
-        cfg.dangerous()
-            .set_certificate_verifier(Arc::new(NoCertificateVerification));
-    }
-
-    cfg
-}
 
 /// TLS 连接器
 ///
@@ -130,7 +61,8 @@ pub fn send_https_request(
         use std::sync::Arc;
 
         // 构建 TLS 配置（尊重 verify_tls）
-        let tls_config = build_rustls_config(config.verify_tls);
+        let tls_config =
+            super::rustls_utils::build_client_config(config.verify_tls, Vec::new());
 
         let server_name = ServerName::try_from(host)
             .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
@@ -148,10 +80,11 @@ pub fn send_https_request(
         tls_stream.flush().map_err(HttpClientError::Io)?;
 
         // 读取响应
-        let mut buffer = Vec::new();
-        tls_stream
-            .read_to_end(&mut buffer)
-            .map_err(HttpClientError::Io)?;
+        let buffer = super::io::read_http1_response_bytes(
+            &mut tls_stream,
+            super::io::DEFAULT_MAX_RESPONSE_BYTES,
+        )
+        .map_err(HttpClientError::Io)?;
 
         // 解析响应
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
@@ -160,6 +93,7 @@ pub fn send_https_request(
     #[cfg(all(feature = "native-tls-impl", not(feature = "rustls-tls")))]
     {
         use native_tls::TlsConnector as NativeTlsConnector;
+        use std::io::Read;
 
         let connector = NativeTlsConnector::builder()
             .danger_accept_invalid_certs(!config.verify_tls)
@@ -178,10 +112,11 @@ pub fn send_https_request(
         tls_stream.flush().map_err(HttpClientError::Io)?;
 
         // 读取响应
-        let mut buffer = Vec::new();
-        tls_stream
-            .read_to_end(&mut buffer)
-            .map_err(HttpClientError::Io)?;
+        let buffer = super::io::read_http1_response_bytes(
+            &mut tls_stream,
+            super::io::DEFAULT_MAX_RESPONSE_BYTES,
+        )
+        .map_err(HttpClientError::Io)?;
 
         // 解析响应
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)

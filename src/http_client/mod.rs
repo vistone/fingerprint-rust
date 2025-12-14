@@ -9,6 +9,7 @@
 //! - TLS 层设计为可替换
 
 pub mod cookie;
+pub mod io;
 pub mod http1;
 pub mod http1_pool;
 pub mod http2;
@@ -22,6 +23,8 @@ pub mod proxy;
 pub mod reporter;
 pub mod request;
 pub mod response;
+#[cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
+mod rustls_utils;
 pub mod tls;
 
 pub use cookie::{Cookie, CookieStore, SameSite};
@@ -33,13 +36,13 @@ pub use response::HttpResponse;
 pub use tls::TlsConnector;
 
 use crate::{ClientProfile, HTTPHeaders};
-use std::io;
+use std::io as std_io;
 use std::time::Duration;
 
 /// HTTP 客户端错误
 #[derive(Debug)]
 pub enum HttpClientError {
-    Io(io::Error),
+    Io(std_io::Error),
     InvalidUrl(String),
     InvalidResponse(String),
     TlsError(String),
@@ -72,8 +75,8 @@ impl std::fmt::Display for HttpClientError {
 
 impl std::error::Error for HttpClientError {}
 
-impl From<io::Error> for HttpClientError {
-    fn from(err: io::Error) -> Self {
+impl From<std_io::Error> for HttpClientError {
+    fn from(err: std_io::Error) -> Self {
         HttpClientError::Io(err)
     }
 }
@@ -292,7 +295,7 @@ impl HttpClient {
                     Err(e) => {
                         // 如果仅仅是偏好，可以尝试降级
                         // 如果是连接失败，可能是网络问题，也可能是服务器不支持
-                        eprintln!("HTTP/3 失败，尝试降级: {}", e);
+                        log::warn!("HTTP/3 失败，尝试降级: {}", e);
                     }
                 }
             }

@@ -3,7 +3,7 @@
 //! 使用 netconnpool 管理 TCP 连接，发送 HTTP/1.1 请求
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
-use std::io::{Read, Write};
+use std::io::Write;
 use std::net::TcpStream;
 
 /// 发送 HTTP/1.1 请求
@@ -35,10 +35,12 @@ pub fn send_http1_request(
     stream.flush().map_err(HttpClientError::Io)?;
 
     // 读取响应
-    let mut buffer = Vec::new();
-    stream
-        .read_to_end(&mut buffer)
-        .map_err(HttpClientError::Io)?;
+    let mut stream = stream;
+    let buffer = super::io::read_http1_response_bytes(
+        &mut stream,
+        super::io::DEFAULT_MAX_RESPONSE_BYTES,
+    )
+    .map_err(HttpClientError::Io)?;
 
     // 解析响应
     HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)

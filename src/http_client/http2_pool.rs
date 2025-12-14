@@ -79,7 +79,7 @@ pub async fn send_http2_request_with_pool(
     // 在后台运行连接
     tokio::spawn(async move {
         if let Err(e) = h2_conn.await {
-            eprintln!("HTTP/2 连接错误: {:?}", e);
+            log::warn!("HTTP/2 连接错误: {:?}", e);
         }
     });
 

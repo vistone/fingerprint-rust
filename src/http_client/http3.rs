@@ -42,75 +42,18 @@ async fn send_http3_request_async(
     let start = Instant::now();
 
     // 1. 配置 QUIC 客户端
-    let mut roots = rustls::RootCertStore::empty();
-    roots.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-            ta.subject,
-            ta.spki,
-            ta.name_constraints,
-        )
-    }));
-
-    let mut tls_config = rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-
-    // 设置 ALPN 协议为 h3
-    tls_config.alpn_protocols = vec![b"h3".to_vec()];
-
-    // 尊重 verify_tls（仅用于调试/内网，生产建议始终为 true）
-    if !config.verify_tls {
-        use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
-        use rustls::{Certificate, Error as RustlsError, ServerName};
-        use std::time::SystemTime;
-
-        #[derive(Debug)]
-        struct NoCertificateVerification;
-
-        impl ServerCertVerifier for NoCertificateVerification {
-            fn verify_server_cert(
-                &self,
-                _end_entity: &Certificate,
-                _intermediates: &[Certificate],
-                _server_name: &ServerName,
-                _scts: &mut dyn Iterator<Item = &[u8]>,
-                _ocsp_response: &[u8],
-                _now: SystemTime,
-            ) -> std::result::Result<ServerCertVerified, RustlsError> {
-                Ok(ServerCertVerified::assertion())
-            }
-
-            fn verify_tls12_signature(
-                &self,
-                _message: &[u8],
-                _cert: &Certificate,
-                _dss: &rustls::DigitallySignedStruct,
-            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
-                Ok(HandshakeSignatureValid::assertion())
-            }
-
-            fn verify_tls13_signature(
-                &self,
-                _message: &[u8],
-                _cert: &Certificate,
-                _dss: &rustls::DigitallySignedStruct,
-            ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
-                Ok(HandshakeSignatureValid::assertion())
-            }
-        }
-
-        tls_config
-            .dangerous()
-            .set_certificate_verifier(Arc::new(NoCertificateVerification));
-    }
+    let tls_config = super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
 
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
     // 优化传输配置以提升性能
     let mut transport = TransportConfig::default();
     transport.initial_rtt(Duration::from_millis(100));
-    transport.max_idle_timeout(Some(Duration::from_secs(60).try_into().unwrap()));
+    transport.max_idle_timeout(Some(
+        Duration::from_secs(60)
+            .try_into()
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("配置超时失败: {}", e)))?,
+    ));
     transport.keep_alive_interval(Some(Duration::from_secs(10)));
 
     // 增大接收窗口以提升吞吐量

@@ -45,23 +45,7 @@ pub async fn send_http3_request_with_pool(
         .ok_or_else(|| HttpClientError::ConnectionFailed("DNS 解析无结果".to_string()))?;
 
     // 创建 QUIC 客户端配置
-    let mut tls_config = rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates({
-            let mut roots = rustls::RootCertStore::empty();
-            roots.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-                rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-                    ta.subject,
-                    ta.spki,
-                    ta.name_constraints,
-                )
-            }));
-            roots
-        })
-        .with_no_client_auth();
-
-    // 设置 ALPN 为 h3
-    tls_config.alpn_protocols = vec![b"h3".to_vec()];
+    let tls_config = super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
 
     let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
