@@ -39,6 +39,40 @@
 fingerprint = { version = "1.0", features = ["http2", "http3", "compression"] }
 ```
 
+### 🎯 使用自定义 TLS 指纹（核心特性）
+
+```rust
+use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. 获取浏览器配置
+    let profiles = mapped_tls_clients();
+    let chrome = profiles.get("chrome_133").unwrap();
+
+    // 2. 生成 ClientHelloSpec（我们自己的指纹）
+    let spec = chrome.get_client_hello_spec()?;
+
+    // 3. 构建真实的 TLS ClientHello（不使用 rustls/native-tls）
+    let client_hello = TLSHandshakeBuilder::build_client_hello(
+        &spec,
+        "www.google.com"
+    )?;
+
+    println!("✅ 使用我们自己的 TLS 指纹生成 ClientHello: {} bytes", client_hello.len());
+    // 输出: ✅ 使用我们自己的 TLS 指纹生成 ClientHello: 236 bytes
+
+    // 4. 发送到服务器（真实的 TLS 握手）
+    // use std::net::TcpStream;
+    // use std::io::Write;
+    // let mut stream = TcpStream::connect("www.google.com:443")?;
+    // stream.write_all(&client_hello)?;
+
+    Ok(())
+}
+```
+
+**📖 详细文档**: [CUSTOM_TLS_FINGERPRINT.md](docs/CUSTOM_TLS_FINGERPRINT.md)
+
 ### 基础使用
 
 ```rust

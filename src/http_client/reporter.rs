@@ -34,9 +34,17 @@ pub struct ReportSummary {
 impl ValidationReport {
     /// 创建新报告
     pub fn new(title: String) -> Self {
+        #[cfg(feature = "reporter")]
+        let generated_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
+        #[cfg(not(feature = "reporter"))]
+        let generated_at = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| format!("{}", d.as_secs()))
+            .unwrap_or_else(|_| "N/A".to_string());
+
         Self {
             title,
-            generated_at: chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string(),
+            generated_at,
             sections: Vec::new(),
             summary: ReportSummary {
                 total_tests: 0,

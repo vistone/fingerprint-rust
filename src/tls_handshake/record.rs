@@ -1,0 +1,137 @@
+//! TLS 记录层 (Record Layer)
+//!
+//! TLS 记录格式：
+//! ```text
+//! struct {
+//!     ContentType type;      // 1 byte
+//!     ProtocolVersion version;  // 2 bytes
+//!     uint16 length;         // 2 bytes
+//!     opaque fragment[length];  // length bytes
+//! } TLSPlaintext;
+//! ```
+
+/// TLS 记录类型
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[repr(u8)]
+pub enum TLSRecordType {
+    ChangeCipherSpec = 20,
+    Alert = 21,
+    Handshake = 22,
+    ApplicationData = 23,
+}
+
+impl TLSRecordType {
+    pub fn as_u8(&self) -> u8 {
+        *self as u8
+    }
+}
+
+/// TLS 记录
+#[derive(Debug, Clone)]
+pub struct TLSRecord {
+    /// 内容类型
+    pub content_type: TLSRecordType,
+    /// 协议版本（通常是 TLS 1.0 = 0x0301，用于兼容性）
+    pub version: u16,
+    /// 数据内容
+    pub fragment: Vec<u8>,
+}
+
+impl TLSRecord {
+    /// 创建新的 TLS 记录
+    pub fn new(content_type: TLSRecordType, version: u16, fragment: Vec<u8>) -> Self {
+        Self {
+            content_type,
+            version,
+            fragment,
+        }
+    }
+
+    /// 创建握手记录
+    pub fn handshake(version: u16, data: Vec<u8>) -> Self {
+        Self::new(TLSRecordType::Handshake, version, data)
+    }
+
+    /// 序列化为字节流
+    pub fn to_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        // Content Type (1 byte)
+        bytes.push(self.content_type.as_u8());
+
+        // Version (2 bytes)
+        bytes.extend_from_slice(&self.version.to_be_bytes());
+
+        // Length (2 bytes)
+        let length = self.fragment.len() as u16;
+        bytes.extend_from_slice(&length.to_be_bytes());
+
+        // Fragment
+        bytes.extend_from_slice(&self.fragment);
+
+        bytes
+    }
+
+    /// 从字节流解析
+    pub fn from_bytes(data: &[u8]) -> Result<(Self, usize), String> {
+        if data.len() < 5 {
+            return Err("数据太短，无法解析 TLS 记录".to_string());
+        }
+
+        let content_type = match data[0] {
+            20 => TLSRecordType::ChangeCipherSpec,
+            21 => TLSRecordType::Alert,
+            22 => TLSRecordType::Handshake,
+            23 => TLSRecordType::ApplicationData,
+            _ => return Err(format!("未知的内容类型: {}", data[0])),
+        };
+
+        let version = u16::from_be_bytes([data[1], data[2]]);
+        let length = u16::from_be_bytes([data[3], data[4]]) as usize;
+
+        if data.len() < 5 + length {
+            return Err(format!(
+                "数据不完整，需要 {} 字节，实际只有 {} 字节",
+                5 + length,
+                data.len()
+            ));
+        }
+
+        let fragment = data[5..5 + length].to_vec();
+
+        Ok((
+            Self::new(content_type, version, fragment),
+            5 + length,
+        ))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_tls_record_serialization() {
+        let data = vec![1, 2, 3, 4, 5];
+        let record = TLSRecord::handshake(0x0303, data.clone());
+
+        let bytes = record.to_bytes();
+
+        // 验证格式
+        assert_eq!(bytes[0], 22); // Handshake
+        assert_eq!(u16::from_be_bytes([bytes[1], bytes[2]]), 0x0303); // TLS 1.2
+        assert_eq!(u16::from_be_bytes([bytes[3], bytes[4]]), 5); // Length
+        assert_eq!(&bytes[5..], &data);
+    }
+
+    #[test]
+    fn test_tls_record_deserialization() {
+        let data = vec![22, 0x03, 0x03, 0x00, 0x05, 1, 2, 3, 4, 5];
+        let (record, consumed) = TLSRecord::from_bytes(&data).unwrap();
+
+        assert_eq!(record.content_type, TLSRecordType::Handshake);
+        assert_eq!(record.version, 0x0303);
+        assert_eq!(record.fragment, vec![1, 2, 3, 4, 5]);
+        assert_eq!(consumed, 10);
+    }
+}
