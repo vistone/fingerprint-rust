@@ -170,7 +170,7 @@ impl ConnectionPoolManager {
         let pools = match self.pools.lock() {
             Ok(p) => p,
             Err(e) => {
-                eprintln!("警告: 连接池锁失败: {}", e);
+                log::warn!("连接池锁失败: {}", e);
                 return Vec::new();
             }
         };

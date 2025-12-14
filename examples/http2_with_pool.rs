@@ -3,11 +3,11 @@
 //! 演示如何使用 netconnpool 管理 HTTP/2 连接
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
-use fingerprint::{get_user_agent_by_profile_name, HttpClientConfig};
-#[cfg(all(feature = "connection-pool", feature = "http2"))]
 use fingerprint::http_client::{http2_pool, ConnectionPoolManager, PoolManagerConfig};
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
-use fingerprint::{HttpRequest, HttpMethod};
+use fingerprint::{get_user_agent_by_profile_name, HttpClientConfig};
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
+use fingerprint::{HttpMethod, HttpRequest};
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use std::sync::Arc;
 
@@ -47,7 +47,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("请求 {} - {}", i + 1, url);
 
         let request = HttpRequest::new(HttpMethod::Get, url);
-        
+
         // 解析 URL
         // 简单起见，这里假设是 https 且端口 443
         let host = "httpbin.org";
@@ -55,13 +55,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let path = url.replace("https://httpbin.org", "");
 
         match http2_pool::send_http2_request_with_pool(
-            host, 
-            port, 
-            &path, 
-            &request, 
-            &config, 
-            &pool_manager
-        ).await {
+            host,
+            port,
+            &path,
+            &request,
+            &config,
+            &pool_manager,
+        )
+        .await
+        {
             Ok(response) => {
                 println!(
                     "  ✓ 成功: {} {}",

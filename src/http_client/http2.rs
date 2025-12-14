@@ -64,7 +64,7 @@ async fn send_http2_request_async(
     // 在后台驱动 HTTP/2 连接
     tokio::spawn(async move {
         if let Err(e) = h2_conn.await {
-            eprintln!("HTTP/2 连接错误: {}", e);
+            log::warn!("HTTP/2 连接错误: {}", e);
         }
     });
 
@@ -146,29 +146,16 @@ async fn send_http2_request_async(
 async fn perform_tls_handshake(
     tcp: tokio::net::TcpStream,
     host: &str,
-    _config: &HttpClientConfig,
+    config: &HttpClientConfig,
 ) -> Result<tokio_rustls::client::TlsStream<tokio::net::TcpStream>> {
-    use rustls::{ClientConfig, RootCertStore, ServerName};
     use std::sync::Arc;
+    use tokio_rustls::rustls::ServerName;
     use tokio_rustls::TlsConnector;
 
-    // 构建 TLS 配置
-    let mut root_store = RootCertStore::empty();
-    root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-            ta.subject,
-            ta.spki,
-            ta.name_constraints,
-        )
-    }));
-
-    let mut tls_config = ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates(root_store)
-        .with_no_client_auth();
-
-    // 关键：设置 ALPN 协议为 h2，这是 HTTP/2 over TLS 所必需的
-    tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+    let tls_config = super::rustls_utils::build_client_config(
+        config.verify_tls,
+        vec![b"h2".to_vec(), b"http/1.1".to_vec()],
+    );
 
     let connector = TlsConnector::from(Arc::new(tls_config));
 
@@ -196,12 +183,11 @@ pub fn send_http2_request(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[test]
     #[cfg(feature = "http2")]
     #[ignore]
     fn test_http2_request() {
+        use super::*;
         let request = HttpRequest::new(
             crate::http_client::request::HttpMethod::Get,
             "https://www.google.com/",

@@ -26,7 +26,7 @@ fn test_http3_with_client() {
             println!("  Body 大小: {} bytes", response.body.len());
 
             assert_eq!(response.status_code, 200);
-            assert!(response.body.len() > 0);
+            assert!(!response.body.is_empty());
         }
         Err(e) => {
             println!("❌ 失败: {:?}", e);

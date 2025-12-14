@@ -7,6 +7,8 @@ use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use std::sync::Arc;
+#[cfg(all(feature = "connection-pool", feature = "http3"))]
+use std::time::Duration;
 
 /// 使用连接池发送 HTTP/3 请求
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -43,23 +45,8 @@ pub async fn send_http3_request_with_pool(
         .ok_or_else(|| HttpClientError::ConnectionFailed("DNS 解析无结果".to_string()))?;
 
     // 创建 QUIC 客户端配置
-    let mut tls_config = rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates({
-            let mut roots = rustls::RootCertStore::empty();
-            roots.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-                rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-                    ta.subject,
-                    ta.spki,
-                    ta.name_constraints,
-                )
-            }));
-            roots
-        })
-        .with_no_client_auth();
-
-    // 设置 ALPN 为 h3
-    tls_config.alpn_protocols = vec![b"h3".to_vec()];
+    let tls_config =
+        super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
 
     let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
@@ -103,12 +90,9 @@ pub async fn send_http3_request_with_pool(
         .await
         .map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 握手失败: {}", e)))?;
 
-    // 在后台驱动连接 - 关键修复！driver 必须持续运行
+    // 在后台驱动连接：h3 0.0.4 的 driver 需要被持续 poll_close
     tokio::spawn(async move {
-        // 让 driver 在后台持续运行以处理 QUIC 连接
-        // 不要提前 drop，让它自然运行直到连接关闭
-        tokio::time::sleep(Duration::from_secs(300)).await; // 5分钟超时
-        drop(driver);
+        let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
     });
 
     // 构建 HTTP/3 请求

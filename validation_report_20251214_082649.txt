@@ -1,0 +1,599 @@
+全面指纹验证报告
+使用自己的 HTTP 客户端（不依赖 reqwest）
+生成时间: 2025-12-14 08:26:49.418851157 +00:00
+
+======================================================================
+
+指纹: confirmed_android_2
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 806ms
+    响应大小: 338 字节
+
+指纹: safari_15_6_1
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 14678ms
+    响应大小: 324 字节
+
+指纹: safari_ios_15_5
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 19934ms
+    响应大小: 356 字节
+
+指纹: chrome_107
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 1302ms
+    响应大小: 337 字节
+
+指纹: safari_ios_15_6
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 30834ms
+    响应大小: 513 字节
+
+指纹: safari_ios_18_5
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 148ms
+    响应大小: 513 字节
+
+指纹: chrome_105
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 388ms
+    响应大小: 337 字节
+
+指纹: chrome_131
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 805ms
+    响应大小: 322 字节
+
+指纹: firefox_102
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 222ms
+    响应大小: 513 字节
+
+指纹: chrome_117
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 164ms
+    响应大小: 513 字节
+
+指纹: mms_ios
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 31984ms
+    响应大小: 513 字节
+
+指纹: confirmed_ios
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 166ms
+    响应大小: 513 字节
+
+指纹: opera_90
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 37ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_9
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 224ms
+    响应大小: 513 字节
+
+指纹: safari_ios_16_0
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 40ms
+    响应大小: 513 字节
+
+指纹: chrome_131_PSK
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 158ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_8
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 153ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_10
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 176ms
+    响应大小: 513 字节
+
+指纹: chrome_109
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 158ms
+    响应大小: 513 字节
+
+指纹: chrome_104
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 295ms
+    响应大小: 513 字节
+
+指纹: chrome_106
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 38ms
+    响应大小: 513 字节
+
+指纹: chrome_124
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 28ms
+    响应大小: 513 字节
+
+指纹: safari_ios_17_0
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 225ms
+    响应大小: 513 字节
+
+指纹: nike_ios_mobile
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 28ms
+    响应大小: 513 字节
+
+指纹: firefox_132
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 27ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_7
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 32ms
+    响应大小: 513 字节
+
+指纹: chrome_130_PSK
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 30ms
+    响应大小: 513 字节
+
+指纹: firefox_110
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 176ms
+    响应大小: 513 字节
+
+指纹: firefox_133
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 170ms
+    响应大小: 513 字节
+
+指纹: chrome_116_PSK_PQ
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 158ms
+    响应大小: 513 字节
+
+指纹: mesh_ios_2
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 343ms
+    响应大小: 513 字节
+
+指纹: chrome_112
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 155ms
+    响应大小: 513 字节
+
+指纹: chrome_116_PSK
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 183ms
+    响应大小: 513 字节
+
+指纹: firefox_104
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 29ms
+    响应大小: 513 字节
+
+指纹: zalando_android_mobile
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 28ms
+    响应大小: 513 字节
+
+指纹: mesh_android
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 152ms
+    响应大小: 513 字节
+
+指纹: opera_91
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 155ms
+    响应大小: 513 字节
+
+指纹: confirmed_android
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 29ms
+    响应大小: 513 字节
+
+指纹: chrome_133
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 1172ms
+    响应大小: 337 字节
+
+指纹: mesh_android_2
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 154ms
+    响应大小: 513 字节
+
+指纹: zalando_ios_mobile
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 154ms
+    响应大小: 513 字节
+
+指纹: opera_89
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 163ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_12
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 150ms
+    响应大小: 513 字节
+
+指纹: chrome_120
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 148ms
+    响应大小: 513 字节
+
+指纹: firefox_123
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 147ms
+    响应大小: 513 字节
+
+指纹: firefox_105
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 147ms
+    响应大小: 513 字节
+
+指纹: chrome_108
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 157ms
+    响应大小: 513 字节
+
+指纹: firefox_135
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 152ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_11
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 154ms
+    响应大小: 513 字节
+
+指纹: nike_android_mobile
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 28ms
+    响应大小: 513 字节
+
+指纹: mms_ios_3
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 150ms
+    响应大小: 513 字节
+
+指纹: firefox_120
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 40ms
+    响应大小: 513 字节
+
+指纹: mms_ios_2
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 151ms
+    响应大小: 513 字节
+
+指纹: okhttp4_android_13
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 29ms
+    响应大小: 513 字节
+
+指纹: chrome_110
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 40ms
+    响应大小: 513 字节
+
+指纹: chrome_111
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 155ms
+    响应大小: 513 字节
+
+指纹: safari_ios_18_0
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 33ms
+    响应大小: 513 字节
+
+指纹: chrome_133_PSK
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 34ms
+    响应大小: 513 字节
+
+指纹: chrome_103
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 156ms
+    响应大小: 513 字节
+
+指纹: safari_16_0
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 149ms
+    响应大小: 513 字节
+
+指纹: firefox_106
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 30ms
+    响应大小: 513 字节
+
+指纹: firefox_117
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 249ms
+    响应大小: 513 字节
+
+指纹: safari_ipad_15_6
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 159ms
+    响应大小: 513 字节
+
+指纹: cloudflare_custom
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 153ms
+    响应大小: 513 字节
+
+指纹: mesh_ios
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 181ms
+    响应大小: 513 字节
+
+指纹: firefox_108
+  指纹配置合法: true
+  TLS 配置完整: true
+  User-Agent 合法: true
+  HTTP/1.1: true
+    状态码: 200
+    响应时间: 151ms
+    响应大小: 513 字节

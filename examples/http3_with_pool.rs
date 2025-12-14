@@ -3,11 +3,11 @@
 //! 演示如何使用 netconnpool 管理 HTTP/3 (QUIC) 连接
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
-use fingerprint::{get_user_agent_by_profile_name, HttpClientConfig};
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
 use fingerprint::http_client::{http3_pool, ConnectionPoolManager, PoolManagerConfig};
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
-use fingerprint::{HttpRequest, HttpMethod};
+use fingerprint::{get_user_agent_by_profile_name, HttpClientConfig};
+#[cfg(all(feature = "connection-pool", feature = "http3"))]
+use fingerprint::{HttpMethod, HttpRequest};
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use std::sync::Arc;
 
@@ -46,7 +46,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("请求 {} - {}", i + 1, url);
 
         let request = HttpRequest::new(HttpMethod::Get, url);
-        
+
         // 解析 URL
         let uri: http::Uri = url.parse()?;
         let host = uri.host().unwrap();
@@ -54,13 +54,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let path = uri.path_and_query().map(|p| p.as_str()).unwrap_or("/");
 
         match http3_pool::send_http3_request_with_pool(
-            host, 
-            port, 
-            path, 
-            &request, 
-            &config, 
-            &pool_manager
-        ).await {
+            host,
+            port,
+            path,
+            &request,
+            &config,
+            &pool_manager,
+        )
+        .await
+        {
             Ok(response) => {
                 println!(
                     "  ✓ 成功: {} {}",

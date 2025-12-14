@@ -47,7 +47,7 @@ fn test_google_earth_http1() {
                 response.status_code
             );
             assert_eq!(response.status_code, 200);
-            assert!(response.body.len() > 0, "响应体不应该为空");
+            assert!(!response.body.is_empty(), "响应体不应该为空");
 
             // 检查内容类型
             if let Some(content_type) = response.headers.get("content-type") {
@@ -100,7 +100,7 @@ fn test_google_earth_http2() {
                 response.status_code
             );
             assert_eq!(response.status_code, 200);
-            assert!(response.body.len() > 0, "响应体不应该为空");
+            assert!(!response.body.is_empty(), "响应体不应该为空");
 
             // 验证是 HTTP/2
             assert!(
@@ -155,7 +155,7 @@ fn test_google_earth_http3() {
                 response.status_code
             );
             assert_eq!(response.status_code, 200);
-            assert!(response.body.len() > 0, "响应体不应该为空");
+            assert!(!response.body.is_empty(), "响应体不应该为空");
 
             // 验证是 HTTP/3
             assert!(
@@ -213,7 +213,7 @@ fn test_google_earth_http1_with_pool() {
                 println!("  Body: {} bytes", response.body.len());
 
                 assert_eq!(response.status_code, 200);
-                assert!(response.body.len() > 0);
+                assert!(!response.body.is_empty());
             }
             Err(e) => {
                 panic!("❌ 请求 {} 失败: {}", i, e);
@@ -280,7 +280,7 @@ async fn test_google_earth_http2_with_pool() {
             println!("  Body 大小: {} bytes", response.body.len());
 
             assert_eq!(response.status_code, 200);
-            assert!(response.body.len() > 0);
+            assert!(!response.body.is_empty());
             assert!(response.http_version.contains("HTTP/2"));
 
             println!("\n✅ HTTP/2 + 连接池测试通过！");
@@ -336,7 +336,7 @@ async fn test_google_earth_http3_with_pool() {
             println!("  Body 大小: {} bytes", response.body.len());
 
             assert_eq!(response.status_code, 200);
-            assert!(response.body.len() > 0);
+            assert!(!response.body.is_empty());
             assert!(response.http_version.contains("HTTP/3"));
 
             println!("\n✅ HTTP/3 + 连接池测试通过！");

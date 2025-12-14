@@ -86,6 +86,8 @@ impl Cookie {
             } else if part.to_lowercase().starts_with("max-age=") {
                 if let Ok(secs) = part[8..].parse::<u64>() {
                     cookie.max_age = Some(Duration::from_secs(secs));
+                    // 让 Max-Age 真正生效：转换为绝对 expires 以复用 is_expired()
+                    cookie.expires = Some(SystemTime::now() + Duration::from_secs(secs));
                 }
             } else if part.to_lowercase() == "secure" {
                 cookie.secure = true;
@@ -133,7 +135,7 @@ impl CookieStore {
                 domain_cookies.push(cookie);
             }
         } else {
-            eprintln!("警告: Cookie 存储锁失败，无法添加 Cookie");
+            log::warn!("Cookie 存储锁失败，无法添加 Cookie");
         }
     }
 
@@ -149,7 +151,7 @@ impl CookieStore {
         let cookies = match self.cookies.lock() {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("警告: Cookie 存储锁失败: {}", e);
+                log::warn!("Cookie 存储锁失败: {}", e);
                 return Vec::new();
             }
         };

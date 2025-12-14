@@ -42,29 +42,19 @@ async fn send_http3_request_async(
     let start = Instant::now();
 
     // 1. 配置 QUIC 客户端
-    let mut roots = rustls::RootCertStore::empty();
-    roots.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-            ta.subject,
-            ta.spki,
-            ta.name_constraints,
-        )
-    }));
-
-    let mut tls_config = rustls::ClientConfig::builder()
-        .with_safe_defaults()
-        .with_root_certificates(roots)
-        .with_no_client_auth();
-
-    // 设置 ALPN 协议为 h3
-    tls_config.alpn_protocols = vec![b"h3".to_vec()];
+    let tls_config =
+        super::rustls_utils::build_client_config(config.verify_tls, vec![b"h3".to_vec()]);
 
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
     // 优化传输配置以提升性能
     let mut transport = TransportConfig::default();
     transport.initial_rtt(Duration::from_millis(100));
-    transport.max_idle_timeout(Some(Duration::from_secs(60).try_into().unwrap()));
+    transport.max_idle_timeout(Some(
+        Duration::from_secs(60)
+            .try_into()
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("配置超时失败: {}", e)))?,
+    ));
     transport.keep_alive_interval(Some(Duration::from_secs(10)));
 
     // 增大接收窗口以提升吞吐量
@@ -103,12 +93,10 @@ async fn send_http3_request_async(
         .await
         .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/3 连接失败: {}", e)))?;
 
-    // 在后台驱动连接 - 关键修复！driver 必须持续运行
+    // 在后台驱动连接：h3 0.0.4 的 driver 需要被持续 poll_close
     tokio::spawn(async move {
-        // 让 driver 在后台持续运行以处理 QUIC 连接
-        // 不要提前 drop，让它自然运行直到连接关闭
-        tokio::time::sleep(Duration::from_secs(300)).await; // 5分钟超时
-        drop(driver);
+        let mut driver = driver;
+        let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
     });
 
     // 6. 构建请求

@@ -1,0 +1,6 @@
+[toolchain]
+# 项目 MSRV（最低 Rust 版本）。
+# 说明：依赖树中部分 crate 需要 rustc >= 1.83。
+channel = "1.83.0"
+components = ["rustfmt", "clippy"]
+

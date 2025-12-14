@@ -35,7 +35,7 @@ fn test_raw_http1_request() {
     println!("设置 ALPN: http/1.1");
 
     let server_name = ServerName::try_from("kh.google.com").unwrap();
-    let mut conn = ClientConnection::new(Arc::new(tls_config), server_name).unwrap();
+    let conn = ClientConnection::new(Arc::new(tls_config), server_name).unwrap();
 
     let mut tls_stream = rustls::StreamOwned::new(conn, tcp);
     println!("✅ TLS 握手开始");
@@ -67,27 +67,22 @@ fn test_raw_http1_request() {
     tls_stream.flush().expect("Flush 失败");
     println!("✅ 请求已发送");
 
-    // 5. 读取响应
+    // 5. 读取响应（使用库内的 HTTP/1 响应读取逻辑，避免 read_to_end 在网络场景下因 EOF 报错）
     println!("\n开始读取响应...");
-    let mut response = Vec::new();
+    let response = fingerprint::http_client::io::read_http1_response_bytes(
+        &mut tls_stream,
+        fingerprint::http_client::io::DEFAULT_MAX_RESPONSE_BYTES,
+    )
+    .expect("读取响应失败");
 
-    match tls_stream.read_to_end(&mut response) {
-        Ok(n) => {
-            println!("✅ 读取了 {} bytes", n);
+    println!("✅ 读取了 {} bytes", response.len());
 
-            // 打印响应
-            let response_str = String::from_utf8_lossy(&response);
-            println!("\n响应:");
-            println!("{}", &response_str[..response_str.len().min(500)]);
+    // 打印响应
+    let response_str = String::from_utf8_lossy(&response);
+    println!("\n响应:");
+    println!("{}", &response_str[..response_str.len().min(500)]);
 
-            assert!(n > 0, "响应不应该为空");
-        }
-        Err(e) => {
-            println!("❌ 读取失败: {}", e);
-            println!("错误类型: {:?}", e.kind());
-            panic!("读取响应失败");
-        }
-    }
+    assert!(!response.is_empty(), "响应不应该为空");
 }
 
 #[test]
@@ -99,7 +94,7 @@ fn test_with_chunked_reading() {
 
     println!("\n═══ HTTP/1.1 分块读取测试 ═══\n");
 
-    let mut tcp = TcpStream::connect("kh.google.com:443").expect("TCP 连接失败");
+    let tcp = TcpStream::connect("kh.google.com:443").expect("TCP 连接失败");
     tcp.set_read_timeout(Some(Duration::from_secs(10))).unwrap();
     tcp.set_write_timeout(Some(Duration::from_secs(10)))
         .unwrap();

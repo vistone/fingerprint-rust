@@ -3,8 +3,7 @@
 //! 完整链路: netconnpool → TLS 指纹 → Google API
 
 use fingerprint::{
-    chrome_103, chrome_133, firefox_133, opera_91, safari_16_0, ClientProfile, HttpClient,
-    HttpClientConfig,
+    chrome_103, chrome_133, firefox_133, opera_91, safari_16_0, HttpClient, HttpClientConfig,
 };
 use std::time::Instant;
 
