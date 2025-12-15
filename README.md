@@ -1,6 +1,6 @@
 # 🦀 fingerprint-rust
 
-[![Rust](https://img.shields.io/badge/rust-1.92%2B-orange.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.83.0%2B-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-100%25_passing-brightgreen.svg)](#测试结果)
 [![HTTP/3](https://img.shields.io/badge/HTTP%2F3-✅_QUIC-success.svg)](#http3-支持)
