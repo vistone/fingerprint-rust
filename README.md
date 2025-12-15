@@ -275,7 +275,7 @@ fingerprint = { version = "1.0", features = ["rustls-tls"] }
 
 - **[basic.rs](examples/basic.rs)** - 基础 HTTP 客户端使用
 - **[custom_tls_fingerprint.rs](examples/custom_tls_fingerprint.rs)** - 自定义 TLS ClientHello
-- **[export_config.rs](examples/export_config.rs)** - 导出配置为 JSON（Go 集成）
+- **[export_config.rs](examples/export_config.rs)** - 导出配置为 JSON
 
 ### HTTP 协议示例
 
@@ -289,13 +289,6 @@ fingerprint = { version = "1.0", features = ["rustls-tls"] }
 - **[headers.rs](examples/headers.rs)** - HTTP Headers 生成
 - **[tls_config.rs](examples/tls_config.rs)** - TLS 配置生成
 - **[debug_clienthello.rs](examples/debug_clienthello.rs)** - ClientHello 调试
-
-### Go 集成
-
-- **[examples/go-utls/](examples/go-utls/)** - Go uTLS 集成示例
-  - 使用 `export_config.rs` 导出配置
-  - Go 程序读取 JSON 配置
-  - 实现 Rust ↔ Go 指纹共享
 
 ### DNS 预解析服务
 
@@ -751,15 +744,11 @@ let response = client.get("https://httpbin.org/gzip")?;
 let body = response.body_as_string()?;  // 已解压
 ```
 
-### 5. Go 互操作性
+### 5. 配置导出
 
 ```bash
 # 导出配置为 JSON
 cargo run --example export_config --features "rustls-tls"
-
-# Go 程序读取配置
-cd examples/go-utls
-go run main.go
 ```
 
 ---
@@ -813,8 +802,7 @@ cargo fmt --all
 
 本项目采用 **BSD-3-Clause** 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
 
-**原始项目**: [vistone/fingerprint](https://github.com/vistone/fingerprint) (Go 版本)  
-**Rust 移植**: [vistone/fingerprint-rust](https://github.com/vistone/fingerprint-rust)
+**项目地址**: [vistone/fingerprint-rust](https://github.com/vistone/fingerprint-rust)
 
 ---
 
@@ -847,7 +835,7 @@ cargo fmt --all
 - [x] **连接池集成** - netconnpool 深度集成
 - [x] **100% 测试通过** - Google Earth API 真实环境验证
 - [x] **完整文档** - 15+ 文档文件
-- [x] **Go 互操作** - 配置导出/导入
+- [x] **配置导出** - JSON 格式配置导出
 
 ### 🎯 性能指标
 
@@ -875,5 +863,5 @@ cargo fmt --all
 </p>
 
 <p align="center">
-  <sub>从 Go 到 Rust，性能提升 2-3倍，内存占用减少 50%</sub>
+  <sub>高性能 Rust 实现，内存占用低，执行效率高</sub>
 </p>
