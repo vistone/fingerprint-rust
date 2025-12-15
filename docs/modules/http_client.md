@@ -20,8 +20,13 @@ src/http_client/
 ├── request.rs      - HTTP 请求构建器
 ├── response.rs     - HTTP 响应解析器
 ├── http1.rs        - HTTP/1.1 实现
-├── http2.rs        - HTTP/2 实现（TODO）
-└── tls.rs          - TLS 连接支持
+├── http2.rs        - HTTP/2 实现 ✅
+├── http3.rs        - HTTP/3 实现 ✅
+├── http1_pool.rs   - HTTP/1.1 连接池 ✅
+├── http2_pool.rs   - HTTP/2 连接池 ✅
+├── http3_pool.rs   - HTTP/3 连接池 ✅
+├── pool.rs         - 连接池管理器 ✅
+└── tls.rs          - TLS 连接支持 ✅
 ```
 
 ### 1. HTTP 客户端 (`src/http_client/mod.rs`)
@@ -97,8 +102,8 @@ impl HttpResponse {
 - ✅ 完整的 HTTP 响应解析
 - ✅ 状态码、headers、body 分离
 - ✅ 支持二进制和文本 body
-- ⚠️ TODO: 支持 chunked encoding
-- ⚠️ TODO: 支持 gzip/deflate 解压
+- ✅ 支持 chunked encoding（`parse_chunked()`）
+- ✅ 支持 gzip/deflate 解压（需要 `compression` feature，使用 `flate2`）
 
 ### 4. HTTP/1.1 实现 (`src/http_client/http1.rs`)
 
@@ -306,34 +311,54 @@ let response = client.get("https://example.com")?;
 - 自动处理 GREASE 值，确保符合真实浏览器行为
 - 注意：rustls 仍控制密码套件、签名算法等，但扩展顺序已按指纹调整
 
-### 2. HTTP/2 支持
+### 2. HTTP/2 支持 ✅
 
-当前 HTTP/2 模块是空的：
+HTTP/2 已完全实现：
 ```rust
 // src/http_client/http2.rs
-pub fn send_http2_request(...) -> Result<HttpResponse> {
-    Err(HttpClientError::InvalidResponse(
-        "HTTP/2 支持尚未实现".to_string(),
-    ))
-}
+pub async fn send_http2_request(
+    host: &str,
+    port: u16,
+    path: &str,
+    request: &HttpRequest,
+    config: &HttpClientConfig,
+) -> Result<HttpResponse>;
+
+// 支持连接池版本
+pub async fn send_http2_request_with_pool(
+    host: &str,
+    port: u16,
+    path: &str,
+    request: &HttpRequest,
+    config: &HttpClientConfig,
+    pool_manager: &Arc<ConnectionPoolManager>,
+) -> Result<HttpResponse>;
 ```
+
+**特点**：
+- ✅ 完整的 HTTP/2 协议支持
+- ✅ 使用 `h2` crate 实现
+- ✅ 支持连接池
+- ✅ 自动应用 TLS 配置
 
 ### 3. 响应解析改进
 
-需要支持：
-- chunked transfer encoding
-- gzip/deflate/br 压缩
-- 重定向处理
-- Cookie 管理
+已支持：
+- ✅ chunked transfer encoding（`parse_chunked()`）
+- ✅ gzip/deflate 压缩（需要 `compression` feature）
+- ⚠️ brotli 压缩（待实现）
+- ⚠️ 重定向处理（待实现）
+- ✅ Cookie 管理（`CookieStore` 已实现）
 
 ## 🚀 下一步计划
 
 ### 短期（可立即完成）
 
-1. **改进响应解析** ⭐ 优先
+1. ✅ **响应解析已改进** ⭐ 已完成
    ```rust
-   // 支持 chunked encoding
-   // 支持 content-encoding
+   // ✅ 支持 chunked encoding（已实现）
+   // ✅ 支持 gzip/deflate content-encoding（已实现）
+   // ⚠️ 支持 brotli content-encoding（待实现）
    ```
 
 2. **与 netconnpool 深度集成**
@@ -415,14 +440,18 @@ pub fn send_http2_request(...) -> Result<HttpResponse> {
    - 这是最核心的功能
    - 需要大量工作
    - 或者依赖外部实现
+   - ✅ **已部分实现**：通过 `ClientHelloCustomizer` 应用扩展顺序
 
 2. **完整的 HTTP 协议支持**
-   - chunked encoding
-   - 压缩
-   - 重定向
-   - Cookie
+   - ✅ chunked encoding（已实现）
+   - ✅ gzip/deflate 压缩（已实现，需要 `compression` feature）
+   - ⚠️ brotli 压缩（待实现）
+   - ⚠️ 重定向处理（待实现）
+   - ✅ Cookie 管理（已实现）
 
 3. **HTTP/2 和 HTTP/3**
+   - ✅ HTTP/2 已实现（`http2.rs`）
+   - ✅ HTTP/3 已实现（`http3.rs`）
 
 ## 💡 建议
 
@@ -465,9 +494,9 @@ pub fn send_http2_request(...) -> Result<HttpResponse> {
 **这是正确的方向**，比使用 reqwest 更接近目标！
 
 下一步：
-1. 改进响应解析（处理 chunked、压缩）
+1. ✅ 响应解析已改进（chunked、gzip/deflate 压缩已实现）
 2. 完善测试
-3. 探索自定义 TLS 实现的可行性
+3. 探索自定义 TLS 实现的可行性（已通过 `ClientHelloCustomizer` 部分实现）
 
 ---
 
