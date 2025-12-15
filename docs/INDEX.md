@@ -25,7 +25,12 @@
 - **[IMPLEMENTATION_SUMMARY.md](reports/IMPLEMENTATION_SUMMARY.md)** - 实现总结
 
 ### 模块文档 (`modules/`)
-- 详细的模块级文档，参见 [modules/](modules/) 目录
+- **[profiles.md](modules/profiles.md)** - 浏览器指纹配置模块
+- **[http_client.md](modules/http_client.md)** - HTTP 客户端模块（HTTP/1.1、HTTP/2、HTTP/3）
+- **[dns.md](modules/dns.md)** - DNS 预解析模块
+- **[tls_config.md](modules/tls_config.md)** - TLS 配置模块
+- **[tls_handshake.md](modules/tls_handshake.md)** - TLS 握手模块
+- 更多模块文档，参见 [modules/](modules/) 目录
 
 ### 脚本工具 (`../scripts/`)
 - 测试脚本和工具脚本，参见 [scripts/](../scripts/) 目录

@@ -38,6 +38,33 @@
    - `get_random_fingerprint`: 随机获取指纹
    - `get_random_fingerprint_by_browser`: 根据浏览器类型获取指纹
 
+7. **tls_config/** - TLS 配置模块
+   - `ClientHelloSpec`: TLS ClientHello 规范
+   - `ClientHelloSpecBuilder`: Builder 模式构建器
+   - `Ja4Fingerprint`: JA4 指纹生成
+   - `compare_specs`: 指纹比较功能
+
+8. **tls_handshake/** - TLS 握手模块
+   - `TLSHandshakeBuilder`: TLS 握手构建器
+   - 支持自定义 ClientHello 消息构建
+
+9. **http_client/** - HTTP 客户端模块
+   - `HttpClient`: HTTP 客户端主类
+   - `HttpClientConfig`: 客户端配置
+   - `http1.rs`: HTTP/1.1 实现
+   - `http2.rs`: HTTP/2 实现（多路复用、HPACK）
+   - `http3.rs`: HTTP/3 实现（QUIC 协议）
+   - `rustls_client_hello_customizer.rs`: 通过 ClientHelloCustomizer 应用浏览器指纹
+   - `pool.rs`: 连接池管理（与 netconnpool 集成）
+
+10. **dns/** - DNS 预解析模块（可选，需要 `dns` feature）
+    - `Service`: DNS 服务主接口（start/stop）
+    - `DNSResolver`: DNS 解析器（高并发查询）
+    - `ServerPool`: DNS 服务器池管理
+    - `ServerCollector`: DNS 服务器收集器
+    - `IPInfoClient`: IP 地理信息客户端
+    - `storage`: 多格式数据存储（JSON/YAML/TOML）
+
 ## 设计原则
 
 ### 1. 职责单一
@@ -69,25 +96,56 @@
 
 ```
 src/
-├── lib.rs          # 库入口，导出公共 API
-├── types.rs        # 类型定义
-├── utils.rs        # 工具函数
-├── headers.rs      # HTTP Headers
-├── useragent.rs    # User-Agent 生成
-├── random.rs       # 随机指纹生成
-└── profiles.rs     # 指纹配置
+├── lib.rs              # 库入口，导出公共 API
+├── types.rs            # 类型定义
+├── utils.rs            # 工具函数
+├── headers.rs          # HTTP Headers
+├── useragent.rs        # User-Agent 生成
+├── random.rs           # 随机指纹生成
+├── profiles.rs         # 指纹配置
+├── http2_config.rs     # HTTP/2 配置
+├── tls_config/         # TLS 配置模块
+│   ├── mod.rs
+│   ├── spec.rs
+│   ├── builder.rs
+│   ├── ja4.rs
+│   └── ...
+├── tls_handshake/      # TLS 握手模块
+│   ├── mod.rs
+│   ├── builder.rs
+│   └── ...
+├── http_client/        # HTTP 客户端模块
+│   ├── mod.rs
+│   ├── http1.rs
+│   ├── http2.rs
+│   ├── http3.rs
+│   ├── rustls_client_hello_customizer.rs
+│   └── ...
+├── dicttls/            # TLS 字典模块
+│   ├── mod.rs
+│   ├── cipher_suites.rs
+│   └── ...
+└── dns/                # DNS 预解析模块（可选）
+    ├── mod.rs
+    ├── service.rs
+    ├── resolver.rs
+    └── ...
 
 tests/
-└── integration_test.rs  # 集成测试
+├── integration_test.rs
+├── http_client_test.rs
+├── dns_service_test.rs
+└── ...
 
 examples/
-├── basic.rs        # 基础使用示例
-├── useragent.rs    # User-Agent 示例
-└── headers.rs      # Headers 示例
+├── basic.rs
+├── dns_service.rs
+└── ...
 
 docs/
-├── API.md         # API 参考文档
-└── ARCHITECTURE.md # 架构设计文档
+├── API.md
+├── ARCHITECTURE.md
+└── modules/
 ```
 
 ## 测试策略

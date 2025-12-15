@@ -132,26 +132,30 @@ pub fn send_https_request(
 
 **当前状态**：
 - ✅ 基础 HTTPS 支持（使用 rustls）
-- ⚠️ **TLS 指纹仍然是 rustls 的固定指纹**
-- ⚠️ TODO: 实现自定义 ClientHello
+- ✅ **TLS 指纹已通过 ClientHelloCustomizer 应用**（`rustls_client_hello_customizer.rs`）
+- ✅ 支持通过 `ProfileClientHelloCustomizer` 应用浏览器指纹的扩展顺序
+- ✅ 自动处理 GREASE 值，确保符合真实浏览器行为
 
-**设计为可替换**：
+**TLS 指纹应用机制**：
 ```rust
-// 当前临时方案
+// 已实现：通过 ClientHelloCustomizer 应用指纹
 #[cfg(feature = "rustls-tls")]
 {
-    use rustls::{ClientConfig, ClientConnection};
-    // ... rustls 实现
-}
-
-// 将来的方案
-#[cfg(feature = "custom-tls")]
-{
-    // TODO: 使用 fingerprint-rust 的 ClientHelloSpec
-    let spec = config.profile.get_client_hello_spec()?;
-    let tls_conn = custom_tls::dial_with_spec(host, port, &spec)?;
+    use rustls::client::ClientHelloCustomizer;
+    
+    // 如果配置了 ClientProfile，会自动创建 ProfileClientHelloCustomizer
+    if let Some(profile) = &config.profile {
+        let customizer = ProfileClientHelloCustomizer::try_from_profile(profile)?;
+        // rustls 会在构建 ClientHello 时调用 customizer 调整扩展顺序
+    }
 }
 ```
+
+**工作原理**：
+- `ProfileClientHelloCustomizer` 实现了 `ClientHelloCustomizer` trait
+- rustls 在构建 ClientHello 时会调用 `customize()` 方法
+- 根据 `ClientHelloSpec` 调整扩展顺序，使其符合真实浏览器行为
+- 自动处理 GREASE 值，避免重复扩展类型
 
 ## 📊 测试结果
 
@@ -278,24 +282,29 @@ let spec = fp_result.profile.get_client_hello_spec()?;
 └────────────────────┴────────────────────────────────────┘
 ```
 
-## ⚠️ 当前限制
+## ✅ TLS 指纹支持
 
-### 1. TLS 指纹问题（核心问题）
+### 1. TLS 指纹应用（已实现）
 
-**现状**：
+**实现方式**：
 ```rust
-// ❌ 当前：使用 rustls 的固定指纹
-let tls_stream = rustls::connect(host, tcp_stream)?;
-// TLS ClientHello 是 rustls 的，不是 Chrome 的
+// ✅ 已实现：通过 ClientHelloCustomizer 应用指纹
+let config = HttpClientConfig {
+    profile: Some(chrome_133()),
+    ..Default::default()
+};
+let client = HttpClient::new(config);
+
+// 发送请求时，rustls 会自动通过 ProfileClientHelloCustomizer
+// 调整扩展顺序，使其符合 Chrome 133 的行为
+let response = client.get("https://example.com")?;
 ```
 
-**需要**：
-```rust
-// ✅ 理想：使用自定义 ClientHello
-let spec = profile.get_client_hello_spec()?;
-let tls_stream = custom_tls::connect_with_spec(host, tcp_stream, &spec)?;
-// TLS ClientHello 是 Chrome 的
-```
+**工作原理**：
+- `ProfileClientHelloCustomizer` 实现了 rustls 的 `ClientHelloCustomizer` trait
+- 根据 `ClientHelloSpec` 调整扩展顺序
+- 自动处理 GREASE 值，确保符合真实浏览器行为
+- 注意：rustls 仍控制密码套件、签名算法等，但扩展顺序已按指纹调整
 
 ### 2. HTTP/2 支持
 
