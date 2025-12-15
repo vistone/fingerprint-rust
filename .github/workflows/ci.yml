@@ -37,7 +37,7 @@ jobs:
             ${{ runner.os }}-cargo-
       
       - name: Check formatting
-        run: cargo fmt -- --check
+        run: cargo fmt --all -- --check
       
       - name: Install system dependencies
         run: |
