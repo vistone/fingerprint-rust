@@ -4,7 +4,7 @@
 //!   cargo run --example dns_service --features dns -- -config config/config.json
 
 #[cfg(feature = "dns")]
-use fingerprint::dns::{load_config, DNSError, Service};
+use fingerprint::dns::{load_config, Service};
 
 #[cfg(feature = "dns")]
 use std::env;
@@ -25,8 +25,8 @@ async fn main() {
         process::exit(1);
     };
 
-    // 加载配置
-    let config = match load_config(config_path) {
+    // 加载配置（验证配置有效性）
+    let _config = match load_config(config_path) {
         Ok(cfg) => cfg,
         Err(e) => {
             eprintln!("加载配置失败: {}", e);

@@ -463,18 +463,20 @@ fn parse_duration(s: &str) -> Option<Duration> {
         return None;
     }
 
-    let (num, unit) = if s.ends_with("ns") {
-        (s[..s.len() - 2].parse::<u64>().ok()?, "ns")
-    } else if s.ends_with("us") || s.ends_with("µs") {
-        (s[..s.len() - 2].parse::<u64>().ok()?, "us")
-    } else if s.ends_with("ms") {
-        (s[..s.len() - 2].parse::<u64>().ok()?, "ms")
-    } else if s.ends_with('s') {
-        (s[..s.len() - 1].parse::<u64>().ok()?, "s")
-    } else if s.ends_with('m') {
-        (s[..s.len() - 1].parse::<u64>().ok()?, "m")
-    } else if s.ends_with('h') {
-        (s[..s.len() - 1].parse::<u64>().ok()?, "h")
+    let (num, unit) = if let Some(stripped) = s.strip_suffix("ns") {
+        (stripped.parse::<u64>().ok()?, "ns")
+    } else if let Some(stripped) = s.strip_suffix("us") {
+        (stripped.parse::<u64>().ok()?, "us")
+    } else if let Some(stripped) = s.strip_suffix("µs") {
+        (stripped.parse::<u64>().ok()?, "us")
+    } else if let Some(stripped) = s.strip_suffix("ms") {
+        (stripped.parse::<u64>().ok()?, "ms")
+    } else if let Some(stripped) = s.strip_suffix('s') {
+        (stripped.parse::<u64>().ok()?, "s")
+    } else if let Some(stripped) = s.strip_suffix('m') {
+        (stripped.parse::<u64>().ok()?, "m")
+    } else if let Some(stripped) = s.strip_suffix('h') {
+        (stripped.parse::<u64>().ok()?, "h")
     } else {
         // 尝试作为秒数解析
         (s.parse::<u64>().ok()?, "s")

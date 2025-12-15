@@ -100,7 +100,7 @@ mod tests {
     #[tokio::test]
     #[ignore] // 需要真实的 token，默认跳过
     async fn test_get_ip_info() {
-        let client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
+        let _client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
 
         // 这个测试需要真实的 token
         // let result = client.get_ip_info("8.8.8.8").await;

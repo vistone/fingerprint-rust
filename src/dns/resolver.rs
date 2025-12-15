@@ -203,7 +203,7 @@ impl DNSResolver {
                     }).await;
 
                     // 执行查询
-                    let result = match query_result {
+                    match query_result {
                         Ok(Ok(lookup)) => {
                             let mut ips = Vec::new();
                             let mut record_count = 0usize;
@@ -248,9 +248,7 @@ impl DNSResolver {
                             // 单个服务器失败不影响整体，返回空结果
                             Ok::<Vec<String>, DNSError>(Vec::new())
                         }
-                    };
-
-                    result
+                    }
                 }
             })
             .buffer_unordered(1000); // 增加并发数到 1000，加快查询速度
@@ -353,7 +351,7 @@ impl DNSResolver {
 
         // 转换为 IPInfo 列表
         // 注意：all_ips 是 HashSet，已经自动去重，相同的 IP 只会保留一个
-        let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(|ip| IPInfo::new(ip)).collect();
+        let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
         eprintln!(
             "[DNS Resolver] 转换为 IPInfo，最终返回 {} 个唯一 IP 地址（已去重）",

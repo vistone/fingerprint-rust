@@ -10,7 +10,6 @@
 
 #[cfg(feature = "dns")]
 // 由于 resolver 模块有编译问题，我们直接复制 collector 的核心逻辑来测试
-#[cfg(feature = "dns")]
 async fn test_collect_public_dns() -> Result<Vec<String>, Box<dyn std::error::Error>> {
     use std::time::Duration;
     let timeout = Duration::from_secs(30);

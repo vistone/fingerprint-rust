@@ -94,6 +94,7 @@ impl ServerPool {
     }
 
     /// 创建默认服务器池（使用公共 DNS 服务器）
+    #[allow(clippy::new_without_default, clippy::should_implement_trait)]
     pub fn default() -> Self {
         Self::new(vec![
             "8.8.8.8:53".to_string(), // Google DNS
@@ -176,7 +177,7 @@ impl ServerPool {
             .map_err(|e| crate::dns::types::DNSError::Config(format!("无法读取文件: {}", e)))?;
 
         let list: DNSServerList =
-            serde_json::from_str(&content).map_err(|e| crate::dns::types::DNSError::Json(e))?;
+            serde_json::from_str(&content).map_err(crate::dns::types::DNSError::Json)?;
 
         // 提取所有 IP 地址（Go 项目使用 GetAllServers 返回所有 IP）
         let servers: Vec<String> = list
@@ -219,8 +220,8 @@ impl ServerPool {
             servers: servers_map,
         };
 
-        let json_content = serde_json::to_string_pretty(&list)
-            .map_err(|e| crate::dns::types::DNSError::Json(e))?;
+        let json_content =
+            serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
         // 原子性写入
         let temp_path = path.with_extension("tmp");

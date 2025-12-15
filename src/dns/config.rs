@@ -14,7 +14,7 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
 
     // 根据文件扩展名选择解析器
     let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
-        Some("json") => serde_json::from_str(&content).map_err(|e| DNSError::Json(e))?,
+        Some("json") => serde_json::from_str(&content).map_err(DNSError::Json)?,
         Some("yaml") | Some("yml") => {
             #[cfg(feature = "dns")]
             {

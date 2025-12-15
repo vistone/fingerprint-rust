@@ -546,7 +546,7 @@ fn print_comprehensive_summary(results: &[TestResult], total_duration: Duration)
     for result in results {
         by_protocol
             .entry(result.protocol.clone())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(result);
     }
 
