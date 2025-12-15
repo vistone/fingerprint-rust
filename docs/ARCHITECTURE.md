@@ -50,12 +50,19 @@
 
 9. **http_client/** - HTTP 客户端模块
    - `HttpClient`: HTTP 客户端主类
-   - `HttpClientConfig`: 客户端配置
+   - `HttpClientConfig`: 客户端配置（支持重定向、超时等）
    - `http1.rs`: HTTP/1.1 实现
    - `http2.rs`: HTTP/2 实现（多路复用、HPACK）
    - `http3.rs`: HTTP/3 实现（QUIC 协议）
-   - `rustls_client_hello_customizer.rs`: 通过 ClientHelloCustomizer 应用浏览器指纹
+   - `http1_pool.rs`: HTTP/1.1 连接池实现
+   - `http2_pool.rs`: HTTP/2 连接池实现
+   - `http3_pool.rs`: HTTP/3 连接池实现
    - `pool.rs`: 连接池管理（与 netconnpool 集成）
+   - `response.rs`: HTTP 响应解析（支持 chunked、gzip/deflate/brotli 解压）
+   - `request.rs`: HTTP 请求构建器
+   - `cookie.rs`: Cookie 管理
+   - `proxy.rs`: 代理支持
+   - `rustls_client_hello_customizer.rs`: 通过 ClientHelloCustomizer 应用浏览器指纹
 
 10. **dns/** - DNS 预解析模块（可选，需要 `dns` feature）
     - `Service`: DNS 服务主接口（start/stop）

@@ -1,21 +1,28 @@
 //! rustls ClientHello 定制器（可选）
 //!
-//! 目前只做一件事：**根据 fingerprint-rust 的 `ClientHelloSpec` 调整“扩展编码顺序”**。
+//! 目前只做一件事：**根据 fingerprint-rust 的 `ClientHelloSpec` 调整"扩展编码顺序"**。
 //!
 //! 说明：
 //! - rustls 并不一定会发送 spec 里列出的所有扩展；这里会以 rustls 实际 `used` 为准，
 //!   仅对交集做重排，并把未覆盖的扩展按 rustls 默认顺序追加，确保仍是一个有效的排列。
 //! - spec 里可能出现多个 GREASE 扩展（在真实浏览器中它们通常是不同的 GREASE 值）。
-//!   为避免“重复扩展类型”导致 rustls 拒绝，我们会把每个 GREASE 占位符映射成不同的 GREASE 值。
+//!   为避免"重复扩展类型"导致 rustls 拒绝，我们会把每个 GREASE 占位符映射成不同的 GREASE 值。
 
+#[cfg(feature = "rustls-client-hello-customizer")]
 use std::sync::Arc;
 
+#[cfg(feature = "rustls-client-hello-customizer")]
 use crate::tls_config::{is_grease_value, TLS_GREASE_VALUES};
+#[cfg(feature = "rustls-client-hello-customizer")]
 use crate::{ClientHelloSpec, ClientProfile};
 
-use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer, ExtensionType};
+#[cfg(feature = "rustls-client-hello-customizer")]
+use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer};
+#[cfg(feature = "rustls-client-hello-customizer")]
+use rustls::internal::msgs::enums::ExtensionType;
 
-/// 从 `ClientHelloSpec` 计算“期望的扩展顺序”（以 u16 表示）。
+#[cfg(feature = "rustls-client-hello-customizer")]
+/// 从 `ClientHelloSpec` 计算"期望的扩展顺序"（以 u16 表示）。
 ///
 /// - 去重：同一扩展类型只保留第一次出现
 /// - GREASE：把重复的 GREASE 占位符映射成不同的 GREASE 值
@@ -26,7 +33,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
     for ext in &spec.extensions {
         let mut id = ext.extension_id();
 
-        // 处理 GREASE：尽量给每个 GREASE 分配不同的值，以符合“多 GREASE 扩展”的现实形态。
+        // 处理 GREASE：尽量给每个 GREASE 分配不同的值，以符合"多 GREASE 扩展"的现实形态。
         if is_grease_value(id) {
             for _ in 0..TLS_GREASE_VALUES.len() {
                 let candidate = TLS_GREASE_VALUES[grease_cursor % TLS_GREASE_VALUES.len()];
@@ -46,6 +53,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
     out
 }
 
+#[cfg(feature = "rustls-client-hello-customizer")]
 /// 将 rustls 当前 `used` 的扩展顺序，按 `desired`（来自 spec）重排。
 ///
 /// 规则：
@@ -71,12 +79,14 @@ fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<Ext
     out
 }
 
+#[cfg(feature = "rustls-client-hello-customizer")]
 /// 基于 `ClientProfile` 的 ClientHello 扩展顺序定制器。
 #[derive(Debug)]
 pub struct ProfileClientHelloCustomizer {
     desired_extension_ids: Vec<u16>,
 }
 
+#[cfg(feature = "rustls-client-hello-customizer")]
 impl ProfileClientHelloCustomizer {
     pub fn try_from_profile(profile: &ClientProfile) -> Option<Self> {
         let spec = profile.get_client_hello_spec().ok()?;
@@ -90,6 +100,7 @@ impl ProfileClientHelloCustomizer {
     }
 }
 
+#[cfg(feature = "rustls-client-hello-customizer")]
 impl ClientHelloCustomizer for ProfileClientHelloCustomizer {
     fn customize_client_hello(
         &self,

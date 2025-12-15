@@ -2,9 +2,11 @@
 //!
 //! 支持：
 //! - chunked encoding
-//! - gzip/deflate 压缩
+//! - gzip/deflate/brotli 压缩
 //! - 完整的 HTTP/1.1 响应解析
 
+#[cfg(feature = "compression")]
+use brotli_decompressor::Decompressor;
 use std::collections::HashMap;
 #[cfg(feature = "compression")]
 use std::io::Read;
@@ -266,10 +268,19 @@ impl HttpResponse {
     }
 
     /// 解压 brotli
+    #[cfg(feature = "compression")]
+    fn decompress_brotli(data: &[u8]) -> Result<Vec<u8>, String> {
+        let mut decompressor = Decompressor::new(data, 4096);
+        let mut result = Vec::new();
+        decompressor
+            .read_to_end(&mut result)
+            .map_err(|e| format!("brotli 解压失败: {}", e))?;
+        Ok(result)
+    }
+
+    #[cfg(not(feature = "compression"))]
     fn decompress_brotli(_data: &[u8]) -> Result<Vec<u8>, String> {
-        // TODO: 添加 brotli 支持
-        // 需要添加 brotli crate 依赖
-        Err("brotli 解压暂未实现".to_string())
+        Err("brotli 解压需要启用 feature: compression".to_string())
     }
 
     /// 获取响应体为字符串

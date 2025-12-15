@@ -181,3 +181,59 @@ headers.set_headers(&[
 // 转换为 Map
 let headers_map = headers.to_map();
 ```
+
+### HTTP 客户端
+
+```rust
+use fingerprint::{HttpClient, HttpClientConfig, chrome_133};
+
+// 创建客户端配置
+let config = HttpClientConfig {
+    profile: Some(chrome_133()),
+    max_redirects: 10,  // 最大重定向次数
+    verify_tls: true,    // 验证 TLS 证书
+    prefer_http2: true, // 优先使用 HTTP/2
+    ..Default::default()
+};
+
+// 创建客户端
+let client = HttpClient::new(config);
+
+// 发送 GET 请求（自动处理重定向）
+let response = client.get("https://example.com")?;
+
+// 发送 POST 请求
+let response = client.post("https://example.com/api", b"data")?;
+
+// 查看响应
+println!("状态码: {}", response.status_code);
+println!("响应体: {}", response.body_as_string()?);
+```
+
+### 连接池支持
+
+```rust
+use fingerprint::{HttpClient, HttpClientConfig};
+use fingerprint::http_client::PoolManagerConfig;
+
+// 创建连接池配置
+let pool_config = PoolManagerConfig {
+    max_connections: 100,
+    min_idle: 10,
+    enable_reuse: true,
+    ..Default::default()
+};
+
+// 创建带连接池的客户端
+let client = HttpClient::with_pool(config, pool_config);
+
+// 自动使用连接池发送请求
+let response = client.get("http://example.com/")?;
+
+// 查看连接池统计
+if let Some(stats) = client.pool_stats() {
+    for stat in stats {
+        stat.print();
+    }
+}
+```

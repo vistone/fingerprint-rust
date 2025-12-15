@@ -21,7 +21,7 @@
 
 | 协议 | 状态 | 平均响应时间 | 特性 |
 |------|------|--------------|------|
-| **HTTP/1.1** | ✅ 完全支持 | 44.4ms | Chunked, Gzip, Keep-Alive |
+| **HTTP/1.1** | ✅ 完全支持 | 44.4ms | Chunked, Gzip/Deflate/Brotli, 重定向, Keep-Alive |
 | **HTTP/2** | ✅ 完全支持 | 48.0ms | 多路复用, HPACK, Server Push |
 | **HTTP/3** | ✅ 完全支持 | 40.3ms 🥇 | QUIC, 0-RTT, 连接迁移 |
 
@@ -243,7 +243,7 @@ default = ["rustls-tls", "compression", "http2"]
 rustls-tls = ["rustls", "webpki-roots"]          # 推荐
 
 # 功能特性
-compression = ["flate2"]                          # Gzip/Deflate 解压
+compression = ["flate2", "brotli-decompressor"]   # Gzip/Deflate/Brotli 解压
 http2 = ["h2", "http", "tokio", ...]             # HTTP/2 支持
 http3 = ["quinn", "h3", "h3-quinn", ...]         # HTTP/3 支持
 connection-pool = ["netconnpool"]                 # 连接池
@@ -363,7 +363,7 @@ fingerprint = { version = "1.0", features = ["dns", "rustls-tls"] }
 #### 2. 基础使用（代码方式）
 
 ```rust
-use fingerprint::dns::{Service, DNSConfig};
+use fingerprint::dns::{Service as DNSService, DNSConfig};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -412,12 +412,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 **使用配置文件启动**:
 
 ```rust
-use fingerprint::dns::Service;
+use fingerprint::dns::Service as DNSService;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 从配置文件创建服务
-    let service = Service::from_config_file("config.json")?;
+    let service = DNSService::from_config_file("config.json")?;
     
     // 启动服务
     service.start().await?;
@@ -495,7 +495,7 @@ cargo run --example dns_service --features dns -- -config config.json
 #### 手动解析域名
 
 ```rust
-use fingerprint::{DNSResolver, IPInfoClient, ServerCollector};
+use fingerprint::dns::{DNSResolver, IPInfoClient, ServerCollector};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -523,7 +523,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 #### 查询 IP 详细信息
 
 ```rust
-use fingerprint::IPInfoClient;
+use fingerprint::dns::IPInfoClient;
 use std::time::Duration;
 
 #[tokio::main]
@@ -667,7 +667,8 @@ ring = "0.17.14"          # 密码学库（真实密钥生成）
 rustls = "0.21"           # TLS 实现
 webpki-roots = "0.25"     # 根证书
 httparse = "1.10.1"       # HTTP 解析
-flate2 = "1.0"            # 压缩/解压
+flate2 = "1.0"            # Gzip/Deflate 解压
+brotli-decompressor = "4.0"  # Brotli 解压
 ```
 
 ### HTTP/2 & HTTP/3
@@ -756,13 +757,20 @@ let config = HttpClientConfig {
 };
 ```
 
-### 4. Chunked & Gzip 支持
+### 4. 完整的响应处理
 
 ```rust
 // 自动处理 Transfer-Encoding: chunked
-// 自动解压 Content-Encoding: gzip
+// 自动解压 Content-Encoding: gzip/deflate/brotli
+// 自动跟随 HTTP 重定向（可配置最大重定向次数）
 let response = client.get("https://httpbin.org/gzip")?;
 let body = response.body_as_string()?;  // 已解压
+
+// 配置重定向
+let config = HttpClientConfig {
+    max_redirects: 10,  // 最大重定向次数
+    ..Default::default()
+};
 ```
 
 ### 5. 配置导出

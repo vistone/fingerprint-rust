@@ -198,20 +198,71 @@ impl HttpClient {
         self.send_request(&request)
     }
 
-    /// 发送自定义请求
+    /// 发送自定义请求（支持重定向）
     pub fn send_request(&self, request: &HttpRequest) -> Result<HttpResponse> {
+        self.send_request_with_redirects(request, 0)
+    }
+
+    /// 发送请求并处理重定向
+    fn send_request_with_redirects(
+        &self,
+        request: &HttpRequest,
+        redirect_count: usize,
+    ) -> Result<HttpResponse> {
+        // 检查重定向次数
+        if redirect_count >= self.config.max_redirects {
+            return Err(HttpClientError::InvalidResponse(format!(
+                "重定向次数超过限制: {}",
+                self.config.max_redirects
+            )));
+        }
+
         // 解析 URL
         let (scheme, host, port, path) = self.parse_url(&request.url)?;
 
         // 根据协议选择处理方式
-        match scheme.as_str() {
-            "http" => self.send_http_request(&host, port, &path, request),
-            "https" => self.send_https_request(&host, port, &path, request),
-            _ => Err(HttpClientError::InvalidUrl(format!(
-                "不支持的协议: {}",
-                scheme
-            ))),
+        let response = match scheme.as_str() {
+            "http" => self.send_http_request(&host, port, &path, request)?,
+            "https" => self.send_https_request(&host, port, &path, request)?,
+            _ => {
+                return Err(HttpClientError::InvalidUrl(format!(
+                    "不支持的协议: {}",
+                    scheme
+                )));
+            }
+        };
+
+        // 处理重定向
+        if (300..400).contains(&response.status_code) {
+            if let Some(location) = response.headers.get("location") {
+                // 构建新的 URL（可能是相对路径或绝对路径）
+                let redirect_url =
+                    if location.starts_with("http://") || location.starts_with("https://") {
+                        location.clone()
+                    } else if location.starts_with("//") {
+                        format!("{}:{}", scheme, location)
+                    } else if location.starts_with('/') {
+                        format!("{}://{}:{}{}", scheme, host, port, location)
+                    } else {
+                        // 相对路径
+                        let base_path = if path.ends_with('/') {
+                            &path
+                        } else {
+                            path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
+                        };
+                        format!("{}://{}:{}{}{}", scheme, host, port, base_path, location)
+                    };
+
+                // 创建新的请求
+                let mut redirect_request = request.clone();
+                redirect_request.url = redirect_url;
+
+                // 递归处理重定向
+                return self.send_request_with_redirects(&redirect_request, redirect_count + 1);
+            }
         }
+
+        Ok(response)
     }
 
     /// 解析 URL

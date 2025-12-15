@@ -21,6 +21,7 @@ thiserror = "2.0"
 rustls = { version = "0.21", optional = true, features = ["dangerous_configuration"] }
 webpki-roots = { version = "0.25", optional = true }
 flate2 = { version = "1.0", optional = true }  # gzip/deflate 解压
+brotli-decompressor = { version = "4.0", optional = true }  # brotli 解压
 
 # HTTP/2 支持
 h2 = { version = "0.4", optional = true }
@@ -73,7 +74,7 @@ netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0
 [features]
 default = ["rustls-tls", "compression", "http2"]
 rustls-tls = ["rustls", "webpki-roots"]
-compression = ["flate2"]  # 启用压缩支持
+compression = ["flate2", "brotli-decompressor"]  # 启用压缩支持（gzip/deflate/brotli）
 http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots"]  # HTTP/2 支持
 http3 = ["quinn", "h3", "h3-quinn", "tokio", "rustls", "webpki-roots", "bytes"]  # HTTP/3 支持
 async = ["tokio"]  # 异步运行时

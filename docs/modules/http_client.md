@@ -103,7 +103,8 @@ impl HttpResponse {
 - ✅ 状态码、headers、body 分离
 - ✅ 支持二进制和文本 body
 - ✅ 支持 chunked encoding（`parse_chunked()`）
-- ✅ 支持 gzip/deflate 解压（需要 `compression` feature，使用 `flate2`）
+- ✅ 支持 gzip/deflate/brotli 解压（需要 `compression` feature，使用 `flate2` 和 `brotli-decompressor`）
+- ✅ 支持 HTTP 重定向（自动跟随 Location header，可配置最大重定向次数）
 
 ### 4. HTTP/1.1 实现 (`src/http_client/http1.rs`)
 
@@ -238,9 +239,10 @@ let request = HttpRequest::new(HttpMethod::Get, "https://example.com/")
     .with_user_agent(&fp_result.user_agent)
     .with_headers(&fp_result.headers);
 
-// 5. TODO: 应用 TLS 配置
+// 5. ✅ TLS 配置已自动应用
+// 通过 HttpClientConfig.profile 配置，rustls 会自动通过 ClientHelloCustomizer 应用指纹
 let spec = fp_result.profile.get_client_hello_spec()?;
-// 这里需要自定义 TLS 实现来应用 spec
+// TLS 指纹已通过 ClientHelloCustomizer 自动应用
 ```
 
 ## 🏗️ 架构设计
@@ -346,8 +348,8 @@ pub async fn send_http2_request_with_pool(
 已支持：
 - ✅ chunked transfer encoding（`parse_chunked()`）
 - ✅ gzip/deflate 压缩（需要 `compression` feature）
-- ⚠️ brotli 压缩（待实现）
-- ⚠️ 重定向处理（待实现）
+- ✅ brotli 压缩（已实现，需要 `compression` feature）
+- ✅ 重定向处理（已实现，自动跟随 Location header，可配置 `max_redirects`）
 - ✅ Cookie 管理（`CookieStore` 已实现）
 
 ## 🚀 下一步计划
@@ -358,7 +360,7 @@ pub async fn send_http2_request_with_pool(
    ```rust
    // ✅ 支持 chunked encoding（已实现）
    // ✅ 支持 gzip/deflate content-encoding（已实现）
-   // ⚠️ 支持 brotli content-encoding（待实现）
+   // ✅ 支持 brotli content-encoding（已实现，需要 compression feature）
    ```
 
 2. **与 netconnpool 深度集成**
@@ -434,24 +436,22 @@ pub async fn send_http2_request_with_pool(
    - 易于扩展和替换
    - 为将来的 TLS 集成预留接口
 
-### ⚠️ 待完成
+### ✅ 已完成功能
 
-1. **自定义 TLS ClientHello**
-   - 这是最核心的功能
-   - 需要大量工作
-   - 或者依赖外部实现
-   - ✅ **已部分实现**：通过 `ClientHelloCustomizer` 应用扩展顺序
+1. **TLS 指纹应用**
+   - ✅ **已实现**：通过 `ClientHelloCustomizer` 应用扩展顺序
+   - ✅ 自动根据 `ClientProfile` 调整 TLS 扩展顺序
+   - ✅ 支持所有 HTTP 协议（HTTP/1.1、HTTP/2、HTTP/3）
 
 2. **完整的 HTTP 协议支持**
    - ✅ chunked encoding（已实现）
-   - ✅ gzip/deflate 压缩（已实现，需要 `compression` feature）
-   - ⚠️ brotli 压缩（待实现）
-   - ⚠️ 重定向处理（待实现）
+   - ✅ gzip/deflate/brotli 压缩（已实现，需要 `compression` feature）
+   - ✅ 重定向处理（已实现，自动跟随 Location header）
    - ✅ Cookie 管理（已实现）
 
 3. **HTTP/2 和 HTTP/3**
-   - ✅ HTTP/2 已实现（`http2.rs`）
-   - ✅ HTTP/3 已实现（`http3.rs`）
+   - ✅ HTTP/2 已实现（`http2.rs`，包括连接池支持）
+   - ✅ HTTP/3 已实现（`http3.rs`，包括连接池支持）
 
 ## 💡 建议
 

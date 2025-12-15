@@ -191,7 +191,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     config.interval = "2m".to_string();
     
     // 创建服务
-    let service = Service::from_config(config)?;
+    let service = Service::new(config)?;
     
     // 启动服务（后台运行，不阻塞）
     service.start().await?;
@@ -209,7 +209,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ### 从配置文件加载
 
 ```rust
-use fingerprint::dns::{Service, load_config};
+use fingerprint::dns::Service;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

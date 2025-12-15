@@ -12,17 +12,17 @@
 - **使用方式**: 通过 `HttpClient::with_pool()` 自动启用
 - **特性**: `connection-pool`
 
-### 🚧 HTTP/2 连接池
-- **状态**: 已实现，需要异步接口
+### ✅ HTTP/2 连接池
+- **状态**: 完全支持
 - **实现**: `src/http_client/http2_pool.rs`
-- **限制**: 当前的同步 `get()`/`post()` 接口无法使用
-- **解决方案**: 需要添加异步 API (`async fn get_async()` 等)
+- **使用方式**: 通过 `HttpClient::with_pool()` 自动启用（内部使用异步运行时）
+- **特性**: `connection-pool` + `http2`
 
-### 🚧 HTTP/3 连接池
-- **状态**: 已实现，需要异步接口
+### ✅ HTTP/3 连接池
+- **状态**: 完全支持
 - **实现**: `src/http_client/http3_pool.rs`
-- **限制**: 当前的同步 `get()`/`post()` 接口无法使用
-- **解决方案**: 需要添加异步 API (`async fn get_async()` 等)
+- **使用方式**: 通过 `HttpClient::with_pool()` 自动启用（内部使用异步运行时）
+- **特性**: `connection-pool` + `http3`
 
 ## 使用示例
 
@@ -104,25 +104,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
   - 使用 `tokio` 运行时
   - 需要异步函数才能充分利用连接池
 
-### 为什么 HTTP/2 和 HTTP/3 需要异步 API？
+### 同步 API 中的异步处理
 
-当前的 `HttpClient::get()` 方法是同步的：
+`HttpClient::get()` 方法是同步的，但内部会自动处理异步调用：
 
 ```rust
 pub fn get(&self, url: &str) -> Result<HttpResponse>
 ```
 
-HTTP/2 和 HTTP/3 的连接池函数是异步的：
+对于 HTTP/2 和 HTTP/3，内部会：
+1. 创建临时的 `tokio` runtime（如果不存在）
+2. 调用异步的连接池函数
+3. 等待结果并返回
 
-```rust
-pub async fn send_http2_request_with_pool(...) -> Result<HttpResponse>
-pub async fn send_http3_request_with_pool(...) -> Result<HttpResponse>
-```
-
-在同步函数中调用异步函数需要创建临时的 `tokio` runtime，这会：
-1. 降低性能
-2. 失去异步的优势
-3. 无法真正利用连接池的并发能力
+**注意**：虽然可以使用同步 API，但如果有大量并发请求，建议直接使用异步 API 以获得更好的性能。
 
 ## 未来改进
 
@@ -145,11 +140,11 @@ impl HttpClient {
 
 1. **HTTP/1.1 用户**: 直接使用 `HttpClient::with_pool()` + 同步 API ✅
 2. **HTTP/2 用户**: 
-   - 简单场景: 使用 `HttpClient::get()` (无连接池)
-   - 高性能场景: 直接调用 `http2_pool::send_http2_request_with_pool()`
+   - 简单场景: 使用 `HttpClient::with_pool()` + `get()`（自动使用连接池）✅
+   - 高性能场景: 直接调用 `http2_pool::send_http2_request_with_pool()`（异步）
 3. **HTTP/3 用户**:
-   - 简单场景: 使用 `HttpClient::get()` (无连接池)
-   - 高性能场景: 直接调用 `http3_pool::send_http3_request_with_pool()`
+   - 简单场景: 使用 `HttpClient::with_pool()` + `get()`（自动使用连接池）✅
+   - 高性能场景: 直接调用 `http3_pool::send_http3_request_with_pool()`（异步）
 
 ## 连接池配置
 
@@ -157,9 +152,12 @@ impl HttpClient {
 use fingerprint::http_client::PoolManagerConfig;
 
 let pool_config = PoolManagerConfig {
-    max_idle_per_host: 10,
+    max_connections: 100,
+    min_idle: 10,
+    connect_timeout: std::time::Duration::from_secs(30),
     idle_timeout: std::time::Duration::from_secs(90),
-    max_connections_per_host: 100,
+    max_lifetime: std::time::Duration::from_secs(600),
+    enable_reuse: true,
 };
 
 let client = HttpClient::with_pool(config, pool_config);

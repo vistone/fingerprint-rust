@@ -2,7 +2,9 @@
 
 ## 概述
 
-本项目实现了类似 [uTLS](https://github.com/refraction-networking/utls) 的接口，提供对 ClientHello 的完全控制，用于模拟浏览器指纹。
+本项目提供了类似 [uTLS](https://github.com/refraction-networking/utls) 的 API 风格，通过 `ClientHelloCustomizer` 和 `TLSHandshakeBuilder` 提供对 ClientHello 的控制，用于模拟浏览器指纹。
+
+**注意**：当前主要通过 `rustls` 的 `ClientHelloCustomizer` 来应用浏览器指纹，而不是完全自定义的 TLS 实现。`TLSHandshakeBuilder` 可以构建完整的 ClientHello 消息，但需要配合完整的 TLS 握手实现才能使用。
 
 ## 核心接口
 
@@ -171,11 +173,13 @@ let uconn = UClient(tcp_stream, config, ClientHelloID::HelloCustom)?;
 4. **ApplyPreset** - 应用预设指纹
 5. **自动集成** - HTTP 客户端自动使用自定义 ClientHello
 
-### ⚠️ 当前限制
+### 当前实现状态
 
-1. **完整的 TLS 握手** - 当前只实现了 ClientHello 的发送和 ServerHello 的接收
-2. **HelloRandomized** - 尚未实现随机化 ClientHello
-3. **Session Tickets** - 尚未实现假 Session Tickets
+1. ✅ **TLS 指纹应用** - 已通过 `ClientHelloCustomizer` 实现扩展顺序调整
+2. ✅ **ClientHello 构建** - `TLSHandshakeBuilder` 可以构建完整的 ClientHello 消息
+3. ⚠️ **完整 TLS 握手** - 当前使用 rustls 处理完整握手，`TLSHandshakeBuilder` 只构建 ClientHello 消息
+4. ⚠️ **HelloRandomized** - 当前使用固定的浏览器指纹配置，不支持随机化
+5. ⚠️ **Session Tickets** - 由 rustls 处理，当前不支持自定义假 Session Tickets
 
 ## 与标准 TLS 的对比
 

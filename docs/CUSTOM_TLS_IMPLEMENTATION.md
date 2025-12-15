@@ -159,11 +159,15 @@ let response = send_https_request_with_custom_tls(
 
 ```
 src/http_client/
-├── custom_tls.rs          # 自定义 TLS 实现
-├── tls.rs                 # 标准 TLS 实现（已集成自定义 TLS）
-├── http2.rs               # HTTP/2 实现（待集成）
-└── http3.rs               # HTTP/3 实现（待集成）
+├── tls.rs                 # 标准 TLS 实现（使用 rustls + ClientHelloCustomizer）
+├── http2.rs               # HTTP/2 实现（使用 rustls + ClientHelloCustomizer）
+├── http3.rs               # HTTP/3 实现（使用 rustls + ClientHelloCustomizer）
+├── rustls_client_hello_customizer.rs  # ClientHello 定制器（应用扩展顺序）
+└── tls_handshake/         # TLS 握手构建器（可用于完全自定义 ClientHello）
+    └── builder.rs         # TLSHandshakeBuilder
 ```
+
+**注意**：当前主要通过 `rustls_client_hello_customizer.rs` 中的 `ProfileClientHelloCustomizer` 来应用浏览器指纹，而不是完全自定义的 TLS 实现。
 
 ## 测试
 
