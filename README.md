@@ -609,22 +609,43 @@ cargo run --example resolve_domains --features dns,rustls-tls
 
 ### 核心文档
 
-- **[ALL_BROWSER_FINGERPRINTS_TEST_COMPLETE.md](docs/ALL_BROWSER_FINGERPRINTS_TEST_COMPLETE.md)** - 所有浏览器指纹测试报告
-- **[HTTP3_OPTIMIZATION_COMPLETE.md](docs/HTTP3_OPTIMIZATION_COMPLETE.md)** - HTTP/3 QUIC 优化报告
-- **[PERFORMANCE_REPORT.md](docs/PERFORMANCE_REPORT.md)** - 性能分析报告
-- **[FINAL_ACHIEVEMENT_SUMMARY.md](docs/FINAL_ACHIEVEMENT_SUMMARY.md)** - 项目成就总结
-
-### API 文档
-
+- **[INDEX.md](docs/INDEX.md)** - 文档索引（推荐从这里开始）
 - **[API.md](docs/API.md)** - 完整 API 参考
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - 系统架构设计
-- **[IMPLEMENTATION_STATUS.md](docs/IMPLEMENTATION_STATUS.md)** - 实现状态
 
-### 实现说明
+### 使用指南
 
-- **[DICTTLS_IMPLEMENTATION.md](docs/DICTTLS_IMPLEMENTATION.md)** - TLS 字典实现
-- **[UTLS_IMPLEMENTATION.md](docs/UTLS_IMPLEMENTATION.md)** - uTLS 兼容性
-- **[TLS_CONFIG.md](docs/TLS_CONFIG.md)** - TLS 配置说明
+- **[USAGE_GUIDE.md](docs/guides/USAGE_GUIDE.md)** - 使用指南：如何随机选择和指定浏览器指纹
+- **[CAPTURE_BROWSER_FINGERPRINTS.md](docs/guides/CAPTURE_BROWSER_FINGERPRINTS.md)** - 如何抓取真实浏览器的 TLS 指纹
+- **[GOOGLE_EARTH_TEST.md](docs/guides/GOOGLE_EARTH_TEST.md)** - Google Earth API 测试说明
+
+### 模块文档
+
+- **[profiles.md](docs/modules/profiles.md)** - 浏览器指纹配置模块
+- **[http_client.md](docs/modules/http_client.md)** - HTTP 客户端模块（HTTP/1.1、HTTP/2、HTTP/3）
+- **[dns.md](docs/modules/dns.md)** - DNS 预解析模块
+- **[tls_config.md](docs/modules/tls_config.md)** - TLS 配置模块
+- **[tls_handshake.md](docs/modules/tls_handshake.md)** - TLS 握手模块
+- **[dicttls.md](docs/modules/dicttls.md)** - TLS 字典实现
+- **[utls.md](docs/modules/utls.md)** - uTLS 兼容性说明
+
+### 技术文档
+
+- **[RUSTLS_FINGERPRINT_INTEGRATION.md](docs/RUSTLS_FINGERPRINT_INTEGRATION.md)** - rustls 指纹集成说明
+- **[CUSTOM_TLS_IMPLEMENTATION.md](docs/CUSTOM_TLS_IMPLEMENTATION.md)** - 自定义 TLS 实现文档
+- **[CLIENTHELLO_ANALYSIS.md](docs/CLIENTHELLO_ANALYSIS.md)** - ClientHello 分析文档
+- **[UTLS_STYLE_API.md](docs/UTLS_STYLE_API.md)** - uTLS 风格 API 文档
+
+### 测试报告
+
+- **[ALL_PROFILES_TEST_REPORT.md](docs/reports/ALL_PROFILES_TEST_REPORT.md)** - 所有浏览器指纹测试报告
+- **[TEST_RESULTS.md](docs/reports/TEST_RESULTS.md)** - 测试结果总结
+- **[CURRENT_IMPLEMENTATION_STATUS.md](docs/reports/CURRENT_IMPLEMENTATION_STATUS.md)** - 当前实现状态
+- **[IMPLEMENTATION_SUMMARY.md](docs/reports/IMPLEMENTATION_SUMMARY.md)** - 实现总结
+
+### 历史文档
+
+历史文档和归档文件请查看 [docs/archive/](docs/archive/) 目录。
 
 ---
 
