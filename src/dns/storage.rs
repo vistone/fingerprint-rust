@@ -79,42 +79,9 @@ fn load_from_json(path: &Path) -> Result<DomainIPs, DNSError> {
 fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
     #[cfg(feature = "dns")]
     {
-        // YAML 保存：先转换为 JSON 字符串，然后手动格式化为 YAML
-        // 由于 yaml-rust 不支持直接序列化，我们手动构建 YAML 字符串
-        let mut yaml_lines = Vec::new();
-        yaml_lines.push("ipv4:".to_string());
-        for ip_info in &domain_ips.ipv4 {
-            yaml_lines.push(format!("  - ip: {}", ip_info.ip));
-            if let Some(ref hostname) = ip_info.hostname {
-                yaml_lines.push(format!("    hostname: {}", hostname));
-            }
-            if let Some(ref city) = ip_info.city {
-                yaml_lines.push(format!("    city: {}", city));
-            }
-            if let Some(ref country) = ip_info.country {
-                yaml_lines.push(format!("    country: {}", country));
-            }
-            if let Some(ref org) = ip_info.org {
-                yaml_lines.push(format!("    org: {}", org));
-            }
-        }
-        yaml_lines.push("ipv6:".to_string());
-        for ip_info in &domain_ips.ipv6 {
-            yaml_lines.push(format!("  - ip: {}", ip_info.ip));
-            if let Some(ref hostname) = ip_info.hostname {
-                yaml_lines.push(format!("    hostname: {}", hostname));
-            }
-            if let Some(ref city) = ip_info.city {
-                yaml_lines.push(format!("    city: {}", city));
-            }
-            if let Some(ref country) = ip_info.country {
-                yaml_lines.push(format!("    country: {}", country));
-            }
-            if let Some(ref org) = ip_info.org {
-                yaml_lines.push(format!("    org: {}", org));
-            }
-        }
-        let yaml_string = yaml_lines.join("\n");
+        // 使用 serde_yaml 直接序列化
+        let yaml_string = serde_yaml::to_string(domain_ips)
+            .map_err(|e| DNSError::Yaml(e.to_string()))?;
         atomic_write(path, yaml_string.as_bytes())?;
         Ok(())
     }
@@ -129,93 +96,14 @@ fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
     #[cfg(feature = "dns")]
     {
         let content = fs::read_to_string(path)?;
-        let docs = yaml_rust::YamlLoader::load_from_str(&content)
+        // 使用 serde_yaml 直接反序列化
+        let domain_ips: DomainIPs = serde_yaml::from_str(&content)
             .map_err(|e| DNSError::Yaml(e.to_string()))?;
-        
-        if docs.is_empty() {
-            return Err(DNSError::Yaml("empty YAML document".to_string()));
-        }
-
-        // 将 YAML 转换为 JSON 字符串，然后反序列化
-        let yaml = &docs[0];
-        let json_str = yaml_to_json_string(yaml)?;
-        let domain_ips: DomainIPs = serde_json::from_str(&json_str)?;
         Ok(domain_ips)
     }
     #[cfg(not(feature = "dns"))]
     {
         Err(DNSError::Yaml("YAML support not enabled".to_string()))
-    }
-}
-
-#[cfg(feature = "dns")]
-fn yaml_to_json_string(yaml: &yaml_rust::Yaml) -> Result<String, DNSError> {
-    use yaml_rust::Yaml;
-    
-    match yaml {
-        Yaml::Hash(hash) => {
-            let mut json_obj = serde_json::Map::new();
-            
-            // 处理 IPv4
-            if let Some(ipv4) = hash.get(&Yaml::String("ipv4".to_string())) {
-                if let Yaml::Array(arr) = ipv4 {
-                    let ipv4_vec: Vec<serde_json::Value> = arr.iter()
-                        .filter_map(|y| yaml_to_json_value(y).ok())
-                        .collect();
-                    json_obj.insert("ipv4".to_string(), serde_json::Value::Array(ipv4_vec));
-                }
-            }
-            
-            // 处理 IPv6
-            if let Some(ipv6) = hash.get(&Yaml::String("ipv6".to_string())) {
-                if let Yaml::Array(arr) = ipv6 {
-                    let ipv6_vec: Vec<serde_json::Value> = arr.iter()
-                        .filter_map(|y| yaml_to_json_value(y).ok())
-                        .collect();
-                    json_obj.insert("ipv6".to_string(), serde_json::Value::Array(ipv6_vec));
-                }
-            }
-            
-            serde_json::to_string(&serde_json::Value::Object(json_obj))
-                .map_err(|e| DNSError::Yaml(e.to_string()))
-        }
-        _ => Err(DNSError::Yaml("invalid YAML structure".to_string())),
-    }
-}
-
-#[cfg(feature = "dns")]
-fn yaml_to_json_value(yaml: &yaml_rust::Yaml) -> Result<serde_json::Value, DNSError> {
-    use yaml_rust::Yaml;
-    
-    match yaml {
-        Yaml::String(s) => Ok(serde_json::Value::String(s.clone())),
-        Yaml::Integer(i) => Ok(serde_json::Value::Number(serde_json::Number::from(*i))),
-        Yaml::Real(r) => {
-            r.parse::<f64>()
-                .map(|f| serde_json::Value::Number(
-                    serde_json::Number::from_f64(f).unwrap_or(serde_json::Number::from(0))
-                ))
-                .map_err(|e| DNSError::Yaml(e.to_string()))
-        }
-        Yaml::Boolean(b) => Ok(serde_json::Value::Bool(*b)),
-        Yaml::Hash(hash) => {
-            let mut map = serde_json::Map::new();
-            for (k, v) in hash {
-                let key = match k {
-                    Yaml::String(s) => s.clone(),
-                    _ => k.as_str().unwrap_or("").to_string(),
-                };
-                map.insert(key, yaml_to_json_value(v)?);
-            }
-            Ok(serde_json::Value::Object(map))
-        }
-        Yaml::Array(arr) => {
-            let vec: Result<Vec<serde_json::Value>, DNSError> = 
-                arr.iter().map(yaml_to_json_value).collect();
-            Ok(serde_json::Value::Array(vec?))
-        }
-        Yaml::Null => Ok(serde_json::Value::Null),
-        _ => Err(DNSError::Yaml("unsupported YAML type".to_string())),
     }
 }
 

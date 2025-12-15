@@ -13,19 +13,15 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
     let content = fs::read_to_string(path)?;
 
     // 根据文件扩展名选择解析器
-    let config = match path.extension().and_then(|s| s.to_str()) {
+    let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
         Some("json") => serde_json::from_str(&content)
             .map_err(|e| DNSError::Json(e))?,
         Some("yaml") | Some("yml") => {
             #[cfg(feature = "dns")]
             {
-                yaml_rust::YamlLoader::load_from_str(&content)
+                // 使用 serde_yaml 直接反序列化
+                serde_yaml::from_str(&content)
                     .map_err(|e| DNSError::Yaml(e.to_string()))?
-                    .first()
-                    .ok_or_else(|| DNSError::Yaml("empty YAML document".to_string()))
-                    .and_then(|yaml| {
-                        yaml_to_config(yaml)
-                    })?
             }
             #[cfg(not(feature = "dns"))]
             {
@@ -58,49 +54,6 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
     Ok(config)
 }
 
-#[cfg(feature = "dns")]
-fn yaml_to_config(yaml: &yaml_rust::Yaml) -> Result<DNSConfig, DNSError> {
-
-    let config = DNSConfig {
-        ipinfo_token: yaml["ipinfoToken"].as_str()
-            .or_else(|| yaml["ipinfotoken"].as_str())
-            .ok_or_else(|| DNSError::Config("ipinfoToken is required".to_string()))?
-            .to_string(),
-        domain_list: yaml["domainList"]
-            .as_vec()
-            .ok_or_else(|| DNSError::Config("domainList must be an array".to_string()))?
-            .iter()
-            .map(|v| v.as_str().unwrap_or("").to_string())
-            .filter(|s| !s.is_empty())
-            .collect(),
-        domain_ips_dir: yaml["domainIPsDir"]
-            .as_str()
-            .or_else(|| yaml["domainipsdir"].as_str())
-            .unwrap_or("./data")
-            .to_string(),
-        interval: yaml["interval"].as_str().unwrap_or("2m").to_string(),
-        max_concurrency: yaml["maxConcurrency"]
-            .as_i64()
-            .unwrap_or(500) as usize,
-        dns_timeout: yaml["dnsTimeout"]
-            .as_str()
-            .unwrap_or("4s")
-            .to_string(),
-        http_timeout: yaml["httpTimeout"]
-            .as_str()
-            .unwrap_or("20s")
-            .to_string(),
-        max_ip_fetch_conc: yaml["maxIPFetchConc"]
-            .as_i64()
-            .unwrap_or(50) as usize,
-    };
-
-    if config.domain_list.is_empty() {
-        return Err(DNSError::Config("domainList cannot be empty".to_string()));
-    }
-
-    Ok(config)
-}
 
 #[cfg(test)]
 mod tests {
