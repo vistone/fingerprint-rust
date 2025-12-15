@@ -12,7 +12,7 @@
 ### ✅ 完整的浏览器指纹
 
 - **6 个核心浏览器**: Chrome 103/133, Firefox 133, Safari 16.0, Opera 91, Edge 120/133
-- **69+ 浏览器版本**: 包括移动端和应用特定指纹
+- **69+ 浏览器版本**: 包括移动端和应用特定指纹（Chrome 19个、Firefox 13个、Safari 9个、Opera 3个、Edge 3个、移动客户端 17+个）
 - **TLS 1.3 兼容**: ChangeCipherSpec, Session ID, 真实密钥生成
 - **真实 KeyShare**: 使用 `ring` 生成 X25519, P-256, P-384 密钥对
 - **BoringSSL Padding**: 兼容 Chrome/Chromium 的 padding 策略
@@ -249,7 +249,7 @@ http3 = ["quinn", "h3", "h3-quinn", ...]         # HTTP/3 支持
 connection-pool = ["netconnpool"]                 # 连接池
 reporter = ["chrono"]                             # 报告生成器
 async = ["tokio"]                                 # 异步运行时
-dns = ["serde", "serde_json", "toml", "yaml-rust", "tokio", "futures", "rustls-tls", "hickory-resolver"]  # DNS 预解析功能
+dns = ["serde", "serde_json", "toml", "serde_yaml", "tokio", "futures", "rustls-tls", "hickory-resolver"]  # DNS 预解析功能
 ```
 
 ### 推荐组合
@@ -378,7 +378,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     config.interval = "2m".to_string();                // 检查间隔：2分钟
     
     // 创建服务
-    let service = Service::new(config)?;
+    let service = DNSService::new(config)?;
     
     // 启动服务（后台运行，不阻塞主线程）
     service.start().await?;
@@ -495,7 +495,7 @@ cargo run --example dns_service --features dns -- -config config.json
 #### 手动解析域名
 
 ```rust
-use fingerprint::dns::{DNSResolver, IPInfoClient, ServerCollector};
+use fingerprint::{DNSResolver, IPInfoClient, ServerCollector};
 use std::sync::Arc;
 use std::time::Duration;
 
@@ -523,7 +523,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 #### 查询 IP 详细信息
 
 ```rust
-use fingerprint::dns::IPInfoClient;
+use fingerprint::IPInfoClient;
 use std::time::Duration;
 
 #[tokio::main]

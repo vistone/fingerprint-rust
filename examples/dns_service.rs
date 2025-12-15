@@ -4,7 +4,7 @@
 //!   cargo run --example dns_service --features dns -- -config config/config.json
 
 #[cfg(feature = "dns")]
-use fingerprint::dns::{load_config, Service};
+use fingerprint::dns::{load_config, DNSService};
 
 #[cfg(feature = "dns")]
 use std::env;
