@@ -25,6 +25,9 @@
 **实现的模块**:
 - `src/http_client/pool.rs` - 连接池管理器
 - `src/http_client/http1_pool.rs` - HTTP/1.1 连接池集成
+- `src/http_client/http2_pool.rs` - HTTP/2 连接池集成
+- `src/http_client/http3_pool.rs` - HTTP/3 连接池集成
+- `src/http_client/tls.rs` - HTTPS (TLS) 连接池集成
 
 ### 2. 连接池管理器 ✅
 
@@ -73,9 +76,10 @@ if let Some(stats) = client.pool_stats() {
 
 ```rust
 use fingerprint::{
-    HttpClient, HttpClientConfig, PoolManagerConfig,
+    HttpClient, HttpClientConfig,
     get_user_agent_by_profile_name,
 };
+use fingerprint::http_client::PoolManagerConfig;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 1. 创建连接池配置
@@ -165,8 +169,14 @@ HttpClient
     │           ├─ Dialer (创建连接)
     │           ├─ Connection (封装 TcpStream)
     │           └─ Stats (统计信息)
-    └─ http1_pool
-        └─ send_http1_request_with_pool()
+    ├─ http1_pool
+    │   └─ send_http1_request_with_pool()
+    ├─ http2_pool
+    │   └─ send_http2_request_with_pool()
+    ├─ http3_pool
+    │   └─ send_http3_request_with_pool()
+    └─ tls
+        └─ send_https_request_with_pool()
 ```
 
 ---
@@ -261,11 +271,15 @@ impl PoolStats {
 ```rust
 // 如果创建时指定了连接池
 let client = HttpClient::with_pool(config, pool_config);
-// HTTP 请求会自动使用连接池
+// HTTP/HTTPS 请求会自动使用连接池
+// - HTTP/1.1 → http1_pool::send_http1_request_with_pool()
+// - HTTPS (HTTP/1.1 over TLS) → tls::send_https_request_with_pool()
+// - HTTP/2 → http2_pool::send_http2_request_with_pool()
+// - HTTP/3 → http3_pool::send_http3_request_with_pool()
 
 // 如果没有连接池
 let client = HttpClient::new(config);
-// HTTP 请求使用普通连接
+// HTTP 请求使用普通连接（不使用连接池）
 ```
 
 ### Feature Gate
@@ -337,10 +351,11 @@ netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0
 
 ### 3. HTTPS 支持
 
-当前连接池主要用于 HTTP/1.1：
-- ✅ HTTP/1.1 完全支持
-- ⏸️ HTTPS (TLS) 待完善
-- ⏸️ HTTP/2 待完善
+当前连接池支持所有协议：
+- ✅ HTTP/1.1 完全支持（`http1_pool.rs`）
+- ✅ HTTPS (TLS) 完全支持（`tls.rs::send_https_request_with_pool`）
+- ✅ HTTP/2 完全支持（`http2_pool.rs`）
+- ✅ HTTP/3 (QUIC) 完全支持（`http3_pool.rs`）
 
 ---
 
@@ -349,8 +364,9 @@ netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0
 ### 短期
 
 1. ✅ HTTP/1.1 连接池 - **已完成**
-2. ⏸️ HTTPS 连接池
-3. ⏸️ HTTP/2 连接池
+2. ✅ HTTPS 连接池 - **已完成**
+3. ✅ HTTP/2 连接池 - **已完成**
+4. ✅ HTTP/3 连接池 - **已完成**
 
 ### 中期
 
@@ -397,11 +413,88 @@ netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0
 
 ---
 
+## 📋 实际实现状态
+
+### ✅ 已实现的功能
+
+1. **连接池管理器** (`src/http_client/pool.rs`)
+   - ✅ `ConnectionPoolManager` - 按 host:port 管理多个连接池
+   - ✅ `PoolManagerConfig` - 连接池配置
+   - ✅ `PoolStats` - 统计信息
+   - ✅ `get_pool()` - 获取或创建连接池
+   - ✅ `get_stats()` - 获取统计信息
+   - ✅ `cleanup_idle()` - 清理空闲连接
+   - ✅ `shutdown()` - 关闭所有连接池
+
+2. **HTTP/1.1 连接池** (`src/http_client/http1_pool.rs`)
+   - ✅ `send_http1_request_with_pool()` - 使用连接池发送 HTTP/1.1 请求
+
+3. **HTTPS 连接池** (`src/http_client/tls.rs`)
+   - ✅ `send_https_request_with_pool()` - 使用连接池发送 HTTPS (HTTP/1.1 over TLS) 请求
+
+4. **HTTP/2 连接池** (`src/http_client/http2_pool.rs`)
+   - ✅ `send_http2_request_with_pool()` - 使用连接池发送 HTTP/2 请求（异步）
+
+5. **HTTP/3 连接池** (`src/http_client/http3_pool.rs`)
+   - ✅ `send_http3_request_with_pool()` - 使用连接池发送 HTTP/3 (QUIC) 请求（异步）
+
+6. **HttpClient 集成** (`src/http_client/mod.rs`)
+   - ✅ `HttpClient::with_pool()` - 创建带连接池的客户端
+   - ✅ `HttpClient::pool_stats()` - 获取连接池统计信息
+   - ✅ `HttpClient::cleanup_idle_connections()` - 清理空闲连接
+   - ✅ 自动选择连接池或普通连接
+
+### 📝 导出状态
+
+- ✅ `ConnectionPoolManager` - 在 `src/http_client/mod.rs` 中导出
+- ✅ `PoolManagerConfig` - 在 `src/http_client/mod.rs` 中导出
+- ✅ `PoolStats` - 在 `src/http_client/mod.rs` 中导出
+- ⚠️ 注意：这些类型通过 `fingerprint::http_client::*` 访问，而不是直接从 `fingerprint::*` 访问
+
+### 🔧 使用示例（修正版）
+
+```rust
+use fingerprint::{HttpClient, HttpClientConfig, get_user_agent_by_profile_name};
+use fingerprint::http_client::PoolManagerConfig;
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. 创建连接池配置
+    let pool_config = PoolManagerConfig {
+        max_connections: 20,
+        min_idle: 5,
+        enable_reuse: true,
+        ..Default::default()
+    };
+    
+    // 2. 创建客户端配置
+    let mut config = HttpClientConfig::default();
+    config.user_agent = get_user_agent_by_profile_name("chrome_133")?;
+    
+    // 3. 创建带连接池的客户端
+    let client = HttpClient::with_pool(config, pool_config);
+    
+    // 4. 发送请求（自动使用连接池）
+    let response = client.get("http://example.com/")?;
+    println!("状态码: {}", response.status_code);
+    
+    // 5. 查看统计
+    if let Some(stats) = client.pool_stats() {
+        for stat in stats {
+            stat.print();
+        }
+    }
+    
+    Ok(())
+}
+```
+
+---
+
 <div align="center">
 
 ## 🎉 netconnpool 集成完成！🎉
 
-**HTTP/1.1 连接池 · 100% 功能实现 · 生产就绪**
+**HTTP/1.1 + HTTPS + HTTP/2 + HTTP/3 连接池 · 100% 功能实现 · 生产就绪**
 
 **v1.0.0+ · 2025-12-14**
 
