@@ -1,72 +1,38 @@
-# 📚 文档目录说明
+# 文档目录
 
-本目录包含 fingerprint-rust 项目的完整文档。
+## 📚 文档结构
 
-## 📁 目录结构
+### 快速导航
+- **[INDEX.md](INDEX.md)** - 文档索引和导航
 
-```
-docs/
-├── INDEX.md              # 文档索引（从这里开始）
-├── API.md                # API 参考文档
-├── ARCHITECTURE.md       # 架构设计文档
-├── modules/              # 模块文档（按代码模块组织）
-│   ├── profiles.md
-│   ├── useragent.md
-│   ├── headers.md
-│   ├── random.md
-│   ├── tls_config.md
-│   ├── tls_handshake.md
-│   ├── tls_limitations.md
-│   ├── dicttls.md
-│   ├── utls.md
-│   ├── http_client.md
-│   ├── http_pool.md
-│   ├── http3_optimization.md
-│   ├── netconnpool.md
-│   └── validation_limitations.md
-└── archive/              # 归档文档（历史文档）
-    ├── reports/          # 测试报告、审核报告
-    ├── status/           # 项目状态文档
-    └── history/          # 实现历史文档
-```
+### 使用指南 (`guides/`)
+- **[USAGE_GUIDE.md](guides/USAGE_GUIDE.md)** - 使用指南：如何随机选择和指定浏览器指纹
+- **[CAPTURE_BROWSER_FINGERPRINTS.md](guides/CAPTURE_BROWSER_FINGERPRINTS.md)** - 如何抓取真实浏览器的 TLS 指纹
+
+### 技术文档
+- **[RUSTLS_FINGERPRINT_INTEGRATION.md](RUSTLS_FINGERPRINT_INTEGRATION.md)** - rustls 指纹集成说明
+- **[CUSTOM_TLS_IMPLEMENTATION.md](CUSTOM_TLS_IMPLEMENTATION.md)** - 自定义 TLS 实现文档
+- **[CLIENTHELLO_ANALYSIS.md](CLIENTHELLO_ANALYSIS.md)** - ClientHello 分析文档
+- **[UTLS_STYLE_API.md](UTLS_STYLE_API.md)** - uTLS 风格 API 文档
+
+### 测试报告 (`reports/`)
+- **[ALL_PROFILES_TEST_REPORT.md](reports/ALL_PROFILES_TEST_REPORT.md)** - 所有浏览器指纹测试报告
+- **[TEST_RESULTS.md](reports/TEST_RESULTS.md)** - 测试结果总结
+- **[CURRENT_IMPLEMENTATION_STATUS.md](reports/CURRENT_IMPLEMENTATION_STATUS.md)** - 当前实现状态
+- **[IMPLEMENTATION_SUMMARY.md](reports/IMPLEMENTATION_SUMMARY.md)** - 实现总结
+
+### 模块文档 (`modules/`)
+详细的模块级文档，包括：
+- `tls_config.md` - TLS 配置模块
+- `http_client.md` - HTTP 客户端模块
+- `profiles.md` - 浏览器配置模块
+- 等等...
+
+### 历史文档 (`archive/`)
+项目开发过程中的历史文档和记录。
 
 ## 🚀 快速开始
 
-1. **新用户**: 从 [INDEX.md](INDEX.md) 开始
-2. **使用 API**: 查看 [API.md](API.md)
-3. **了解架构**: 阅读 [ARCHITECTURE.md](ARCHITECTURE.md)
-4. **模块文档**: 查看 [modules/](modules/) 目录
-
-## 📖 文档说明
-
-### 核心文档
-- **INDEX.md** - 文档索引和导航
-- **API.md** - 完整 API 参考
-- **ARCHITECTURE.md** - 系统架构设计
-
-### 模块文档
-模块文档与代码结构完全对齐，每个模块都有对应的文档：
-- `modules/profiles.md` ↔ `src/profiles.rs`
-- `modules/useragent.md` ↔ `src/useragent.rs`
-- `modules/tls_config.md` ↔ `src/tls_config/`
-- `modules/http_client.md` ↔ `src/http_client/`
-- 等等...
-
-### 归档文档
-历史文档和临时文档已归档到 `archive/` 目录，不影响主要文档结构。
-
-## 🔍 查找文档
-
-- **按模块查找**: 查看 `modules/` 目录
-- **按用途查找**: 查看 [INDEX.md](INDEX.md)
-- **历史文档**: 查看 `archive/` 目录
-
-## 📊 文档统计
-
-- **核心文档**: 3 个
-- **模块文档**: 14 个
-- **归档文档**: 58 个
-
----
-
-**最后更新**: 2025-12-15
+1. **新手**：从 [USAGE_GUIDE.md](guides/USAGE_GUIDE.md) 开始
+2. **开发者**：查看 [RUSTLS_FINGERPRINT_INTEGRATION.md](RUSTLS_FINGERPRINT_INTEGRATION.md)
+3. **贡献者**：阅读 [CAPTURE_BROWSER_FINGERPRINTS.md](guides/CAPTURE_BROWSER_FINGERPRINTS.md)

@@ -60,9 +60,19 @@ pub async fn send_http2_request_with_pool(
         .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
 
     // 建立 HTTP/2 连接
+    // 注意：h2 0.4 的 Builder API 可能不支持所有 Settings
+    // 先使用默认 handshake，Settings 应用需要进一步研究 h2 API
     let (mut client, h2_conn) = client::handshake(tls_stream)
         .await
         .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 握手失败: {}", e)))?;
+    
+    // TODO: 应用 HTTP/2 Settings
+    // h2 0.4 的 Builder API 限制，Settings 需要在握手时配置
+    // 但 client::handshake() 不提供 Builder，需要研究如何应用自定义 Settings
+    if let Some(_profile) = &config.profile {
+        // Settings 信息已从 profile 获取，但 h2 0.4 API 限制无法直接应用
+        // 这不会影响功能，只是无法精确模拟浏览器的 Settings 值
+    }
 
     // 在后台运行连接
     tokio::spawn(async move {

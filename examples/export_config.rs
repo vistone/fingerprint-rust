@@ -1,16 +1,21 @@
 //! 导出 TLS 配置为 JSON
 //!
 //! 用法：
-//! cargo run --example export_config <profile_name> [output_file]
+//! cargo run --example export_config --features export <profile_name> [output_file]
 //!
 //! 示例：
-//! cargo run --example export_config chrome_133 chrome_133.json
+//! cargo run --example export_config --features export chrome_133 chrome_133.json
 
+#[cfg(feature = "export")]
 use fingerprint::{export::export_config_json, mapped_tls_clients};
-use std::env;
+#[cfg(feature = "export")]
 use std::fs;
+#[cfg(feature = "export")]
 use std::io::Write;
+#[cfg(feature = "export")]
+use std::env;
 
+#[cfg(feature = "export")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     if args.len() < 2 {
@@ -47,4 +52,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     Ok(())
+}
+
+#[cfg(not(feature = "export"))]
+fn main() {
+    eprintln!("This example requires the 'export' feature to be enabled.");
+    eprintln!("Run with: cargo run --example export_config --features export");
+    std::process::exit(1);
 }

@@ -1,0 +1,65 @@
+{
+  "cipher_suites": [
+    4866,
+    4865,
+    4867,
+    49196,
+    49195,
+    49200,
+    49199,
+    52393,
+    52392
+  ],
+  "compression_methods": [
+    0
+  ],
+  "extensions": [
+    {
+      "type": "SupportedCurves",
+      "data": [
+        23,
+        24,
+        25,
+        29
+      ]
+    },
+    {
+      "type": "SupportedPoints",
+      "data": [
+        0
+      ]
+    },
+    {
+      "type": "SignatureAlgorithms",
+      "data": [
+        2052,
+        2053,
+        2054,
+        1025,
+        1281,
+        1537,
+        1027,
+        1283,
+        1539
+      ]
+    },
+    {
+      "type": "ALPN",
+      "data": [
+        "h2",
+        "http/1.1"
+      ]
+    },
+    {
+      "type": "ExtendedMasterSecret"
+    },
+    {
+      "type": "SupportedVersions",
+      "data": [
+        772
+      ]
+    }
+  ],
+  "tls_vers_min": 0,
+  "tls_vers_max": 0
+}

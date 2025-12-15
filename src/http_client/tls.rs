@@ -1,7 +1,8 @@
 //! TLS 连接支持
 //!
-//! 当前使用 rustls 作为临时方案
-//! TODO: 集成自定义 TLS 实现以应用 fingerprint-rust 的 ClientHelloSpec
+//! 使用官方 rustls 作为底层 TLS 实现
+//! 通过 ClientHelloCustomizer 应用浏览器指纹（Chrome、Firefox、Safari 等）
+//! 模拟市场成熟浏览器的 TLS 指纹，不自定义自己的指纹
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -11,9 +12,9 @@ use std::sync::Arc;
 
 /// TLS 连接器
 ///
-/// 当前使用 native-tls，将来可替换为自定义 TLS 实现
+/// 使用官方 rustls，通过 ClientHelloCustomizer 应用浏览器指纹
 pub struct TlsConnector {
-    // TODO: 添加自定义 TLS 配置
+    // rustls 配置通过 HttpClientConfig 传递
 }
 
 impl TlsConnector {
@@ -30,8 +31,9 @@ impl Default for TlsConnector {
 
 /// 发送 HTTPS 请求
 ///
-/// ⚠️ 警告：当前使用 native-tls，TLS 指纹不可自定义
-/// TODO: 实现自定义 TLS ClientHello
+/// 使用官方 rustls 作为底层 TLS 实现
+/// 如果配置了 ClientProfile，会通过 ClientHelloCustomizer 应用浏览器指纹
+/// 模拟市场成熟浏览器的 TLS 指纹（Chrome、Firefox、Safari 等）
 pub fn send_https_request(
     host: &str,
     port: u16,
@@ -39,6 +41,8 @@ pub fn send_https_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
+    // 使用 rustls，如果配置了 profile，会自动通过 ClientHelloCustomizer 应用浏览器指纹
+
     // 建立 TCP 连接
     let addr = format!("{}:{}", host, port);
     let tcp_stream = TcpStream::connect(&addr)
@@ -52,44 +56,9 @@ pub fn send_https_request(
         .set_write_timeout(Some(config.write_timeout))
         .map_err(HttpClientError::Io)?;
 
-    // ⚠️ 临时方案：使用 rustls (默认) 或 native-tls
-    // TODO: 这里应该使用自定义 TLS 实现，应用 ClientHelloSpec
+    // 使用官方 rustls，通过 ClientHelloCustomizer 应用浏览器指纹
 
-    // 同时启用两套 TLS 实现时，默认优先使用 rustls（纯 Rust，便于跨平台与一致性）
-    #[cfg(all(feature = "rustls-tls", feature = "native-tls-impl"))]
-    {
-        use rustls::client::ServerName;
-        use std::sync::Arc;
-
-        let tls_config = super::rustls_utils::build_client_config(
-            config.verify_tls,
-            Vec::new(),
-            config.profile.as_ref(),
-        );
-        let server_name = ServerName::try_from(host)
-            .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
-
-        let conn = rustls::ClientConnection::new(Arc::new(tls_config), server_name)
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 连接创建失败: {}", e)))?;
-
-        let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
-
-        let http_request = request.build_http1_request_bytes(host, path);
-        tls_stream
-            .write_all(&http_request)
-            .map_err(HttpClientError::Io)?;
-        tls_stream.flush().map_err(HttpClientError::Io)?;
-
-        let buffer = super::io::read_http1_response_bytes(
-            &mut tls_stream,
-            super::io::DEFAULT_MAX_RESPONSE_BYTES,
-        )
-        .map_err(HttpClientError::Io)?;
-
-        HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
-    }
-
-    #[cfg(all(feature = "rustls-tls", not(feature = "native-tls-impl")))]
+    #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
         use std::sync::Arc;
@@ -127,42 +96,10 @@ pub fn send_https_request(
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
     }
 
-    #[cfg(all(feature = "native-tls-impl", not(feature = "rustls-tls")))]
-    {
-        use native_tls::TlsConnector as NativeTlsConnector;
-        use std::io::Read;
-
-        let connector = NativeTlsConnector::builder()
-            .danger_accept_invalid_certs(!config.verify_tls)
-            .build()
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 初始化失败: {}", e)))?;
-
-        let mut tls_stream = connector
-            .connect(host, tcp_stream)
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
-
-        // 发送 HTTP 请求
-        let http_request = request.build_http1_request_bytes(host, path);
-        tls_stream
-            .write_all(&http_request)
-            .map_err(HttpClientError::Io)?;
-        tls_stream.flush().map_err(HttpClientError::Io)?;
-
-        // 读取响应
-        let buffer = super::io::read_http1_response_bytes(
-            &mut tls_stream,
-            super::io::DEFAULT_MAX_RESPONSE_BYTES,
-        )
-        .map_err(HttpClientError::Io)?;
-
-        // 解析响应
-        HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
-    }
-
-    #[cfg(not(any(feature = "rustls-tls", feature = "native-tls-impl")))]
+    #[cfg(not(feature = "rustls-tls"))]
     {
         Err(HttpClientError::TlsError(
-            "需要启用 rustls-tls 或 native-tls-impl 特性".to_string(),
+            "需要启用 rustls-tls 特性".to_string(),
         ))
     }
 }
@@ -202,8 +139,8 @@ pub fn send_https_request_with_pool(
         .set_write_timeout(Some(config.write_timeout))
         .map_err(HttpClientError::Io)?;
 
-    // rustls / native-tls 路径与 send_https_request 保持一致
-    #[cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
+    // rustls 路径与 send_https_request 保持一致
+    #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
         use std::sync::Arc;
@@ -235,39 +172,11 @@ pub fn send_https_request_with_pool(
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
     }
 
-    #[cfg(all(feature = "native-tls-impl", not(feature = "rustls-tls")))]
-    {
-        use native_tls::TlsConnector as NativeTlsConnector;
-
-        let connector = NativeTlsConnector::builder()
-            .danger_accept_invalid_certs(!config.verify_tls)
-            .build()
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 初始化失败: {}", e)))?;
-
-        let mut tls_stream = connector
-            .connect(host, tcp_stream)
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
-
-        let http_request = request.build_http1_request_bytes(host, path);
-        tls_stream
-            .write_all(&http_request)
-            .map_err(HttpClientError::Io)?;
-        tls_stream.flush().map_err(HttpClientError::Io)?;
-
-        let buffer = super::io::read_http1_response_bytes(
-            &mut tls_stream,
-            super::io::DEFAULT_MAX_RESPONSE_BYTES,
-        )
-        .map_err(HttpClientError::Io)?;
-
-        HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
-    }
-
-    #[cfg(not(any(feature = "rustls-tls", feature = "native-tls-impl")))]
+    #[cfg(not(feature = "rustls-tls"))]
     {
         let _ = conn; // keep for symmetry
         Err(HttpClientError::TlsError(
-            "需要启用 rustls-tls 或 native-tls-impl 特性".to_string(),
+            "需要启用 rustls-tls 特性".to_string(),
         ))
     }
 }

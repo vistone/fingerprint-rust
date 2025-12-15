@@ -237,7 +237,6 @@ default = ["rustls-tls", "compression", "http2"]
 
 # TLS 实现
 rustls-tls = ["rustls", "webpki-roots"]          # 推荐
-native-tls-impl = ["native-tls"]                  # 需要系统 OpenSSL
 
 # 功能特性
 compression = ["flate2"]                          # Gzip/Deflate 解压
