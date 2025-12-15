@@ -249,6 +249,7 @@ http3 = ["quinn", "h3", "h3-quinn", ...]         # HTTP/3 支持
 connection-pool = ["netconnpool"]                 # 连接池
 reporter = ["chrono"]                             # 报告生成器
 async = ["tokio"]                                 # 异步运行时
+dns = ["serde", "serde_json", "toml", "yaml-rust", "tokio", "futures", "rustls-tls", "hickory-resolver"]  # DNS 预解析功能
 ```
 
 ### 推荐组合
@@ -296,6 +297,11 @@ fingerprint = { version = "1.0", features = ["rustls-tls"] }
   - Go 程序读取 JSON 配置
   - 实现 Rust ↔ Go 指纹共享
 
+### DNS 预解析服务
+
+- **[dns_service.rs](examples/dns_service.rs)** - DNS 自动维护服务
+- **[resolve_domains.rs](examples/resolve_domains.rs)** - DNS 域名解析示例
+
 ---
 
 ## 🧪 运行测试
@@ -334,6 +340,274 @@ cargo test --test http3_advanced_debug test_http3_step_by_step --features "http3
 
 # HTTP/3 性能测试
 cargo test --test performance_benchmark benchmark_http3 --features "rustls-tls,http3" -- --nocapture --ignored
+```
+
+---
+
+## 🌐 DNS 预解析服务
+
+### 功能特性
+
+DNS 模块提供自动化的 DNS 解析服务，支持：
+
+- ✅ **自动维护 DNS 服务器池**：自动收集、验证和维护 `dnsservernames.json`
+- ✅ **后台运行**：独立线程运行，不阻塞主线程
+- ✅ **高并发解析**：支持查询数万个 DNS 服务器
+- ✅ **IP 地理信息**：集成 IPInfo.io 获取 IP 详细信息
+- ✅ **智能去重**：自动与本地存储去重，避免重复查询
+- ✅ **慢服务器淘汰**：自动淘汰响应慢或失败的 DNS 服务器
+- ✅ **多格式支持**：配置支持 JSON/YAML/TOML，输出支持 JSON/YAML/TOML
+
+### 快速开始
+
+#### 1. 启用 DNS Feature
+
+```toml
+[dependencies]
+fingerprint = { version = "1.0", features = ["dns", "rustls-tls"] }
+```
+
+#### 2. 基础使用（代码方式）
+
+```rust
+use fingerprint::dns::{Service, DNSConfig};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 创建配置（使用便利方法，直接使用字符串字面量）
+    let mut config = DNSConfig::new(
+        "your-ipinfo-token",           // IPInfo.io Token
+        &["google.com", "github.com"], // 域名列表
+    );
+    
+    // 自定义其他配置
+    config.domain_ips_dir = "./dns_data".to_string(); // 数据存储目录
+    config.interval = "2m".to_string();                // 检查间隔：2分钟
+    
+    // 创建服务
+    let service = Service::new(config)?;
+    
+    // 启动服务（后台运行，不阻塞主线程）
+    service.start().await?;
+    
+    // 主线程可以继续执行其他任务...
+    
+    // 停止服务
+    service.stop().await?;
+    
+    Ok(())
+}
+```
+
+#### 3. 使用配置文件
+
+**配置文件示例** (`config.json`):
+
+```json
+{
+  "ipinfoToken": "your-ipinfo-token",
+  "domainList": ["google.com", "github.com"],
+  "domainIPsDir": "./dns_data",
+  "interval": "2m",
+  "maxConcurrency": 500,
+  "dnsTimeout": "4s",
+  "httpTimeout": "20s",
+  "maxIPFetchConc": 50
+}
+```
+
+**使用配置文件启动**:
+
+```rust
+use fingerprint::dns::Service;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 从配置文件创建服务
+    let service = Service::from_config_file("config.json")?;
+    
+    // 启动服务
+    service.start().await?;
+    
+    Ok(())
+}
+```
+
+**命令行运行**:
+
+```bash
+cargo run --example dns_service --features dns -- -config config.json
+```
+
+### 配置说明
+
+| 配置项 | 类型 | 必填 | 默认值 | 说明 |
+|--------|------|------|--------|------|
+| `ipinfoToken` | String | ✅ | - | IPInfo.io API Token |
+| `domainList` | Vec<String> | ✅ | - | 要解析的域名列表 |
+| `domainIPsDir` | String | ❌ | `"."` | IP 数据存储目录 |
+| `interval` | String | ❌ | `"2m"` | 检查间隔（如 "2m", "30s", "1h"） |
+| `maxConcurrency` | usize | ❌ | `500` | DNS 查询最大并发数 |
+| `dnsTimeout` | String | ❌ | `"4s"` | DNS 查询超时时间 |
+| `httpTimeout` | String | ❌ | `"20s"` | HTTP 请求超时时间 |
+| `maxIPFetchConc` | usize | ❌ | `50` | IPInfo 查询最大并发数 |
+
+### 工作原理
+
+#### 1. 自动维护 DNS 服务器池
+
+服务启动时会：
+- 优先从本地 `dnsservernames.json` 加载已验证的服务器
+- 如果文件不存在或为空，自动从网络收集 DNS 服务器
+- 对所有服务器进行健康检查，只保留可用的服务器
+- 自动保存到 `dnsservernames.json`
+
+#### 2. 执行流程
+
+```
+启动服务
+  ↓
+加载/收集 DNS 服务器池
+  ↓
+执行 DNS 解析（等待完成）
+  ↓
+与本地存储去重
+  ↓
+查询新 IP 的详细信息（IPInfo.io）
+  ↓
+保存结果（JSON/YAML/TOML）
+  ↓
+等待配置的间隔时间
+  ↓
+循环执行...
+```
+
+#### 3. 智能间隔调整
+
+- **发现新 IP**：使用配置的基础间隔（如 2 分钟）
+- **未发现新 IP**：指数退避，最多增加到 10 倍基础间隔
+- **实际间隔**：解析时间 + 配置的间隔时间
+
+例如：解析需要 30 秒，配置间隔 2 分钟，实际间隔 = 30秒 + 2分钟 = 2分30秒
+
+#### 4. 慢服务器淘汰
+
+后台任务每 5 分钟自动：
+- 淘汰平均响应时间超过 2 秒的服务器
+- 淘汰失败率超过 50% 的服务器
+- 更新 DNS 服务器池
+
+### 高级用法
+
+#### 手动解析域名
+
+```rust
+use fingerprint::dns::{DNSResolver, IPInfoClient, ServerCollector};
+use std::sync::Arc;
+use std::time::Duration;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 收集 DNS 服务器
+    let server_pool = ServerCollector::collect_all(Some(Duration::from_secs(30))).await;
+    println!("已收集 {} 个 DNS 服务器", server_pool.len());
+    
+    // 创建解析器
+    let resolver = DNSResolver::with_server_pool(
+        Duration::from_secs(4),
+        Arc::new(server_pool),
+    );
+    
+    // 解析域名
+    let result = resolver.resolve("google.com").await?;
+    println!("IPv4: {} 个", result.ips.ipv4.len());
+    println!("IPv6: {} 个", result.ips.ipv6.len());
+    
+    Ok(())
+}
+```
+
+#### 查询 IP 详细信息
+
+```rust
+use fingerprint::dns::IPInfoClient;
+use std::time::Duration;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let client = IPInfoClient::new(
+        "your-token".to_string(),
+        Duration::from_secs(20),
+    );
+    
+    // 批量查询 IP 信息
+    let ips = vec!["8.8.8.8".to_string(), "1.1.1.1".to_string()];
+    let results = client.get_ip_infos(ips, 50).await;
+    
+    for (ip, result) in results {
+        match result {
+            Ok(info) => {
+                println!("{}: {} ({})", ip, info.city.unwrap_or_default(), info.country.unwrap_or_default());
+            }
+            Err(e) => eprintln!("查询 {} 失败: {}", ip, e),
+        }
+    }
+    
+    Ok(())
+}
+```
+
+### 输出格式
+
+服务会自动保存三种格式的数据：
+
+- **JSON**: `domain.json` - 标准 JSON 格式
+- **YAML**: `domain.yaml` - YAML 格式
+- **TOML**: `domain.toml` - TOML 格式
+
+**数据格式示例**:
+
+```json
+{
+  "ipv4": [
+    {
+      "ip": "142.250.185.14",
+      "hostname": "sea30s10-in-f14.1e100.net",
+      "city": "Mountain View",
+      "region": "California",
+      "country": "US",
+      "loc": "37.4056,-122.0775",
+      "org": "AS15169 Google LLC",
+      "timezone": "America/Los_Angeles"
+    }
+  ],
+  "ipv6": [...]
+}
+```
+
+### 注意事项
+
+1. **间隔时间计算**：实际间隔 = 解析时间 + 配置的间隔时间
+2. **并发控制**：默认查询 500 个 DNS 服务器并发，可根据网络情况调整
+3. **IPInfo Token**：需要注册 [IPInfo.io](https://ipinfo.io/) 获取免费 Token
+4. **数据目录**：确保有写入权限
+5. **后台运行**：服务在后台线程运行，主线程不会被阻塞
+
+### 完整示例
+
+查看完整示例代码：
+
+- **[examples/dns_service.rs](examples/dns_service.rs)** - 服务启动示例
+- **[examples/resolve_domains.rs](examples/resolve_domains.rs)** - 手动解析示例
+
+运行示例：
+
+```bash
+# DNS 服务示例
+cargo run --example dns_service --features dns -- -config config.json
+
+# 手动解析示例
+cargo run --example resolve_domains --features dns,rustls-tls
 ```
 
 ---
