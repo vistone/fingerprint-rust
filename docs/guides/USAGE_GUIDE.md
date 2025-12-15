@@ -242,6 +242,7 @@ pub struct FingerprintResult {
 - `"firefox"` - Firefox 系列（13 个版本）
 - `"safari"` - Safari 系列（14 个版本）
 - `"opera"` - Opera 系列（3 个版本）
+- `"edge"` - Edge 系列（3 个版本）
 
 ## 所有可用的指纹
 
@@ -251,6 +252,7 @@ pub struct FingerprintResult {
 - Firefox: firefox_102, firefox_104, ..., firefox_135 等
 - Safari: safari_15_6_1, safari_16_0, safari_ios_18_0 等
 - Opera: opera_89, opera_90, opera_91
+- Edge: edge_120, edge_124, edge_133
 - 移动端: zalando_android_mobile, nike_ios_mobile 等
 
 ## 注意事项

@@ -51,6 +51,17 @@ httparse = { version = "1.10.1", optional = true }
 # 密码学库（用于真实密钥生成）
 ring = { version = "0.17.14", optional = true }
 
+# DNS 解析功能（可选）
+# 使用 hickory-resolver 实现真正的 DNS 查询，支持自定义 nameservers
+hickory-resolver = { version = "0.24", optional = true, default-features = false, features = ["tokio-runtime"] }
+
+# 配置文件解析（DNS 模块需要）
+toml = { version = "0.8", optional = true }
+yaml-rust = { version = "0.4", optional = true }
+
+# Stream 处理（DNS 模块需要）
+futures = { version = "0.3", optional = true }
+
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 reqwest = { version = "0.11", features = ["blocking", "json", "rustls-tls"], default-features = false }
@@ -72,3 +83,4 @@ export = ["serde", "serde_json", "hex"]  # 配置导出功能
 crypto = ["ring"]  # 真实密钥生成（用于 TLS Handshake）
 dangerous_configuration = []  # 启用危险的 TLS 配置（禁用证书验证，仅用于调试）
 rustls-client-hello-customizer = []  # 启用 rustls ClientHello 自定义器（需要配套的 rustls fork）
+dns = ["serde", "serde_json", "toml", "yaml-rust", "tokio", "futures", "rustls-tls", "hickory-resolver"]  # DNS 预解析功能（使用内部 HttpClient 和 hickory-resolver）

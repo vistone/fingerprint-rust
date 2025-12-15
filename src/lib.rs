@@ -35,6 +35,9 @@ pub mod types;
 pub mod useragent;
 pub mod utils;
 
+#[cfg(feature = "dns")]
+pub mod dns;
+
 pub use headers::random_language;
 pub use headers::HTTPHeaders;
 pub use http2_config::{
@@ -75,4 +78,11 @@ pub use types::{BrowserType, OperatingSystem, OperatingSystems};
 pub use useragent::{
     get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os, random_os,
     UserAgentGenerator,
+};
+
+#[cfg(feature = "dns")]
+pub use dns::{
+    Service as DNSService, DNSConfig, DNSResult, DomainIPs, IPInfo, DNSError,
+    ServerCollector, ServerPool,
+    load_config as load_dns_config,
 };

@@ -9,6 +9,8 @@
 ### 使用指南 (`guides/`)
 - **[USAGE_GUIDE.md](guides/USAGE_GUIDE.md)** - 使用指南：如何随机选择和指定浏览器指纹
 - **[CAPTURE_BROWSER_FINGERPRINTS.md](guides/CAPTURE_BROWSER_FINGERPRINTS.md)** - 如何抓取真实浏览器的 TLS 指纹
+- **[GOOGLE_EARTH_TEST.md](guides/GOOGLE_EARTH_TEST.md)** - Google Earth API 测试说明
+- **[TEST_GOOGLE_EARTH_EXECUTABLE.md](guides/TEST_GOOGLE_EARTH_EXECUTABLE.md)** - Google Earth API 测试可执行程序使用指南
 
 ### 技术文档
 - **[RUSTLS_FINGERPRINT_INTEGRATION.md](RUSTLS_FINGERPRINT_INTEGRATION.md)** - rustls 指纹集成说明

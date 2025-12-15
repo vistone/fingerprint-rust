@@ -320,6 +320,9 @@ impl UserAgentGenerator {
         } else if profile_name_lower.starts_with("opera_") {
             let version = profile_name_lower.strip_prefix("opera_").unwrap_or("91");
             (BrowserType::Opera, version)
+        } else if profile_name_lower.starts_with("edge_") {
+            let version = profile_name_lower.strip_prefix("edge_").unwrap_or("133");
+            (BrowserType::Edge, version)
         } else {
             // 默认使用 Chrome 133
             return self.get_user_agent_with_os("chrome_133", os);

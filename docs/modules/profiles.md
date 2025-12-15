@@ -76,6 +76,9 @@ pub struct ClientHelloID {
 ### Opera 系列（3 个版本）
 - opera_89, opera_90, opera_91
 
+### Edge 系列（3 个版本）
+- edge_120, edge_124, edge_133
+
 ### 移动客户端（17+ 个）
 - OkHttp4 (Android 7-13)
 - Mesh (Android/iOS)

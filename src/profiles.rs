@@ -229,6 +229,52 @@ pub fn opera_91() -> ClientProfile {
     )
 }
 
+/// Edge 120 指纹配置
+/// Edge 使用 Chromium 内核，TLS 指纹与 Chrome 相同
+pub fn edge_120() -> ClientProfile {
+    // Edge 使用 Chrome 内核，配置与 Chrome 相同
+    let (settings, settings_order) = chrome_http2_settings();
+    ClientProfile::new(
+        ClientHelloID::new("Edge", "120", crate::tls_config::chrome_133_spec), // Edge 使用 Chrome 的 TLS 配置
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+    )
+}
+
+/// Edge 124 指纹配置
+/// Edge 使用 Chromium 内核，TLS 指纹与 Chrome 相同
+pub fn edge_124() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    ClientProfile::new(
+        ClientHelloID::new("Edge", "124", crate::tls_config::chrome_133_spec),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+    )
+}
+
+/// Edge 133 指纹配置
+/// Edge 使用 Chromium 内核，TLS 指纹与 Chrome 相同
+pub fn edge_133() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    ClientProfile::new(
+        ClientHelloID::new("Edge", "133", crate::tls_config::chrome_133_spec),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        crate::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+    )
+}
+
 /// 初始化所有指纹配置的映射表
 fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     let mut map = HashMap::new();
@@ -286,6 +332,11 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("opera_89".to_string(), opera_91());
     map.insert("opera_90".to_string(), opera_91());
     map.insert("opera_91".to_string(), opera_91());
+
+    // Edge 系列（使用 Chromium 内核，TLS 指纹与 Chrome 相同）
+    map.insert("edge_120".to_string(), edge_120());
+    map.insert("edge_124".to_string(), edge_124());
+    map.insert("edge_133".to_string(), edge_133());
 
     // 移动端和自定义指纹
     map.insert("zalando_android_mobile".to_string(), chrome_133());
