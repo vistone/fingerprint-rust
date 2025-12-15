@@ -81,7 +81,7 @@ impl DomainIPs {
     }
 
     /// 检查是否有新的 IP 地址（与另一个 DomainIPs 比较）
-    /// 
+    ///
     /// `self` 是新解析的 IP 集合，`other` 是之前保存的 IP 集合
     /// 如果 `self` 中有 `other` 没有的 IP，返回 true（发现新 IP）
     pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
@@ -187,7 +187,7 @@ fn default_max_ip_fetch_conc() -> usize {
 
 impl DNSConfig {
     /// 创建新的 DNS 配置（便利方法，可以直接使用字符串字面量）
-    /// 
+    ///
     /// # 示例
     /// ```
     /// let config = DNSConfig::new(

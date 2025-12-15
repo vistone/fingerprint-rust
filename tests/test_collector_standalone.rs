@@ -3,16 +3,14 @@
 #[cfg(feature = "dns")]
 #[tokio::test]
 async fn test_collect_public_dns_standalone() {
-    use std::time::Duration;
     use std::net::{IpAddr, SocketAddr};
+    use std::time::Duration;
 
     async fn collect_public_dns() -> Result<Vec<String>, Box<dyn std::error::Error>> {
         let timeout = Duration::from_secs(30);
         let url = "https://public-dns.info/nameservers.txt";
 
-        let client = reqwest::Client::builder()
-            .timeout(timeout)
-            .build()?;
+        let client = reqwest::Client::builder().timeout(timeout).build()?;
 
         let response = client.get(url).send().await?;
 
@@ -26,7 +24,7 @@ async fn test_collect_public_dns_standalone() {
         let mut servers = Vec::new();
         for line in text.lines() {
             let line = line.trim();
-            
+
             // 跳过空行和注释
             if line.is_empty() || line.starts_with('#') {
                 continue;
@@ -67,7 +65,7 @@ async fn test_collect_public_dns_standalone() {
             println!("✅ 成功获取 DNS 服务器列表");
             println!("   服务器数量: {}", servers.len());
             assert!(!servers.is_empty(), "应该至少获取到一个 DNS 服务器");
-            
+
             // 显示前 10 个
             println!("   前 10 个服务器:");
             for (i, server) in servers.iter().take(10).enumerate() {
@@ -79,4 +77,3 @@ async fn test_collect_public_dns_standalone() {
         }
     }
 }
-

@@ -9,11 +9,11 @@
 #[cfg(feature = "export")]
 use fingerprint::{export::export_config_json, mapped_tls_clients};
 #[cfg(feature = "export")]
+use std::env;
+#[cfg(feature = "export")]
 use std::fs;
 #[cfg(feature = "export")]
 use std::io::Write;
-#[cfg(feature = "export")]
-use std::env;
 
 #[cfg(feature = "export")]
 fn main() -> Result<(), Box<dyn std::error::Error>> {

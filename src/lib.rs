@@ -82,7 +82,6 @@ pub use useragent::{
 
 #[cfg(feature = "dns")]
 pub use dns::{
-    Service as DNSService, DNSConfig, DNSResult, DomainIPs, IPInfo, DNSError,
-    ServerCollector, ServerPool,
-    load_config as load_dns_config,
+    load_config as load_dns_config, DNSConfig, DNSError, DNSResult, DomainIPs, IPInfo,
+    ServerCollector, ServerPool, Service as DNSService,
 };

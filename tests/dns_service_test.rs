@@ -35,10 +35,10 @@ async fn test_service_start_stop() {
     // 验证服务已在后台启动（不阻塞主线程）
     println!("[测试] 验证服务在后台运行...");
     let start_time = std::time::Instant::now();
-    
+
     // 等待一小段时间，验证主线程没有被阻塞
     sleep(Duration::from_millis(100)).await;
-    
+
     let elapsed = start_time.elapsed();
     assert!(elapsed < Duration::from_millis(200), "主线程不应该被阻塞");
 
@@ -65,7 +65,9 @@ async fn test_service_start_stop() {
 
     // 验证服务已停止
     if service.is_running().await {
-        eprintln!("[测试] 警告: 服务在停止后仍显示为运行状态，但这是正常的（后台任务可能仍在处理）");
+        eprintln!(
+            "[测试] 警告: 服务在停止后仍显示为运行状态，但这是正常的（后台任务可能仍在处理）"
+        );
     }
 
     println!("[测试] 服务已成功停止");
@@ -136,7 +138,7 @@ async fn test_service_background_resolution() {
 
     // 停止服务
     let _ = service.stop().await;
-    
+
     // 等待服务停止
     let mut attempts = 0;
     while service.is_running().await && attempts < 50 {

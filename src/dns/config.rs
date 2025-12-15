@@ -14,14 +14,12 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
 
     // 根据文件扩展名选择解析器
     let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
-        Some("json") => serde_json::from_str(&content)
-            .map_err(|e| DNSError::Json(e))?,
+        Some("json") => serde_json::from_str(&content).map_err(|e| DNSError::Json(e))?,
         Some("yaml") | Some("yml") => {
             #[cfg(feature = "dns")]
             {
                 // 使用 serde_yaml 直接反序列化
-                serde_yaml::from_str(&content)
-                    .map_err(|e| DNSError::Yaml(e.to_string()))?
+                serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?
             }
             #[cfg(not(feature = "dns"))]
             {
@@ -35,16 +33,19 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
             }
             #[cfg(not(feature = "dns"))]
             {
-                return Err(DNSError::Toml(toml::de::Error::custom("TOML support not enabled")));
+                return Err(DNSError::Toml(toml::de::Error::custom(
+                    "TOML support not enabled",
+                )));
             }
         }
         _ => {
             // 尝试按 JSON 解析
-            serde_json::from_str(&content)
-                .map_err(|_| DNSError::Config(
-                    format!("unsupported config format: {:?}. Supported: json, yaml, toml", 
-                            path.extension())
-                ))?
+            serde_json::from_str(&content).map_err(|_| {
+                DNSError::Config(format!(
+                    "unsupported config format: {:?}. Supported: json, yaml, toml",
+                    path.extension()
+                ))
+            })?
         }
     };
 
@@ -53,7 +54,6 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
 
     Ok(config)
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -66,7 +66,7 @@ mod tests {
         let temp_dir = PathBuf::from("/tmp/test_dns_config");
         fs::create_dir_all(&temp_dir).ok();
         let config_path = temp_dir.join("config.json");
-        
+
         let json_content = r#"{
             "ipinfoToken": "test-token",
             "domainList": ["google.com", "github.com"],
@@ -79,11 +79,10 @@ mod tests {
         }"#;
 
         fs::write(&config_path, json_content).unwrap();
-        
+
         let config = load_config(&config_path).unwrap();
         assert_eq!(config.ipinfo_token, "test-token");
         assert_eq!(config.domain_list.len(), 2);
         assert_eq!(config.domain_list[0], "google.com");
     }
 }
-

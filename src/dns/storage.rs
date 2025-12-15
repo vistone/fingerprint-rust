@@ -2,7 +2,7 @@
 //!
 //! 提供原子性文件写入和多格式输出（JSON、YAML、TOML）
 
-use crate::dns::types::{DomainIPs, DNSError};
+use crate::dns::types::{DNSError, DomainIPs};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
@@ -15,7 +15,7 @@ pub fn save_domain_ips<P: AsRef<Path>>(
     base_dir: P,
 ) -> Result<(), DNSError> {
     let base_dir = base_dir.as_ref();
-    
+
     // 确保目录存在
     fs::create_dir_all(base_dir)?;
 
@@ -80,8 +80,8 @@ fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
     #[cfg(feature = "dns")]
     {
         // 使用 serde_yaml 直接序列化
-        let yaml_string = serde_yaml::to_string(domain_ips)
-            .map_err(|e| DNSError::Yaml(e.to_string()))?;
+        let yaml_string =
+            serde_yaml::to_string(domain_ips).map_err(|e| DNSError::Yaml(e.to_string()))?;
         atomic_write(path, yaml_string.as_bytes())?;
         Ok(())
     }
@@ -97,8 +97,8 @@ fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
     {
         let content = fs::read_to_string(path)?;
         // 使用 serde_yaml 直接反序列化
-        let domain_ips: DomainIPs = serde_yaml::from_str(&content)
-            .map_err(|e| DNSError::Yaml(e.to_string()))?;
+        let domain_ips: DomainIPs =
+            serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?;
         Ok(domain_ips)
     }
     #[cfg(not(feature = "dns"))]
@@ -109,8 +109,8 @@ fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
 
 /// 保存为 TOML（原子性写入）
 fn save_as_toml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
-        let toml_content = toml::to_string_pretty(domain_ips)
-            .map_err(|e| DNSError::TomlSerialize(e.to_string()))?;
+    let toml_content =
+        toml::to_string_pretty(domain_ips).map_err(|e| DNSError::TomlSerialize(e.to_string()))?;
     atomic_write(path, toml_content.as_bytes())?;
     Ok(())
 }
@@ -125,24 +125,25 @@ fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
 /// 原子性写入文件
 /// 先写入临时文件，然后重命名，确保数据安全
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
-    let parent = path.parent()
-        .ok_or_else(|| DNSError::IO(std::io::Error::new(
+    let parent = path.parent().ok_or_else(|| {
+        DNSError::IO(std::io::Error::new(
             std::io::ErrorKind::InvalidInput,
-            "path has no parent directory"
-        )))?;
-    
+            "path has no parent directory",
+        ))
+    })?;
+
     fs::create_dir_all(parent)?;
-    
+
     // 创建临时文件
     let temp_path = path.with_extension(".tmp");
     let mut temp_file = fs::File::create(&temp_path)?;
     temp_file.write_all(content)?;
     temp_file.sync_all()?;
     drop(temp_file);
-    
+
     // 原子性重命名
     fs::rename(&temp_path, path)?;
-    
+
     Ok(())
 }
 
@@ -155,20 +156,21 @@ mod tests {
     fn test_save_and_load_domain_ips() {
         use std::fs;
         use std::path::PathBuf;
-        
+
         let temp_dir = PathBuf::from("/tmp/test_dns_storage");
         fs::create_dir_all(&temp_dir).ok();
         let domain = "test.com";
-        
+
         let mut domain_ips = DomainIPs::new();
         domain_ips.ipv4.push(IPInfo::new("8.8.8.8".to_string()));
-        domain_ips.ipv6.push(IPInfo::new("2001:4860:4860::8888".to_string()));
+        domain_ips
+            .ipv6
+            .push(IPInfo::new("2001:4860:4860::8888".to_string()));
 
         save_domain_ips(domain, &domain_ips, &temp_dir).unwrap();
-        
+
         let loaded = load_domain_ips(domain, &temp_dir).unwrap().unwrap();
         assert_eq!(loaded.ipv4.len(), 1);
         assert_eq!(loaded.ipv4[0].ip, "8.8.8.8");
     }
 }
-

@@ -2,12 +2,12 @@
 //!
 //! 管理 DNS 服务器列表，包括从本地文件加载/保存和健康检查功能
 
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::fs;
+use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
-use std::path::Path;
-use std::fs;
-use std::collections::HashMap;
-use serde::{Deserialize, Serialize};
 
 /// 默认服务器池文件名（对应 Go 项目的 dnsservernames.json）
 const DEFAULT_SERVER_FILE: &str = "dnsservernames.json";
@@ -96,10 +96,10 @@ impl ServerPool {
     /// 创建默认服务器池（使用公共 DNS 服务器）
     pub fn default() -> Self {
         Self::new(vec![
-            "8.8.8.8:53".to_string(),     // Google DNS
-            "8.8.4.4:53".to_string(),     // Google DNS
-            "1.1.1.1:53".to_string(),     // Cloudflare DNS
-            "1.0.0.1:53".to_string(),     // Cloudflare DNS
+            "8.8.8.8:53".to_string(), // Google DNS
+            "8.8.4.4:53".to_string(), // Google DNS
+            "1.1.1.1:53".to_string(), // Cloudflare DNS
+            "1.0.0.1:53".to_string(), // Cloudflare DNS
         ])
     }
 
@@ -108,7 +108,8 @@ impl ServerPool {
         #[cfg(feature = "hickory-resolver")]
         {
             let mut stats = self.stats.write().unwrap();
-            let server_stats = stats.entry(server.to_string())
+            let server_stats = stats
+                .entry(server.to_string())
                 .or_insert_with(ServerStats::new);
             server_stats.record_success(response_time);
         }
@@ -119,7 +120,8 @@ impl ServerPool {
         #[cfg(feature = "hickory-resolver")]
         {
             let mut stats = self.stats.write().unwrap();
-            let server_stats = stats.entry(server.to_string())
+            let server_stats = stats
+                .entry(server.to_string())
                 .or_insert_with(ServerStats::new);
             server_stats.record_failure();
         }
@@ -127,11 +129,17 @@ impl ServerPool {
 
     /// 淘汰慢的服务器（平均响应时间超过阈值或失败率过高）
     /// 返回新的服务器池，不阻塞主线程
-    pub fn remove_slow_servers(&self, max_avg_response_time_ms: f64, max_failure_rate: f64) -> Self {
+    pub fn remove_slow_servers(
+        &self,
+        max_avg_response_time_ms: f64,
+        max_failure_rate: f64,
+    ) -> Self {
         #[cfg(feature = "hickory-resolver")]
         {
             let stats = self.stats.read().unwrap();
-            let servers: Vec<String> = self.servers.iter()
+            let servers: Vec<String> = self
+                .servers
+                .iter()
                 .filter(|server| {
                     if let Some(server_stat) = stats.get(*server) {
                         let avg_time = server_stat.avg_response_time_ms();
@@ -145,10 +153,10 @@ impl ServerPool {
                 })
                 .cloned()
                 .collect();
-            
+
             Self::new(servers)
         }
-        
+
         #[cfg(not(feature = "hickory-resolver"))]
         {
             self.clone()
@@ -159,19 +167,21 @@ impl ServerPool {
     /// 如果文件不存在或为空，返回空池
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, crate::dns::types::DNSError> {
         let path = path.as_ref();
-        
+
         if !path.exists() {
             return Ok(Self::new(Vec::new()));
         }
 
         let content = fs::read_to_string(path)
             .map_err(|e| crate::dns::types::DNSError::Config(format!("无法读取文件: {}", e)))?;
-        
-        let list: DNSServerList = serde_json::from_str(&content)
-            .map_err(|e| crate::dns::types::DNSError::Json(e))?;
+
+        let list: DNSServerList =
+            serde_json::from_str(&content).map_err(|e| crate::dns::types::DNSError::Json(e))?;
 
         // 提取所有 IP 地址（Go 项目使用 GetAllServers 返回所有 IP）
-        let servers: Vec<String> = list.servers.values()
+        let servers: Vec<String> = list
+            .servers
+            .values()
             .map(|ip| {
                 // 如果没有端口，添加默认端口 53
                 if ip.contains(':') {
@@ -188,7 +198,7 @@ impl ServerPool {
     /// 保存服务器池到本地 JSON 文件（对应 Go 的 Save）
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), crate::dns::types::DNSError> {
         let path = path.as_ref();
-        
+
         // 构建服务器映射（名称 -> IP）
         // Go 项目使用 "Auto-IP" 作为名称
         let mut servers_map = std::collections::HashMap::new();
@@ -199,7 +209,7 @@ impl ServerPool {
             } else {
                 server.as_str()
             };
-            
+
             // 生成名称（对应 Go 的 "Auto-IP" 格式）
             let name = format!("Auto-{}", ip);
             servers_map.insert(name, ip.to_string());
@@ -224,8 +234,7 @@ impl ServerPool {
 
     /// 从默认文件加载服务器池（对应 Go 的 NewServerPool）
     pub fn load_default() -> Self {
-        Self::load_from_file(DEFAULT_SERVER_FILE)
-            .unwrap_or_else(|_| Self::new(Vec::new()))
+        Self::load_from_file(DEFAULT_SERVER_FILE).unwrap_or_else(|_| Self::new(Vec::new()))
     }
 
     /// 保存到默认文件
@@ -265,11 +274,14 @@ impl ServerPool {
         // 添加新服务器
         let mut new_servers = (*self.servers).clone();
         new_servers.push(server);
-        (Self {
-            servers: Arc::new(new_servers),
-            #[cfg(feature = "hickory-resolver")]
-            stats: Arc::new(std::sync::RwLock::new(HashMap::new())),
-        }, true)
+        (
+            Self {
+                servers: Arc::new(new_servers),
+                #[cfg(feature = "hickory-resolver")]
+                stats: Arc::new(std::sync::RwLock::new(HashMap::new())),
+            },
+            true,
+        )
     }
 
     /// 获取所有服务器
@@ -298,31 +310,31 @@ impl ServerPool {
     ) -> Self {
         #[cfg(feature = "hickory-resolver")]
         {
-            use std::str::FromStr;
-            use std::net::{IpAddr, SocketAddr};
-            use std::sync::{Arc, Mutex};
             use futures::stream::{self, StreamExt};
+            use hickory_resolver::proto::rr::RecordType;
             use hickory_resolver::{
-                config::{ResolverConfig, ResolverOpts, NameServerConfig, Protocol},
+                config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
                 TokioAsyncResolver,
             };
-            use hickory_resolver::proto::rr::RecordType;
+            use std::net::{IpAddr, SocketAddr};
+            use std::str::FromStr;
+            use std::sync::{Arc, Mutex};
 
             let servers = self.servers();
             let test_domain = test_domain.to_string();
-            
+
             // 解析服务器地址
-            let servers_to_test: Vec<_> = servers.iter()
+            let servers_to_test: Vec<_> = servers
+                .iter()
                 .filter_map(|server_str| {
                     let (ip_str, port) = if let Some(colon_pos) = server_str.find(':') {
                         let ip = &server_str[..colon_pos];
-                        let port = server_str[colon_pos + 1..].parse::<u16>()
-                            .unwrap_or(53);
+                        let port = server_str[colon_pos + 1..].parse::<u16>().unwrap_or(53);
                         (ip.to_string(), port)
                     } else {
                         (server_str.clone(), 53)
                     };
-                    
+
                     if let Ok(ip_addr) = IpAddr::from_str(&ip_str) {
                         Some((server_str.clone(), SocketAddr::new(ip_addr, port)))
                     } else {
@@ -352,7 +364,7 @@ impl ServerPool {
                     let test_domain = test_domain.clone();
                     let opts = opts.clone();
                     let available_servers = available_servers_for_closure.clone();
-                    
+
                     async move {
                         // 为每个服务器创建独立的 resolver
                         let mut config = ResolverConfig::new();
@@ -364,9 +376,9 @@ impl ServerPool {
                             bind_addr: None,
                         };
                         config.add_name_server(name_server);
-                        
+
                         let resolver = TokioAsyncResolver::tokio(config, opts);
-                        
+
                         // 测试查询（查询 A 记录）
                         match resolver.lookup(&test_domain, RecordType::A).await {
                             Ok(lookup_result) => {
@@ -377,17 +389,20 @@ impl ServerPool {
                                     let mut servers = available_servers.lock().unwrap();
                                     servers.push(server_str.clone());
                                     let current_count = servers.len();
-                                    
+
                                     // 每达到批次大小就保存一次
                                     if current_count % save_batch_size == 0 {
                                         let pool = Self::new(servers.clone());
                                         if let Err(e) = pool.save_default() {
                                             eprintln!("Warning: 增量保存失败: {}", e);
                                         } else {
-                                            eprintln!("已保存 {} 个可用服务器到文件", current_count);
+                                            eprintln!(
+                                                "已保存 {} 个可用服务器到文件",
+                                                current_count
+                                            );
                                         }
                                     }
-                                    
+
                                     Some(server_str)
                                 } else {
                                     // 查询成功但没有返回IP地址，服务器不可用
@@ -406,11 +421,13 @@ impl ServerPool {
                 *count += 1;
                 let current_processed = *count;
                 let current_available = available_servers_for_progress.lock().unwrap().len();
-                
+
                 // 每处理1000个就输出一次进度
                 if current_processed % 1000 == 0 {
-                    eprintln!("已测试 {}/{} 个服务器，发现 {} 个可用", 
-                             current_processed, total_count, current_available);
+                    eprintln!(
+                        "已测试 {}/{} 个服务器，发现 {} 个可用",
+                        current_processed, total_count, current_available
+                    );
                 }
             }
 
@@ -427,7 +444,7 @@ impl ServerPool {
 
             Self::new(final_servers)
         }
-        
+
         #[cfg(not(feature = "hickory-resolver"))]
         {
             // 如果没有 hickory-resolver，返回原始服务器池
@@ -445,30 +462,30 @@ impl ServerPool {
     ) -> Self {
         #[cfg(feature = "hickory-resolver")]
         {
-            use std::str::FromStr;
-            use std::net::{IpAddr, SocketAddr};
             use futures::stream::{self, StreamExt};
+            use hickory_resolver::proto::rr::RecordType;
             use hickory_resolver::{
-                config::{ResolverConfig, ResolverOpts, NameServerConfig, Protocol},
+                config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
                 TokioAsyncResolver,
             };
-            use hickory_resolver::proto::rr::RecordType;
+            use std::net::{IpAddr, SocketAddr};
+            use std::str::FromStr;
 
             let servers = self.servers();
             let test_domain = test_domain.to_string();
-            
+
             // 解析服务器地址
-            let servers_to_test: Vec<_> = servers.iter()
+            let servers_to_test: Vec<_> = servers
+                .iter()
                 .filter_map(|server_str| {
                     let (ip_str, port) = if let Some(colon_pos) = server_str.find(':') {
                         let ip = &server_str[..colon_pos];
-                        let port = server_str[colon_pos + 1..].parse::<u16>()
-                            .unwrap_or(53);
+                        let port = server_str[colon_pos + 1..].parse::<u16>().unwrap_or(53);
                         (ip.to_string(), port)
                     } else {
                         (server_str.clone(), 53)
                     };
-                    
+
                     if let Ok(ip_addr) = IpAddr::from_str(&ip_str) {
                         Some((server_str.clone(), SocketAddr::new(ip_addr, port)))
                     } else {
@@ -487,7 +504,7 @@ impl ServerPool {
                 .map(move |(server_str, socket_addr)| {
                     let test_domain = test_domain.clone();
                     let opts = opts.clone();
-                    
+
                     async move {
                         // 为每个服务器创建独立的 resolver
                         let mut config = ResolverConfig::new();
@@ -499,9 +516,9 @@ impl ServerPool {
                             bind_addr: None,
                         };
                         config.add_name_server(name_server);
-                        
+
                         let resolver = TokioAsyncResolver::tokio(config, opts);
-                        
+
                         // 测试查询（查询 A 记录）
                         match resolver.lookup(&test_domain, RecordType::A).await {
                             Ok(lookup_result) => {
@@ -527,7 +544,7 @@ impl ServerPool {
 
             Self::new(available_servers)
         }
-        
+
         #[cfg(not(feature = "hickory-resolver"))]
         {
             // 如果没有 hickory-resolver，返回原始服务器池
@@ -541,4 +558,3 @@ impl Default for ServerPool {
         Self::default()
     }
 }
-

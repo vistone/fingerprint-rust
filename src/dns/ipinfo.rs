@@ -2,7 +2,7 @@
 //!
 //! 从 IPInfo.io API 获取 IP 地址的详细信息（地理位置、ISP 等）
 
-use crate::dns::types::{IPInfo, DNSError};
+use crate::dns::types::{DNSError, IPInfo};
 use crate::http_client::{HttpClient, HttpClientConfig};
 use std::time::Duration;
 
@@ -15,16 +15,13 @@ pub struct IPInfoClient {
 impl IPInfoClient {
     /// 创建新的 IPInfo 客户端
     pub fn new(token: String, timeout: Duration) -> Self {
-        Self {
-            token,
-            timeout,
-        }
+        Self { token, timeout }
     }
 
     /// 获取 IP 地址的详细信息
     pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
         let url = format!("https://ipinfo.io/{}?token={}", ip, self.token);
-        
+
         // 使用项目内部的 HttpClient
         let config = HttpClientConfig {
             connect_timeout: self.timeout,
@@ -33,14 +30,12 @@ impl IPInfoClient {
             ..Default::default()
         };
         let client = HttpClient::new(config);
-        
+
         // 在异步上下文中执行同步的 HTTP 请求
-        let response = tokio::task::spawn_blocking(move || {
-            client.get(&url)
-        })
-        .await
-        .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
-        .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
+        let response = tokio::task::spawn_blocking(move || client.get(&url))
+            .await
+            .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
+            .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
         if !response.is_success() {
             return Err(DNSError::IPInfo(format!(
@@ -56,10 +51,7 @@ impl IPInfoClient {
 
         // 解析响应
         Ok(IPInfo {
-            ip: json["ip"]
-                .as_str()
-                .unwrap_or(ip)
-                .to_string(),
+            ip: json["ip"].as_str().unwrap_or(ip).to_string(),
             hostname: json["hostname"].as_str().map(|s| s.to_string()),
             city: json["city"].as_str().map(|s| s.to_string()),
             region: json["region"].as_str().map(|s| s.to_string()),
@@ -79,13 +71,14 @@ impl IPInfoClient {
     ) -> Vec<(String, Result<IPInfo, DNSError>)> {
         use futures::stream::{self, StreamExt};
         use std::collections::HashSet;
-        
+
         // 对 IP 列表去重，确保每个 IP 只查询一次
-        let unique_ips: Vec<String> = ips.into_iter()
+        let unique_ips: Vec<String> = ips
+            .into_iter()
             .collect::<HashSet<String>>()
             .into_iter()
             .collect();
-        
+
         let tasks = stream::iter(unique_ips)
             .map(|ip| {
                 let client = &self;
@@ -107,14 +100,10 @@ mod tests {
     #[tokio::test]
     #[ignore] // 需要真实的 token，默认跳过
     async fn test_get_ip_info() {
-        let client = IPInfoClient::new(
-            "test-token".to_string(),
-            Duration::from_secs(20),
-        );
-        
+        let client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
+
         // 这个测试需要真实的 token
         // let result = client.get_ip_info("8.8.8.8").await;
         // assert!(result.is_ok());
     }
 }
-

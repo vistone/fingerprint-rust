@@ -19,7 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         Ok(pool) => {
             println!("✅ 成功获取 DNS 服务器列表");
             println!("   服务器数量: {}", pool.len());
-            
+
             // 显示前 10 个服务器
             let servers = pool.servers();
             let display_count = servers.len().min(10);
@@ -59,4 +59,3 @@ fn main() {
     println!("此示例需要启用 'dns' feature");
     println!("使用方法: cargo run --example test_dns_collector --features dns");
 }
-

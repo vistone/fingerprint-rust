@@ -12,20 +12,20 @@
 //! - ✅ **原子性写入**：使用临时文件确保数据安全
 //! - ✅ **易于集成**：提供简单的 Start/Stop 接口，支持作为库使用
 
-mod config;
-mod types;
-mod resolver;
-mod storage;
-mod ipinfo;
-mod serverpool;
 mod collector;
+mod config;
+mod ipinfo;
+mod resolver;
+mod serverpool;
 mod service;
+mod storage;
+mod types;
 
-pub use config::load_config;
-pub use types::*;
-pub use service::Service;
 pub use collector::ServerCollector;
-pub use serverpool::ServerPool;
-pub use resolver::DNSResolver;
+pub use config::load_config;
 pub use ipinfo::IPInfoClient;
-pub use storage::{save_domain_ips, load_domain_ips};
+pub use resolver::DNSResolver;
+pub use serverpool::ServerPool;
+pub use service::Service;
+pub use storage::{load_domain_ips, save_domain_ips};
+pub use types::*;

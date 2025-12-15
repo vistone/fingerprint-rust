@@ -4,7 +4,7 @@
 //!   cargo run --example dns_service --features dns -- -config config/config.json
 
 #[cfg(feature = "dns")]
-use fingerprint::dns::{Service, load_config, DNSError};
+use fingerprint::dns::{load_config, DNSError, Service};
 
 #[cfg(feature = "dns")]
 use std::env;
@@ -17,14 +17,14 @@ use std::process;
 async fn main() {
     // 解析命令行参数
     let args: Vec<String> = env::args().collect();
-    
+
     let config_path = if args.len() > 2 && args[1] == "-config" {
         &args[2]
     } else {
         eprintln!("使用方法: {} -config <config_file>", args[0]);
         process::exit(1);
     };
-    
+
     // 加载配置
     let config = match load_config(config_path) {
         Ok(cfg) => cfg,
@@ -33,7 +33,7 @@ async fn main() {
             process::exit(1);
         }
     };
-    
+
     // 创建服务
     let service = match Service::from_config_file(config_path) {
         Ok(svc) => svc,
@@ -42,11 +42,11 @@ async fn main() {
             process::exit(1);
         }
     };
-    
+
     // 启动服务
     println!("启动 DNS 服务...");
     println!("按 Ctrl+C 停止服务");
-    
+
     if let Err(e) = service.start().await {
         eprintln!("Service error: {}", e);
         process::exit(1);
@@ -58,5 +58,7 @@ async fn main() {
 #[cfg(not(feature = "dns"))]
 fn main() {
     println!("此示例需要启用 'dns' feature");
-    println!("使用方法: cargo run --example dns_service --features dns -- -config config/config.json");
+    println!(
+        "使用方法: cargo run --example dns_service --features dns -- -config config/config.json"
+    );
 }

@@ -1,17 +1,22 @@
-//! 全面测试 Google Earth API
+//! Google Earth API 全面测试可执行程序
 //!
 //! 测试地址: https://kh.google.com/rt/earth/PlanetoidMetadata
 //! 测试所有 66 个浏览器指纹，使用 HTTP/1.1, HTTP/2, HTTP/3
 //!
 //! 运行方式:
 //! ```bash
-//! cargo test --test comprehensive_google_earth_test --features rustls-tls,http2,http3 -- --ignored --nocapture
+//! cargo run --example test_google_earth --features rustls-tls,http2,http3 -- --help
+//! cargo run --example test_google_earth --features rustls-tls,http2,http3 -- http1
+//! cargo run --example test_google_earth --features rustls-tls,http2,http3 -- http2
+//! cargo run --example test_google_earth --features rustls-tls,http2,http3 -- http3
+//! cargo run --example test_google_earth --features rustls-tls,http2,http3 -- all
 //! ```
 
 use fingerprint::{
     get_user_agent_by_profile_name, mapped_tls_clients, HttpClient, HttpClientConfig,
 };
 use std::collections::HashMap;
+use std::env;
 use std::time::{Duration, Instant};
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
@@ -61,9 +66,59 @@ impl TestResult {
     }
 }
 
-#[test]
-#[ignore] // 需要网络连接
-fn test_all_fingerprints_http1() {
+fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() < 2 || args[1] == "--help" || args[1] == "-h" {
+        print_usage();
+        return;
+    }
+
+    let protocol = &args[1];
+
+    match protocol.as_str() {
+        "http1" => run_http1_test(),
+        "http2" => {
+            #[cfg(feature = "http2")]
+            run_http2_test();
+            #[cfg(not(feature = "http2"))]
+            eprintln!("错误: HTTP/2 支持未启用，请使用 --features http2 编译");
+        }
+        "http3" => {
+            #[cfg(feature = "http3")]
+            run_http3_test();
+            #[cfg(not(feature = "http3"))]
+            eprintln!("错误: HTTP/3 支持未启用，请使用 --features http3 编译");
+        }
+        "all" => run_all_protocols_test(),
+        _ => {
+            eprintln!("错误: 未知的协议 '{}'", protocol);
+            print_usage();
+            std::process::exit(1);
+        }
+    }
+}
+
+fn print_usage() {
+    println!("Google Earth API 全面测试工具");
+    println!();
+    println!("用法:");
+    println!(
+        "  cargo run --example test_google_earth --features rustls-tls,http2,http3 -- <protocol>"
+    );
+    println!();
+    println!("协议选项:");
+    println!("  http1  - 测试所有指纹使用 HTTP/1.1");
+    println!("  http2  - 测试所有指纹使用 HTTP/2 (需要 --features http2)");
+    println!("  http3  - 测试所有指纹使用 HTTP/3 (需要 --features http3)");
+    println!("  all    - 测试所有协议 (66个指纹 × 3个协议 = 198个测试)");
+    println!();
+    println!("示例:");
+    println!("  cargo run --example test_google_earth --features rustls-tls,http2,http3 -- http1");
+    println!("  cargo run --example test_google_earth --features rustls-tls,http2,http3 -- all");
+}
+
+fn run_http1_test() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
     println!("║  Google Earth API 全面测试 - HTTP/1.1                    ║");
     println!("║  地址: {}  ║", TEST_URL);
@@ -106,17 +161,14 @@ fn test_all_fingerprints_http1() {
             }
         }
 
-        // 避免请求过快
         std::thread::sleep(Duration::from_millis(100));
     }
 
     print_summary("HTTP/1.1", &results, start.elapsed());
 }
 
-#[test]
 #[cfg(feature = "http2")]
-#[ignore] // 需要网络连接
-fn test_all_fingerprints_http2() {
+fn run_http2_test() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
     println!("║  Google Earth API 全面测试 - HTTP/2                      ║");
     println!("║  地址: {}  ║", TEST_URL);
@@ -165,10 +217,8 @@ fn test_all_fingerprints_http2() {
     print_summary("HTTP/2", &results, start.elapsed());
 }
 
-#[test]
 #[cfg(feature = "http3")]
-#[ignore] // 需要网络连接
-fn test_all_fingerprints_http3() {
+fn run_http3_test() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
     println!("║  Google Earth API 全面测试 - HTTP/3                      ║");
     println!("║  地址: {}  ║", TEST_URL);
@@ -217,9 +267,7 @@ fn test_all_fingerprints_http3() {
     print_summary("HTTP/3", &results, start.elapsed());
 }
 
-#[test]
-#[ignore] // 需要网络连接
-fn test_all_fingerprints_all_protocols() {
+fn run_all_protocols_test() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
     println!("║  Google Earth API 全面测试 - 所有协议                    ║");
     println!("║  地址: {}  ║", TEST_URL);

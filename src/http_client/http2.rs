@@ -62,7 +62,7 @@ async fn send_http2_request_async(
     let (mut client, h2_conn) = client::handshake(tls_stream)
         .await
         .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 握手失败: {}", e)))?;
-    
+
     // TODO: 应用 HTTP/2 Settings
     // h2 0.4 的 Builder API 限制，Settings 需要在握手时配置
     // 但 client::handshake() 不提供 Builder，需要研究如何应用自定义 Settings
