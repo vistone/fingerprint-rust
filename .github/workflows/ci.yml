@@ -82,4 +82,7 @@ jobs:
           fi
       
       - name: Run security audit
-        run: cargo audit --deny warnings
+        run: |
+          # 确保使用最新的依赖，清除可能包含旧依赖的 Cargo.lock
+          cargo update
+          cargo audit --deny warnings
