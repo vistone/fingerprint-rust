@@ -78,8 +78,20 @@ pub fn send_https_request(
 
         let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
+        // 修复：添加 Cookie 到请求（如果存在）
+        let mut request_with_cookies = request.clone();
+        if let Some(cookie_store) = &config.cookie_store {
+            super::request::add_cookies_to_request(
+                &mut request_with_cookies,
+                cookie_store,
+                host,
+                path,
+                true, // HTTPS 是安全连接
+            );
+        }
+
         // 发送 HTTP 请求
-        let http_request = request.build_http1_request_bytes(host, path);
+        let http_request = request_with_cookies.build_http1_request_bytes(host, path);
         tls_stream
             .write_all(&http_request)
             .map_err(HttpClientError::Io)?;
@@ -158,7 +170,19 @@ pub fn send_https_request_with_pool(
 
         let mut tls_stream = rustls::StreamOwned::new(conn_tls, tcp_stream);
 
-        let http_request = request.build_http1_request_bytes(host, path);
+        // 修复：添加 Cookie 到请求（如果存在）
+        let mut request_with_cookies = request.clone();
+        if let Some(cookie_store) = &config.cookie_store {
+            super::request::add_cookies_to_request(
+                &mut request_with_cookies,
+                cookie_store,
+                host,
+                path,
+                true, // HTTPS 是安全连接
+            );
+        }
+
+        let http_request = request_with_cookies.build_http1_request_bytes(host, path);
         tls_stream
             .write_all(&http_request)
             .map_err(HttpClientError::Io)?;

@@ -876,7 +876,7 @@ cargo test -p fingerprint-http --features "rustls-tls,http2"
 
 ## 📊 项目状态
 
-**版本**: v2.0.0 (Workspace)  
+**版本**: v2.0.1 (Workspace)  
 **状态**: ✅ **生产就绪**  
 **最后更新**: 2025-12-14
 

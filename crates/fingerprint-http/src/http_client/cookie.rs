@@ -147,6 +147,10 @@ impl CookieStore {
     }
 
     /// 获取指定域名的所有有效 Cookie
+    ///
+    /// 根据 RFC 6265 规范进行域名匹配：
+    /// - Cookie 的 domain 属性（如 `.example.com`）应该匹配 `example.com` 及其所有子域名
+    /// - `example.com` 的 Cookie 应该匹配 `example.com` 和 `*.example.com`
     pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
         let cookies = match self.cookies.lock() {
             Ok(c) => c,
@@ -157,16 +161,26 @@ impl CookieStore {
         };
         let mut result = Vec::new();
 
-        // 检查完全匹配和父域名（更严格的匹配逻辑）
         let domain_lower = domain.to_lowercase();
         for (cookie_domain, domain_cookies) in cookies.iter() {
             let cookie_domain_lower = cookie_domain.to_lowercase();
-            // 完全匹配或 domain 是 cookie_domain 的子域名（如 example.com 匹配 .example.com）
-            if domain_lower == cookie_domain_lower
-                || (cookie_domain_lower.starts_with('.')
-                    && domain_lower.ends_with(&cookie_domain_lower))
-                || (domain_lower.ends_with(&format!(".{}", cookie_domain_lower)))
-            {
+
+            // 修复：正确的域名匹配逻辑（RFC 6265）
+            let matches = if cookie_domain_lower == domain_lower {
+                // 完全匹配
+                true
+            } else if let Some(base) = cookie_domain_lower.strip_prefix('.') {
+                // Cookie domain 以 . 开头（如 .example.com）
+                // 应该匹配 example.com 和所有 *.example.com
+                domain_lower == base || domain_lower.ends_with(&format!(".{}", base))
+            } else {
+                // Cookie domain 不以 . 开头（如 example.com）
+                // 应该匹配 example.com 和所有 *.example.com
+                domain_lower == cookie_domain_lower
+                    || domain_lower.ends_with(&format!(".{}", cookie_domain_lower))
+            };
+
+            if matches {
                 for cookie in domain_cookies {
                     if !cookie.is_expired() {
                         result.push(cookie.clone());

@@ -42,6 +42,14 @@ use fingerprint_profiles::profiles::ClientProfile;
 use std::io as std_io;
 use std::time::Duration;
 
+// 修复：使用全局单例 Runtime 避免频繁创建（用于 HTTP/2 和 HTTP/3 连接池场景）
+#[cfg(any(feature = "http2", feature = "http3"))]
+use once_cell::sync::Lazy;
+
+#[cfg(any(feature = "http2", feature = "http3"))]
+static SHARED_RUNTIME: Lazy<tokio::runtime::Runtime> =
+    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
+
 /// HTTP 客户端错误
 #[derive(Debug)]
 pub enum HttpClientError {
@@ -277,13 +285,72 @@ impl HttpClient {
                         format!("{}://{}:{}{}{}", scheme, host, port, base_path, location)
                     };
 
-                // 创建新的请求
-                let mut redirect_request = request.clone();
-                redirect_request.url = redirect_url;
+                // 修复：根据 HTTP 状态码正确处理重定向方法（RFC 7231）
+                let redirect_method = match response.status_code {
+                    301..=303 => {
+                        // 301, 302, 303: POST 应该改为 GET，并移除请求体
+                        HttpMethod::Get
+                    }
+                    307 | 308 => {
+                        // 307, 308: 保持原 HTTP 方法（POST 仍然是 POST）
+                        request.method
+                    }
+                    _ => {
+                        // 其他 3xx 状态码保持原方法
+                        request.method
+                    }
+                };
+
+                // 修复：处理 Set-Cookie（如果重定向响应中有 Cookie）
+                if let Some(cookie_store) = &self.config.cookie_store {
+                    if let Some(set_cookie) = response.headers.get("set-cookie") {
+                        // 解析并添加 Cookie
+                        if let Some(cookie) =
+                            super::cookie::Cookie::parse_set_cookie(set_cookie, host.clone())
+                        {
+                            cookie_store.add_cookie(cookie);
+                        }
+                    }
+                }
+
+                // 解析新 URL 的域名和路径（用于 Cookie 域过滤）
+                let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
+
+                // 修复：重新构建请求，只包含适用于新域名的 Cookie
+                let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
+
+                // 复制非 Cookie 的 headers，并添加 Referer
+                for (key, value) in &request.headers {
+                    if key.to_lowercase() != "cookie" {
+                        final_redirect_request = final_redirect_request.with_header(key, value);
+                    }
+                }
+                // 修复：添加 Referer 头（模拟浏览器行为）
+                final_redirect_request =
+                    final_redirect_request.with_header("Referer", &request.url);
+
+                // 添加适用于新域名的 Cookie
+                if let Some(cookie_store) = &self.config.cookie_store {
+                    if let Some(cookie_header) = cookie_store.generate_cookie_header(
+                        &new_host,
+                        &new_path,
+                        new_scheme == "https",
+                    ) {
+                        final_redirect_request =
+                            final_redirect_request.with_header("Cookie", &cookie_header);
+                    }
+                }
+
+                // 如果保持 POST/PUT/PATCH，保留请求体；如果改为 GET，移除请求体（RFC 7231 要求）
+                if redirect_method != HttpMethod::Get {
+                    if let Some(body) = &request.body {
+                        final_redirect_request = final_redirect_request.with_body(body.clone());
+                    }
+                }
 
                 // 递归处理重定向（传递 visited_urls 以检测循环）
                 return self.send_request_with_redirects_internal(
-                    &redirect_request,
+                    &final_redirect_request,
                     redirect_count + 1,
                     visited_urls,
                 );
@@ -366,10 +433,8 @@ impl HttpClient {
             // HTTP/3 with pool（异步 -> 同步包装）
             #[cfg(feature = "http3")]
             if self.config.prefer_http3 {
-                let rt = tokio::runtime::Runtime::new().map_err(|e| {
-                    HttpClientError::ConnectionFailed(format!("创建运行时失败: {}", e))
-                })?;
-                return rt.block_on(async {
+                // 修复：使用全局单例 Runtime
+                return SHARED_RUNTIME.block_on(async {
                     http3_pool::send_http3_request_with_pool(
                         host,
                         port,
@@ -385,12 +450,10 @@ impl HttpClient {
             // HTTP/2 with pool（异步 -> 同步包装）
             #[cfg(feature = "http2")]
             if self.config.prefer_http2 {
-                let rt = tokio::runtime::Runtime::new().map_err(|e| {
-                    HttpClientError::ConnectionFailed(format!("创建运行时失败: {}", e))
-                })?;
-                // 注意：这里不做“自动降级”，因为 pool 场景我们更希望按用户偏好走指定协议
+                // 修复：使用全局单例 Runtime
+                // 注意：这里不做"自动降级"，因为 pool 场景我们更希望按用户偏好走指定协议
                 //（测试里也会严格验证版本）
-                return rt.block_on(async {
+                return SHARED_RUNTIME.block_on(async {
                     http2_pool::send_http2_request_with_pool(
                         host,
                         port,

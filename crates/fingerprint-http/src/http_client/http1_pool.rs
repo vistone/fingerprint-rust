@@ -6,7 +6,7 @@
 use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 #[cfg(feature = "connection-pool")]
-use std::io::{Read, Write};
+use std::io::Write;
 #[cfg(feature = "connection-pool")]
 use std::sync::Arc;
 
@@ -17,7 +17,7 @@ pub fn send_http1_request_with_pool(
     port: u16,
     path: &str,
     request: &HttpRequest,
-    _config: &HttpClientConfig,
+    config: &HttpClientConfig,
     pool_manager: &Arc<ConnectionPoolManager>,
 ) -> Result<HttpResponse> {
     // 从连接池获取连接
@@ -37,34 +37,31 @@ pub fn send_http1_request_with_pool(
     // 克隆 TcpStream 以便我们可以使用它
     let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
+    // 修复：添加 Cookie 到请求（如果存在）
+    let mut request_with_cookies = request.clone();
+    if let Some(cookie_store) = &config.cookie_store {
+        super::request::add_cookies_to_request(
+            &mut request_with_cookies,
+            cookie_store,
+            host,
+            path,
+            false, // HTTP 不是安全连接
+        );
+    }
+
     // 构建 HTTP 请求
-    let http_request = request.build_http1_request(host, path);
+    let http_request = request_with_cookies.build_http1_request(host, path);
 
     // 发送请求
     stream
         .write_all(http_request.as_bytes())
         .map_err(HttpClientError::Io)?;
 
-    // 读取响应
-    let mut buffer = Vec::new();
-    let mut temp_buffer = [0u8; 8192];
-
-    loop {
-        match stream.read(&mut temp_buffer) {
-            Ok(0) => break, // 连接关闭
-            Ok(n) => {
-                buffer.extend_from_slice(&temp_buffer[..n]);
-                // 检查是否读取完整
-                if buffer.ends_with(b"\r\n\r\n") || buffer.ends_with(b"\n\n") {
-                    break;
-                }
-            }
-            Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => continue,
-            Err(e) => return Err(HttpClientError::Io(e)),
-        }
-    }
-
+    // 修复：使用完整的响应读取逻辑（包括 body）
     // 连接会自动归还到连接池（通过 Drop）
+    let buffer =
+        super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
+            .map_err(HttpClientError::Io)?;
 
     // 解析响应
     HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)

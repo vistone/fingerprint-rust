@@ -102,19 +102,52 @@ pub async fn send_http2_request_with_pool(
         // 不要手动添加 host header，h2 会自动从 URI 提取
         .header("user-agent", &config.user_agent);
 
-    let http2_request = request
+    // 修复：添加 Cookie 到请求（如果存在）
+    let mut request_with_cookies = request.clone();
+    if let Some(cookie_store) = &config.cookie_store {
+        super::request::add_cookies_to_request(
+            &mut request_with_cookies,
+            cookie_store,
+            host,
+            path,
+            true, // HTTPS 是安全连接
+        );
+    }
+
+    let http2_request = request_with_cookies
         .headers
         .iter()
         // 跳过 host header
         .filter(|(k, _)| k.to_lowercase() != "host")
-        .fold(http2_request, |builder, (k, v)| builder.header(k, v))
+        .fold(http2_request, |builder, (k, v)| builder.header(k, v));
+
+    // 修复：构建请求（h2 需要 Request<()>，然后通过 SendStream 发送 body）
+    let http2_request = http2_request
         .body(())
         .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;
 
-    // 发送请求
-    let (response, _send_stream) = client
+    // 发送请求（获取 SendStream 用于发送 body）
+    let (response, mut send_stream) = client
         .send_request(http2_request, true)
         .map_err(|e| HttpClientError::Http2Error(format!("发送请求失败: {}", e)))?;
+
+    // 修复：通过 SendStream 发送请求体（如果存在）
+    if let Some(body) = &request.body {
+        if !body.is_empty() {
+            send_stream
+                .send_data(bytes::Bytes::from(body.clone()), true)
+                .map_err(|e| HttpClientError::Http2Error(format!("发送请求体失败: {}", e)))?;
+        } else {
+            send_stream
+                .send_data(bytes::Bytes::new(), true)
+                .map_err(|e| HttpClientError::Http2Error(format!("发送请求体失败: {}", e)))?;
+        }
+    } else {
+        // 没有 body，发送空数据并结束流
+        send_stream
+            .send_data(bytes::Bytes::new(), true)
+            .map_err(|e| HttpClientError::Http2Error(format!("发送请求体失败: {}", e)))?;
+    }
 
     // 等待响应头
     let response = response

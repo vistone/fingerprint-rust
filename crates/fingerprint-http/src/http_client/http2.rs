@@ -8,8 +8,13 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http2")]
 use h2::client;
 
+// 修复：使用全局单例 Runtime 避免频繁创建
 #[cfg(feature = "http2")]
-use tokio::runtime::Runtime;
+use once_cell::sync::Lazy;
+
+#[cfg(feature = "http2")]
+static RUNTIME: Lazy<tokio::runtime::Runtime> =
+    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
 
 /// 发送 HTTP/2 请求
 #[cfg(feature = "http2")]
@@ -20,11 +25,8 @@ pub fn send_http2_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // 创建 Tokio 运行时
-    let rt = Runtime::new()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("创建运行时失败: {}", e)))?;
-
-    rt.block_on(async { send_http2_request_async(host, port, path, request, config).await })
+    // 修复：使用全局单例 Runtime，避免每次请求都创建新的运行时
+    RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
 #[cfg(feature = "http2")]
@@ -96,14 +98,33 @@ async fn send_http2_request_async(
         }
     }
 
+    // 修复：构建请求（h2 需要 Request<()>，然后通过 SendStream 发送 body）
     let http_request = http_request
         .body(())
         .map_err(|e| HttpClientError::InvalidResponse(format!("构建请求失败: {}", e)))?;
 
-    // 6. 发送请求
-    let (response_future, _) = client
+    // 6. 发送请求（获取 SendStream 用于发送 body）
+    let (response_future, mut send_stream) = client
         .send_request(http_request, true)
         .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求失败: {}", e)))?;
+
+    // 修复：通过 SendStream 发送请求体（如果存在）
+    if let Some(body) = &request.body {
+        if !body.is_empty() {
+            send_stream
+                .send_data(bytes::Bytes::from(body.clone()), true)
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+        } else {
+            send_stream
+                .send_data(bytes::Bytes::new(), true)
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+        }
+    } else {
+        // 没有 body，发送空数据并结束流
+        send_stream
+            .send_data(bytes::Bytes::new(), true)
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+    }
 
     // 7. 接收响应
     let response = response_future

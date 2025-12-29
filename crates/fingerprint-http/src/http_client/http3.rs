@@ -8,8 +8,13 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http3")]
 use quinn::{ClientConfig, Endpoint, TransportConfig};
 
+// 修复：使用全局单例 Runtime 避免频繁创建
 #[cfg(feature = "http3")]
-use tokio::runtime::Runtime;
+use once_cell::sync::Lazy;
+
+#[cfg(feature = "http3")]
+static RUNTIME: Lazy<tokio::runtime::Runtime> =
+    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
 
 /// 发送 HTTP/3 请求
 #[cfg(feature = "http3")]
@@ -20,11 +25,8 @@ pub fn send_http3_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // 创建 Tokio 运行时
-    let rt = Runtime::new()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("创建运行时失败: {}", e)))?;
-
-    rt.block_on(async { send_http3_request_async(host, port, path, request, config).await })
+    // 修复：使用全局单例 Runtime，避免每次请求都创建新的运行时
+    RUNTIME.block_on(async { send_http3_request_async(host, port, path, request, config).await })
 }
 
 #[cfg(feature = "http3")]
@@ -117,17 +119,30 @@ async fn send_http3_request_async(
         .uri(uri)
         .version(http::Version::HTTP_3);
 
+    // 修复：添加 Cookie 到请求（如果存在）
+    let mut request_with_cookies = request.clone();
+    if let Some(cookie_store) = &config.cookie_store {
+        super::request::add_cookies_to_request(
+            &mut request_with_cookies,
+            cookie_store,
+            host,
+            path,
+            true, // HTTPS 是安全连接
+        );
+    }
+
     // 添加 headers
     // 注意：不要手动添加 host header，h3 会自动从 URI 提取
     http_request = http_request.header("user-agent", &config.user_agent);
 
-    for (key, value) in &request.headers {
+    for (key, value) in &request_with_cookies.headers {
         // 跳过 host header（如果用户传入了）
         if key.to_lowercase() != "host" {
             http_request = http_request.header(key, value);
         }
     }
 
+    // 修复：构建请求（h3 需要 Request<()>，然后通过 stream 发送 body）
     let http_request = http_request
         .body(())
         .map_err(|e| HttpClientError::InvalidResponse(format!("构建请求失败: {}", e)))?;
@@ -137,6 +152,16 @@ async fn send_http3_request_async(
         .send_request(http_request)
         .await
         .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求失败: {}", e)))?;
+
+    // 修复：通过 stream 发送请求体（如果存在）
+    if let Some(body) = &request.body {
+        if !body.is_empty() {
+            stream
+                .send_data(bytes::Bytes::from(body.clone()))
+                .await
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+        }
+    }
 
     stream
         .finish()

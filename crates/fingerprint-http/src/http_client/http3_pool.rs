@@ -130,12 +130,27 @@ pub async fn send_http3_request_with_pool(
         // 不要手动添加 host header，h3 会自动从 URI 提取
         .header("user-agent", &config.user_agent);
 
-    let http3_request = request
+    // 修复：添加 Cookie 到请求（如果存在）
+    let mut request_with_cookies = request.clone();
+    if let Some(cookie_store) = &config.cookie_store {
+        super::request::add_cookies_to_request(
+            &mut request_with_cookies,
+            cookie_store,
+            host,
+            path,
+            true, // HTTPS 是安全连接
+        );
+    }
+
+    let http3_request = request_with_cookies
         .headers
         .iter()
         // 跳过 host header
         .filter(|(k, _)| k.to_lowercase() != "host")
-        .fold(http3_request, |builder, (k, v)| builder.header(k, v))
+        .fold(http3_request, |builder, (k, v)| builder.header(k, v));
+
+    // 修复：构建请求（h3 需要 Request<()>，然后通过 stream 发送 body）
+    let http3_request = http3_request
         .body(())
         .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;
 
@@ -144,6 +159,16 @@ pub async fn send_http3_request_with_pool(
         .send_request(http3_request)
         .await
         .map_err(|e| HttpClientError::Http3Error(format!("发送请求失败: {}", e)))?;
+
+    // 修复：通过 stream 发送请求体（如果存在）
+    if let Some(body) = &request.body {
+        if !body.is_empty() {
+            stream
+                .send_data(bytes::Bytes::from(body.clone()))
+                .await
+                .map_err(|e| HttpClientError::Http3Error(format!("发送请求体失败: {}", e)))?;
+        }
+    }
 
     stream
         .finish()

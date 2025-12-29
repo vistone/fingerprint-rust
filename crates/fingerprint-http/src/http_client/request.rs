@@ -38,6 +38,19 @@ pub struct HttpRequest {
     pub body: Option<Vec<u8>>,
 }
 
+/// 辅助函数：为请求添加 Cookie（如果存在）
+pub fn add_cookies_to_request(
+    request: &mut HttpRequest,
+    cookie_store: &super::cookie::CookieStore,
+    host: &str,
+    path: &str,
+    is_secure: bool,
+) {
+    if let Some(cookie_header) = cookie_store.generate_cookie_header(host, path, is_secure) {
+        request.headers.insert("Cookie".to_string(), cookie_header);
+    }
+}
+
 impl HttpRequest {
     /// 创建新的请求
     pub fn new(method: HttpMethod, url: &str) -> Self {

@@ -16,6 +16,7 @@ fingerprint-core = { path = "../fingerprint-core" }
 fingerprint-tls = { path = "../fingerprint-tls" }
 fingerprint-profiles = { path = "../fingerprint-profiles" }
 fingerprint-headers = { path = "../fingerprint-headers" }
+once_cell = { workspace = true }
 
 # HTTP 客户端依赖 (可选)
 rustls = { workspace = true, optional = true }
@@ -51,7 +52,7 @@ ring = { workspace = true, optional = true }
 default = ["rustls-tls", "compression", "http2"]
 rustls-tls = ["rustls", "webpki-roots"]
 compression = ["flate2", "brotli-decompressor"]
-http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots"]
+http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots", "bytes"]
 http3 = ["quinn", "h3", "h3-quinn", "tokio", "rustls", "webpki-roots", "bytes"]
 async = ["tokio"]
 connection-pool = ["netconnpool", "httparse"]
