@@ -11,11 +11,11 @@
 #[cfg(feature = "rustls-client-hello-customizer")]
 use std::sync::Arc;
 
+use fingerprint_profiles::profiles::ClientProfile;
 #[cfg(feature = "rustls-client-hello-customizer")]
 use fingerprint_tls::tls_config::grease::{is_grease_value, TLS_GREASE_VALUES};
 #[cfg(feature = "rustls-client-hello-customizer")]
 use fingerprint_tls::tls_config::ClientHelloSpec;
-use fingerprint_profiles::profiles::ClientProfile;
 
 #[cfg(feature = "rustls-client-hello-customizer")]
 use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer};

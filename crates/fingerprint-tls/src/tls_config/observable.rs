@@ -3,10 +3,10 @@
 //! 提供 TLS ClientHello 的可观察性数据提取
 //! 参考：Huginn Net Profiler 的 TlsClientObserved 设计
 
-use fingerprint_core::dicttls::supported_groups::CurveID;
 use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
+use fingerprint_core::dicttls::supported_groups::CurveID;
 
 /// TLS ClientHello 可观察数据
 /// 包含所有可以从 ClientHello 中观察到的信息

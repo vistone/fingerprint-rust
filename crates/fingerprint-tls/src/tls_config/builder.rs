@@ -2,16 +2,6 @@
 //!
 //! 提供 Builder 模式来构建 ClientHelloSpec，使代码更清晰、类型安全
 
-use fingerprint_core::dicttls::{
-    cipher_suites::{self as cs, GREASE_PLACEHOLDER as GREASE_CS},
-    signature_schemes::{
-        ECDSA_WITH_P256_AND_SHA256, ECDSA_WITH_P384_AND_SHA384, PKCS1_WITH_SHA256,
-        PKCS1_WITH_SHA384, PKCS1_WITH_SHA512, PSS_WITH_SHA256, PSS_WITH_SHA384, PSS_WITH_SHA512,
-    },
-    supported_groups::{
-        CURVE_P256, CURVE_P384, GREASE_PLACEHOLDER as GREASE_SG, X25519, X25519_MLKEM768,
-    },
-};
 use crate::tls_config::spec::{
     ClientHelloSpec, CERT_COMPRESSION_BROTLI, POINT_FORMAT_UNCOMPRESSED, PSK_MODE_DHE,
     RENEGOTIATE_ONCE_AS_CLIENT, VERSION_TLS12, VERSION_TLS13,
@@ -22,6 +12,16 @@ use crate::tls_extensions::{
     SNIExtension, SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
     SupportedPointsExtension, SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension,
     UtlsGREASEExtension, UtlsPaddingExtension,
+};
+use fingerprint_core::dicttls::{
+    cipher_suites::{self as cs, GREASE_PLACEHOLDER as GREASE_CS},
+    signature_schemes::{
+        ECDSA_WITH_P256_AND_SHA256, ECDSA_WITH_P384_AND_SHA384, PKCS1_WITH_SHA256,
+        PKCS1_WITH_SHA384, PKCS1_WITH_SHA512, PSS_WITH_SHA256, PSS_WITH_SHA384, PSS_WITH_SHA512,
+    },
+    supported_groups::{
+        CURVE_P256, CURVE_P384, GREASE_PLACEHOLDER as GREASE_SG, X25519, X25519_MLKEM768,
+    },
 };
 
 /// ClientHelloSpec Builder

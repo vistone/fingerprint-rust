@@ -191,7 +191,7 @@ impl DNSConfig {
     /// # 示例
     /// ```
     /// use fingerprint_dns::DNSConfig;
-    /// 
+    ///
     /// let config = DNSConfig::new(
     ///     "your-token",
     ///     &["google.com", "github.com"],  // 可以直接使用 &str

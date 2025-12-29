@@ -2,6 +2,13 @@
 //!
 //! 提供真实的 TLS Client Hello 配置，对应 Go 版本的 utls.ClientHelloSpec
 
+use crate::tls_extensions::{
+    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension, KeyShare,
+    KeyShareExtension, PSKKeyExchangeModesExtension, RenegotiationInfoExtension, SCTExtension,
+    SNIExtension, SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
+    SupportedPointsExtension, SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension,
+    UtlsGREASEExtension, UtlsPaddingExtension,
+};
 use fingerprint_core::dicttls::{
     cipher_suites::{self as cs, GREASE_PLACEHOLDER as GREASE_CS},
     signature_schemes::{
@@ -11,13 +18,6 @@ use fingerprint_core::dicttls::{
     supported_groups::{
         CURVE_P256, CURVE_P384, GREASE_PLACEHOLDER as GREASE_SG, SECP521R1, X25519, X25519_MLKEM768,
     },
-};
-use crate::tls_extensions::{
-    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension, KeyShare,
-    KeyShareExtension, PSKKeyExchangeModesExtension, RenegotiationInfoExtension, SCTExtension,
-    SNIExtension, SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
-    SupportedPointsExtension, SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension,
-    UtlsGREASEExtension, UtlsPaddingExtension,
 };
 
 /// TLS 版本常量

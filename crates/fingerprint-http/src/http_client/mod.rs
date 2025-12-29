@@ -37,8 +37,8 @@ pub use request::{HttpMethod, HttpRequest};
 pub use response::HttpResponse;
 pub use tls::TlsConnector;
 
-use fingerprint_profiles::profiles::ClientProfile;
 use fingerprint_headers::headers::HTTPHeaders;
+use fingerprint_profiles::profiles::ClientProfile;
 use std::io as std_io;
 use std::time::Duration;
 

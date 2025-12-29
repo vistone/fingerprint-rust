@@ -378,10 +378,7 @@ impl ServerPool {
                                     if let Err(e) = pool.save_default() {
                                         eprintln!("Warning: 增量保存失败: {}", e);
                                     } else {
-                                        eprintln!(
-                                            "已保存 {} 个可用服务器到文件",
-                                            current_count
-                                        );
+                                        eprintln!("已保存 {} 个可用服务器到文件", current_count);
                                     }
                                 }
 

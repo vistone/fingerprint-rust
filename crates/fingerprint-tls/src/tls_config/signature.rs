@@ -3,9 +3,9 @@
 //! 提供 TLS ClientHello 的签名提取和比较功能
 //! 参考：Huginn Net 的 Signature 结构设计
 
-use fingerprint_core::dicttls::supported_groups::CurveID;
 use crate::tls_config::grease::{filter_grease_values, is_grease_value};
 use crate::tls_config::version::TlsVersion;
+use fingerprint_core::dicttls::supported_groups::CurveID;
 
 /// TLS ClientHello 签名
 /// 包含从 ClientHello 消息中提取的所有关键信息

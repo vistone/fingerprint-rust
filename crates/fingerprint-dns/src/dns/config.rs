@@ -19,9 +19,7 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
             // 使用 serde_yaml 直接反序列化
             serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?
         }
-        Some("toml") => {
-            toml::from_str(&content)?
-        }
+        Some("toml") => toml::from_str(&content)?,
         _ => {
             // 尝试按 JSON 解析
             serde_json::from_str(&content).map_err(|_| {

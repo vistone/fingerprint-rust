@@ -2,11 +2,15 @@
 //!
 //! 提供随机获取指纹和 User-Agent 的功能
 
-use fingerprint_headers::headers::generate_headers;
-use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 use fingerprint_core::types::{BrowserType, OperatingSystem};
-use fingerprint_headers::useragent::{get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os};
-use fingerprint_core::utils::{infer_browser_from_profile_name, is_mobile_profile, random_choice_string};
+use fingerprint_core::utils::{
+    infer_browser_from_profile_name, is_mobile_profile, random_choice_string,
+};
+use fingerprint_headers::headers::generate_headers;
+use fingerprint_headers::useragent::{
+    get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os,
+};
+use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 
 /// 指纹结果，包含指纹、User-Agent 和标准 HTTP Headers
 #[derive(Debug, Clone)]

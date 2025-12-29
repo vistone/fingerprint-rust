@@ -158,7 +158,11 @@ pub fn default_client_profile() -> ClientProfile {
 pub fn chrome_103() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
-        ClientHelloID::new("Chrome", "103", fingerprint_tls::tls_config::chrome_103_spec),
+        ClientHelloID::new(
+            "Chrome",
+            "103",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -173,7 +177,11 @@ pub fn chrome_103() -> ClientProfile {
 pub fn chrome_133() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
-        ClientHelloID::new("Chrome", "133", fingerprint_tls::tls_config::chrome_133_spec),
+        ClientHelloID::new(
+            "Chrome",
+            "133",
+            fingerprint_tls::tls_config::chrome_133_spec,
+        ),
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -188,7 +196,11 @@ pub fn chrome_133() -> ClientProfile {
 pub fn firefox_133() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
     ClientProfile::new(
-        ClientHelloID::new("Firefox", "133", fingerprint_tls::tls_config::firefox_133_spec),
+        ClientHelloID::new(
+            "Firefox",
+            "133",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
         settings,
         settings_order,
         firefox_pseudo_header_order(),
@@ -203,7 +215,11 @@ pub fn firefox_133() -> ClientProfile {
 pub fn safari_16_0() -> ClientProfile {
     let (settings, settings_order) = safari_http2_settings();
     ClientProfile::new(
-        ClientHelloID::new("Safari", "16.0", fingerprint_tls::tls_config::safari_16_0_spec),
+        ClientHelloID::new(
+            "Safari",
+            "16.0",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
         settings,
         settings_order,
         safari_pseudo_header_order(),
