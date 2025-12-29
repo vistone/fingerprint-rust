@@ -32,6 +32,14 @@
 
 - **[TEST_REPORT.md](TEST_REPORT.md)** - 完整测试报告（包含所有测试结果）
 
+### 安全文档 (`security/`)
+
+- **[SECURITY_VULNERABILITY_REPORT.md](security/SECURITY_VULNERABILITY_REPORT.md)** - 安全漏洞分析报告（35个漏洞详情）
+- **[SECURITY_AUDIT_SUMMARY.md](security/SECURITY_AUDIT_SUMMARY.md)** - 安全审计执行摘要
+- **[SECURITY_AUDIT_COMPLETE.md](security/SECURITY_AUDIT_COMPLETE.md)** - 安全审计完成报告
+- **[SECURITY_PATCHES.md](security/SECURITY_PATCHES.md)** - 已应用的安全修复补丁
+- **[SECURITY_CHECKLIST.md](security/SECURITY_CHECKLIST.md)** - 安全检查清单和最佳实践
+
 ### 模块文档 (`modules/`)
 
 按 Crate 组织的模块文档：
