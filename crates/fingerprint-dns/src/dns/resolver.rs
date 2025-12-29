@@ -243,9 +243,9 @@ impl DNSResolver {
                     }
                 }
             })
-            .buffer_unordered(1000); // 增加并发数到 1000，加快查询速度
+            .buffer_unordered(50); // 修复：降低并发数到 50，避免文件描述符耗尽和资源爆炸
 
-        eprintln!("[DNS Resolver] 开始并发查询，并发数: 1000");
+        eprintln!("[DNS Resolver] 开始并发查询，并发数: 50");
 
         // 流式收集结果，等待所有服务器响应，收集尽可能多的 IP
         // 对于大量服务器，增加总体超时时间

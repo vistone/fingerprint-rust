@@ -87,11 +87,23 @@ async fn send_http2_request_async(
         .uri(uri)
         .version(http::Version::HTTP_2);
 
+    // 修复：添加 Cookie 到请求（如果存在）
+    let mut request_with_cookies = request.clone();
+    if let Some(cookie_store) = &config.cookie_store {
+        super::request::add_cookies_to_request(
+            &mut request_with_cookies,
+            cookie_store,
+            host,
+            path,
+            true, // HTTPS 是安全连接
+        );
+    }
+
     // 添加 headers
     // 注意：不要手动添加 host header，h2 会自动从 URI 提取
     http_request = http_request.header("user-agent", &config.user_agent);
 
-    for (key, value) in &request.headers {
+    for (key, value) in &request_with_cookies.headers {
         // 跳过 host header（如果用户传入了）
         if key.to_lowercase() != "host" {
             http_request = http_request.header(key, value);
@@ -104,22 +116,27 @@ async fn send_http2_request_async(
         .map_err(|e| HttpClientError::InvalidResponse(format!("构建请求失败: {}", e)))?;
 
     // 6. 发送请求（获取 SendStream 用于发送 body）
+    // 修复：end_of_stream 必须为 false，否则流会立即关闭，无法发送 body
+    let has_body = request_with_cookies.body.is_some()
+        && !request_with_cookies.body.as_ref().unwrap().is_empty();
     let (response_future, mut send_stream) = client
-        .send_request(http_request, true)
+        .send_request(http_request, false) // 修复：改为 false，只有在发送完 body 后才结束流
         .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求失败: {}", e)))?;
 
     // 修复：通过 SendStream 发送请求体（如果存在）
-    if let Some(body) = &request.body {
+    if let Some(body) = &request_with_cookies.body {
         if !body.is_empty() {
+            // 发送 body 数据，end_of_stream = true 表示这是最后的数据
             send_stream
                 .send_data(bytes::Bytes::from(body.clone()), true)
                 .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
         } else {
+            // 空 body，发送空数据并结束流
             send_stream
                 .send_data(bytes::Bytes::new(), true)
                 .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
         }
-    } else {
+    } else if !has_body {
         // 没有 body，发送空数据并结束流
         send_stream
             .send_data(bytes::Bytes::new(), true)

@@ -286,7 +286,7 @@ impl ServerPool {
         (
             Self {
                 servers: Arc::new(new_servers),
-                stats: Arc::new(std::sync::RwLock::new(HashMap::new())),
+                stats: self.stats.clone(), // 修复：继承原有的统计数据，避免丢失历史性能数据
             },
             true,
         )

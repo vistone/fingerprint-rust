@@ -361,10 +361,11 @@ impl HttpClient {
     }
 
     /// 解析 URL
+    /// 修复：支持 IPv6 地址和正确处理 query/fragment
     fn parse_url(&self, url: &str) -> Result<(String, String, u16, String)> {
-        // 简单的 URL 解析
         let url = url.trim();
 
+        // 提取 scheme
         let (scheme, rest) = if let Some(stripped) = url.strip_prefix("https://") {
             ("https", stripped)
         } else if let Some(stripped) = url.strip_prefix("http://") {
@@ -373,24 +374,58 @@ impl HttpClient {
             return Err(HttpClientError::InvalidUrl("缺少协议".to_string()));
         };
 
-        let (host_port, path) = if let Some(pos) = rest.find('/') {
+        // 移除 fragment（# 后面的部分）
+        let rest = if let Some(frag_pos) = rest.find('#') {
+            &rest[..frag_pos]
+        } else {
+            rest
+        };
+
+        // 分离 query 参数（? 后面的部分）和 path
+        let (host_port, path_with_query) = if let Some(pos) = rest.find('/') {
             (&rest[..pos], &rest[pos..])
         } else {
             (rest, "/")
         };
 
-        let (host, port) = if let Some(pos) = host_port.find(':') {
-            let host = host_port[..pos].to_string();
-            let port = host_port[pos + 1..]
-                .parse::<u16>()
-                .map_err(|_| HttpClientError::InvalidUrl("无效的端口".to_string()))?;
-            (host, port)
+        // 提取 path（移除 query 参数，但保留在 path 中发送）
+        // 注意：query 参数应该保留在 path 中，因为服务器需要它们
+        let path = path_with_query.to_string();
+
+        // 解析 host 和 port
+        // 修复：支持 IPv6 地址格式 [2001:db8::1]:8080
+        let (host, port) = if host_port.starts_with('[') {
+            // IPv6 地址格式
+            if let Some(close_bracket) = host_port.find(']') {
+                let host = host_port[1..close_bracket].to_string();
+                if let Some(colon_pos) = host_port[close_bracket + 1..].find(':') {
+                    let port_str = &host_port[close_bracket + 2 + colon_pos..];
+                    let port = port_str
+                        .parse::<u16>()
+                        .map_err(|_| HttpClientError::InvalidUrl("无效的端口".to_string()))?;
+                    (host, port)
+                } else {
+                    let default_port = if scheme == "https" { 443 } else { 80 };
+                    (host, default_port)
+                }
+            } else {
+                return Err(HttpClientError::InvalidUrl("IPv6 地址格式错误".to_string()));
+            }
         } else {
-            let default_port = if scheme == "https" { 443 } else { 80 };
-            (host_port.to_string(), default_port)
+            // IPv4 地址或域名
+            if let Some(pos) = host_port.find(':') {
+                let host = host_port[..pos].to_string();
+                let port = host_port[pos + 1..]
+                    .parse::<u16>()
+                    .map_err(|_| HttpClientError::InvalidUrl("无效的端口".to_string()))?;
+                (host, port)
+            } else {
+                let default_port = if scheme == "https" { 443 } else { 80 };
+                (host_port.to_string(), default_port)
+            }
         };
 
-        Ok((scheme.to_string(), host, port, path.to_string()))
+        Ok((scheme.to_string(), host, port, path))
     }
 
     /// 发送 HTTP 请求

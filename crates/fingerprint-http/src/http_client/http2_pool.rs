@@ -127,25 +127,29 @@ pub async fn send_http2_request_with_pool(
         .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;
 
     // 发送请求（获取 SendStream 用于发送 body）
+    // 修复：end_of_stream 必须为 false，否则流会立即关闭，无法发送 body
+    let has_body = request.body.is_some() && !request.body.as_ref().unwrap().is_empty();
     let (response, mut send_stream) = client
-        .send_request(http2_request, true)
+        .send_request(http2_request, false) // 修复：改为 false，只有在发送完 body 后才结束流
         .map_err(|e| HttpClientError::Http2Error(format!("发送请求失败: {}", e)))?;
 
     // 修复：通过 SendStream 发送请求体（如果存在）
     if let Some(body) = &request.body {
         if !body.is_empty() {
+            // 发送 body 数据，end_of_stream = true 表示这是最后的数据
             send_stream
-                .send_data(bytes::Bytes::from(body.clone()), true)
+                .send_data(::bytes::Bytes::from(body.clone()), true)
                 .map_err(|e| HttpClientError::Http2Error(format!("发送请求体失败: {}", e)))?;
         } else {
+            // 空 body，发送空数据并结束流
             send_stream
-                .send_data(bytes::Bytes::new(), true)
+                .send_data(::bytes::Bytes::new(), true)
                 .map_err(|e| HttpClientError::Http2Error(format!("发送请求体失败: {}", e)))?;
         }
-    } else {
+    } else if !has_body {
         // 没有 body，发送空数据并结束流
         send_stream
-            .send_data(bytes::Bytes::new(), true)
+            .send_data(::bytes::Bytes::new(), true)
             .map_err(|e| HttpClientError::Http2Error(format!("发送请求体失败: {}", e)))?;
     }
 
