@@ -103,8 +103,14 @@ impl ServerPool {
     }
 
     /// 记录服务器响应时间（成功）
-    pub fn record_success(&self, _server: &str, response_time: Duration) -> Result<(), crate::dns::types::DNSError> {
-        let mut stats = self.stats.write()
+    pub fn record_success(
+        &self,
+        _server: &str,
+        response_time: Duration,
+    ) -> Result<(), crate::dns::types::DNSError> {
+        let mut stats = self
+            .stats
+            .write()
             .map_err(|e| crate::dns::types::DNSError::Internal(format!("Lock poisoned: {}", e)))?;
         let server_stats = stats
             .entry(_server.to_string())
@@ -115,7 +121,9 @@ impl ServerPool {
 
     /// 记录服务器失败
     pub fn record_failure(&self, _server: &str) -> Result<(), crate::dns::types::DNSError> {
-        let mut stats = self.stats.write()
+        let mut stats = self
+            .stats
+            .write()
             .map_err(|e| crate::dns::types::DNSError::Internal(format!("Lock poisoned: {}", e)))?;
         let server_stats = stats
             .entry(_server.to_string())
@@ -224,12 +232,11 @@ impl ServerPool {
         let temp_path = path.with_extension(&format!("tmp.{}", std::process::id()));
         fs::write(&temp_path, json_content)
             .map_err(|e| crate::dns::types::DNSError::Config(format!("无法写入文件: {}", e)))?;
-        fs::rename(&temp_path, path)
-            .map_err(|e| {
-                // 如果重命名失败，清理临时文件
-                let _ = std::fs::remove_file(&temp_path);
-                crate::dns::types::DNSError::Config(format!("无法重命名文件: {}", e))
-            })?;
+        fs::rename(&temp_path, path).map_err(|e| {
+            // 如果重命名失败，清理临时文件
+            let _ = std::fs::remove_file(&temp_path);
+            crate::dns::types::DNSError::Config(format!("无法重命名文件: {}", e))
+        })?;
 
         Ok(())
     }

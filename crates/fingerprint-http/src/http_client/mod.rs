@@ -210,7 +210,11 @@ impl HttpClient {
         request: &HttpRequest,
         redirect_count: usize,
     ) -> Result<HttpResponse> {
-        self.send_request_with_redirects_internal(request, redirect_count, &mut std::collections::HashSet::new())
+        self.send_request_with_redirects_internal(
+            request,
+            redirect_count,
+            &mut std::collections::HashSet::new(),
+        )
     }
 
     /// 内部重定向处理（带循环检测）
@@ -278,7 +282,11 @@ impl HttpClient {
                 redirect_request.url = redirect_url;
 
                 // 递归处理重定向（传递 visited_urls 以检测循环）
-                return self.send_request_with_redirects_internal(&redirect_request, redirect_count + 1, visited_urls);
+                return self.send_request_with_redirects_internal(
+                    &redirect_request,
+                    redirect_count + 1,
+                    visited_urls,
+                );
             }
         }
 

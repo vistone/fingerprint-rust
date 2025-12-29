@@ -43,9 +43,9 @@ impl IPInfoClient {
             let request = request.clone();
             move || client.send_request(&request)
         })
-            .await
-            .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
-            .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
+        .await
+        .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
+        .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
         if !response.is_success() {
             return Err(DNSError::IPInfo(format!(
