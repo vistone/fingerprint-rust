@@ -16,25 +16,11 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
     let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
         Some("json") => serde_json::from_str(&content).map_err(DNSError::Json)?,
         Some("yaml") | Some("yml") => {
-            #[cfg(feature = "dns")]
-            {
-                // 使用 serde_yaml 直接反序列化
-                serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?
-            }
-            #[cfg(not(feature = "dns"))]
-            {
-                return Err(DNSError::Yaml("YAML support not enabled".to_string()));
-            }
+            // 使用 serde_yaml 直接反序列化
+            serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?
         }
         Some("toml") => {
-            #[cfg(feature = "dns")]
-            {
-                toml::from_str(&content)?
-            }
-            #[cfg(not(feature = "dns"))]
-            {
-                return Err(DNSError::Config("TOML support not enabled".to_string()));
-            }
+            toml::from_str(&content)?
         }
         _ => {
             // 尝试按 JSON 解析

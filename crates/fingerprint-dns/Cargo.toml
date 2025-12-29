@@ -11,6 +11,11 @@ keywords.workspace = true
 categories.workspace = true
 description = "DNS 预解析服务模块"
 
+[features]
+default = []
+# hickory-resolver 功能（默认启用，因为它是核心依赖）
+hickory-resolver = []
+
 [dependencies]
 fingerprint-core = { path = "../fingerprint-core" }
 fingerprint-http = { path = "../fingerprint-http", default-features = false, features = ["rustls-tls"] }

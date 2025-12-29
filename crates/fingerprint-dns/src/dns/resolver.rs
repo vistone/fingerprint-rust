@@ -8,9 +8,7 @@ use std::net::IpAddr;
 use std::sync::Arc;
 use std::time::Duration;
 
-#[cfg(feature = "hickory-resolver")]
 use hickory_resolver::proto::rr::{RData, RecordType};
-#[cfg(feature = "hickory-resolver")]
 use hickory_resolver::{
     config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
     TokioAsyncResolver,
@@ -89,19 +87,9 @@ impl DNSResolver {
     /// 解析 IPv4 (A) 或 IPv6 (AAAA) 记录
     /// 使用收集到的全球 DNS 服务器进行查询
     async fn resolve_aaaa_or_a(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
-        #[cfg(feature = "hickory-resolver")]
-        {
-            self.resolve_with_hickory(domain, ipv6).await
-        }
-
-        #[cfg(not(feature = "hickory-resolver"))]
-        {
-            // 回退到系统 DNS 解析
-            self.resolve_with_system(domain, ipv6).await
-        }
+        self.resolve_with_hickory(domain, ipv6).await
     }
 
-    #[cfg(feature = "hickory-resolver")]
     /// 使用 hickory-resolver 进行 DNS 查询，并发查询多个 DNS 服务器以获取所有可能的 IP
     async fn resolve_with_hickory(
         &self,
