@@ -180,11 +180,12 @@ let temp_path = path.with_extension(&format!("tmp.{}", std::process::id()));
 1. `crates/fingerprint-http/src/http_client/io.rs` - Content-Length 限制
 2. `crates/fingerprint-http/src/http_client/response.rs` - Chunk Size 限制
 3. `crates/fingerprint-http/src/http_client/mod.rs` - 重定向循环检测
-4. `crates/fingerprint-tls/src/tls_handshake/messages.rs` - 随机数生成和时间戳
-5. `crates/fingerprint-dns/src/dns/ipinfo.rs` - Token 泄露修复
-6. `crates/fingerprint-dns/src/dns/serverpool.rs` - 锁中毒和文件写入
-7. `crates/fingerprint-dns/src/dns/resolver.rs` - 锁中毒处理
-8. `crates/fingerprint-dns/src/dns/types.rs` - 添加 Internal 错误类型
+4. `crates/fingerprint-tls/src/tls_handshake/messages.rs` - 随机数生成完全修复（移除所有不安全降级方案，返回错误而非降级）
+5. `crates/fingerprint-tls/src/tls_handshake/builder.rs` - 更新错误处理以支持新的 Result 返回类型
+6. `crates/fingerprint-dns/src/dns/ipinfo.rs` - Token 泄露修复
+7. `crates/fingerprint-dns/src/dns/serverpool.rs` - 锁中毒和文件写入
+8. `crates/fingerprint-dns/src/dns/resolver.rs` - 锁中毒处理
+9. `crates/fingerprint-dns/src/dns/types.rs` - 添加 Internal 错误类型
 
 ---
 
