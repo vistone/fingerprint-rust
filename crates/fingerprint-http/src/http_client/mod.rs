@@ -9,6 +9,8 @@
 //! - TLS 层设计为可替换
 
 pub mod cookie;
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
+mod h2_session_pool;
 pub mod http1;
 pub mod http1_pool;
 pub mod http2;
@@ -277,12 +279,19 @@ impl HttpClient {
                         format!("{}://{}:{}{}", scheme, host, port, location)
                     } else {
                         // 相对路径
+                        // 修复：正确处理路径拼接，避免双斜杠
                         let base_path = if path.ends_with('/') {
                             &path
                         } else {
                             path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
                         };
-                        format!("{}://{}:{}{}{}", scheme, host, port, base_path, location)
+                        // 确保 base_path 以 / 结尾，location 不以 / 开头
+                        let location = location.trim_start_matches('/');
+                        if base_path == "/" {
+                            format!("{}://{}:{}/{}", scheme, host, port, location)
+                        } else {
+                            format!("{}://{}:{}{}/{}", scheme, host, port, base_path, location)
+                        }
                     };
 
                 // 修复：根据 HTTP 状态码正确处理重定向方法（RFC 7231）

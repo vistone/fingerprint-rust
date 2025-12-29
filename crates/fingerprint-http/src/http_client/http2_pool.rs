@@ -60,6 +60,18 @@ pub async fn send_http2_request_with_pool(
         .await
         .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
 
+    // 架构问题：当前实现每次请求都重新进行 HTTP/2 握手
+    // 这违背了 HTTP/2 的核心优势（多路复用），导致性能问题
+    //
+    // 修复建议：实现 HTTP/2 会话池，池化 h2::client::SendRequest 句柄
+    // 1. 创建 H2SessionPool 管理器，按 host:port 缓存 SendRequest
+    // 2. 每个会话需要后台任务运行 h2_conn 以保持连接活跃
+    // 3. 实现会话超时和失效检测机制
+    // 4. 只有在会话失效时才重新握手
+    //
+    // 注意：完整的会话池化需要管理连接生命周期，这是一个较大的架构改动
+    // 当前实现虽然功能正确，但性能未达到 HTTP/2 的最佳实践
+
     // 建立 HTTP/2 连接
     // 注意：h2 0.4 的 Builder API 可能不支持所有 Settings
     // 先使用默认 handshake，Settings 应用需要进一步研究 h2 API

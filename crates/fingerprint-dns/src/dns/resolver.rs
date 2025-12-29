@@ -20,6 +20,10 @@ pub struct DNSResolver {
     timeout: Duration,
     /// DNS 服务器池
     server_pool: Arc<ServerPool>,
+    /// 修复：缓存 resolver 实例，避免频繁创建和销毁
+    /// 使用 Arc<Mutex<HashMap>> 存储每个 DNS 服务器的 resolver
+    resolver_cache:
+        Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioAsyncResolver>>>>,
 }
 
 impl DNSResolver {
@@ -28,6 +32,7 @@ impl DNSResolver {
         Self {
             timeout,
             server_pool: Arc::new(ServerPool::default()),
+            resolver_cache: Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())),
         }
     }
 
@@ -36,6 +41,7 @@ impl DNSResolver {
         Self {
             timeout,
             server_pool,
+            resolver_cache: Arc::new(std::sync::Mutex::new(std::collections::HashMap::new())),
         }
     }
 
@@ -161,6 +167,8 @@ impl DNSResolver {
         // 使用超时包装，避免单个慢服务器阻塞整个查询
         let server_pool = self.server_pool.clone();
         let query_timeout = self.timeout; // 使用 resolver 的总体超时时间
+                                          // 修复：共享 resolver 缓存
+        let resolver_cache = self.resolver_cache.clone();
         let query_tasks = stream::iter(servers_with_sockets)
             .map(move |(server_str, socket_addr)| {
                 let domain = domain.to_string();
@@ -169,24 +177,43 @@ impl DNSResolver {
                 let server_str = server_str.clone();
                 let server_pool = server_pool.clone();
                 let query_timeout = query_timeout;
+                let resolver_cache = resolver_cache.clone();
 
                 async move {
                     let start_time = std::time::Instant::now();
 
                     // 使用超时包装查询，避免单个服务器阻塞
                     let query_result = tokio::time::timeout(query_timeout, async {
-                        // 为每个服务器创建独立的 resolver
-                        let mut config = ResolverConfig::new();
-                        let name_server = NameServerConfig {
-                            socket_addr,
-                            protocol: Protocol::Udp,
-                            tls_dns_name: None,
-                            trust_negative_responses: false,
-                            bind_addr: None,
-                        };
-                        config.add_name_server(name_server);
+                        // 修复：复用 resolver 实例，避免频繁创建和销毁
+                        // 使用 server_str 作为 key 来缓存 resolver
+                        let resolver = {
+                            let mut cache = resolver_cache.lock().unwrap_or_else(|e| {
+                                eprintln!("警告: resolver 缓存锁失败: {}", e);
+                                // 如果锁失败，创建一个新的空 HashMap 并重新锁定
+                                drop(e.into_inner());
+                                resolver_cache.lock().expect("无法获取 resolver 缓存锁")
+                            });
 
-                        let resolver = TokioAsyncResolver::tokio(config, opts);
+                            if let Some(cached) = cache.get(&server_str) {
+                                cached.clone()
+                            } else {
+                                // 创建新的 resolver 并缓存
+                                let mut config = ResolverConfig::new();
+                                let name_server = NameServerConfig {
+                                    socket_addr,
+                                    protocol: Protocol::Udp,
+                                    tls_dns_name: None,
+                                    trust_negative_responses: false,
+                                    bind_addr: None,
+                                };
+                                config.add_name_server(name_server);
+
+                                let resolver = Arc::new(TokioAsyncResolver::tokio(config, opts.clone()));
+                                cache.insert(server_str.clone(), resolver.clone());
+                                resolver
+                            }
+                        };
+
                         resolver.lookup(&domain, record_type).await
                     }).await;
 
