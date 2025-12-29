@@ -229,7 +229,7 @@ impl ServerPool {
 
         // 安全修复：原子性写入，使用唯一的临时文件名防止竞态条件
         // 使用进程 ID 确保临时文件名唯一，避免多进程同时写入时的竞态条件
-        let temp_path = path.with_extension(&format!("tmp.{}", std::process::id()));
+        let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
         fs::write(&temp_path, json_content)
             .map_err(|e| crate::dns::types::DNSError::Config(format!("无法写入文件: {}", e)))?;
         fs::rename(&temp_path, path).map_err(|e| {
