@@ -63,10 +63,7 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
         }
 
         if buf.len() >= max_bytes {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("响应过大（>{} bytes）", max_bytes),
-            ));
+            return Err(io::Error::other(format!("响应过大（>{} bytes）", max_bytes)));
         }
 
         let n = reader.read(&mut tmp)?;

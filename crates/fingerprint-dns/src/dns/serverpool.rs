@@ -372,8 +372,8 @@ impl ServerPool {
                                 servers.push(server_str.clone());
                                 let current_count = servers.len();
 
-                                // 每达到批次大小就保存一次
-                                if current_count % save_batch_size == 0 {
+                                    // 每达到批次大小就保存一次
+                                    if current_count.is_multiple_of(save_batch_size) {
                                     let pool = Self::new(servers.clone());
                                     if let Err(e) = pool.save_default() {
                                         eprintln!("Warning: 增量保存失败: {}", e);
@@ -401,8 +401,8 @@ impl ServerPool {
             let current_processed = *count;
             let current_available = available_servers_for_progress.lock().unwrap().len();
 
-            // 每处理1000个就输出一次进度
-            if current_processed % 1000 == 0 {
+                // 每处理1000个就输出一次进度
+                if current_processed.is_multiple_of(1000) {
                 eprintln!(
                     "已测试 {}/{} 个服务器，发现 {} 个可用",
                     current_processed, total_count, current_available
