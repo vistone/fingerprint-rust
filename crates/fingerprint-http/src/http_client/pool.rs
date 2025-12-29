@@ -169,9 +169,9 @@ impl ConnectionPoolManager {
                     }
                 }
 
-                Err(Box::new(last_err.unwrap_or_else(|| {
-                    std::io::Error::other("no resolved addresses")
-                }))
+                Err(Box::new(
+                    last_err.unwrap_or_else(|| std::io::Error::other("no resolved addresses")),
+                )
                     as Box<dyn std::error::Error + Send + Sync>)
             })),
             listener: None,
