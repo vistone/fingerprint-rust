@@ -32,7 +32,7 @@ pub async fn send_http3_request_with_pool(
 
     // 获取连接（用于获取目标地址信息）
     let _conn = pool
-        .GetTCP()
+        .get_tcp()
         .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
 
     // 解析目标地址 - 需要先进行 DNS 解析

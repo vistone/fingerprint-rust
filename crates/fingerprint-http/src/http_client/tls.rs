@@ -122,11 +122,12 @@ pub fn send_https_request_with_pool(
 
     let pool = pool_manager.get_pool(host, port)?;
     let conn = pool
-        .GetTCP()
+        .get_tcp()
         .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
 
+    // PooledConnection 实现了 Deref<Target = Connection>，可以直接使用 Connection 的方法
     let tcp_stream = conn
-        .GetTcpConn()
+        .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string()))?;
 
     // 保持 conn 生命周期覆盖整个请求；同时用 clone 得到可用的 std::net::TcpStream

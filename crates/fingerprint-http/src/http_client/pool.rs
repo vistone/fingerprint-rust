@@ -107,7 +107,7 @@ impl ConnectionPoolManager {
 
         // 创建新的连接池
         let pool_config = self.create_pool_config(host, port);
-        let pool = Pool::NewPool(pool_config)
+        let pool = Pool::new(pool_config)
             .map_err(|e| HttpClientError::ConnectionFailed(format!("创建连接池失败: {:?}", e)))?;
 
         let pool = Arc::new(pool);
@@ -130,20 +130,20 @@ impl ConnectionPoolManager {
         let connect_timeout = self.config.connect_timeout;
 
         PoolConfig {
-            Mode: netconnpool::PoolMode::Client,
-            MaxConnections: self.config.max_connections,
-            MinConnections: self.config.min_idle,
-            MaxIdleConnections: self.config.max_connections,
-            ConnectionTimeout: self.config.connect_timeout,
-            IdleTimeout: self.config.idle_timeout,
-            MaxLifetime: self.config.max_lifetime,
-            GetConnectionTimeout: self.config.connect_timeout,
-            HealthCheckInterval: Duration::from_secs(30),
-            HealthCheckTimeout: Duration::from_secs(3),
-            ConnectionLeakTimeout: Duration::from_secs(300),
+            mode: netconnpool::PoolMode::Client,
+            max_connections: self.config.max_connections,
+            min_connections: self.config.min_idle,
+            max_idle_connections: self.config.max_connections,
+            connection_timeout: self.config.connect_timeout,
+            idle_timeout: self.config.idle_timeout,
+            max_lifetime: self.config.max_lifetime,
+            get_connection_timeout: self.config.connect_timeout,
+            health_check_interval: Duration::from_secs(30),
+            health_check_timeout: Duration::from_secs(3),
+            connection_leak_timeout: Duration::from_secs(300),
 
             // 提供 Dialer 函数来创建 TCP 连接
-            Dialer: Some(Box::new(move || {
+            dialer: Some(Box::new(move |_protocol| {
                 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
                 let addrs: Vec<SocketAddr> = (host.as_str(), port)
@@ -174,19 +174,18 @@ impl ConnectionPoolManager {
                 }))
                     as Box<dyn std::error::Error + Send + Sync>)
             })),
-
-            Listener: None,
-            Acceptor: None,
-            HealthChecker: None,
-            CloseConn: None,
-            OnCreated: None,
-            OnBorrow: None,
-            OnReturn: None,
-            EnableStats: true,
-            EnableHealthCheck: true,
-            ClearUDPBufferOnReturn: true,
-            UDPBufferClearTimeout: Duration::from_millis(100),
-            MaxBufferClearPackets: 100,
+            listener: None,
+            acceptor: None,
+            health_checker: None,
+            close_conn: None,
+            on_created: None,
+            on_borrow: None,
+            on_return: None,
+            enable_stats: true,
+            enable_health_check: true,
+            clear_udp_buffer_on_return: false,
+            max_buffer_clear_packets: 0,
+            udp_buffer_clear_timeout: Duration::from_secs(0),
         }
     }
 
@@ -203,15 +202,15 @@ impl ConnectionPoolManager {
         pools
             .iter()
             .map(|(key, pool)| {
-                let stats = pool.Stats();
+                let stats = pool.stats();
                 PoolStats {
                     endpoint: key.clone(),
-                    total_connections: stats.TotalConnectionsCreated,
-                    active_connections: stats.CurrentActiveConnections,
-                    idle_connections: stats.CurrentIdleConnections,
-                    total_requests: stats.TotalGetRequests,
-                    successful_requests: stats.SuccessfulGets,
-                    failed_requests: stats.FailedGets,
+                    total_connections: stats.total_connections_created,
+                    active_connections: stats.current_active_connections,
+                    idle_connections: stats.current_idle_connections,
+                    total_requests: stats.total_get_requests,
+                    successful_requests: stats.successful_gets,
+                    failed_requests: stats.failed_gets,
                 }
             })
             .collect()
@@ -239,7 +238,7 @@ impl ConnectionPoolManager {
     pub fn shutdown(&self) {
         if let Ok(mut pools) = self.pools.lock() {
             for (_, pool) in pools.iter() {
-                let _ = pool.Close();
+                let _ = pool.close();
             }
             pools.clear();
             println!("所有连接池已关闭");
@@ -318,7 +317,7 @@ mod pool_tests {
         let pool = result.unwrap();
 
         // 获取一个连接
-        let conn_result = pool.GetTCP();
+        let conn_result = pool.get();
         // 可能会失败（如果无法连接），但不应该 panic
         if let Ok(_conn) = conn_result {
             println!("成功获取连接");
