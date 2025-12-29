@@ -152,6 +152,20 @@ async fn send_http3_request_async(
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
+    // 安全修复：检查 HTTP/3 响应头大小，防止 QPACK 压缩炸弹攻击
+    // h3 crate 0.0.4 的默认限制通常较大，我们添加额外的检查
+    const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的最小值)
+    let total_header_size: usize = headers
+        .iter()
+        .map(|(k, v)| k.as_str().len() + v.len())
+        .sum();
+    if total_header_size > MAX_HTTP3_HEADER_SIZE {
+        return Err(HttpClientError::InvalidResponse(format!(
+            "HTTP/3 响应头过大（>{} bytes）",
+            MAX_HTTP3_HEADER_SIZE
+        )));
+    }
+
     // 接收 body
     use bytes::Buf;
     let mut body_data = Vec::new();

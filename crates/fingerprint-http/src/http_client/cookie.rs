@@ -179,16 +179,36 @@ impl CookieStore {
     }
 
     /// 生成 Cookie 头
-    pub fn generate_cookie_header(&self, domain: &str, path: &str) -> Option<String> {
+    ///
+    /// # 参数
+    /// - `domain`: 请求的域名
+    /// - `path`: 请求的路径
+    /// - `is_secure`: 是否为 HTTPS 连接（用于 Secure Cookie 检查）
+    pub fn generate_cookie_header(
+        &self,
+        domain: &str,
+        path: &str,
+        is_secure: bool,
+    ) -> Option<String> {
         let cookies = self.get_cookies_for_domain(domain);
         if cookies.is_empty() {
             return None;
         }
 
-        // 过滤路径匹配的 Cookie
+        // 过滤路径匹配的 Cookie，并检查 Secure 属性
         let matching_cookies: Vec<String> = cookies
             .iter()
-            .filter(|c| path.starts_with(&c.path))
+            .filter(|c| {
+                // 路径匹配
+                if !path.starts_with(&c.path) {
+                    return false;
+                }
+                // 安全修复：Secure Cookie 只能在 HTTPS 连接上发送
+                if c.secure && !is_secure {
+                    return false;
+                }
+                true
+            })
             .map(Cookie::to_header_value)
             .collect();
 
@@ -302,7 +322,9 @@ mod tests {
             "example.com".to_string(),
         ));
 
-        let header = store.generate_cookie_header("example.com", "/").unwrap();
+        let header = store
+            .generate_cookie_header("example.com", "/", true)
+            .unwrap();
         assert!(header.contains("session=abc123"));
         assert!(header.contains("token=xyz789"));
     }

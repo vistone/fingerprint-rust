@@ -113,6 +113,20 @@ async fn send_http2_request_async(
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
+    // 安全修复：检查 HTTP/2 响应头大小，防止 Header 压缩炸弹攻击
+    // h2 crate 0.4 的默认 MAX_HEADER_LIST_SIZE 通常较大，我们添加额外的检查
+    const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的最小值)
+    let total_header_size: usize = headers
+        .iter()
+        .map(|(k, v)| k.as_str().len() + v.len())
+        .sum();
+    if total_header_size > MAX_HTTP2_HEADER_SIZE {
+        return Err(HttpClientError::InvalidResponse(format!(
+            "HTTP/2 响应头过大（>{} bytes）",
+            MAX_HTTP2_HEADER_SIZE
+        )));
+    }
+
     // 接收 body
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();

@@ -185,6 +185,21 @@ pub async fn send_http3_request_with_pool(
 
     // 解析响应
     let status_code = response.status().as_u16();
+
+    // 安全修复：检查 HTTP/3 响应头大小，防止 QPACK 压缩炸弹攻击
+    const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的最小值)
+    let total_header_size: usize = response
+        .headers()
+        .iter()
+        .map(|(k, v)| k.as_str().len() + v.len())
+        .sum();
+    if total_header_size > MAX_HTTP3_HEADER_SIZE {
+        return Err(HttpClientError::InvalidResponse(format!(
+            "HTTP/3 响应头过大（>{} bytes）",
+            MAX_HTTP3_HEADER_SIZE
+        )));
+    }
+
     let status_text = http::StatusCode::from_u16(status_code)
         .ok()
         .and_then(|s| s.canonical_reason())

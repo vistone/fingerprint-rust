@@ -19,5 +19,7 @@ rand = { workspace = true, optional = true }
 ring = { workspace = true, optional = true }
 
 [features]
-default = []
+# 安全修复：默认启用 crypto feature，确保在所有平台上都能正常工作
+# 如果不启用 crypto，在 Windows 等没有 /dev/urandom 的系统上会运行时失败
+default = ["crypto"]
 crypto = ["ring", "rand"]  # 真实密钥生成（用于 TLS Handshake）
