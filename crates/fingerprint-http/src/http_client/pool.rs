@@ -170,7 +170,7 @@ impl ConnectionPoolManager {
                 }
 
                 Err(Box::new(last_err.unwrap_or_else(|| {
-                    std::io::Error::new(std::io::ErrorKind::Other, "no resolved addresses")
+                    std::io::Error::other("no resolved addresses")
                 }))
                     as Box<dyn std::error::Error + Send + Sync>)
             })),
