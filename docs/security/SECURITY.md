@@ -75,11 +75,18 @@ if size > MAX_CHUNK_SIZE {
 
 **文件**: `crates/fingerprint-tls/src/tls_handshake/messages.rs`  
 **严重程度**: 🔴 高危  
-**状态**: ✅ 已修复
+**状态**: ✅ 已完全修复
 
-**问题**: 在没有 `crypto` feature 时使用弱线性同余生成器 (LCG)，安全性不足。
+**问题**: 在没有 `crypto` feature 时使用弱线性同余生成器 (LCG) 和 DefaultHasher，安全性不足。
 
-**修复方案**: 使用 `/dev/urandom` 获取系统随机数，如果不可用则使用时间戳和进程 ID 作为降级方案。
+**修复方案**: 
+- 完全移除所有 DefaultHasher 和 LCG 相关代码
+- `from_spec` 函数现在返回 `Result<ClientHelloMessage, String>`
+- 在 `#[cfg(not(feature = "crypto"))]` 分支中，如果无法从 `/dev/urandom` 获取安全随机数，直接返回错误
+- 不再允许降级到不安全的随机数生成器
+- 符合安全最佳实践：在安全敏感场景中，如果无法获取加密安全的随机数，应该明确失败而不是静默降级
+
+**修复日期**: 2025-12-29
 
 ---
 
