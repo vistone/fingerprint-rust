@@ -264,7 +264,7 @@ fingerprint = { version = "2.0", features = ["rustls-tls", "compression", "http2
 fingerprint = { version = "2.0", features = ["rustls-tls", "http2"] }
 
 # 最小依赖
-fingerprint = { version = "1.0", features = ["rustls-tls"] }
+fingerprint = { version = "2.0", features = ["rustls-tls"] }
 ```
 
 ---
