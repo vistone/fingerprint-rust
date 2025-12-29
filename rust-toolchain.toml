@@ -1,6 +1,6 @@
 [toolchain]
 # 项目使用最新稳定版 Rust
-# 说明：升级到最新稳定版以支持 cargo-deny 0.18+（需要 rustc >= 1.88）
+# 说明：使用最新稳定版，无需兼容低版本
 channel = "stable"
 components = ["rustfmt", "clippy"]
 
