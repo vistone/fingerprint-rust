@@ -31,4 +31,11 @@ jobs:
           fi
       
       - name: Run security audit
-        run: cargo-deny check
+        run: |
+          echo "🔍 运行安全审计..."
+          cargo deny check advisories bans licenses sources
+          if [ $? -ne 0 ]; then
+            echo "❌ 安全审计失败！"
+            exit 1
+          fi
+          echo "✅ 安全审计通过！"
