@@ -34,11 +34,7 @@
 
 ### 安全文档 (`security/`)
 
-- **[SECURITY_VULNERABILITY_REPORT.md](security/SECURITY_VULNERABILITY_REPORT.md)** - 安全漏洞分析报告（35个漏洞详情）
-- **[SECURITY_AUDIT_SUMMARY.md](security/SECURITY_AUDIT_SUMMARY.md)** - 安全审计执行摘要
-- **[SECURITY_AUDIT_COMPLETE.md](security/SECURITY_AUDIT_COMPLETE.md)** - 安全审计完成报告
-- **[SECURITY_PATCHES.md](security/SECURITY_PATCHES.md)** - 已应用的安全修复补丁
-- **[SECURITY_CHECKLIST.md](security/SECURITY_CHECKLIST.md)** - 安全检查清单和最佳实践
+- **[SECURITY.md](security/SECURITY.md)** - 安全审计报告（包含所有漏洞详情和修复情况）
 
 ### 模块文档 (`modules/`)
 
