@@ -41,3 +41,4 @@ vendor/rustls/
 dns_output/
 dnsservernames.json
 test_dns_data/
+*.rlib
