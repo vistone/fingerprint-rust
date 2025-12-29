@@ -5,6 +5,33 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [2.0.1] - 2025-12-29
+
+### 安全修复
+
+- ✅ **深度安全审计修复**: 修复配置隐患和防御纵深改进
+  - 修复 TLS 库默认 Feature 配置隐患（高风险）
+  - 添加 HTTP/2 和 HTTP/3 Header 压缩炸弹防护
+  - 添加 Cookie Secure 属性安全检查
+  - 确认 TLS 证书验证默认行为
+
+### 改进
+
+- ✅ **提交前全面测试**: 添加自动测试脚本和 Git pre-commit hook
+  - 自动运行代码格式化检查
+  - 自动运行编译检查
+  - 自动运行 Clippy 检查
+  - 自动运行单元测试和集成测试
+  - 自动运行安全审计
+  - 所有测试通过才能提交
+
+### 修复
+
+- ✅ 修复 Clippy `needless_borrows_for_generic_args` 警告
+- ✅ 修复代码格式化问题
+
+---
+
 ## [2.0.0] - 2025-12-29
 
 ### 重大变更
