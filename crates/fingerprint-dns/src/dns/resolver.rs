@@ -236,7 +236,7 @@ impl DNSResolver {
                         }
                         Ok(Err(_)) | Err(_) => {
                             // 记录失败（查询失败或超时），不打印日志以减少输出
-                            server_pool.record_failure(&server_str);
+                            let _ = server_pool.record_failure(&server_str);
                             // 单个服务器失败不影响整体，返回空结果
                             Ok::<Vec<String>, DNSError>(Vec::new())
                         }
