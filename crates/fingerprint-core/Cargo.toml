@@ -1,0 +1,16 @@
+[package]
+name = "fingerprint-core"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "核心类型和工具函数模块"
+
+[dependencies]
+rand.workspace = true
+once_cell.workspace = true

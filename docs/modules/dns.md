@@ -6,7 +6,9 @@
 
 ## 模块位置
 
-`src/dns/`
+**Crate**: `fingerprint-dns`  
+**代码路径**: `crates/fingerprint-dns/src/dns/`  
+**注意**: 需要启用 `dns` feature
 
 ## 核心组件
 

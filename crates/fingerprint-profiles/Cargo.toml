@@ -1,0 +1,17 @@
+[package]
+name = "fingerprint-profiles"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "浏览器指纹配置模块"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core" }
+fingerprint-tls = { path = "../fingerprint-tls" }
+fingerprint-headers = { path = "../fingerprint-headers" }

@@ -6,7 +6,8 @@
 
 ## 模块位置
 
-`src/useragent.rs`
+**Crate**: `fingerprint-headers`  
+**代码路径**: `crates/fingerprint-headers/src/useragent.rs`
 
 ## 核心类型
 

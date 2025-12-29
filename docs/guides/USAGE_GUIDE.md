@@ -11,7 +11,7 @@
 ```rust
 use fingerprint::{get_random_fingerprint, HttpClient};
 
-// 随机选择一个浏览器指纹（从所有 66+ 个指纹中）
+// 随机选择一个浏览器指纹（从所有 69 个指纹中）
 let fp_result = get_random_fingerprint()?;
 
 // 使用随机指纹创建 HTTP 客户端
@@ -119,7 +119,7 @@ if let Some(profile) = clients.get("chrome_133") {
 // - firefox_102, firefox_104, ..., firefox_135
 // - safari_15_6_1, safari_16_0, safari_ios_18_0
 // - opera_89, opera_90, opera_91
-// 等等...共 66+ 个
+// 等等...共 69 个
 ```
 
 ## 完整示例
@@ -246,7 +246,7 @@ pub struct FingerprintResult {
 
 ## 所有可用的指纹
 
-通过 `mapped_tls_clients()` 可以获取所有 66+ 个指纹的完整列表，包括：
+通过 `mapped_tls_clients()` 可以获取所有 69 个指纹的完整列表，包括：
 
 - Chrome: chrome_103, chrome_104, ..., chrome_133, chrome_133_PSK 等
 - Firefox: firefox_102, firefox_104, ..., firefox_135 等

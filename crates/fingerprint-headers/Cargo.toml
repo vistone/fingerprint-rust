@@ -1,0 +1,17 @@
+[package]
+name = "fingerprint-headers"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "HTTP Headers 和 User-Agent 生成模块"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core" }
+rand.workspace = true
+once_cell.workspace = true

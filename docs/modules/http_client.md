@@ -14,8 +14,13 @@
 
 ### 核心模块
 
+## 模块位置
+
+**Crate**: `fingerprint-http`  
+**代码路径**: `crates/fingerprint-http/src/http_client/`
+
 ```
-src/http_client/
+crates/fingerprint-http/src/http_client/
 ├── mod.rs          - HTTP 客户端主模块
 ├── request.rs      - HTTP 请求构建器
 ├── response.rs     - HTTP 响应解析器

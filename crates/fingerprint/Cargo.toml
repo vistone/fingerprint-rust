@@ -1,0 +1,40 @@
+[package]
+name = "fingerprint"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "一个独立的浏览器 TLS 指纹库，从 golang 版本迁移而来"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core" }
+fingerprint-tls = { path = "../fingerprint-tls" }
+fingerprint-profiles = { path = "../fingerprint-profiles" }
+fingerprint-headers = { path = "../fingerprint-headers" }
+fingerprint-http = { path = "../fingerprint-http", default-features = false }
+fingerprint-dns = { path = "../fingerprint-dns", optional = true }
+
+# 配置导出功能（可选）
+serde = { workspace = true, optional = true, features = ["derive"] }
+serde_json = { workspace = true, optional = true }
+hex = { workspace = true, optional = true }
+
+[features]
+default = ["rustls-tls", "compression", "http2"]
+rustls-tls = ["fingerprint-http/rustls-tls"]
+compression = ["fingerprint-http/compression"]
+http2 = ["fingerprint-http/http2"]
+http3 = ["fingerprint-http/http3"]
+async = ["fingerprint-http/async"]
+connection-pool = ["fingerprint-http/connection-pool"]
+reporter = ["fingerprint-http/reporter"]
+export = ["serde", "serde_json", "hex"]
+crypto = ["fingerprint-tls/crypto", "fingerprint-http/crypto"]
+dangerous_configuration = ["fingerprint-http/dangerous_configuration"]
+rustls-client-hello-customizer = ["fingerprint-http/rustls-client-hello-customizer"]
+dns = ["fingerprint-dns", "fingerprint-http/rustls-tls"]

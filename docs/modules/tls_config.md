@@ -4,6 +4,11 @@
 
 本库提供了真实的 TLS Client Hello 配置和 HTTP/2 Settings，对应 Go 版本的 `utls.ClientHelloID` 和 `http2.Settings`。
 
+## 模块位置
+
+**Crate**: `fingerprint-tls`  
+**代码路径**: `crates/fingerprint-tls/src/tls_config/`
+
 ## TLS Client Hello 配置
 
 ### ClientHelloSpec

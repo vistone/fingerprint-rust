@@ -28,13 +28,13 @@ cargo build --example test_google_earth --features rustls-tls,http2,http3
 ./target/release/examples/test_google_earth --help
 ```
 
-### 测试 HTTP/1.1（所有 66 个指纹）
+### 测试 HTTP/1.1（所有 69 个指纹）
 
 ```bash
 ./target/release/examples/test_google_earth http1
 ```
 
-### 测试 HTTP/2（所有 66 个指纹）
+### 测试 HTTP/2（所有 69 个指纹）
 
 ```bash
 ./target/release/examples/test_google_earth http2
@@ -42,7 +42,7 @@ cargo build --example test_google_earth --features rustls-tls,http2,http3
 
 **注意**: 需要编译时启用 `http2` feature
 
-### 测试 HTTP/3（所有 66 个指纹）
+### 测试 HTTP/3（所有 69 个指纹）
 
 ```bash
 ./target/release/examples/test_google_earth http3
@@ -56,7 +56,7 @@ cargo build --example test_google_earth --features rustls-tls,http2,http3
 ./target/release/examples/test_google_earth all
 ```
 
-这会测试所有 66 个浏览器指纹 × 3 个协议 = 198 个测试用例。
+这会测试所有 69 个浏览器指纹 × 3 个协议 = 207 个测试用例。
 
 ## 使用 cargo run（无需单独编译）
 
@@ -84,7 +84,7 @@ cargo run --example test_google_earth --features rustls-tls,http2,http3 --releas
 ║  地址: https://kh.google.com/rt/earth/PlanetoidMetadata  ║
 ╚══════════════════════════════════════════════════════════╝
 
-🔍 测试所有 66 个浏览器指纹 (HTTP/1.1)...
+🔍 测试所有 69 个浏览器指纹 (HTTP/1.1)...
 
   [ 1/66] chrome_103                          ... ✅ 200 (450ms)
   [ 2/66] chrome_133                          ... ✅ 200 (452ms)

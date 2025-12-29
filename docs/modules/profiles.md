@@ -2,11 +2,12 @@
 
 ## 概述
 
-`profiles` 模块管理所有浏览器指纹配置，提供 66+ 个真实浏览器的 TLS 和 HTTP/2 配置。
+`profiles` 模块管理所有浏览器指纹配置，提供 69 个真实浏览器的 TLS 和 HTTP/2 配置。
 
 ## 模块位置
 
-`src/profiles.rs`
+**Crate**: `fingerprint-profiles`  
+**代码路径**: `crates/fingerprint-profiles/src/profiles.rs`
 
 ## 核心类型
 

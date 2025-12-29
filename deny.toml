@@ -65,11 +65,10 @@ feature-depth = 1
 [advisories]
 # 忽略的漏洞 ID（如果需要）
 # 注意：cargo-deny 0.17.0 默认启用所有安全检查
+# 如果项目不依赖有漏洞的包，可以移除对应的 ignore 项
 ignore = [
-    # rustls-pemfile 是 reqwest 的间接依赖，已被标记为未维护
-    # 但这是来自 dev-dependencies 的依赖，不影响生产代码
-    # 且没有安全的升级路径
-    "RUSTSEC-2025-0134",
+    # 如果发现需要忽略的安全建议，在这里添加
+    # 格式: "RUSTSEC-YYYY-NNNN"
 ]
 # If this is true, then cargo deny will use the git executable to fetch advisory database.
 # If this is false, then it uses a built-in git library.
@@ -204,6 +203,19 @@ deny = [
 skip = [
     #"ansi_term@0.11.0",
     #{ crate = "ansi_term@0.11.0", reason = "you can specify a reason why it can't be updated/removed" },
+    # 允许间接依赖导致的重复版本（这些是正常的）
+    { crate = "thiserror", reason = "间接依赖导致：hickory-resolver 使用 v1.0，项目使用 v2.0" },
+    { crate = "thiserror-impl", reason = "thiserror 的依赖" },
+    { crate = "windows-sys", reason = "间接依赖导致：ring 使用 v0.52，tokio 使用 v0.60/v0.61" },
+    { crate = "windows-targets", reason = "windows-sys 的依赖" },
+    { crate = "windows_aarch64_gnullvm", reason = "windows-targets 的依赖" },
+    { crate = "windows_aarch64_msvc", reason = "windows-targets 的依赖" },
+    { crate = "windows_i686_gnu", reason = "windows-targets 的依赖" },
+    { crate = "windows_i686_gnullvm", reason = "windows-targets 的依赖" },
+    { crate = "windows_i686_msvc", reason = "windows-targets 的依赖" },
+    { crate = "windows_x86_64_gnu", reason = "windows-targets 的依赖" },
+    { crate = "windows_x86_64_gnullvm", reason = "windows-targets 的依赖" },
+    { crate = "windows_x86_64_msvc", reason = "windows-targets 的依赖" },
 ]
 # Similarly to `skip` allows you to skip certain crates during duplicate
 # detection. Unlike skip, it also includes the entire tree of transitive
@@ -225,6 +237,9 @@ unknown-git = "warn"
 # 允许的注册表
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
 # 允许的 Git 源（项目使用的 netconnpool-rust）
+# 注意：只有在启用 connection-pool feature 时才会使用此源
+# 如果出现 unmatched-source 警告，这是正常的（因为默认构建可能不包含此依赖）
+# 这个警告不影响功能，可以安全忽略
 allow-git = [
     "https://github.com/vistone/netconnpool-rust",
 ]

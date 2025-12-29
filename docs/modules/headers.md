@@ -6,7 +6,8 @@
 
 ## 模块位置
 
-`src/headers.rs`
+**Crate**: `fingerprint-headers`  
+**代码路径**: `crates/fingerprint-headers/src/headers.rs`
 
 ## 核心类型
 

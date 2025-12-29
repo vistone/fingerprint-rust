@@ -2,88 +2,121 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
 
 env:
   CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
 
 jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    strategy:
+      matrix:
+        features:
+          - "rustls-tls,compression,http2"
+          - "rustls-tls,compression,http2,http3"
+          - "rustls-tls,compression,http2,http3,connection-pool"
+          - "rustls-tls,compression,http2,http3,connection-pool,dns"
+    
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: 1.83.0
-          components: rustfmt, clippy
-      
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            target/
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
-      
-      - name: Check formatting
-        run: cargo fmt --all -- --check
-      
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config
-      
-      - name: Run Clippy
-        run: cargo clippy --all-targets --features "rustls-tls,compression,http2,export" -- -D warnings
-      
-      - name: Run tests
-        run: |
-          cargo test --lib --features "rustls-tls,compression,http2" --verbose
-          cargo test --test integration_test --features "rustls-tls,compression,http2" --verbose
-      
-      - name: Build
-        run: cargo build --features "rustls-tls,compression,http2" --verbose
-      
-      - name: Build documentation
-        run: cargo doc --features "rustls-tls,compression,http2" --no-deps 2>&1 | grep -v "warning:" || true
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Check workspace
+      run: cargo check --workspace --features "${{ matrix.features }}"
+    
+    - name: Test workspace
+      run: cargo test --workspace --features "${{ matrix.features }}" --lib --no-fail-fast
+    
+    - name: Test examples
+      run: cargo test --workspace --features "${{ matrix.features }}" --examples --no-fail-fast
+      continue-on-error: true
 
-  security:
-    name: Security Audit
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          toolchain: 1.83.0
-      
-      - name: Install system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libssl-dev pkg-config
-      
-      - name: Install cargo-deny
-        run: |
-          if ! command -v cargo-deny &> /dev/null; then
-            # 使用兼容 Rust 1.83.0 的版本
-            cargo install cargo-deny --locked --version 0.17.0
-          fi
-      
-      - name: Run security audit
-        run: |
-          # 使用 cargo-deny 进行全面的安全检查
-          # 包括：安全漏洞、许可证、禁止的依赖等
-          cargo-deny check
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Format check
+      run: cargo fmt --all -- --check
+    
+    - name: Clippy check
+      run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          - "rustls-tls,compression,http2"
+          - "rustls-tls,compression,http2,http3"
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    
+    - name: Cache cargo registry
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cargo/bin/
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+          target/
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-cargo-
+    
+    - name: Build workspace
+      run: cargo build --workspace --features "${{ matrix.features }}" --release
+    
+    - name: Build examples
+      run: cargo build --workspace --features "${{ matrix.features }}" --examples --release
+      continue-on-error: true

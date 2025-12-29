@@ -1,0 +1,61 @@
+[package]
+name = "fingerprint-http"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "HTTP 客户端实现模块（HTTP/1.1、HTTP/2、HTTP/3）"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core" }
+fingerprint-tls = { path = "../fingerprint-tls" }
+fingerprint-profiles = { path = "../fingerprint-profiles" }
+fingerprint-headers = { path = "../fingerprint-headers" }
+
+# HTTP 客户端依赖 (可选)
+rustls = { workspace = true, optional = true }
+webpki-roots = { workspace = true, optional = true }
+flate2 = { workspace = true, optional = true }
+brotli-decompressor = { workspace = true, optional = true }
+
+# HTTP/2 支持
+h2 = { workspace = true, optional = true }
+http = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+tokio-rustls = { workspace = true, optional = true }
+
+# HTTP/3 支持
+quinn = { workspace = true, optional = true }
+h3 = { workspace = true, optional = true }
+h3-quinn = { workspace = true, optional = true }
+bytes = { workspace = true, optional = true }
+
+# 网络连接池
+netconnpool = { workspace = true, optional = true }
+
+# 时间处理
+chrono = { workspace = true, optional = true }
+
+# HTTP 解析
+httparse = { workspace = true, optional = true }
+
+# 密码学库
+ring = { workspace = true, optional = true }
+
+[features]
+default = ["rustls-tls", "compression", "http2"]
+rustls-tls = ["rustls", "webpki-roots"]
+compression = ["flate2", "brotli-decompressor"]
+http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots"]
+http3 = ["quinn", "h3", "h3-quinn", "tokio", "rustls", "webpki-roots", "bytes"]
+async = ["tokio"]
+connection-pool = ["netconnpool", "httparse"]
+reporter = ["chrono"]
+crypto = ["ring"]
+dangerous_configuration = []
+rustls-client-hello-customizer = []

@@ -65,7 +65,7 @@ let response = client.get("https://example.com")?;
 
 ### 支持的浏览器指纹
 
-项目支持 66+ 个真实浏览器指纹：
+项目支持 69 个真实浏览器指纹：
 
 - **Chrome 系列**: chrome_103, chrome_133, chrome_120 等
 - **Firefox 系列**: firefox_102, firefox_133, firefox_135 等

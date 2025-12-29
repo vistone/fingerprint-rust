@@ -1,9 +1,19 @@
-[package]
-name = "fingerprint"
-version = "1.0.0"
+[workspace]
+members = [
+    "crates/fingerprint-core",
+    "crates/fingerprint-tls",
+    "crates/fingerprint-profiles",
+    "crates/fingerprint-headers",
+    "crates/fingerprint-http",
+    "crates/fingerprint-dns",
+    "crates/fingerprint",
+]
+resolver = "2"
+
+[workspace.package]
+version = "2.0.0"
 edition = "2021"
 authors = ["fingerprint-rust"]
-description = "一个独立的浏览器 TLS 指纹库，从 golang 版本迁移而来"
 license = "BSD-3-Clause"
 repository = "https://github.com/vistone/fingerprint-rust"
 documentation = "https://docs.rs/fingerprint-rust"
@@ -11,77 +21,58 @@ homepage = "https://github.com/vistone/fingerprint-rust"
 keywords = ["tls", "fingerprint", "browser", "http2", "ja4", "grease"]
 categories = ["network-programming", "web-programming"]
 
-[dependencies]
+[workspace.dependencies]
+# 核心依赖
 rand = "0.8"
 once_cell = "1.19"
 sha2 = "0.10"
 thiserror = "2.0"
 
 # HTTP 客户端依赖 (可选)
-rustls = { version = "0.21", optional = true, features = ["dangerous_configuration"] }
-webpki-roots = { version = "0.25", optional = true }
-flate2 = { version = "1.0", optional = true }  # gzip/deflate 解压
-brotli-decompressor = { version = "4.0", optional = true }  # brotli 解压
+rustls = { version = "0.21", features = ["dangerous_configuration"] }
+webpki-roots = "0.25"
+flate2 = "1.0"
+brotli-decompressor = "4.0"
 
 # HTTP/2 支持
-h2 = { version = "0.4", optional = true }
-http = { version = "1.1", optional = true }
-tokio = { version = "1.40", features = ["full"], optional = true }
-tokio-rustls = { version = "0.24", optional = true }
+h2 = "0.4"
+http = "1.1"
+tokio = { version = "1.40", features = ["full"] }
+tokio-rustls = "0.24"
 
-# HTTP/3 支持 (使用兼容的版本组合)
-quinn = { version = "0.10", optional = true }
-h3 = { version = "0.0.4", optional = true }
-h3-quinn = { version = "0.0.5", optional = true }
-bytes = { version = "1.10", optional = true }
+# HTTP/3 支持
+quinn = "0.10"
+h3 = "0.0.4"
+h3-quinn = "0.0.5"
+bytes = "1.10"
 
 # 网络连接池
-netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.0", optional = true }
+netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.1" }
 
 # 时间处理
-chrono = { version = "0.4", optional = true }
+chrono = "0.4"
 
-# 配置导出功能（可选）
-serde = { version = "1.0", features = ["derive"], optional = true }
-serde_json = { version = "1.0", optional = true }
-hex = { version = "0.4.3", optional = true }
-
-# HTTP 解析（用于连接池）
-httparse = { version = "1.10.1", optional = true }
-
-# 密码学库（用于真实密钥生成）
-ring = { version = "0.17.14", optional = true }
-
-# DNS 解析功能（可选）
-# 使用 hickory-resolver 实现真正的 DNS 查询，支持自定义 nameservers
-hickory-resolver = { version = "0.24", optional = true, default-features = false, features = ["tokio-runtime"] }
-
-# 配置文件解析（DNS 模块需要）
-toml = { version = "0.8", optional = true }
-serde_yaml = { version = "0.9", optional = true }
-
-# Stream 处理（DNS 模块需要）
-futures = { version = "0.3", optional = true }
-
-[dev-dependencies]
-criterion = { version = "0.5", features = ["html_reports"] }
-reqwest = { version = "0.11", features = ["blocking", "json", "rustls-tls"], default-features = false }
+# 配置导出功能
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-chrono = "0.4"  # 用于生成时间戳报告
-netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.0" }
+hex = "0.4.3"
 
-[features]
-default = ["rustls-tls", "compression", "http2"]
-rustls-tls = ["rustls", "webpki-roots"]
-compression = ["flate2", "brotli-decompressor"]  # 启用压缩支持（gzip/deflate/brotli）
-http2 = ["h2", "http", "tokio", "tokio-rustls", "rustls", "webpki-roots"]  # HTTP/2 支持
-http3 = ["quinn", "h3", "h3-quinn", "tokio", "rustls", "webpki-roots", "bytes"]  # HTTP/3 支持
-async = ["tokio"]  # 异步运行时
-connection-pool = ["netconnpool", "httparse"]  # 连接池支持（需要 httparse）
-reporter = ["chrono"]  # 报告生成器
-export = ["serde", "serde_json", "hex"]  # 配置导出功能
-crypto = ["ring"]  # 真实密钥生成（用于 TLS Handshake）
-dangerous_configuration = []  # 启用危险的 TLS 配置（禁用证书验证，仅用于调试）
-rustls-client-hello-customizer = []  # 启用 rustls ClientHello 自定义器（需要配套的 rustls fork）
-dns = ["serde", "serde_json", "toml", "serde_yaml", "tokio", "futures", "rustls-tls", "hickory-resolver"]  # DNS 预解析功能（使用内部 HttpClient 和 hickory-resolver）
+# HTTP 解析
+httparse = "1.10.1"
+
+# 密码学库
+ring = "0.17.14"
+
+# DNS 解析功能
+hickory-resolver = { version = "0.24", default-features = false, features = ["tokio-runtime"] }
+
+# 配置文件解析
+toml = "0.8"
+serde_yaml = "0.9"
+
+# Stream 处理
+futures = "0.3"
+
+# [workspace.dev-dependencies]
+# 注意：Workspace 级别的 dev-dependencies 在 Cargo 中不支持
+# 每个 crate 需要在自己的 Cargo.toml 中定义 dev-dependencies

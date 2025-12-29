@@ -1,18 +1,20 @@
 # 🦀 fingerprint-rust
 
-[![Rust](https://img.shields.io/badge/rust-1.83.0%2B-orange.svg)](https://www.rust-lang.org/)
+[![Rust](https://img.shields.io/badge/rust-1.92.0%2B-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-100%25_passing-brightgreen.svg)](#测试结果)
 [![HTTP/3](https://img.shields.io/badge/HTTP%2F3-✅_QUIC-success.svg)](#http3-支持)
 
 一个**生产级** Rust 浏览器指纹库，支持 **6 个核心浏览器**（69+ 版本）的完整 TLS 和 HTTP 指纹，并提供高性能 HTTP 客户端实现（HTTP/1.1、HTTP/2、HTTP/3）。
 
+> **📦 Workspace 架构**: 项目采用 Cargo Workspace 架构，模块化设计，职责清晰。详见 [架构文档](docs/ARCHITECTURE.md)
+
 ## 🎯 核心特性
 
 ### ✅ 完整的浏览器指纹
 
 - **6 个核心浏览器**: Chrome 103/133, Firefox 133, Safari 16.0, Opera 91, Edge 120/133
-- **69+ 浏览器版本**: 包括移动端和应用特定指纹（Chrome 19个、Firefox 13个、Safari 9个、Opera 3个、Edge 3个、移动客户端 17+个）
+- **69 浏览器版本**: 包括移动端和应用特定指纹（Chrome 20个、Firefox 12个、Safari 9个、Opera 3个、Edge 3个、移动客户端 22个）
 - **TLS 1.3 兼容**: ChangeCipherSpec, Session ID, 真实密钥生成
 - **真实 KeyShare**: 使用 `ring` 生成 X25519, P-256, P-384 密钥对
 - **BoringSSL Padding**: 兼容 Chrome/Chromium 的 padding 策略
@@ -41,16 +43,16 @@
 
 ```toml
 [dependencies]
-fingerprint = { version = "1.0", features = ["rustls-tls", "http2", "http3"] }
+fingerprint = { version = "2.0", features = ["rustls-tls", "http2", "http3"] }
 ```
 
 **推荐特性组合**:
 ```toml
 # 完整功能（推荐）
-fingerprint = { version = "1.0", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
+fingerprint = { version = "2.0", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
 
 # 最小配置
-fingerprint = { version = "1.0", features = ["rustls-tls"] }
+fingerprint = { version = "2.0", features = ["rustls-tls"] }
 ```
 
 ### 基础使用
@@ -611,7 +613,8 @@ cargo run --example resolve_domains --features dns,rustls-tls
 
 - **[INDEX.md](docs/INDEX.md)** - 文档索引（推荐从这里开始）
 - **[API.md](docs/API.md)** - 完整 API 参考
-- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - 系统架构设计
+- **[ARCHITECTURE.md](docs/ARCHITECTURE.md)** - 系统架构设计（包含 Workspace 架构）
+- **[CHANGELOG.md](docs/CHANGELOG.md)** - 更新日志
 
 ### 使用指南
 
@@ -626,8 +629,8 @@ cargo run --example resolve_domains --features dns,rustls-tls
 - **[dns.md](docs/modules/dns.md)** - DNS 预解析模块
 - **[tls_config.md](docs/modules/tls_config.md)** - TLS 配置模块
 - **[tls_handshake.md](docs/modules/tls_handshake.md)** - TLS 握手模块
-- **[dicttls.md](docs/modules/dicttls.md)** - TLS 字典实现
-- **[utls.md](docs/modules/utls.md)** - uTLS 兼容性说明
+- **[headers.md](docs/modules/headers.md)** - HTTP Headers 生成模块
+- **[useragent.md](docs/modules/useragent.md)** - User-Agent 生成模块
 
 ### 技术文档
 
@@ -638,14 +641,7 @@ cargo run --example resolve_domains --features dns,rustls-tls
 
 ### 测试报告
 
-- **[ALL_PROFILES_TEST_REPORT.md](docs/reports/ALL_PROFILES_TEST_REPORT.md)** - 所有浏览器指纹测试报告
-- **[TEST_RESULTS.md](docs/reports/TEST_RESULTS.md)** - 测试结果总结
-- **[CURRENT_IMPLEMENTATION_STATUS.md](docs/reports/CURRENT_IMPLEMENTATION_STATUS.md)** - 当前实现状态
-- **[IMPLEMENTATION_SUMMARY.md](docs/reports/IMPLEMENTATION_SUMMARY.md)** - 实现总结
-
-### 历史文档
-
-历史文档和归档文件请查看 [docs/archive/](docs/archive/) 目录。
+- **[TEST_REPORT.md](docs/TEST_REPORT.md)** - 完整测试报告（包含所有测试结果）
 
 ---
 
@@ -688,7 +684,7 @@ h3-quinn = "0.0.5"
 ### 连接池
 
 ```toml
-netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.0" }
+netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.1" }
 ```
 
 ---
@@ -820,18 +816,40 @@ HTTP 客户端已完全集成自定义 TLS ClientHello：
 git clone https://github.com/vistone/fingerprint-rust.git
 cd fingerprint-rust
 
-# 安装依赖
-cargo build --features "rustls-tls,http2,http3"
+# 安装依赖（Workspace 架构，自动构建所有 crate）
+cargo build --workspace --features "rustls-tls,http2,http3"
 
-# 运行测试
-cargo test --features "rustls-tls,http2,http3"
+# 运行测试（测试整个 workspace）
+cargo test --workspace --features "rustls-tls,http2,http3"
 
-# 代码检查
-cargo clippy --all-targets --all-features -- -D warnings
+# 代码检查（检查整个 workspace）
+cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-# 代码格式化
+# 代码格式化（格式化整个 workspace）
 cargo fmt --all
+
+# 构建特定 crate
+cargo build -p fingerprint-core
+cargo build -p fingerprint-http --features "rustls-tls,http2"
+
+# 测试特定 crate
+cargo test -p fingerprint-core
+cargo test -p fingerprint-http --features "rustls-tls,http2"
 ```
+
+### Workspace 架构
+
+项目采用 **Cargo Workspace** 架构，包含 7 个独立 crate：
+
+- **fingerprint-core**: 核心类型和工具函数
+- **fingerprint-tls**: TLS 配置、扩展和握手
+- **fingerprint-profiles**: 浏览器指纹配置
+- **fingerprint-headers**: HTTP Headers 和 User-Agent 生成
+- **fingerprint-http**: HTTP 客户端实现（HTTP/1.1、HTTP/2、HTTP/3）
+- **fingerprint-dns**: DNS 预解析服务（可选）
+- **fingerprint**: 主库，重新导出所有功能（保持向后兼容）
+
+详细架构说明请查看 [架构文档](docs/ARCHITECTURE.md)
 
 ---
 
@@ -858,20 +876,20 @@ cargo fmt --all
 
 ## 📊 项目状态
 
-**版本**: v1.0.0  
+**版本**: v2.0.0 (Workspace)  
 **状态**: ✅ **生产就绪**  
 **最后更新**: 2025-12-14
 
 ### ✅ 完成情况
 
-- [x] **66 个浏览器指纹** - 5 个核心浏览器 100% 测试通过
+- [x] **69+ 个浏览器指纹** - 6 个核心浏览器 100% 测试通过
 - [x] **HTTP/1.1 客户端** - Chunked, Gzip, Keep-Alive
 - [x] **HTTP/2 客户端** - 多路复用, HPACK, Server Push
 - [x] **HTTP/3 客户端** - QUIC, 0-RTT, 40.3ms 平均响应
 - [x] **TLS 1.3 兼容** - ChangeCipherSpec, Session ID, 真实密钥
 - [x] **连接池集成** - netconnpool 深度集成
 - [x] **100% 测试通过** - Google Earth API 真实环境验证
-- [x] **完整文档** - 15+ 文档文件
+- [x] **完整文档** - 21 个文档文件，与代码完全对齐
 - [x] **配置导出** - JSON 格式配置导出
 
 ### 🎯 性能指标

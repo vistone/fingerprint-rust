@@ -8,7 +8,7 @@
 
 ## 测试内容
 
-测试所有 **66 个浏览器指纹**，每个指纹分别使用：
+测试所有 **69 个浏览器指纹**，每个指纹分别使用：
 - HTTP/1.1
 - HTTP/2
 - HTTP/3
@@ -25,7 +25,7 @@ bash scripts/test_google_earth_all_fingerprints.sh
 
 ### 方法 2: 使用 Cargo 命令
 
-#### 测试 HTTP/1.1（所有 66 个指纹）
+#### 测试 HTTP/1.1（所有 69 个指纹）
 
 ```bash
 cargo test --test comprehensive_google_earth_test test_all_fingerprints_http1 \
@@ -33,7 +33,7 @@ cargo test --test comprehensive_google_earth_test test_all_fingerprints_http1 \
     -- --ignored --nocapture
 ```
 
-#### 测试 HTTP/2（所有 66 个指纹）
+#### 测试 HTTP/2（所有 69 个指纹）
 
 ```bash
 cargo test --test comprehensive_google_earth_test test_all_fingerprints_http2 \
@@ -41,7 +41,7 @@ cargo test --test comprehensive_google_earth_test test_all_fingerprints_http2 \
     -- --ignored --nocapture
 ```
 
-#### 测试 HTTP/3（所有 66 个指纹）
+#### 测试 HTTP/3（所有 69 个指纹）
 
 ```bash
 cargo test --test comprehensive_google_earth_test test_all_fingerprints_http3 \
@@ -75,7 +75,7 @@ cargo test --test comprehensive_google_earth_test test_all_fingerprints_all_prot
 ║  地址: https://kh.google.com/rt/earth/PlanetoidMetadata  ║
 ╚══════════════════════════════════════════════════════════╝
 
-🔍 测试所有 66 个浏览器指纹 (HTTP/1.1)...
+🔍 测试所有 69 个浏览器指纹 (HTTP/1.1)...
 
   [ 1/66] chrome_103                          ... ✅ 200 (450ms)
   [ 2/66] chrome_133                          ... ✅ 200 (452ms)
