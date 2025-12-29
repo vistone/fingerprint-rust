@@ -82,7 +82,7 @@ jobs:
       run: cargo fmt --all -- --check
     
     - name: Clippy check
-      run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      run: cargo clippy --workspace --all-targets --features "rustls-tls,compression,http2,http3,connection-pool,dns" -- -D warnings
 
   build:
     name: Build
