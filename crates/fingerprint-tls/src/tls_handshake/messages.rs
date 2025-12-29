@@ -36,7 +36,12 @@ pub struct ClientHelloMessage {
 
 impl ClientHelloMessage {
     /// 从 ClientHelloSpec 创建 ClientHello 消息
-    pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Self {
+    ///
+    /// # 错误
+    ///
+    /// 如果无法获取加密安全的随机数（在没有 `crypto` feature 时），将返回错误。
+    /// 建议在生产环境中启用 `crypto` feature 以确保安全性。
+    pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
         // 使用 TLS 1.2 作为客户端版本（为了兼容性）
         let client_version = spec.tls_vers_max.max(0x0303);
 
@@ -63,43 +68,25 @@ impl ClientHelloMessage {
         }
         #[cfg(not(feature = "crypto"))]
         {
-            // 如果没有 crypto feature，使用 getrandom 获取加密安全的随机数
-            // getrandom 是标准库推荐的方式，在大多数平台上使用系统提供的安全随机数源
+            // 如果没有 crypto feature，尝试从系统随机数源获取加密安全的随机数
+            // 如果无法获取，直接返回错误，不允许使用不安全的降级方案
             use std::io::Read;
             let mut random_bytes = [0u8; 28];
-            // 尝试从 /dev/urandom (Unix) 或系统 CSPRNG 获取随机数
-            if let Ok(mut rng) = std::fs::File::open("/dev/urandom") {
-                if rng.read_exact(&mut random_bytes).is_ok() {
-                    random.extend_from_slice(&random_bytes);
-                } else {
-                    // 如果无法读取，使用时间戳和进程 ID 作为种子，但这不是加密安全的
-                    // 这是一个降级方案，建议启用 crypto feature
-                    eprintln!("Warning: 无法从 /dev/urandom 读取随机数，使用降级方案。建议启用 crypto feature。");
-                    use std::collections::hash_map::DefaultHasher;
-                    use std::hash::{Hash, Hasher};
-                    let mut hasher = DefaultHasher::new();
-                    timestamp.hash(&mut hasher);
-                    std::process::id().hash(&mut hasher);
-                    let mut hash = hasher.finish();
-                    for _ in 0..28 {
-                        random.push((hash & 0xFF) as u8);
-                        hash = hash.wrapping_mul(1103515245).wrapping_add(12345);
-                    }
-                }
-            } else {
-                // Windows 或其他平台，使用降级方案
-                eprintln!("Warning: 无法访问系统随机数源，使用降级方案。建议启用 crypto feature。");
-                use std::collections::hash_map::DefaultHasher;
-                use std::hash::{Hash, Hasher};
-                let mut hasher = DefaultHasher::new();
-                timestamp.hash(&mut hasher);
-                std::process::id().hash(&mut hasher);
-                let mut hash = hasher.finish();
-                for _ in 0..28 {
-                    random.push((hash & 0xFF) as u8);
-                    hash = hash.wrapping_mul(1103515245).wrapping_add(12345);
-                }
-            }
+            
+            // 尝试从 /dev/urandom (Unix) 获取随机数
+            let mut rng = std::fs::File::open("/dev/urandom")
+                .map_err(|e| format!(
+                    "无法访问系统随机数源 /dev/urandom: {}. 建议启用 'crypto' feature 以使用加密安全的随机数生成器",
+                    e
+                ))?;
+            
+            rng.read_exact(&mut random_bytes)
+                .map_err(|e| format!(
+                    "无法从 /dev/urandom 读取随机数: {}. 建议启用 'crypto' feature 以使用加密安全的随机数生成器",
+                    e
+                ))?;
+            
+            random.extend_from_slice(&random_bytes);
         }
 
         // 空的会话 ID（新会话）
@@ -118,14 +105,14 @@ impl ClientHelloMessage {
         // 序列化扩展
         let extensions = Self::serialize_extensions(&spec.extensions, server_name);
 
-        Self {
+        Ok(Self {
             client_version,
             random,
             session_id,
             cipher_suites,
             compression_methods,
             extensions,
-        }
+        })
     }
 
     /// 序列化扩展
@@ -269,7 +256,7 @@ mod tests {
             metadata: None,
         };
 
-        let msg = ClientHelloMessage::from_spec(&spec, "example.com");
+        let msg = ClientHelloMessage::from_spec(&spec, "example.com").unwrap();
 
         // 验证基本字段
         assert_eq!(msg.client_version, 0x0303);

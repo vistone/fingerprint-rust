@@ -17,7 +17,7 @@ impl TLSHandshakeBuilder {
         server_name: &str,
     ) -> Result<Vec<u8>, String> {
         // 1. 创建 ClientHello 消息
-        let client_hello = ClientHelloMessage::from_spec(spec, server_name);
+        let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
 
         // 2. 序列化 ClientHello 消息体
         let body = client_hello.to_bytes();
@@ -38,6 +38,8 @@ impl TLSHandshakeBuilder {
 
     /// 构建并打印调试信息
     pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
+        // 1. 创建 ClientHello 消息
+        let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
         println!("\n╔══════════════════════════════════════════════════════════╗");
         println!("║          构建 TLS ClientHello（使用自己的指纹）          ║");
         println!("╚══════════════════════════════════════════════════════════╝\n");
@@ -51,8 +53,7 @@ impl TLSHandshakeBuilder {
         );
         println!("  - 压缩方法: {:?}", spec.compression_methods);
 
-        // 构建 ClientHello
-        let client_hello = ClientHelloMessage::from_spec(spec, server_name);
+        // 打印 ClientHello 调试信息
         println!("\n{}", client_hello.debug_info());
 
         let body = client_hello.to_bytes();
