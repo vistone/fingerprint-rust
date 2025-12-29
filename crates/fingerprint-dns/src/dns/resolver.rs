@@ -222,11 +222,15 @@ impl DNSResolver {
                                 if ips.len() > 1 {
                                     eprintln!("  [DNS Query] 返回的 IP 列表: {}", ips.join(", "));
                                 }
-                                server_pool.record_success(&server_str, response_time);
+                                if let Err(e) = server_pool.record_success(&server_str, response_time) {
+                                    eprintln!("Warning: 记录服务器成功统计失败: {}", e);
+                                }
                             } else {
                                 eprintln!("[DNS Query] ⚠️  服务器 {} 查询成功但未返回 IP（共 {} 条记录，但类型不匹配），耗时: {:?}",
                                          server_str, record_count, response_time);
-                                server_pool.record_failure(&server_str);
+                                if let Err(e) = server_pool.record_failure(&server_str) {
+                                    eprintln!("Warning: 记录服务器失败统计失败: {}", e);
+                                }
                             }
                             Ok(ips)
                         }

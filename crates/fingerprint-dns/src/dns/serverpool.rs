@@ -103,21 +103,25 @@ impl ServerPool {
     }
 
     /// 记录服务器响应时间（成功）
-    pub fn record_success(&self, _server: &str, response_time: Duration) {
-        let mut stats = self.stats.write().unwrap();
+    pub fn record_success(&self, _server: &str, response_time: Duration) -> Result<(), crate::dns::types::DNSError> {
+        let mut stats = self.stats.write()
+            .map_err(|e| crate::dns::types::DNSError::Internal(format!("Lock poisoned: {}", e)))?;
         let server_stats = stats
             .entry(_server.to_string())
             .or_insert_with(ServerStats::new);
         server_stats.record_success(response_time);
+        Ok(())
     }
 
     /// 记录服务器失败
-    pub fn record_failure(&self, _server: &str) {
-        let mut stats = self.stats.write().unwrap();
+    pub fn record_failure(&self, _server: &str) -> Result<(), crate::dns::types::DNSError> {
+        let mut stats = self.stats.write()
+            .map_err(|e| crate::dns::types::DNSError::Internal(format!("Lock poisoned: {}", e)))?;
         let server_stats = stats
             .entry(_server.to_string())
             .or_insert_with(ServerStats::new);
         server_stats.record_failure();
+        Ok(())
     }
 
     /// 淘汰慢的服务器（平均响应时间超过阈值或失败率过高）
@@ -127,12 +131,20 @@ impl ServerPool {
         max_avg_response_time_ms: f64,
         max_failure_rate: f64,
     ) -> Self {
-        let stats = self.stats.read().unwrap();
+        // 安全修复：处理锁中毒情况
+        let stats_guard = match self.stats.read() {
+            Ok(guard) => guard,
+            Err(e) => {
+                eprintln!("Warning: Lock poisoned in remove_slow_servers: {}", e);
+                // 如果锁中毒，返回所有服务器（不淘汰任何服务器）
+                return Self::new(self.servers.iter().cloned().collect());
+            }
+        };
         let servers: Vec<String> = self
             .servers
             .iter()
             .filter(|server| {
-                if let Some(server_stat) = stats.get(*server) {
+                if let Some(server_stat) = stats_guard.get(*server) {
                     let avg_time = server_stat.avg_response_time_ms();
                     let failure_rate = server_stat.failure_rate();
                     // 保留响应时间快且失败率低的服务器
@@ -207,12 +219,17 @@ impl ServerPool {
         let json_content =
             serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
-        // 原子性写入
-        let temp_path = path.with_extension("tmp");
+        // 安全修复：原子性写入，使用唯一的临时文件名防止竞态条件
+        // 使用进程 ID 确保临时文件名唯一，避免多进程同时写入时的竞态条件
+        let temp_path = path.with_extension(&format!("tmp.{}", std::process::id()));
         fs::write(&temp_path, json_content)
             .map_err(|e| crate::dns::types::DNSError::Config(format!("无法写入文件: {}", e)))?;
         fs::rename(&temp_path, path)
-            .map_err(|e| crate::dns::types::DNSError::Config(format!("无法重命名文件: {}", e)))?;
+            .map_err(|e| {
+                // 如果重命名失败，清理临时文件
+                let _ = std::fs::remove_file(&temp_path);
+                crate::dns::types::DNSError::Config(format!("无法重命名文件: {}", e))
+            })?;
 
         Ok(())
     }
@@ -368,7 +385,14 @@ impl ServerPool {
                             let ip_count = lookup_result.iter().count();
                             if ip_count > 0 {
                                 // 查询成功且返回了IP地址，服务器可用，立即添加到列表
-                                let mut servers = available_servers.lock().unwrap();
+                                let mut servers = match available_servers.lock() {
+                                    Ok(guard) => guard,
+                                    Err(e) => {
+                                        eprintln!("Warning: Lock poisoned in health check: {}", e);
+                                        // 如果锁中毒，跳过这个服务器
+                                        return None;
+                                    }
+                                };
                                 servers.push(server_str.clone());
                                 let current_count = servers.len();
 
@@ -396,10 +420,22 @@ impl ServerPool {
 
         // 流式处理所有测试任务
         while let Some(_result) = test_tasks.next().await {
-            let mut count = processed_count_for_progress.lock().unwrap();
+            let mut count = match processed_count_for_progress.lock() {
+                Ok(guard) => guard,
+                Err(e) => {
+                    eprintln!("Warning: Lock poisoned in progress tracking: {}", e);
+                    continue; // 跳过这次更新
+                }
+            };
             *count += 1;
             let current_processed = *count;
-            let current_available = available_servers_for_progress.lock().unwrap().len();
+            let current_available = match available_servers_for_progress.lock() {
+                Ok(guard) => guard.len(),
+                Err(e) => {
+                    eprintln!("Warning: Lock poisoned in progress tracking: {}", e);
+                    0 // 如果锁中毒，使用 0 作为默认值
+                }
+            };
 
             // 每处理1000个就输出一次进度
             if current_processed.is_multiple_of(1000) {
@@ -411,7 +447,13 @@ impl ServerPool {
         }
 
         // 最终保存所有可用服务器
-        let final_servers = available_servers_for_progress.lock().unwrap().clone();
+        let final_servers = match available_servers_for_progress.lock() {
+            Ok(guard) => guard.clone(),
+            Err(e) => {
+                eprintln!("Warning: Lock poisoned in final save: {}", e);
+                Vec::new() // 如果锁中毒，返回空列表
+            }
+        };
         if !final_servers.is_empty() {
             let pool = Self::new(final_servers.clone());
             if let Err(e) = pool.save_default() {

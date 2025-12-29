@@ -210,6 +210,16 @@ impl HttpClient {
         request: &HttpRequest,
         redirect_count: usize,
     ) -> Result<HttpResponse> {
+        self.send_request_with_redirects_internal(request, redirect_count, &mut std::collections::HashSet::new())
+    }
+
+    /// 内部重定向处理（带循环检测）
+    fn send_request_with_redirects_internal(
+        &self,
+        request: &HttpRequest,
+        redirect_count: usize,
+        visited_urls: &mut std::collections::HashSet<String>,
+    ) -> Result<HttpResponse> {
         // 检查重定向次数
         if redirect_count >= self.config.max_redirects {
             return Err(HttpClientError::InvalidResponse(format!(
@@ -217,6 +227,15 @@ impl HttpClient {
                 self.config.max_redirects
             )));
         }
+
+        // 检查重定向循环
+        if visited_urls.contains(&request.url) {
+            return Err(HttpClientError::InvalidResponse(format!(
+                "检测到重定向循环: {}",
+                request.url
+            )));
+        }
+        visited_urls.insert(request.url.clone());
 
         // 解析 URL
         let (scheme, host, port, path) = self.parse_url(&request.url)?;
@@ -258,8 +277,8 @@ impl HttpClient {
                 let mut redirect_request = request.clone();
                 redirect_request.url = redirect_url;
 
-                // 递归处理重定向
-                return self.send_request_with_redirects(&redirect_request, redirect_count + 1);
+                // 递归处理重定向（传递 visited_urls 以检测循环）
+                return self.send_request_with_redirects_internal(&redirect_request, redirect_count + 1, visited_urls);
             }
         }
 

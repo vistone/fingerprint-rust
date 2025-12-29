@@ -13,6 +13,9 @@ use std::io;
 use std::io::Read;
 
 pub const DEFAULT_MAX_RESPONSE_BYTES: usize = 16 * 1024 * 1024; // 16MiB
+/// 最大允许的 Content-Length 值（100MB）
+/// 防止恶意服务器发送超大 Content-Length 导致内存耗尽
+pub const MAX_CONTENT_LENGTH: usize = 100 * 1024 * 1024; // 100MB
 
 fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
     if needle.is_empty() {
@@ -84,6 +87,13 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
                 let (cl, chunked) = parse_headers_for_length_and_chunked(&buf[..end]);
                 is_chunked = chunked;
                 if let Some(cl) = cl {
+                    // 安全检查：防止恶意服务器发送超大 Content-Length
+                    if cl > MAX_CONTENT_LENGTH {
+                        return Err(io::Error::other(format!(
+                            "Content-Length 过大: {} bytes (最大: {} bytes)",
+                            cl, MAX_CONTENT_LENGTH
+                        )));
+                    }
                     target_len = Some(end.saturating_add(cl));
                 }
             }

@@ -131,6 +131,8 @@ pub enum DNSError {
     Http(String),
     #[error("TOML 序列化错误: {0}")]
     TomlSerialize(String),
+    #[error("内部错误: {0}")]
+    Internal(String),
 }
 
 /// DNS 配置结构（对应 Go 版本的 Config 结构）

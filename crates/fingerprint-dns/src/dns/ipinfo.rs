@@ -20,7 +20,9 @@ impl IPInfoClient {
 
     /// 获取 IP 地址的详细信息
     pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
-        let url = format!("https://ipinfo.io/{}?token={}", ip, self.token);
+        // 安全修复：使用 HTTP Header 传递 token，而不是 URL 参数
+        // 这样可以避免 token 泄露到日志、错误消息、代理服务器等
+        let url = format!("https://ipinfo.io/{}", ip);
 
         // 使用项目内部的 HttpClient
         let config = HttpClientConfig {
@@ -31,8 +33,16 @@ impl IPInfoClient {
         };
         let client = HttpClient::new(config);
 
+        // 创建带有 Authorization header 的请求
+        use fingerprint_http::http_client::{HttpMethod, HttpRequest};
+        let request = HttpRequest::new(HttpMethod::Get, &url)
+            .with_header("Authorization", &format!("Bearer {}", self.token));
+
         // 在异步上下文中执行同步的 HTTP 请求
-        let response = tokio::task::spawn_blocking(move || client.get(&url))
+        let response = tokio::task::spawn_blocking({
+            let request = request.clone();
+            move || client.send_request(&request)
+        })
             .await
             .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
             .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;

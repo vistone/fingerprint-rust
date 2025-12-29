@@ -144,6 +144,10 @@ impl HttpResponse {
 
     /// 解析 chunked encoding
     fn parse_chunked(data: &[u8]) -> Result<Vec<u8>, String> {
+        /// 最大允许的单个 chunk 大小（10MB）
+        /// 防止恶意服务器发送超大 chunk 导致内存耗尽
+        const MAX_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB
+
         let mut result = Vec::new();
         let mut pos = 0;
 
@@ -163,6 +167,14 @@ impl HttpResponse {
 
             let size = usize::from_str_radix(size_str, 16)
                 .map_err(|e| format!("Invalid chunk size '{}': {}", size_str, e))?;
+
+            // 安全检查：防止恶意服务器发送超大 chunk
+            if size > MAX_CHUNK_SIZE {
+                return Err(format!(
+                    "Chunk size {} exceeds maximum allowed size {} bytes",
+                    size, MAX_CHUNK_SIZE
+                ));
+            }
 
             // size = 0 表示最后一个 chunk
             if size == 0 {

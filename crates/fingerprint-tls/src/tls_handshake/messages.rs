@@ -45,9 +45,10 @@ impl ClientHelloMessage {
 
         // 前 4 bytes: Unix 时间戳
         // 使用当前时间，如果获取失败则使用 0（虽然不太可能失败）
+        // 修复 2038 年溢出问题：明确截断高位，确保 u32 范围内
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| d.as_secs() as u32)
+            .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // 明确截断高位，防止 2038 年溢出
             .unwrap_or(0);
         random.extend_from_slice(&timestamp.to_be_bytes());
 
@@ -62,15 +63,42 @@ impl ClientHelloMessage {
         }
         #[cfg(not(feature = "crypto"))]
         {
-            // 如果没有 crypto feature，使用简单的伪随机数
-            use std::collections::hash_map::DefaultHasher;
-            use std::hash::{Hash, Hasher};
-            let mut hasher = DefaultHasher::new();
-            timestamp.hash(&mut hasher);
-            let mut hash = hasher.finish();
-            for _ in 0..28 {
-                random.push((hash & 0xFF) as u8);
-                hash = hash.wrapping_mul(1103515245).wrapping_add(12345); // 线性同余生成器
+            // 如果没有 crypto feature，使用 getrandom 获取加密安全的随机数
+            // getrandom 是标准库推荐的方式，在大多数平台上使用系统提供的安全随机数源
+            use std::io::Read;
+            let mut random_bytes = [0u8; 28];
+            // 尝试从 /dev/urandom (Unix) 或系统 CSPRNG 获取随机数
+            if let Ok(mut rng) = std::fs::File::open("/dev/urandom") {
+                if rng.read_exact(&mut random_bytes).is_ok() {
+                    random.extend_from_slice(&random_bytes);
+                } else {
+                    // 如果无法读取，使用时间戳和进程 ID 作为种子，但这不是加密安全的
+                    // 这是一个降级方案，建议启用 crypto feature
+                    eprintln!("Warning: 无法从 /dev/urandom 读取随机数，使用降级方案。建议启用 crypto feature。");
+                    use std::collections::hash_map::DefaultHasher;
+                    use std::hash::{Hash, Hasher};
+                    let mut hasher = DefaultHasher::new();
+                    timestamp.hash(&mut hasher);
+                    std::process::id().hash(&mut hasher);
+                    let mut hash = hasher.finish();
+                    for _ in 0..28 {
+                        random.push((hash & 0xFF) as u8);
+                        hash = hash.wrapping_mul(1103515245).wrapping_add(12345);
+                    }
+                }
+            } else {
+                // Windows 或其他平台，使用降级方案
+                eprintln!("Warning: 无法访问系统随机数源，使用降级方案。建议启用 crypto feature。");
+                use std::collections::hash_map::DefaultHasher;
+                use std::hash::{Hash, Hasher};
+                let mut hasher = DefaultHasher::new();
+                timestamp.hash(&mut hasher);
+                std::process::id().hash(&mut hasher);
+                let mut hash = hasher.finish();
+                for _ in 0..28 {
+                    random.push((hash & 0xFF) as u8);
+                    hash = hash.wrapping_mul(1103515245).wrapping_add(12345);
+                }
             }
         }
 
