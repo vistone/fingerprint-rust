@@ -155,6 +155,10 @@ async fn send_http3_request_async(
     // 接收 body
     use bytes::Buf;
     let mut body_data = Vec::new();
+
+    // 安全限制：防止 HTTP/3 响应体过大导致内存耗尽
+    const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
+
     while let Some(mut chunk) = stream
         .recv_data()
         .await
@@ -162,6 +166,15 @@ async fn send_http3_request_async(
     {
         // 使用 Buf trait 读取数据
         let chunk_len = chunk.remaining();
+
+        // 安全检查：防止响应体过大
+        if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
+            return Err(HttpClientError::InvalidResponse(format!(
+                "HTTP/3 响应体过大（>{} bytes）",
+                MAX_HTTP3_BODY_SIZE
+            )));
+        }
+
         let mut chunk_bytes = vec![0u8; chunk_len];
         chunk.copy_to_slice(&mut chunk_bytes);
         body_data.extend_from_slice(&chunk_bytes);

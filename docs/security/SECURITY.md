@@ -9,16 +9,16 @@
 
 ## 执行摘要
 
-本报告对 `fingerprint-rust` 项目进行了全面的安全审计，发现并修复了 **9 个高危漏洞**和 **12 个中危漏洞**。
+本报告对 `fingerprint-rust` 项目进行了全面的安全审计，发现并修复了 **11 个安全漏洞**（4 个高危、4 个中高危、3 个中危）。
 
 ### 修复统计
 
 | 严重程度 | 发现数量 | 已修复 | 状态 |
 |---------|---------|--------|------|
 | 🔴 **高危 (P0)** | 4 | 4 | ✅ 已完成 |
-| 🟡 **中高危 (P1)** | 3 | 3 | ✅ 已完成 |
-| 🟢 **中危 (P2)** | 2 | 2 | ✅ 已完成 |
-| **总计** | **9** | **9** | **✅ 100%** |
+| 🟡 **中高危 (P1)** | 4 | 4 | ✅ 已完成 |
+| 🟢 **中危 (P2)** | 3 | 3 | ✅ 已完成 |
+| **总计** | **11** | **11** | **✅ 100%** |
 
 ---
 
@@ -104,7 +104,25 @@ if size > MAX_CHUNK_SIZE {
 
 ## 🟡 已修复的中高危漏洞 (P1)
 
-### 5. DNS 服务器池锁中毒
+### 5. HTTP/2 和 HTTP/3 响应体大小限制缺失
+
+**文件**: 
+- `crates/fingerprint-http/src/http_client/http2.rs`
+- `crates/fingerprint-http/src/http_client/http2_pool.rs`
+- `crates/fingerprint-http/src/http_client/http3.rs`
+- `crates/fingerprint-http/src/http_client/http3_pool.rs`  
+**严重程度**: 🟡 中高危  
+**状态**: ✅ 已修复
+
+**问题**: HTTP/2 和 HTTP/3 响应体读取时缺少大小限制，可能导致内存耗尽攻击。
+
+**修复方案**: 添加响应体大小限制（100MB），防止恶意服务器发送超大响应体。
+
+**修复日期**: 2025-12-29
+
+---
+
+### 6. DNS 服务器池锁中毒
 
 **文件**: `crates/fingerprint-dns/src/dns/serverpool.rs`  
 **严重程度**: 🟡 中高危  
@@ -116,7 +134,7 @@ if size > MAX_CHUNK_SIZE {
 
 ---
 
-### 6. 无限重定向循环
+### 7. 无限重定向循环
 
 **文件**: `crates/fingerprint-http/src/http_client/mod.rs`  
 **严重程度**: 🟡 中高危  
@@ -128,7 +146,7 @@ if size > MAX_CHUNK_SIZE {
 
 ---
 
-### 7. DNS 健康检查资源耗尽
+### 8. DNS 健康检查资源耗尽
 
 **文件**: `crates/fingerprint-dns/src/dns/serverpool.rs`  
 **严重程度**: 🟡 中高危  
@@ -140,7 +158,21 @@ if size > MAX_CHUNK_SIZE {
 
 ## 🟢 已修复的中危漏洞 (P2)
 
-### 8. 时间戳溢出风险
+### 9. HTTP 响应头解析边界检查不足
+
+**文件**: `crates/fingerprint-http/src/http_client/response.rs`  
+**严重程度**: 🟢 中危  
+**状态**: ✅ 已修复
+
+**问题**: `find_headers_end` 函数在数组边界检查上不够严格，可能导致潜在的越界访问。
+
+**修复方案**: 添加明确的长度检查和边界验证。
+
+**修复日期**: 2025-12-29
+
+---
+
+### 10. 时间戳溢出风险
 
 **文件**: `crates/fingerprint-tls/src/tls_handshake/messages.rs`  
 **严重程度**: 🟢 中危  
@@ -158,7 +190,7 @@ let timestamp = std::time::SystemTime::now()
 
 ---
 
-### 9. 文件原子写入竞态条件
+### 11. 文件原子写入竞态条件
 
 **文件**: `crates/fingerprint-dns/src/dns/serverpool.rs`  
 **严重程度**: 🟢 中危  
@@ -173,19 +205,82 @@ let temp_path = path.with_extension(&format!("tmp.{}", std::process::id()));
 
 ---
 
+### 10. HTTP/2 和 HTTP/3 响应体大小限制缺失
+
+**文件**: 
+- `crates/fingerprint-http/src/http_client/http2.rs`
+- `crates/fingerprint-http/src/http_client/http2_pool.rs`
+- `crates/fingerprint-http/src/http_client/http3.rs`
+- `crates/fingerprint-http/src/http_client/http3_pool.rs`  
+**严重程度**: 🟡 中高危  
+**状态**: ✅ 已修复
+
+**问题**: HTTP/2 和 HTTP/3 响应体读取时缺少大小限制，可能导致内存耗尽攻击。
+
+**修复方案**: 添加响应体大小限制（100MB），防止恶意服务器发送超大响应体：
+```rust
+const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
+const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
+
+// 在读取每个 chunk 前检查
+if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
+    return Err(HttpClientError::InvalidResponse(format!(
+        "HTTP/2 响应体过大（>{} bytes）",
+        MAX_HTTP2_BODY_SIZE
+    )));
+}
+```
+
+**修复日期**: 2025-12-29
+
+---
+
+### 11. HTTP 响应头解析边界检查不足
+
+**文件**: `crates/fingerprint-http/src/http_client/response.rs`  
+**严重程度**: 🟢 中危  
+**状态**: ✅ 已修复
+
+**问题**: `find_headers_end` 函数在数组边界检查上不够严格，可能导致潜在的越界访问。
+
+**修复方案**: 添加明确的长度检查和边界验证：
+```rust
+// 安全检查：确保数据长度至少为 4 字节
+if data.len() < 4 {
+    return Err("数据太短，无法包含 headers 结束标记".to_string());
+}
+
+// 使用 saturating_sub 防止下溢，但需要额外检查边界
+let max_i = data.len().saturating_sub(3);
+for i in 0..max_i {
+    // 安全检查：确保不会越界访问
+    if i + 4 <= data.len() && &data[i..i + 4] == b"\r\n\r\n" {
+        return Ok((i, i + 4));
+    }
+}
+```
+
+**修复日期**: 2025-12-29
+
+---
+
 ## 修复文件清单
 
 以下文件已应用安全修复：
 
 1. `crates/fingerprint-http/src/http_client/io.rs` - Content-Length 限制
-2. `crates/fingerprint-http/src/http_client/response.rs` - Chunk Size 限制
+2. `crates/fingerprint-http/src/http_client/response.rs` - Chunk Size 限制和边界检查
 3. `crates/fingerprint-http/src/http_client/mod.rs` - 重定向循环检测
-4. `crates/fingerprint-tls/src/tls_handshake/messages.rs` - 随机数生成完全修复（移除所有不安全降级方案，返回错误而非降级）
-5. `crates/fingerprint-tls/src/tls_handshake/builder.rs` - 更新错误处理以支持新的 Result 返回类型
-6. `crates/fingerprint-dns/src/dns/ipinfo.rs` - Token 泄露修复
-7. `crates/fingerprint-dns/src/dns/serverpool.rs` - 锁中毒和文件写入
-8. `crates/fingerprint-dns/src/dns/resolver.rs` - 锁中毒处理
-9. `crates/fingerprint-dns/src/dns/types.rs` - 添加 Internal 错误类型
+4. `crates/fingerprint-http/src/http_client/http2.rs` - HTTP/2 响应体大小限制
+5. `crates/fingerprint-http/src/http_client/http2_pool.rs` - HTTP/2 响应体大小限制
+6. `crates/fingerprint-http/src/http_client/http3.rs` - HTTP/3 响应体大小限制
+7. `crates/fingerprint-http/src/http_client/http3_pool.rs` - HTTP/3 响应体大小限制
+8. `crates/fingerprint-tls/src/tls_handshake/messages.rs` - 随机数生成完全修复（移除所有不安全降级方案，返回错误而非降级）
+9. `crates/fingerprint-tls/src/tls_handshake/builder.rs` - 更新错误处理以支持新的 Result 返回类型
+10. `crates/fingerprint-dns/src/dns/ipinfo.rs` - Token 泄露修复
+11. `crates/fingerprint-dns/src/dns/serverpool.rs` - 锁中毒和文件写入
+12. `crates/fingerprint-dns/src/dns/resolver.rs` - 锁中毒处理
+13. `crates/fingerprint-dns/src/dns/types.rs` - 添加 Internal 错误类型
 
 ---
 

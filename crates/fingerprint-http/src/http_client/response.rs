@@ -73,8 +73,16 @@ impl HttpResponse {
 
     /// 查找 headers 结束位置（\r\n\r\n）
     fn find_headers_end(data: &[u8]) -> Result<(usize, usize), String> {
-        for i in 0..data.len().saturating_sub(3) {
-            if &data[i..i + 4] == b"\r\n\r\n" {
+        // 安全检查：确保数据长度至少为 4 字节
+        if data.len() < 4 {
+            return Err("数据太短，无法包含 headers 结束标记".to_string());
+        }
+
+        // 使用 saturating_sub 防止下溢，但需要额外检查边界
+        let max_i = data.len().saturating_sub(3);
+        for i in 0..max_i {
+            // 安全检查：确保不会越界访问
+            if i + 4 <= data.len() && &data[i..i + 4] == b"\r\n\r\n" {
                 return Ok((i, i + 4));
             }
         }

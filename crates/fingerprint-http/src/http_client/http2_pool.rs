@@ -138,10 +138,22 @@ pub async fn send_http2_request_with_pool(
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
 
+    // 安全限制：防止 HTTP/2 响应体过大导致内存耗尽
+    const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
+
     while let Some(chunk) = body_stream.data().await {
         let chunk = chunk.map_err(|e| {
             HttpClientError::Io(std::io::Error::other(format!("读取 body 失败: {}", e)))
         })?;
+
+        // 安全检查：防止响应体过大
+        if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
+            return Err(HttpClientError::InvalidResponse(format!(
+                "HTTP/2 响应体过大（>{} bytes）",
+                MAX_HTTP2_BODY_SIZE
+            )));
+        }
+
         body_data.extend_from_slice(&chunk);
 
         // 释放流控制窗口

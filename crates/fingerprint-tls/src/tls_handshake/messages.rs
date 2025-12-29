@@ -72,20 +72,20 @@ impl ClientHelloMessage {
             // 如果无法获取，直接返回错误，不允许使用不安全的降级方案
             use std::io::Read;
             let mut random_bytes = [0u8; 28];
-            
+
             // 尝试从 /dev/urandom (Unix) 获取随机数
             let mut rng = std::fs::File::open("/dev/urandom")
                 .map_err(|e| format!(
                     "无法访问系统随机数源 /dev/urandom: {}. 建议启用 'crypto' feature 以使用加密安全的随机数生成器",
                     e
                 ))?;
-            
+
             rng.read_exact(&mut random_bytes)
                 .map_err(|e| format!(
                     "无法从 /dev/urandom 读取随机数: {}. 建议启用 'crypto' feature 以使用加密安全的随机数生成器",
                     e
                 ))?;
-            
+
             random.extend_from_slice(&random_bytes);
         }
 
