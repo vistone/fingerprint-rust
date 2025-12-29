@@ -258,10 +258,10 @@ dns = ["serde", "serde_json", "toml", "serde_yaml", "tokio", "futures", "rustls-
 
 ```toml
 # 生产环境（完整功能）
-fingerprint = { version = "1.0", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
+fingerprint = { version = "2.0", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
 
 # 开发环境（快速编译）
-fingerprint = { version = "1.0", features = ["rustls-tls", "http2"] }
+fingerprint = { version = "2.0", features = ["rustls-tls", "http2"] }
 
 # 最小依赖
 fingerprint = { version = "1.0", features = ["rustls-tls"] }
@@ -359,7 +359,7 @@ DNS 模块提供自动化的 DNS 解析服务，支持：
 
 ```toml
 [dependencies]
-fingerprint = { version = "1.0", features = ["dns", "rustls-tls"] }
+fingerprint = { version = "2.0", features = ["dns", "rustls-tls"] }
 ```
 
 #### 2. 基础使用（代码方式）
