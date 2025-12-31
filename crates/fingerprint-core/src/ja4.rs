@@ -168,7 +168,12 @@ impl JA4H {
         has_referer: bool,
         headers: &[(&str, &str)],
     ) -> String {
-        let m = &method[0..2].to_lowercase();
+        let m_raw = method.to_lowercase();
+        let m = if m_raw.len() >= 2 {
+            &m_raw[0..2]
+        } else {
+            &m_raw
+        };
         let v = if version.contains("1.1") {
             "11"
         } else if version.contains("2") {

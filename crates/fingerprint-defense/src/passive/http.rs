@@ -147,15 +147,20 @@ impl HttpAnalyzer {
 
     /// 解析 HTTP 请求
     fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
+        // 限制解析的数据量，防止超大包导致内存耗尽
+        let limit = 8192; // 8KB 足够常规请求
+        let parse_data = if data.len() > limit {
+            &data[..limit]
+        } else {
+            data
+        };
+
         // 简单的 HTTP 请求解析
-        let text = String::from_utf8_lossy(data);
-        let lines: Vec<&str> = text.lines().collect();
+        let text = String::from_utf8_lossy(parse_data);
+        let mut lines = text.lines();
 
-        if lines.is_empty() {
-            return None;
-        }
+        let request_line = lines.next()?;
 
-        let request_line = lines[0];
         let parts: Vec<&str> = request_line.split_whitespace().collect();
         if parts.len() < 3 {
             return None;
@@ -168,7 +173,6 @@ impl HttpAnalyzer {
         if !["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"].contains(&method.as_str())
         {
             // 检查是否是 H2 Connection Preface
-            // PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n (24 bytes)
             if method == "PRI" && path == "*" && version.contains("HTTP/2") {
                 let preface_end = 24;
                 if data.len() > preface_end {
@@ -183,8 +187,9 @@ impl HttpAnalyzer {
         let mut cookie_count = 0;
         let mut has_referer = false;
 
-        for line in lines.iter().skip(1) {
-            if line.is_empty() {
+        // 限制解析 Header 的行数
+        for (i, line) in lines.enumerate() {
+            if i > 100 || line.is_empty() {
                 break;
             }
             if let Some((key, value)) = line.split_once(':') {
@@ -246,7 +251,8 @@ impl HttpAnalyzer {
                 0x04 => {
                     // SETTINGS
                     let mut s_offset = offset;
-                    while s_offset + 6 <= payload_end {
+                    let mut count = 0;
+                    while s_offset + 6 <= payload_end && count < 100 {
                         let id = u16::from_be_bytes([data[s_offset], data[s_offset + 1]]);
                         let value = u32::from_be_bytes([
                             data[s_offset + 2],
@@ -256,6 +262,7 @@ impl HttpAnalyzer {
                         ]);
                         h2_settings.push((id, value));
                         s_offset += 6;
+                        count += 1;
                     }
                 }
                 0x08 => {

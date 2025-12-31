@@ -57,6 +57,14 @@ impl SelfLearningAnalyzer {
         }
 
         let key = format!("{}:{}", fp_type, fp_id);
+
+        // 防护点：限制观察列表的大小，防止内存撑爆 (DoS 防护)
+        const MAX_OBSERVATIONS: usize = 10000;
+        if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
+            // 如果达到上限且是新 key，则忽略
+            return;
+        }
+
         let mut count = self.observations.entry(key.clone()).or_insert(0);
         *count += 1;
 

@@ -96,18 +96,10 @@ impl H2SessionPool {
             });
 
             if let Some(send_request) = session_valid {
-                // 更新最后使用时间（需要重新获取会话，但此时 sessions 锁已释放）
-                // 重新获取锁来更新最后使用时间
-                {
-                    let sessions = self.sessions.lock().unwrap_or_else(|e| {
-                        eprintln!("警告: 会话池锁失败: {}", e);
-                        drop(e.into_inner());
-                        self.sessions.lock().expect("无法获取会话池锁")
-                    });
-                    if let Some(session) = sessions.get(key) {
-                        if let Ok(mut last_used) = session.last_used.lock() {
-                            *last_used = Instant::now();
-                        }
+                // 更新最后使用时间
+                if let Some(session) = sessions.get(key) {
+                    if let Ok(mut last_used) = session.last_used.lock() {
+                        *last_used = Instant::now();
                     }
                 }
                 return Ok(send_request);
