@@ -1,5 +1,4 @@
 use fingerprint::*;
-use fingerprint_core::dicttls::cipher_suites;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("🧪 Chrome 136 指纹深度验证\n");
@@ -28,7 +27,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     // 预期第一个是 TLS_AES_128_GCM_SHA256 (0x1301)
-    if spec.cipher_suites.iter().any(|&s| s == 0x1301) {
+    if spec.cipher_suites.contains(&0x1301) {
         println!("   ✅ 包含 TLS_AES_128_GCM_SHA256");
     }
 

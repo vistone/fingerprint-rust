@@ -111,7 +111,7 @@ impl PacketParser {
             raw_packet[19],
         ]);
 
-        let header_len = (ihl * 4) as usize;
+        let header_len = ihl * 4;
         if raw_packet.len() < header_len {
             return Err(PacketError::TooShort);
         }
@@ -146,7 +146,7 @@ impl PacketParser {
             dst_port,
             ip_version: 4,
             ttl,
-            ip_flags: ip_flags as u8,
+            ip_flags,
             payload,
             tcp_header,
         })

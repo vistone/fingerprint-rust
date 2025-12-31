@@ -2,7 +2,6 @@
 //!
 //! 提供指纹的持久化存储和查询功能。
 
-use crate::passive::{HttpFingerprint, TcpFingerprint, TlsFingerprint};
 use fingerprint_core::system::NetworkFlow;
 use rusqlite::{params, Connection, Result as SqliteResult};
 use serde_json;

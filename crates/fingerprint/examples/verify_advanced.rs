@@ -1,9 +1,13 @@
+#[cfg(feature = "defense")]
 use bytes::Bytes;
-use fingerprint_core::Fingerprint;
+#[cfg(feature = "defense")]
+use fingerprint_core::fingerprint::Fingerprint;
+#[cfg(feature = "defense")]
 use fingerprint_defense::{
     passive::packet::{Packet, TcpHeader},
     FingerprintDatabase, PassiveAnalyzer, SelfLearningAnalyzer,
 };
+#[cfg(feature = "defense")]
 use std::sync::Arc;
 
 #[cfg(feature = "defense")]

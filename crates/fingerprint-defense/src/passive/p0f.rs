@@ -68,14 +68,14 @@ impl P0fDatabase {
             }
 
             // 解析 label
-            if line.starts_with("label = ") {
-                current_label = Some(line[8..].trim().to_string());
+            if let Some(stripped) = line.strip_prefix("label = ") {
+                current_label = Some(stripped.trim().to_string());
                 continue;
             }
 
             // 解析 sig
-            if line.starts_with("sig = ") {
-                let sig_value = line[6..].trim().to_string();
+            if let Some(stripped) = line.strip_prefix("sig = ") {
+                let sig_value = stripped.trim().to_string();
 
                 // 如果有 label 和 sig，尝试解析
                 if let Some(label) = &current_label {

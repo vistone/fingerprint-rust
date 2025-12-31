@@ -306,8 +306,8 @@ fn parse_window_size_pattern(pattern: &str) -> Result<WindowSizePattern, P0fPars
     }
 
     // 检查模数模式：%N
-    if pattern.starts_with('%') {
-        let modulo = pattern[1..]
+    if let Some(stripped) = pattern.strip_prefix('%') {
+        let modulo = stripped
             .parse()
             .map_err(|_| P0fParseError::InvalidSignature(format!("无效的窗口模数: {}", pattern)))?;
         return Ok(WindowSizePattern::Modulo(modulo));

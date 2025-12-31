@@ -5,7 +5,6 @@
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pcap::{Capture, Device};
 use std::sync::Arc;
-use tokio::sync::mpsc;
 
 /// 捕获引擎
 pub struct CaptureEngine {

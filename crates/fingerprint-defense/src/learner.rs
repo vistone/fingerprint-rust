@@ -11,6 +11,7 @@ use fingerprint_core::fingerprint::Fingerprint;
 
 /// 自学习分析器
 pub struct SelfLearningAnalyzer {
+    #[allow(dead_code)] // 将来会用于存储学习到的指纹
     db: Arc<FingerprintDatabase>,
     /// 未知指纹的观察计数器 (fp_id -> count)
     observations: DashMap<String, u64>,

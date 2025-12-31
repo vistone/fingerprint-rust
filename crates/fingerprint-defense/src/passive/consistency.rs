@@ -9,6 +9,12 @@ use fingerprint_core::system::NetworkFlow;
 /// 一致性分析引擎
 pub struct ConsistencyAnalyzer;
 
+impl Default for ConsistencyAnalyzer {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ConsistencyAnalyzer {
     pub fn new() -> Self {
         Self
