@@ -7,15 +7,22 @@
 //!   仅对交集做重排，并把未覆盖的扩展按 rustls 默认顺序追加，确保仍是一个有效的排列。
 //! - spec 里可能出现多个 GREASE 扩展（在真实浏览器中它们通常是不同的 GREASE 值）。
 //!   为避免"重复扩展类型"导致 rustls 拒绝，我们会把每个 GREASE 占位符映射成不同的 GREASE 值。
+//!
+//! 注意：此功能需要支持 ClientHelloCustomizer 的 rustls fork，标准 rustls 不支持。
+//! 当前标准 rustls 版本不包含 ClientHelloCustomizer API，因此此模块的代码被暂时禁用。
+//! 如需使用此功能，需要使用支持 ClientHelloCustomizer 的 rustls fork（如 vistone-rustls）。
+
+// 暂时禁用整个模块，因为标准 rustls 不支持 ClientHelloCustomizer API
+// 如需启用，需要使用支持该 API 的 rustls fork
+// 当使用支持 ClientHelloCustomizer 的 rustls fork 时，取消下面的注释并启用相关代码
+#![cfg(feature = "__rustls_customizer_unstable__")]
 
 #[cfg(feature = "rustls-client-hello-customizer")]
 use std::sync::Arc;
 
 use fingerprint_profiles::profiles::ClientProfile;
 #[cfg(feature = "rustls-client-hello-customizer")]
-use fingerprint_tls::tls_config::grease::{is_grease_value, TLS_GREASE_VALUES};
-#[cfg(feature = "rustls-client-hello-customizer")]
-use fingerprint_tls::tls_config::ClientHelloSpec;
+use fingerprint_tls::tls_config::{is_grease_value, ClientHelloSpec, TLS_GREASE_VALUES};
 
 #[cfg(feature = "rustls-client-hello-customizer")]
 use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer};

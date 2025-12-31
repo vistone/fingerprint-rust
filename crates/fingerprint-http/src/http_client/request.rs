@@ -103,15 +103,23 @@ impl HttpRequest {
     /// 注意：该方法会把 body 当作 UTF-8 文本拼接到字符串中，**不适用于二进制 body**。
     /// 如需发送二进制数据，请使用 `build_http1_request_bytes`。
     pub fn build_http1_request(&self, host: &str, path: &str) -> String {
-        let mut request = format!("{} {} HTTP/1.1\r\n", self.method.as_str(), path);
+        // 安全清洗：防止 CRLF 注入
+        let safe_method = self.method.as_str().replace(['\r', '\n'], "");
+        let safe_path = path.replace(['\r', '\n'], "");
+        let safe_host = host.replace(['\r', '\n'], "");
+
+        let mut request = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
         // Host header (必需)
-        request.push_str(&format!("Host: {}\r\n", host));
+        request.push_str(&format!("Host: {}\r\n", safe_host));
 
         // 添加其他 headers
         for (key, value) in &self.headers {
             if key.to_lowercase() != "host" {
-                request.push_str(&format!("{}: {}\r\n", key, value));
+                // 安全清理 Key 和 Value
+                let safe_key = key.replace(['\r', '\n'], "");
+                let safe_value = value.replace(['\r', '\n'], "");
+                request.push_str(&format!("{}: {}\r\n", safe_key, safe_value));
             }
         }
 
@@ -141,58 +149,55 @@ impl HttpRequest {
     }
 
     /// 构建 HTTP/1.1 请求字节（推荐）
-    ///
-    /// - **输入**：`host`（用于 Host 头）、`path`（请求路径，包含 query 也可）、`header_order`（可选的 header 顺序）
-    /// - **输出**：完整的 HTTP/1.1 请求 bytes（headers + body）
-    ///
-    /// 相比 `build_http1_request`，该方法不会对 body 做 UTF-8 假设，适用于二进制 body。
     pub fn build_http1_request_bytes(
         &self,
         host: &str,
         path: &str,
         header_order: Option<&[String]>,
     ) -> Vec<u8> {
-        let mut head = format!("{} {} HTTP/1.1\r\n", self.method.as_str(), path);
+        // 安全清洗
+        let safe_method = self.method.as_str().replace(['\r', '\n'], "");
+        let safe_path = path.replace(['\r', '\n'], "");
+        let safe_host = host.replace(['\r', '\n'], "");
+
+        let mut head = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
         // 使用有序列表（如果提供）
         let ordered_headers = if let Some(order) = header_order {
-            // 我们需要临时构建一个 HTTPHeaders 来使用 to_ordered_vec
             let mut h = HTTPHeaders::new();
             for (k, v) in &self.headers {
                 h.set(k, v);
             }
             h.to_ordered_vec(order)
         } else {
-            // 否则转为 Vec 保持原本顺序（HashMap 不保证顺序）
             self.headers
                 .iter()
                 .map(|(k, v)| (k.clone(), v.clone()))
                 .collect()
         };
 
-        // Host header (必需，通常在第一位或 order 中指定)
-        // 如果 ordered_headers 中没包含 Host，我们手动添加
+        // Host header
         if !ordered_headers
             .iter()
             .any(|(k, _)| k.eq_ignore_ascii_case("host"))
         {
-            head.push_str(&format!("Host: {}\r\n", host));
+            head.push_str(&format!("Host: {}\r\n", safe_host));
         }
 
         // 添加其他 headers
         for (key, value) in ordered_headers {
-            // 如果是 Host 且 header_order 里有，我们会遵循 order 里的位置
-            // 这里我们只需要确保不重复添加如果不按 order 走的情况
-            head.push_str(&format!("{}: {}\r\n", key, value));
+            let safe_key = key.replace(['\r', '\n'], "");
+            let safe_value = value.replace(['\r', '\n'], "");
+            head.push_str(&format!("{}: {}\r\n", safe_key, safe_value));
         }
 
-        // Content-Length (如果有 body)
+        // Content-Length
         let body_len = self.body.as_ref().map(|b| b.len()).unwrap_or(0);
         if body_len > 0 {
             head.push_str(&format!("Content-Length: {}\r\n", body_len));
         }
 
-        // Connection: close (默认)
+        // Connection: close
         if !self
             .headers
             .keys()

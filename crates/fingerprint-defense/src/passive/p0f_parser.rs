@@ -440,7 +440,10 @@ impl From<P0fTcpSignature> for TcpSignature {
             MssPattern::Fixed(v) => Some(*v),
             MssPattern::Multiple { multiplier, offset } => {
                 // 使用第一个可能的 MSS 值作为示例
-                Some(multiplier * 10 + offset) // 简化处理
+                let m = (*multiplier as u32)
+                    .saturating_mul(10)
+                    .saturating_add(*offset as u32);
+                Some(m.min(65535) as u16)
             }
             MssPattern::None => None,
         };

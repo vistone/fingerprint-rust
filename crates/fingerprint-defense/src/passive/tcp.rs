@@ -366,7 +366,7 @@ impl TcpAnalyzer {
                 if sig_mss == feat_mss {
                     score += 1.0;
                 } else {
-                    let mss_diff = (sig_mss as i16 - feat_mss as i16).abs();
+                    let mss_diff = (sig_mss as i32 - feat_mss as i32).abs();
                     if mss_diff < 10 {
                         score += 0.8;
                     } else {

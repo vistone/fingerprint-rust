@@ -5,6 +5,51 @@
 格式基于 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.0.0/)，
 版本号遵循 [Semantic Versioning](https://semver.org/lang/zh-CN/)。
 
+## [2.1.1] - 2025-12-31
+
+### 安全加固与代码审计 (Security Hardening & Code Audit)
+
+- ✅ **并发与死锁修复**:
+  - **H2SessionPool 死锁修复**: 修复 `H2SessionPool` 中的递归锁死锁问题
+    - 重构 `cleanup_expired_sessions` 方法，改为接受 `&mut HashMap` 参数，避免在持有锁的情况下再次获取同一互斥锁
+    - 通过锁守卫复用机制，确保 HTTP/2 连接复用时不会导致程序僵死
+    - 修复位置: `crates/fingerprint-http/src/http_client/h2_session_pool.rs`
+  - **竞态条件硬化**: 优化 H2 和 H3 会话池的 `pending_sessions` 管理
+    - 在高并发场景下，确保针对同一主机的多个请求能正确等待单个连接任务完成
+    - 避免"惊群效应"和重复创建连接的问题
+
+- ✅ **安全漏洞防护**:
+  - **CRLF 注入防护**: 在 `HttpRequest` 构建器中增加严格的安全清洗
+    - 对 HTTP 方法、路径、主机和所有 Header 值进行 CRLF 字符清理（移除 `\r` 和 `\n`）
+    - 有效防止 HTTP 请求走私 (Request Smuggling) 和响应头注入攻击
+    - 修复位置: `crates/fingerprint-http/src/http_client/request.rs`
+  - **拒绝服务 (DoS) 资源限制**:
+    - **HTTP 解析限制**: 限制被动分析中 HTTP 请求解析的数据量为 8KB，防止超大包导致内存耗尽 (OOM)
+    - **Header 数量限制**: 限制 HTTP Header 解析的最大行数为 100 行，防止 Header 轰炸攻击
+    - **H2 SETTINGS 限制**: 限制 HTTP/2 SETTINGS 帧解析的最大项数为 100 项，防止 SETTINGS 帧攻击
+    - **自学习容量限制**: 为 `SelfLearningAnalyzer` 的观察表设置 10,000 条上限，防止攻击者通过不断随机化指纹特征来撑爆内存
+    - 修复位置: `crates/fingerprint-defense/src/passive/http.rs`, `crates/fingerprint-defense/src/learner.rs`
+
+- ✅ **健壮性与逻辑优化**:
+  - **整数溢出与环绕修复**:
+    - 修正 `TcpAnalyzer` 中的相似度算法，在计算 MSS 和窗口大小差异时改用 `i32` 类型
+    - 防止 `u16` 到 `i16` 转换时可能出现的数值溢出及逻辑错误
+    - 在解析 p0f 签名文件时，对 MSS 倍数计算增加饱和算术 (Saturating Arithmetic) 操作，防止因非法配置导致的程序崩溃
+    - 修复位置: `crates/fingerprint-defense/src/passive/tcp.rs`, `crates/fingerprint-defense/src/passive/p0f_parser.rs`
+  - **数组越界检查**:
+    - 修复 JA4H 指纹生成中，当 HTTP 方法名短于 2 个字符时可能触发的切片越界崩溃 (Panic)
+    - 增加长度检查，确保在切片操作前验证字符串长度
+    - 修复位置: `crates/fingerprint-core/src/ja4.rs`
+  - **p0f 解析器修复**: 修复 `p0f_parser.rs` 中损坏的 match 分支，确保所有 `MssPattern` 变体都被正确处理
+
+### 测试与验证
+
+- ✅ 所有核心库测试通过（118+ tests）
+- ✅ 编译状态：Zero Warning
+- ✅ 代码质量：通过所有静态检查
+
+---
+
 ## [2.1.0] - 2025-12-31
 
 ### 全链路主动/被动防护体系 (Defense Evolution)

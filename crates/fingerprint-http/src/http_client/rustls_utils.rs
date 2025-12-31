@@ -12,7 +12,9 @@ use std::sync::Arc;
 
 use fingerprint_profiles::profiles::ClientProfile;
 
-#[cfg(feature = "rustls-client-hello-customizer")]
+// 注意：ProfileClientHelloCustomizer 需要支持 ClientHelloCustomizer 的 rustls fork
+// 当前被禁用，因为标准 rustls 不包含 ClientHelloCustomizer API
+#[cfg(false)] // 暂时禁用，因为标准 rustls 不支持
 use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
 
 /// 构建 rustls 根证书存储（Mozilla roots）
@@ -95,7 +97,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 pub fn build_client_config(
     verify_tls: bool,
     alpn_protocols: Vec<Vec<u8>>,
-    _profile: Option<&ClientProfile>,
+    #[allow(unused_variables)] profile: Option<&ClientProfile>,
 ) -> rustls::ClientConfig {
     let root_store = build_root_store();
 
@@ -159,7 +161,10 @@ pub fn build_client_config(
     apply_verify_tls(&mut cfg, verify_tls);
 
     // 可选：在发送 ClientHello 之前按指纹 spec 重排扩展编码顺序（需要配套 rustls fork）。
-    #[cfg(feature = "rustls-client-hello-customizer")]
+    // 注意：此功能需要支持 ClientHelloCustomizer 的 rustls fork，标准 rustls 不支持。
+    // 当前被禁用，因为标准 rustls 不包含 ClientHelloCustomizer API。
+    // 如需使用此功能，需要使用支持 ClientHelloCustomizer 的 rustls fork 并启用相应 feature。
+    #[cfg(false)] // 暂时禁用，因为标准 rustls 不支持
     if let Some(profile) = profile {
         if let Some(customizer) = ProfileClientHelloCustomizer::try_from_profile(profile) {
             cfg = cfg.with_client_hello_customizer(customizer.into_arc());
