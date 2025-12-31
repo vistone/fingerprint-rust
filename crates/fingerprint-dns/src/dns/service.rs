@@ -146,8 +146,12 @@ impl Service {
 
                 // 淘汰慢的服务器（对应 Go 项目的 RemoveSlowServers）
                 let old_count = server_pool_for_cleanup.len();
-                let optimized_pool = server_pool_for_cleanup
-                    .remove_slow_servers(max_avg_response_time_ms, max_failure_rate);
+                let min_active_servers = 5; // 生产环境下建议至少保留 5 个服务器作为保底
+                let optimized_pool = server_pool_for_cleanup.remove_slow_servers(
+                    max_avg_response_time_ms,
+                    max_failure_rate,
+                    min_active_servers,
+                );
                 let new_count = optimized_pool.len();
                 let removed_count = old_count - new_count;
 

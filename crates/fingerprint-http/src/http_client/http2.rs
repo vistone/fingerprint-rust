@@ -43,7 +43,7 @@ async fn send_http2_request_async(
 
     let start = Instant::now();
 
-    // 1. 建立 TCP 连接
+    // 1. 建立 TCP 连接（应用 TCP Profile）
     let addr = format!("{}:{}", host, port);
     let socket_addrs = addr
         .to_socket_addrs()
@@ -51,27 +51,63 @@ async fn send_http2_request_async(
         .next()
         .ok_or_else(|| HttpClientError::InvalidUrl("无法解析地址".to_string()))?;
 
-    let tcp = TcpStream::connect(socket_addrs)
-        .await
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?;
+    // 应用 TCP Profile（如果配置了）
+    let tcp = if let Some(profile) = &config.profile {
+        if let Some(ref tcp_profile) = profile.tcp_profile {
+            super::tcp_fingerprint::connect_tcp_with_profile(socket_addrs, Some(tcp_profile))
+                .await
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?
+        } else {
+            TcpStream::connect(socket_addrs)
+                .await
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?
+        }
+    } else {
+        TcpStream::connect(socket_addrs)
+            .await
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?
+    };
 
     // 2. TLS 握手
     let tls_stream = perform_tls_handshake(tcp, host, config).await?;
 
     // 3. HTTP/2 握手（应用 Settings 配置）
-    // 注意：h2 0.4 的 Builder API 可能不支持所有 Settings
-    // 先使用默认 handshake，Settings 应用需要进一步研究 h2 API
-    let (mut client, h2_conn) = client::handshake(tls_stream)
+    let mut builder = client::Builder::new();
+
+    // 应用指纹配置中的 HTTP/2 Settings
+    if let Some(profile) = &config.profile {
+        // 设置初始窗口大小
+        if let Some(&window_size) = profile
+            .settings
+            .get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16())
+        {
+            builder.initial_window_size(window_size);
+        }
+
+        // 设置最大帧大小
+        if let Some(&max_frame_size) = profile
+            .settings
+            .get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxFrameSize.as_u16())
+        {
+            builder.max_frame_size(max_frame_size);
+        }
+
+        // 设置最大头部列表大小
+        if let Some(&max_header_list_size) = profile
+            .settings
+            .get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxHeaderListSize.as_u16())
+        {
+            builder.max_header_list_size(max_header_list_size);
+        }
+
+        // 设置连接级窗口大小（Connection Flow）
+        builder.initial_connection_window_size(profile.connection_flow);
+    }
+
+    let (mut client, h2_conn) = builder
+        .handshake(tls_stream)
         .await
         .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 握手失败: {}", e)))?;
-
-    // TODO: 应用 HTTP/2 Settings
-    // h2 0.4 的 Builder API 限制，Settings 需要在握手时配置
-    // 但 client::handshake() 不提供 Builder，需要研究如何应用自定义 Settings
-    if let Some(_profile) = &config.profile {
-        // Settings 信息已从 profile 获取，但 h2 0.4 API 限制无法直接应用
-        // 这不会影响功能，只是无法精确模拟浏览器的 Settings 值
-    }
 
     // 在后台驱动 HTTP/2 连接
     tokio::spawn(async move {

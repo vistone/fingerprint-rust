@@ -3,7 +3,7 @@
 //! 定义了浏览器类型、操作系统类型等核心类型
 
 /// 浏览器类型
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum BrowserType {
     Chrome,
     Firefox,
@@ -47,7 +47,7 @@ impl std::fmt::Display for BrowserType {
 }
 
 /// 操作系统类型
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum OperatingSystem {
     Windows10,
     Windows11,

@@ -2,10 +2,11 @@
 //!
 //! 定义了各种浏览器的 TLS 指纹配置
 
+use fingerprint_core::tcp::TcpProfile;
 use fingerprint_headers::http2_config::{
-    chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
-    firefox_http2_settings, firefox_pseudo_header_order, safari_http2_settings,
-    safari_pseudo_header_order, HTTP2PriorityParam, HTTP2Settings,
+    chrome_header_order, chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
+    firefox_header_order, firefox_http2_settings, firefox_pseudo_header_order, safari_header_order,
+    safari_http2_settings, safari_pseudo_header_order, HTTP2PriorityParam, HTTP2Settings,
 };
 use fingerprint_tls::tls_config::ClientHelloSpec;
 use std::collections::HashMap;
@@ -21,7 +22,7 @@ pub type ClientHelloSpecFactory = fn() -> Result<ClientHelloSpec, String>;
 pub struct ClientHelloID {
     /// Client 名称（如 "Chrome", "Firefox", "Safari"）
     pub client: String,
-    /// Version 版本号（如 "133", "120"）
+    /// Version 版本号（如 "135", "133"）
     pub version: String,
     /// SpecFactory 用于生成 ClientHelloSpec
     pub spec_factory: ClientHelloSpecFactory,
@@ -81,11 +82,16 @@ pub struct ClientProfile {
     pub priorities: Vec<String>,
     /// Header Priority（对应 Go 版本的 *http2.PriorityParam）
     pub header_priority: Option<HTTP2PriorityParam>,
+    /// TCP Settings (Active Fingerprinting)
+    pub tcp_profile: Option<TcpProfile>,
+    /// Header Order (for HTTP/1.1)
+    pub header_order: Vec<String>,
 }
 
 impl ClientProfile {
     /// 创建新的 ClientProfile
     /// 对应 Go 版本的 NewClientProfile 函数
+    #[allow(clippy::too_many_arguments)] // 构造函数需要所有必要的参数
     pub fn new(
         client_hello_id: ClientHelloID,
         settings: HTTP2Settings,
@@ -94,6 +100,8 @@ impl ClientProfile {
         connection_flow: u32,
         priorities: Vec<String>,
         header_priority: Option<HTTP2PriorityParam>,
+        tcp_profile: Option<TcpProfile>,
+        header_order: Vec<String>,
     ) -> Self {
         Self {
             client_hello_id,
@@ -103,12 +111,66 @@ impl ClientProfile {
             connection_flow,
             priorities,
             header_priority,
+            tcp_profile,
+            header_order,
         }
     }
 
     /// 获取 Client Hello ID 字符串（对应 Go 版本的 GetClientHelloStr()）
     pub fn get_client_hello_str(&self) -> String {
         self.client_hello_id.str()
+    }
+
+    /// 根据 User-Agent 自动生成匹配的 TCP Profile
+    ///
+    /// 这是统一指纹生成的核心方法，确保浏览器指纹和 TCP 指纹同步
+    ///
+    /// # 参数
+    /// - `user_agent`: User-Agent 字符串，用于推断操作系统
+    ///
+    /// # 返回
+    /// 返回一个新的 ClientProfile，其中 tcp_profile 已根据 User-Agent 设置
+    pub fn with_synced_tcp_profile(self, user_agent: &str) -> Self {
+        use fingerprint_core::tcp::TcpProfile;
+        let tcp_profile = TcpProfile::from_user_agent(user_agent);
+        Self {
+            tcp_profile: Some(tcp_profile),
+            ..self
+        }
+    }
+
+    /// 根据操作系统类型自动生成匹配的 TCP Profile
+    ///
+    /// # 参数
+    /// - `os`: 操作系统类型
+    ///
+    /// # 返回
+    /// 返回一个新的 ClientProfile，其中 tcp_profile 已根据操作系统设置
+    pub fn with_tcp_profile_for_os(self, os: fingerprint_core::types::OperatingSystem) -> Self {
+        use fingerprint_core::tcp::TcpProfile;
+        let tcp_profile = TcpProfile::for_os(os);
+        Self {
+            tcp_profile: Some(tcp_profile),
+            ..self
+        }
+    }
+
+    /// 获取或生成 TCP Profile
+    ///
+    /// 如果 tcp_profile 已存在，直接返回
+    /// 如果不存在，根据 User-Agent 生成
+    ///
+    /// # 参数
+    /// - `user_agent`: User-Agent 字符串，用于推断操作系统（如果 tcp_profile 不存在）
+    ///
+    /// # 返回
+    /// TCP Profile 的引用
+    pub fn get_or_generate_tcp_profile(&mut self, user_agent: &str) -> &TcpProfile {
+        use fingerprint_core::tcp::TcpProfile;
+        if self.tcp_profile.is_none() {
+            self.tcp_profile = Some(TcpProfile::from_user_agent(user_agent));
+        }
+        self.tcp_profile.as_ref().unwrap()
     }
 
     /// 获取 Settings（对应 Go 版本的 GetSettings()）
@@ -146,11 +208,17 @@ impl ClientProfile {
     pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
         self.client_hello_id.to_spec()
     }
+
+    /// 获取 JA4 指纹字符串
+    pub fn get_ja4_string(&self) -> Result<String, String> {
+        let spec = self.get_client_hello_spec()?;
+        Ok(spec.ja4_string())
+    }
 }
 
-/// 默认的 Client Profile（Chrome 133）
+/// 默认的 Client Profile（Chrome 135）
 pub fn default_client_profile() -> ClientProfile {
-    chrome_133()
+    chrome_135()
 }
 
 /// Chrome 103 指纹配置
@@ -169,13 +237,19 @@ pub fn chrome_103() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         Some(chrome_header_priority()),
+        None,
+        chrome_header_order(),
     )
 }
 
-/// Chrome 133 指纹配置（默认）
-/// 对应 Go 版本的 Chrome_133
+/// Chrome 133 指纹配置
 pub fn chrome_133() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
+    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
+    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
     ClientProfile::new(
         ClientHelloID::new(
             "Chrome",
@@ -188,13 +262,19 @@ pub fn chrome_133() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
     )
 }
 
 /// Firefox 133 指纹配置
-/// 对应 Go 版本的 Firefox_133
 pub fn firefox_133() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
+    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
+    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
     ClientProfile::new(
         ClientHelloID::new(
             "Firefox",
@@ -207,6 +287,81 @@ pub fn firefox_133() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         None,
+        default_tcp_profile,
+        firefox_header_order(),
+    )
+}
+
+/// Chrome 136 指纹配置
+pub fn chrome_136() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "136",
+            fingerprint_tls::tls_config::chrome_136_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 135 指纹配置（默认）
+pub fn chrome_135() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
+    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "135",
+            fingerprint_tls::tls_config::chrome_133_spec, // 使用 133 的 TLS 结构
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
+/// Firefox 135 指纹配置
+pub fn firefox_135() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
+    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "135",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        default_tcp_profile,
+        firefox_header_order(),
     )
 }
 
@@ -226,6 +381,8 @@ pub fn safari_16_0() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         None,
+        None,
+        safari_header_order(),
     )
 }
 
@@ -242,6 +399,8 @@ pub fn opera_91() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         Some(chrome_header_priority()),
+        None,
+        chrome_header_order(),
     )
 }
 
@@ -258,6 +417,8 @@ pub fn edge_120() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         Some(chrome_header_priority()),
+        None,
+        chrome_header_order(),
     )
 }
 
@@ -273,6 +434,8 @@ pub fn edge_124() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         Some(chrome_header_priority()),
+        None,
+        chrome_header_order(),
     )
 }
 
@@ -288,6 +451,8 @@ pub fn edge_133() -> ClientProfile {
         fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
         Vec::new(),
         Some(chrome_header_priority()),
+        None,
+        chrome_header_order(),
     )
 }
 
@@ -318,6 +483,9 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("chrome_131_PSK".to_string(), chrome_133());
     map.insert("chrome_133".to_string(), chrome_133());
     map.insert("chrome_133_PSK".to_string(), chrome_133());
+    map.insert("chrome_134".to_string(), chrome_135());
+    map.insert("chrome_135".to_string(), chrome_135());
+    map.insert("chrome_136".to_string(), chrome_136());
 
     // Safari 系列
     map.insert("safari_15_6_1".to_string(), safari_16_0());
@@ -342,7 +510,8 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("firefox_123".to_string(), firefox_133());
     map.insert("firefox_132".to_string(), firefox_133());
     map.insert("firefox_133".to_string(), firefox_133());
-    map.insert("firefox_135".to_string(), firefox_133());
+    map.insert("firefox_134".to_string(), firefox_135());
+    map.insert("firefox_135".to_string(), firefox_135());
 
     // Opera 系列
     map.insert("opera_89".to_string(), opera_91());
@@ -389,6 +558,54 @@ pub fn mapped_tls_clients() -> &'static HashMap<String, ClientProfile> {
     MAPPED_TLS_CLIENTS.get_or_init(init_mapped_tls_clients)
 }
 
+/// 根据 profile 名称获取 ClientProfile
+///
+/// # 参数
+/// - `profile_name`: 指纹配置名称（如 "chrome_135", "firefox_133"）
+///
+/// # 返回
+/// 返回对应的 ClientProfile，如果不存在则返回错误
+pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
+    let clients = mapped_tls_clients();
+    clients
+        .get(profile_name)
+        .cloned()
+        .ok_or_else(|| format!("Profile '{}' not found", profile_name))
+}
+
+/// 统一的指纹生成函数
+///
+/// 根据 profile 名称和 User-Agent 生成同步的浏览器指纹和 TCP 指纹
+///
+/// # 参数
+/// - `profile_name`: 指纹配置名称（如 "chrome_135", "firefox_133"）
+/// - `user_agent`: User-Agent 字符串，用于同步 TCP 指纹
+///
+/// # 返回
+/// 返回一个 ClientProfile，其中 tcp_profile 已根据 User-Agent 同步
+///
+/// # 示例
+/// ```rust
+/// use fingerprint_profiles::profiles::generate_unified_fingerprint;
+///
+/// let user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+/// let profile = generate_unified_fingerprint("chrome_135", user_agent).unwrap();
+///
+/// // profile.tcp_profile 现在包含与 User-Agent 匹配的 TCP 指纹
+/// // Windows -> TTL=128, Window Size=64240
+/// ```
+pub fn generate_unified_fingerprint(
+    profile_name: &str,
+    user_agent: &str,
+) -> Result<ClientProfile, String> {
+    let profile = get_client_profile(profile_name)?;
+
+    // 根据 User-Agent 同步 TCP Profile
+    let synced_profile = profile.with_synced_tcp_profile(user_agent);
+
+    Ok(synced_profile)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -405,5 +622,58 @@ mod tests {
     fn test_client_profile() {
         let profile = chrome_133();
         assert_eq!(profile.get_client_hello_str(), "Chrome-133");
+    }
+
+    #[test]
+    fn test_unified_fingerprint_generation() {
+        // 测试 Windows User-Agent
+        let windows_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+        let profile = generate_unified_fingerprint("chrome_135", windows_ua).unwrap();
+
+        // 验证 TCP Profile 已同步
+        assert!(profile.tcp_profile.is_some());
+        let tcp_profile = profile.tcp_profile.unwrap();
+        assert_eq!(tcp_profile.ttl, 128); // Windows TTL
+        assert_eq!(tcp_profile.window_size, 64240); // Windows Window Size
+
+        // 测试 Linux User-Agent
+        let linux_ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+        let profile = generate_unified_fingerprint("chrome_135", linux_ua).unwrap();
+
+        let tcp_profile = profile.tcp_profile.unwrap();
+        assert_eq!(tcp_profile.ttl, 64); // Linux TTL
+        assert_eq!(tcp_profile.window_size, 65535); // Linux Window Size
+
+        // 测试 macOS User-Agent
+        let macos_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+        let profile = generate_unified_fingerprint("chrome_135", macos_ua).unwrap();
+
+        let tcp_profile = profile.tcp_profile.unwrap();
+        assert_eq!(tcp_profile.ttl, 64); // macOS TTL
+        assert_eq!(tcp_profile.window_size, 65535); // macOS Window Size
+    }
+
+    #[test]
+    fn test_with_synced_tcp_profile() {
+        let profile = chrome_133();
+        let windows_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36";
+
+        let synced_profile = profile.with_synced_tcp_profile(windows_ua);
+        assert!(synced_profile.tcp_profile.is_some());
+        let tcp_profile = synced_profile.tcp_profile.unwrap();
+        assert_eq!(tcp_profile.ttl, 128);
+    }
+
+    #[test]
+    fn test_tcp_profile_for_os() {
+        use fingerprint_core::types::OperatingSystem;
+
+        let profile = chrome_133();
+        let synced_profile = profile.with_tcp_profile_for_os(OperatingSystem::Linux);
+
+        assert!(synced_profile.tcp_profile.is_some());
+        let tcp_profile = synced_profile.tcp_profile.unwrap();
+        assert_eq!(tcp_profile.ttl, 64);
+        assert_eq!(tcp_profile.window_size, 65535);
     }
 }

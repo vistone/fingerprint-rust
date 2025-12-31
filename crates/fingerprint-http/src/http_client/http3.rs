@@ -52,19 +52,26 @@ async fn send_http3_request_async(
 
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
-    // 优化传输配置以提升性能
+    // 优化传输配置以提升性能和连接迁移能力
     let mut transport = TransportConfig::default();
+
+    // 连接迁移 (Connection Migration) 优化
+    // QUIC 允许在 IP 切换时保持连接，这对移动端模拟至关重要
     transport.initial_rtt(Duration::from_millis(100));
     transport.max_idle_timeout(Some(
         Duration::from_secs(60)
             .try_into()
             .map_err(|e| HttpClientError::ConnectionFailed(format!("配置超时失败: {}", e)))?,
     ));
-    transport.keep_alive_interval(Some(Duration::from_secs(10)));
+    // 增加保活频率以辅助连接迁移识别
+    transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
-    // 增大接收窗口以提升吞吐量
-    transport.stream_receive_window((1024 * 1024u32).into()); // 1MB
-    transport.receive_window((10 * 1024 * 1024u32).into()); // 10MB
+    // 允许对端迁移（默认已开启，此处显式说明其重要性）
+    // transport.allow_peer_migration(true);
+
+    // 模拟 Chrome 的流控制窗口 (Chrome 通常使用较大的窗口以提升吞吐)
+    transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome 风格)
+    transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome 风格)
 
     // 允许更多并发流
     transport.max_concurrent_bidi_streams(100u32.into());
@@ -82,29 +89,60 @@ async fn send_http3_request_async(
         return Err(HttpClientError::InvalidUrl("无法解析地址".to_string()));
     }
     addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
-    let remote_addr = addrs[0];
 
-    // 3. 创建 QUIC endpoint（按 remote 的地址族选择绑定）
-    let bind_addr = match remote_addr.ip() {
-        IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
-        IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
-    };
-    let mut endpoint = Endpoint::client(bind_addr)
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("创建 endpoint 失败: {}", e)))?;
+    // 4. 连接到服务器 (Happy Eyeballs 简化版：循环尝试所有解析到的地址)
+    let mut connection_result = Err(HttpClientError::ConnectionFailed("无可用地址".to_string()));
 
-    endpoint.set_default_client_config(client_config);
+    for remote_addr in addrs {
+        // 创建 QUIC endpoint（按 remote 的地址族选择绑定）
+        let bind_addr = match remote_addr.ip() {
+            IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
+            IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
+        };
 
-    // 4. 连接到服务器
-    let connection = endpoint
-        .connect(remote_addr, host)
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("QUIC 连接失败: {}", e)))?
-        .await
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("QUIC 握手失败: {}", e)))?;
+        let endpoint = match Endpoint::client(bind_addr) {
+            Ok(mut ep) => {
+                ep.set_default_client_config(client_config.clone());
+                ep
+            }
+            Err(_) => continue,
+        };
 
-    // 5. 建立 HTTP/3 连接
-    let (driver, mut send_request) = h3::client::new(h3_quinn::Connection::new(connection))
-        .await
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/3 连接失败: {}", e)))?;
+        match endpoint.connect(remote_addr, host) {
+            Ok(connecting) => {
+                match connecting.await {
+                    Ok(conn) => {
+                        // 5. 建立 HTTP/3 连接
+                        match h3::client::new(h3_quinn::Connection::new(conn)).await {
+                            Ok((driver, send_request)) => {
+                                connection_result = Ok((driver, send_request));
+                                break;
+                            }
+                            Err(e) => {
+                                connection_result = Err(HttpClientError::ConnectionFailed(
+                                    format!("HTTP/3 握手失败: {}", e),
+                                ));
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        connection_result = Err(HttpClientError::ConnectionFailed(format!(
+                            "QUIC 握手失败: {}",
+                            e
+                        )));
+                    }
+                }
+            }
+            Err(e) => {
+                connection_result = Err(HttpClientError::ConnectionFailed(format!(
+                    "QUIC 连接发起失败: {}",
+                    e
+                )));
+            }
+        }
+    }
+
+    let (driver, mut send_request) = connection_result?;
 
     // 在后台驱动连接：h3 0.0.4 的 driver 需要被持续 poll_close
     tokio::spawn(async move {

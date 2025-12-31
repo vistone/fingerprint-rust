@@ -66,7 +66,7 @@ pub struct UtlsGREASEExtension {
 impl UtlsGREASEExtension {
     pub fn new() -> Self {
         Self {
-            value: 0x0a0a, // GREASE placeholder
+            value: fingerprint_core::grease::get_random_grease(),
         }
     }
 }

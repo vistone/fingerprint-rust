@@ -57,6 +57,40 @@ pub fn extract_platform(user_agent: &str) -> String {
     r#""Windows""#.to_string() // 默认平台
 }
 
+/// 从 User-Agent 中提取操作系统类型
+///
+/// 用于统一指纹生成，确保浏览器指纹和 TCP 指纹同步
+pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
+    use crate::types::OperatingSystem;
+
+    // 注意：iPhone/iPad 的 User-Agent 包含 "Mac OS X"，需要先检查移动设备
+    if user_agent.contains("iPhone") || user_agent.contains("iPad") {
+        // iOS 设备：使用 macOS 的 TCP 指纹（iOS 基于 macOS）
+        OperatingSystem::MacOS14
+    } else if user_agent.contains("Windows NT 10.0") {
+        OperatingSystem::Windows10
+    } else if user_agent.contains("Windows NT 11.0") {
+        OperatingSystem::Windows11
+    } else if user_agent.contains("Mac OS X 13")
+        || user_agent.contains("Macintosh; Intel Mac OS X 13")
+    {
+        OperatingSystem::MacOS13
+    } else if user_agent.contains("Mac OS X 14")
+        || user_agent.contains("Macintosh; Intel Mac OS X 14")
+    {
+        OperatingSystem::MacOS14
+    } else if user_agent.contains("Mac OS X 15")
+        || user_agent.contains("Macintosh; Intel Mac OS X 15")
+    {
+        OperatingSystem::MacOS15
+    } else if user_agent.contains("Linux") || user_agent.contains("Android") {
+        OperatingSystem::Linux
+    } else {
+        // 默认使用 Windows（最常见的浏览器环境）
+        OperatingSystem::Windows10
+    }
+}
+
 /// 从 profile 名称推断浏览器类型
 pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     let name_lower = profile_name.to_lowercase();

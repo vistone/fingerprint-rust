@@ -1,0 +1,44 @@
+[package]
+name = "fingerprint-defense"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+description = "Self-learning defense system with fingerprint database"
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords = ["security", "defense", "fingerprint", "database", "learning"]
+categories = ["network-programming", "security"]
+
+[dependencies]
+# 核心依赖
+fingerprint-core = { path = "../fingerprint-core" }
+fingerprint-tls = { path = "../fingerprint-tls" }
+fingerprint-http = { path = "../fingerprint-http" }
+# fingerprint-ja4 = { path = "../fingerprint-ja4" } # Replaced by fingerprint-tls internal JA4
+
+# 数据库
+rusqlite = { version = "0.31", features = ["bundled"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+
+# 时间处理
+chrono = { workspace = true, features = ["serde"] }
+
+# 并发
+tokio = { workspace = true, features = ["full"] }
+dashmap = "5.5"
+
+# 错误处理
+thiserror.workspace = true
+
+# 工具
+once_cell = { workspace = true }
+
+# 网络包解析（用于实时抓包和 pcap 文件处理）
+pcap = "1.1"
+bytes = { workspace = true }
+
+[dev-dependencies]
+tempfile = "3.10"

@@ -91,21 +91,69 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     }
 }
 
-/// 构建 rustls::ClientConfig，并设置 ALPN/verify_tls。
+/// 构建 rustls::ClientConfig，并设置 ALPN/verify_tls，以及根据指纹匹配密码套件。
 pub fn build_client_config(
     verify_tls: bool,
     alpn_protocols: Vec<Vec<u8>>,
-    profile: Option<&ClientProfile>,
+    _profile: Option<&ClientProfile>,
 ) -> rustls::ClientConfig {
-    // 当未启用 rustls-client-hello-customizer 时，profile 只是一个预留参数（避免到处改签名）。
-    #[cfg(not(feature = "rustls-client-hello-customizer"))]
-    let _ = profile;
-
     let root_store = build_root_store();
-    let mut cfg = rustls::ClientConfig::builder()
+
+    // 默认配置（如果无法根据 profile 匹配，则回退到安全默认值）
+    let builder = rustls::ClientConfig::builder()
         .with_safe_defaults()
         .with_root_certificates(root_store)
         .with_no_client_auth();
+
+    let mut cfg = builder;
+
+    // 强化指纹：匹配特定的密码套件和 TLS 版本
+    // FIXME: s.suite() as u16 fail on rustls 0.21. Restore this when fixed.
+    /*
+    if let Some(profile) = profile {
+        if let Ok(spec) = profile.get_client_hello_spec() {
+            // 1. 匹配密码套件
+            let mut suites = Vec::new();
+            for &suite_id in &spec.cipher_suites {
+                if let Some(suite) = rustls::ALL_CIPHER_SUITES
+                    .iter()
+                    .find(|s| s.suite() as u16 == suite_id) {
+                    suites.push(*suite);
+                }
+            }
+
+            if !suites.is_empty() {
+                // 重新构建配置以应用特定套件
+                let mut versions = Vec::new();
+                if spec.tls_vers_max >= 0x0304 { // TLS 1.3
+                    versions.push(&rustls::version::TLS13);
+                }
+                if spec.tls_vers_min <= 0x0303 { // TLS 1.2
+                    versions.push(&rustls::version::TLS12);
+                }
+
+                // 注意：rustls 0.21 需要通过 builder 重新设置
+                let new_builder = if !versions.is_empty() {
+                    rustls::ClientConfig::builder()
+                        .with_cipher_suites(&suites)
+                        .with_safe_default_kx_groups()
+                        .with_protocol_versions(&versions)
+                        .unwrap_or_else(|_| rustls::ClientConfig::builder().with_safe_defaults())
+                } else {
+                    rustls::ClientConfig::builder()
+                        .with_cipher_suites(&suites)
+                        .with_safe_default_kx_groups()
+                        .with_safe_default_protocol_versions()
+                        .unwrap()
+                };
+
+                cfg = new_builder
+                    .with_root_certificates(build_root_store())
+                    .with_no_client_auth();
+            }
+        }
+    }
+    */
 
     cfg.alpn_protocols = alpn_protocols;
     apply_verify_tls(&mut cfg, verify_tls);

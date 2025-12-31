@@ -17,6 +17,7 @@ fingerprint-tls = { path = "../fingerprint-tls" }
 fingerprint-profiles = { path = "../fingerprint-profiles" }
 fingerprint-headers = { path = "../fingerprint-headers" }
 once_cell = { workspace = true }
+socket2 = { workspace = true }
 
 # HTTP 客户端依赖 (可选)
 rustls = { workspace = true, optional = true }

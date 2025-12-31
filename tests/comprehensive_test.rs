@@ -749,3 +749,6 @@ fn test_summary() {
     println!();
     println!("═══════════════════════════════════════════════════════════");
 }
+
+// TCP 指纹同步演示已移至 tcp_sync_demo_test.rs
+// 请使用独立的测试文件：tests/tcp_sync_demo_test.rs

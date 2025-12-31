@@ -1,7 +1,7 @@
 # 文档索引
 
-**最后更新**: 2025-12-29  
-**项目版本**: v2.0.1 (Workspace)
+**最后更新**: 2025-12-31  
+**项目版本**: v2.1.0 (Workspace with Active/Passive Defense)
 
 ---
 
@@ -14,12 +14,16 @@
 
 ### 架构文档
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - 系统架构设计（包含 Workspace 架构）
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - 系统架构设计（包含 Workspace 架构和防御模块）
+- **[ARCHITECTURE_EVOLUTION.md](ARCHITECTURE_EVOLUTION.md)** - 架构演进历程（全协议多路复用架构的演进过程）
 
 ### 使用指南 (`guides/`)
 
 - **[USAGE_GUIDE.md](guides/USAGE_GUIDE.md)** - 使用指南：如何随机选择和指定浏览器指纹
 - **[CAPTURE_BROWSER_FINGERPRINTS.md](guides/CAPTURE_BROWSER_FINGERPRINTS.md)** - 如何抓取真实浏览器的 TLS 指纹
+- **[UNIFIED_FINGERPRINT.md](guides/UNIFIED_FINGERPRINT.md)** - 统一指纹生成指南：确保浏览器指纹和 TCP 指纹同步
+- **[TCP_FINGERPRINT_SYNC.md](guides/TCP_FINGERPRINT_SYNC.md)** - TCP 指纹自动同步说明：验证每次选择浏览器指纹时 TCP 指纹都会同步
+- **[TCP_FINGERPRINT_APPLICATION.md](guides/TCP_FINGERPRINT_APPLICATION.md)** - TCP 指纹应用指南：如何在 TCP 连接上应用指纹参数
 - **[GOOGLE_EARTH_TEST.md](guides/GOOGLE_EARTH_TEST.md)** - Google Earth API 测试说明
 - **[TEST_GOOGLE_EARTH_EXECUTABLE.md](guides/TEST_GOOGLE_EARTH_EXECUTABLE.md)** - Google Earth API 测试可执行程序使用指南
 
@@ -85,7 +89,7 @@
 
 ## 📦 Workspace 架构
 
-项目采用 Cargo Workspace 架构，包含 7 个独立 crate：
+项目采用 Cargo Workspace 架构，包含 8 个独立 crate：
 
 1. **fingerprint-core** - 核心类型和工具
 2. **fingerprint-tls** - TLS 配置、扩展和握手
@@ -93,7 +97,8 @@
 4. **fingerprint-headers** - HTTP Headers 和 User-Agent
 5. **fingerprint-http** - HTTP 客户端实现
 6. **fingerprint-dns** - DNS 预解析服务（可选）
-7. **fingerprint** - 主库，重新导出所有功能
+7. **fingerprint-defense** - 被动识别与主动防护（可选）
+8. **fingerprint** - 主库，重新导出所有功能
 
 详细说明请查看 [ARCHITECTURE.md](ARCHITECTURE.md)
 
@@ -111,8 +116,11 @@
 - HTTP/2、HTTP/3 示例
 - DNS 服务示例
 - 配置导出示例
+- **[verify_consistency.rs](../crates/fingerprint/examples/verify_consistency.rs)** - 一致性审计示例
+- **[verify_database.rs](../crates/fingerprint/examples/verify_database.rs)** - 数据库持久化示例
+- **[verify_advanced.rs](../crates/fingerprint/examples/verify_advanced.rs)** - H2 被动识别与学习示例
 
 ---
 
-**文档版本**: v2.0.0  
-**最后更新**: 2025-12-14
+**文档版本**: v2.1.0  
+**最后更新**: 2025-12-31

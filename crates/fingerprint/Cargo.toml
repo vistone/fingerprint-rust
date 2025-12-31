@@ -18,11 +18,15 @@ fingerprint-profiles = { path = "../fingerprint-profiles" }
 fingerprint-headers = { path = "../fingerprint-headers" }
 fingerprint-http = { path = "../fingerprint-http", default-features = false }
 fingerprint-dns = { path = "../fingerprint-dns", optional = true }
+fingerprint-defense = { path = "../fingerprint-defense", optional = true }
 
 # 配置导出功能（可选）
 serde = { workspace = true, optional = true, features = ["derive"] }
 serde_json = { workspace = true, optional = true }
 hex = { workspace = true, optional = true }
+chrono = { workspace = true }
+bytes = { workspace = true }
+tokio = { workspace = true, features = ["full"] }
 
 [features]
 default = ["rustls-tls", "compression", "http2"]
@@ -38,3 +42,4 @@ crypto = ["fingerprint-tls/crypto", "fingerprint-http/crypto"]
 dangerous_configuration = ["fingerprint-http/dangerous_configuration"]
 rustls-client-hello-customizer = ["fingerprint-http/rustls-client-hello-customizer"]
 dns = ["fingerprint-dns", "fingerprint-http/rustls-tls"]
+defense = ["fingerprint-defense"]

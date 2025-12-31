@@ -1,6 +1,11 @@
 //! HTTP/2 with Connection Pool
 //!
-//! 使用 netconnpool 管理 TCP 连接复用，支持 HTTP/2
+//! 架构说明：
+//! - HTTP/2 采用会话池（H2SessionPool）实现真正的多路复用
+//! - 池化对象：h2::client::SendRequest 句柄（已握手完成的会话）
+//! - 复用方式：并发多路复用（一个会话可同时处理多个请求）
+//! - netconnpool 角色：仅在创建新会话时作为底层 TCP 连接源（加速连接建立）
+//! - 会话建立后，连接生命周期由 H2Session 的后台任务（Driver）管理
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -21,6 +26,10 @@ pub async fn send_http2_request_with_pool(
     use h2::client;
     use http::{Request as HttpRequest2, Version};
     use tokio_rustls::TlsConnector;
+
+    // 注意：连接池中的连接在创建时可能没有应用 TCP Profile
+    // 为了确保 TCP 指纹一致性，我们建议在创建连接池之前就通过 generate_unified_fingerprint 同步 TCP Profile
+    // 这里我们仍然从连接池获取连接，但新创建的连接会应用 TCP Profile（如果配置了）
 
     // 从连接池获取连接
     let pool = pool_manager.get_pool(host, port)?;
@@ -60,39 +69,73 @@ pub async fn send_http2_request_with_pool(
         .await
         .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))?;
 
-    // 架构问题：当前实现每次请求都重新进行 HTTP/2 握手
-    // 这违背了 HTTP/2 的核心优势（多路复用），导致性能问题
-    //
-    // 修复建议：实现 HTTP/2 会话池，池化 h2::client::SendRequest 句柄
-    // 1. 创建 H2SessionPool 管理器，按 host:port 缓存 SendRequest
-    // 2. 每个会话需要后台任务运行 h2_conn 以保持连接活跃
-    // 3. 实现会话超时和失效检测机制
-    // 4. 只有在会话失效时才重新握手
-    //
-    // 注意：完整的会话池化需要管理连接生命周期，这是一个较大的架构改动
-    // 当前实现虽然功能正确，但性能未达到 HTTP/2 的最佳实践
+    // 修复：使用 HTTP/2 会话池实现真正的多路复用
+    // 避免每次请求都重新进行 TLS 和 HTTP/2 握手
+    let session_key = format!("{}:{}", host, port);
+    let h2_session_pool = pool_manager.h2_session_pool();
 
-    // 建立 HTTP/2 连接
-    // 注意：h2 0.4 的 Builder API 可能不支持所有 Settings
-    // 先使用默认 handshake，Settings 应用需要进一步研究 h2 API
-    let (mut client, h2_conn) = client::handshake(tls_stream)
-        .await
-        .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 握手失败: {}", e)))?;
-
-    // TODO: 应用 HTTP/2 Settings
-    // h2 0.4 的 Builder API 限制，Settings 需要在握手时配置
-    // 但 client::handshake() 不提供 Builder，需要研究如何应用自定义 Settings
-    if let Some(_profile) = &config.profile {
-        // Settings 信息已从 profile 获取，但 h2 0.4 API 限制无法直接应用
-        // 这不会影响功能，只是无法精确模拟浏览器的 Settings 值
+    // #region agent log
+    let log_msg = format!("http2_pool: 请求会话 key={}", session_key);
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open("/home/stone/fingerprint-rust/.cursor/debug.log")
+    {
+        use std::io::Write;
+        let _ = writeln!(file, "{{\"timestamp\":{},\"location\":\"http2_pool.rs:66\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\",\"host\":\"{}\",\"port\":{}}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}", 
+            std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
+            log_msg, session_key, host, port);
     }
+    // #endregion
 
-    // 在后台运行连接
-    tokio::spawn(async move {
-        if let Err(e) = h2_conn.await {
-            eprintln!("警告: HTTP/2 连接错误: {:?}", e);
-        }
-    });
+    // 从会话池获取或创建 SendRequest 句柄
+    let send_request = h2_session_pool
+        .get_or_create_session::<_, tokio_rustls::client::TlsStream<tokio::net::TcpStream>>(&session_key, async {
+            // #region agent log
+            let log_msg = format!("http2_pool: 开始创建新会话 key={}", session_key);
+            if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open("/home/stone/fingerprint-rust/.cursor/debug.log") {
+                use std::io::Write;
+                let _ = writeln!(file, "{{\"timestamp\":{},\"location\":\"http2_pool.rs:74\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\"}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}", 
+                    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
+                    log_msg, session_key);
+            }
+            // #endregion
+            // 建立 HTTP/2 连接
+            let mut builder = client::Builder::new();
+
+            // 应用指纹配置中的 HTTP/2 Settings
+            if let Some(profile) = &config.profile {
+                // 设置初始窗口大小
+                if let Some(&window_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16()) {
+                    builder.initial_window_size(window_size);
+                }
+
+                // 设置最大帧大小
+                if let Some(&max_frame_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxFrameSize.as_u16()) {
+                    builder.max_frame_size(max_frame_size);
+                }
+
+                // 设置最大头部列表大小
+                if let Some(&max_header_list_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxHeaderListSize.as_u16()) {
+                    builder.max_header_list_size(max_header_list_size);
+                }
+
+                // 设置连接级窗口大小（Connection Flow）
+                builder.initial_connection_window_size(profile.connection_flow);
+            }
+
+            let (client, h2_conn) = builder.handshake(tls_stream)
+                .await
+                .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 握手失败: {}", e)))?;
+
+            // 返回 SendRequest 和 Connection（会话池会管理 Connection 的生命周期）
+            Ok((client, h2_conn))
+        })
+        .await?;
+
+    // 从会话池获取的 SendRequest 是 Arc<TokioMutex<SendRequest>>
+    // 需要获取锁才能使用
+    let mut client = send_request.lock().await;
 
     // 构建 HTTP/2 请求
     let uri: http::Uri = format!("https://{}:{}{}", host, port, path)
@@ -144,6 +187,9 @@ pub async fn send_http2_request_with_pool(
     let (response, mut send_stream) = client
         .send_request(http2_request, false) // 修复：改为 false，只有在发送完 body 后才结束流
         .map_err(|e| HttpClientError::Http2Error(format!("发送请求失败: {}", e)))?;
+
+    // 释放锁，允许其他请求复用同一个会话
+    drop(client);
 
     // 修复：通过 SendStream 发送请求体（如果存在）
     if let Some(body) = &request.body {
@@ -244,6 +290,9 @@ mod tests {
     #[tokio::test]
     #[ignore] // 需要网络连接
     async fn test_http2_with_pool() {
+        // 清除之前的日志
+        let _ = std::fs::remove_file("/home/stone/fingerprint-rust/.cursor/debug.log");
+
         let user_agent = "TestClient/1.0".to_string();
         let config = HttpClientConfig {
             user_agent,
@@ -255,7 +304,8 @@ mod tests {
 
         let request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get");
 
-        let result = send_http2_request_with_pool(
+        println!("📡 发送第一个 HTTP/2 请求（应该创建新会话）...");
+        let result1 = send_http2_request_with_pool(
             "httpbin.org",
             443,
             "/get",
@@ -266,9 +316,81 @@ mod tests {
         .await;
 
         // 可能会失败（网络问题），但不应该 panic
-        if let Ok(response) = result {
+        if let Ok(response) = &result1 {
             assert_eq!(response.http_version, "HTTP/2");
             assert!(response.status_code > 0);
+            println!("  ✅ 第一个请求成功: {}", response.status_code);
+        } else {
+            println!("  ❌ 第一个请求失败: {:?}", result1);
+            return;
+        }
+
+        // 等待一小段时间，确保会话已建立
+        tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+        println!("\n📡 发送第二个 HTTP/2 请求（应该复用会话）...");
+        let result2 = send_http2_request_with_pool(
+            "httpbin.org",
+            443,
+            "/headers",
+            &request,
+            &config,
+            &pool_manager,
+        )
+        .await;
+
+        if let Ok(response) = &result2 {
+            assert_eq!(response.http_version, "HTTP/2");
+            assert!(response.status_code > 0);
+            println!("  ✅ 第二个请求成功: {}", response.status_code);
+        } else {
+            println!("  ❌ 第二个请求失败: {:?}", result2);
+        }
+
+        // 读取日志并分析
+        println!("\n📋 调试日志分析:");
+        if let Ok(log_content) =
+            std::fs::read_to_string("/home/stone/fingerprint-rust/.cursor/debug.log")
+        {
+            let mut create_count = 0;
+            let mut reuse_count = 0;
+            for line in log_content.lines() {
+                // 简单的字符串匹配来解析 JSON 日志
+                if line.contains("\"message\"") {
+                    let location = if let Some(start) = line.find("\"location\":\"") {
+                        let end = line[start + 12..].find('"').unwrap_or(0);
+                        &line[start + 12..start + 12 + end]
+                    } else {
+                        ""
+                    };
+                    let message = if let Some(start) = line.find("\"message\":\"") {
+                        let end = line[start + 11..].find('"').unwrap_or(0);
+                        &line[start + 11..start + 11 + end]
+                    } else {
+                        ""
+                    };
+                    println!("  {}: {}", location, message);
+
+                    if message.contains("创建新会话") {
+                        create_count += 1;
+                    } else if message.contains("复用现有会话") {
+                        reuse_count += 1;
+                    }
+                }
+            }
+            println!("\n📊 会话池统计:");
+            println!("  创建新会话: {} 次", create_count);
+            println!("  复用会话: {} 次", reuse_count);
+
+            if reuse_count > 0 {
+                println!("  ✅ 会话复用成功！HTTP/2 多路复用正常工作");
+            } else if create_count > 1 {
+                println!("  ⚠️  会话未复用，每次请求都创建新会话");
+            } else {
+                println!("  ℹ️  只发送了一个请求，无法验证会话复用");
+            }
+        } else {
+            println!("  ⚠️  无法读取日志文件");
         }
     }
 }

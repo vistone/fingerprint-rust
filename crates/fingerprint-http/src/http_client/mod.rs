@@ -11,6 +11,8 @@
 pub mod cookie;
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 mod h2_session_pool;
+#[cfg(all(feature = "connection-pool", feature = "http3"))]
+mod h3_session_pool;
 pub mod http1;
 pub mod http1_pool;
 pub mod http2;
@@ -29,6 +31,7 @@ pub mod response;
 mod rustls_client_hello_customizer;
 #[cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
 mod rustls_utils;
+pub mod tcp_fingerprint;
 pub mod tls;
 
 pub use cookie::{Cookie, CookieStore, SameSite};
@@ -45,10 +48,11 @@ use std::io as std_io;
 use std::time::Duration;
 
 // 修复：使用全局单例 Runtime 避免频繁创建（用于 HTTP/2 和 HTTP/3 连接池场景）
-#[cfg(any(feature = "http2", feature = "http3"))]
+// 注意：只在 connection-pool 启用时才需要，因为只有连接池场景才需要同步包装异步代码
+#[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
-#[cfg(any(feature = "http2", feature = "http3"))]
+#[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 static SHARED_RUNTIME: Lazy<tokio::runtime::Runtime> =
     Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
 

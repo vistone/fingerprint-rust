@@ -1,6 +1,11 @@
 //! HTTP/3 with Connection Pool
 //!
-//! 使用 netconnpool 管理 UDP 连接复用，支持 HTTP/3 (QUIC)
+//! 架构说明：
+//! - HTTP/3 采用会话池（H3SessionPool）实现 QUIC 会话复用
+//! - 池化对象：h3::client::SendRequest 句柄（已握手完成的 QUIC 会话）
+//! - 复用方式：并发多路复用（一个 QUIC 连接可同时处理多个 Stream）
+//! - QUIC 特性：协议本身包含连接迁移和状态管理，无需 netconnpool
+//! - 会话建立后，连接生命周期由 H3Session 的后台任务（Driver）管理
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -24,91 +29,87 @@ pub async fn send_http3_request_with_pool(
     use h3_quinn::quinn;
     use http::{Request as HttpRequest2, Version};
 
-    // 对于 HTTP/3，我们需要 UDP 连接
-    // 注意：netconnpool 主要是为 TCP 设计的，对于 UDP/QUIC 可能需要不同的处理方式
-    // 这里我们先获取连接信息，然后创建 QUIC 连接
+    // 修复：使用 H3SessionPool 实现真正的多路复用
+    let session_pool = pool_manager.h3_session_pool();
+    let key = format!("{}:{}", host, port);
 
-    let pool = pool_manager.get_pool(host, port)?;
+    // 获取或创建会话
+    let send_request_mutex = session_pool
+        .get_or_create_session(&key, async {
+            // 解析目标地址
+            use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
+            let addr = format!("{}:{}", host, port);
+            let mut addrs: Vec<SocketAddr> = addr
+                .to_socket_addrs()
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("DNS 解析失败: {}", e)))?
+                .collect();
+            if addrs.is_empty() {
+                return Err(HttpClientError::ConnectionFailed(
+                    "DNS 解析无结果".to_string(),
+                ));
+            }
+            addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
+            let remote_addr = addrs[0];
 
-    // 获取连接（用于获取目标地址信息）
-    let _conn = pool
-        .get_tcp()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
+            // 创建 QUIC 客户端配置
+            let tls_config = super::rustls_utils::build_client_config(
+                config.verify_tls,
+                vec![b"h3".to_vec()],
+                config.profile.as_ref(),
+            );
 
-    // 解析目标地址 - 需要先进行 DNS 解析
-    // 注意：Endpoint 绑定的是 IPv4/IPv6 的具体栈；这里优先选 IPv4，避免出现
-    // “Endpoint 是 0.0.0.0 但 remote 是 IPv6 导致 invalid remote address”。
-    use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
-    let addr = format!("{}:{}", host, port);
-    let mut addrs: Vec<SocketAddr> = addr
-        .to_socket_addrs()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("DNS 解析失败: {}", e)))?
-        .collect();
-    if addrs.is_empty() {
-        return Err(HttpClientError::ConnectionFailed(
-            "DNS 解析无结果".to_string(),
-        ));
-    }
-    addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
-    let remote_addr = addrs[0];
+            let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
-    // 创建 QUIC 客户端配置
-    let tls_config = super::rustls_utils::build_client_config(
-        config.verify_tls,
-        vec![b"h3".to_vec()],
-        config.profile.as_ref(),
-    );
+            // 优化传输配置以提升性能
+            let mut transport_config = quinn::TransportConfig::default();
+            transport_config.initial_rtt(Duration::from_millis(100));
+            transport_config.max_idle_timeout(Some(
+                quinn::IdleTimeout::try_from(std::time::Duration::from_secs(60))
+                    .map_err(|e| HttpClientError::Http3Error(format!("配置超时失败: {}", e)))?,
+            ));
+            transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
-    let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
+            // 增大接收窗口以提升吞吐量
+            transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
+            transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
-    // 优化传输配置以提升性能
-    let mut transport_config = quinn::TransportConfig::default();
-    transport_config.initial_rtt(Duration::from_millis(100));
-    transport_config.max_idle_timeout(Some(
-        quinn::IdleTimeout::try_from(std::time::Duration::from_secs(60))
-            .map_err(|e| HttpClientError::Http3Error(format!("配置超时失败: {}", e)))?,
-    ));
-    transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
+            // 允许更多并发流
+            transport_config.max_concurrent_bidi_streams(100u32.into());
+            transport_config.max_concurrent_uni_streams(100u32.into());
 
-    // 增大接收窗口以提升吞吐量
-    transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
-    transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
+            client_config.transport_config(std::sync::Arc::new(transport_config));
 
-    // 允许更多并发流
-    transport_config.max_concurrent_bidi_streams(100u32.into());
-    transport_config.max_concurrent_uni_streams(100u32.into());
+            // 创建 QUIC endpoint
+            let bind_addr = match remote_addr.ip() {
+                IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
+                IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
+            };
+            let mut endpoint = quinn::Endpoint::client(bind_addr)
+                .map_err(|e| HttpClientError::Http3Error(format!("创建 endpoint 失败: {}", e)))?;
+            endpoint.set_default_client_config(client_config);
 
-    client_config.transport_config(std::sync::Arc::new(transport_config));
+            // 连接到服务器
+            let connecting = endpoint
+                .connect(remote_addr, host)
+                .map_err(|e| HttpClientError::Http3Error(format!("连接失败: {}", e)))?;
 
-    // 创建 QUIC endpoint（按 remote 的地址族选择绑定）
-    let bind_addr = match remote_addr.ip() {
-        IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
-        IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
-    };
-    let mut endpoint = quinn::Endpoint::client(bind_addr)
-        .map_err(|e| HttpClientError::Http3Error(format!("创建 endpoint 失败: {}", e)))?;
-    endpoint.set_default_client_config(client_config);
+            let connection = connecting
+                .await
+                .map_err(|e| HttpClientError::Http3Error(format!("建立连接失败: {}", e)))?;
 
-    // 连接到服务器
-    let connecting = endpoint
-        .connect(remote_addr, host)
-        .map_err(|e| HttpClientError::Http3Error(format!("连接失败: {}", e)))?;
+            // 建立 HTTP/3 连接
+            let quinn_conn = h3_quinn::Connection::new(connection);
 
-    let connection = connecting
-        .await
-        .map_err(|e| HttpClientError::Http3Error(format!("建立连接失败: {}", e)))?;
+            let (driver, send_request) = h3::client::new(quinn_conn)
+                .await
+                .map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 握手失败: {}", e)))?;
 
-    // 建立 HTTP/3 连接
-    let quinn_conn = h3_quinn::Connection::new(connection);
+            Ok((driver, send_request))
+        })
+        .await?;
 
-    let (mut driver, mut send_request) = h3::client::new(quinn_conn)
-        .await
-        .map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 握手失败: {}", e)))?;
-
-    // 在后台驱动连接：h3 0.0.4 的 driver 需要被持续 poll_close
-    tokio::spawn(async move {
-        let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
-    });
+    // 获取并排他性地使用 SendRequest
+    let mut send_request = send_request_mutex.lock().await;
 
     // 构建 HTTP/3 请求
     let uri: http::Uri = format!("https://{}:{}{}", host, port, path)

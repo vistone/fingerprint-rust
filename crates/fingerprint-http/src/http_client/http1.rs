@@ -40,7 +40,8 @@ pub fn send_http1_request(
     }
 
     // 构建并发送 HTTP/1.1 请求
-    let http_request = request_with_cookies.build_http1_request_bytes(host, path);
+    let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
+    let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
     stream
         .write_all(&http_request)
         .map_err(HttpClientError::Io)?;

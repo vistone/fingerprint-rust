@@ -209,6 +209,34 @@ impl HTTPHeaders {
 
         headers
     }
+
+    /// 将 HTTPHeaders 转换为有序的 Vec，遵循指定的 header_order
+    pub fn to_ordered_vec(&self, order: &[String]) -> Vec<(String, String)> {
+        let map = self.to_map();
+        let mut result = Vec::with_capacity(map.len());
+        let mut used = std::collections::HashSet::new();
+
+        // 1. 先按指定的 order 顺序添加
+        for key in order {
+            // 查找 map 中是否存在匹配的 key (忽略大小写进行匹配，但保留 order 中的大小写)
+            for (m_key, m_val) in &map {
+                if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
+                    result.push((key.clone(), m_val.clone()));
+                    used.insert(m_key.clone());
+                    break;
+                }
+            }
+        }
+
+        // 2. 添加剩下的且不再 order 中的 headers
+        for (m_key, m_val) in map {
+            if !used.contains(&m_key) {
+                result.push((m_key, m_val));
+            }
+        }
+
+        result
+    }
 }
 
 impl Default for HTTPHeaders {
@@ -229,7 +257,7 @@ pub fn generate_headers(
     is_mobile: bool,
 ) -> HTTPHeaders {
     let user_agent = if user_agent.is_empty() {
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
     } else {
         user_agent
     };
@@ -249,14 +277,14 @@ pub fn generate_headers(
 
             if is_mobile {
                 headers.sec_ch_ua =
-                    r#""Not A(Brand";v="8", "Chromium";v="120", "Google Chrome";v="120""#
+                    r#""Not(A:Brand";v="99", "Google Chrome";v="135", "Chromium";v="135""#
                         .to_string();
                 headers.sec_ch_ua_mobile = "?1".to_string();
                 headers.sec_ch_ua_platform = r#""Android""#.to_string();
             } else {
                 let chrome_version = extract_chrome_version(user_agent);
                 headers.sec_ch_ua = format!(
-                    r#""Not A(Brand";v="8", "Chromium";v="{}", "Google Chrome";v="{}""#,
+                    r#""Not(A:Brand";v="99", "Google Chrome";v="{}", "Chromium";v="{}""#,
                     chrome_version, chrome_version
                 );
                 headers.sec_ch_ua_mobile = "?0".to_string();

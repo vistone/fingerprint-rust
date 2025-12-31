@@ -168,3 +168,53 @@ pub const CHROME_CONNECTION_FLOW: u32 = 15663105;
 pub fn chrome_header_priority() -> HTTP2PriorityParam {
     HTTP2PriorityParam::new(255, 0, false) // 对应 HTTP/2 weight = 256
 }
+
+/// Chrome 的标准 Header 顺序 (HTTP/1.1)
+pub fn chrome_header_order() -> Vec<String> {
+    vec![
+        "Host".to_string(),
+        "Connection".to_string(),
+        "sec-ch-ua".to_string(),
+        "sec-ch-ua-mobile".to_string(),
+        "sec-ch-ua-platform".to_string(),
+        "Upgrade-Insecure-Requests".to_string(),
+        "User-Agent".to_string(),
+        "Accept".to_string(),
+        "Sec-Fetch-Site".to_string(),
+        "Sec-Fetch-Mode".to_string(),
+        "Sec-Fetch-User".to_string(),
+        "Sec-Fetch-Dest".to_string(),
+        "Accept-Encoding".to_string(),
+        "Accept-Language".to_string(),
+    ]
+}
+
+/// Firefox 的标准 Header 顺序 (HTTP/1.1)
+pub fn firefox_header_order() -> Vec<String> {
+    vec![
+        "Host".to_string(),
+        "User-Agent".to_string(),
+        "Accept".to_string(),
+        "Accept-Language".to_string(),
+        "Accept-Encoding".to_string(),
+        "Connection".to_string(),
+        "Upgrade-Insecure-Requests".to_string(),
+        "Sec-Fetch-Dest".to_string(),
+        "Sec-Fetch-Mode".to_string(),
+        "Sec-Fetch-Site".to_string(),
+        "Sec-Fetch-User".to_string(),
+        "Priority".to_string(),
+    ]
+}
+
+/// Safari 的标准 Header 顺序 (HTTP/1.1)
+pub fn safari_header_order() -> Vec<String> {
+    vec![
+        "Host".to_string(),
+        "Accept".to_string(),
+        "Accept-Language".to_string(),
+        "Connection".to_string(),
+        "Accept-Encoding".to_string(),
+        "User-Agent".to_string(),
+    ]
+}

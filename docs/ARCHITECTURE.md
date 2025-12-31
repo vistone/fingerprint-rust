@@ -1,7 +1,7 @@
 # 架构设计文档
 
-**版本**: v2.0.0 (Workspace)  
-**最后更新**: 2025-12-14
+**版本**: v2.1.0 (Workspace with Active/Passive Defense)  
+**最后更新**: 2025-12-31
 
 ---
 
@@ -94,6 +94,15 @@ fingerprint-rust/
 │   │       ├── lib.rs
 │   │       └── dns/               # DNS 解析器、服务器池等
 │   │
+│   ├── fingerprint-defense/      # 被动识别与主动防护（可选）
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       ├── passive/           # 被动分析器 (TCP/HTTP/TLS/JA4+)
+│   │       ├── database.rs        # SQLite 持久化层
+│   │       ├── learner.rs         # 指纹自学习逻辑
+│   │       └── capture/           # 实时报文捕获 (Pcap)
+│   │
 │   └── fingerprint/              # 主库，重新导出所有功能
 │       ├── Cargo.toml
 │       └── src/
@@ -119,6 +128,7 @@ members = [
     "crates/fingerprint-headers",
     "crates/fingerprint-http",
     "crates/fingerprint-dns",
+    "crates/fingerprint-defense",
     "crates/fingerprint",
 ]
 resolver = "2"
@@ -388,7 +398,29 @@ pub use dns::{
 };
 ```
 
-### 3.7 fingerprint
+### 3.7 fingerprint-defense
+
+**职责**: 全栈被动指纹识别与主动一致性审计
+
+**代码位置**: `crates/fingerprint-defense/src/`
+
+**包含模块**:
+- `passive/`: 协议层被动分析
+  - `tcp.rs`: JA4T (TCP) 指纹识别，底层 OS 特征审计
+  - `tls.rs`: JA4 (TLS) 静态特征解析
+  - `http.rs`: JA4H (HTTP) 特征提取与 HTTP/2 二进制帧支持
+  - `consistency.rs`: 跨层一致性校验引擎
+  - `p0f.rs`: 集成 p0f 签名库进行 OS 识别
+- `database.rs`: 基于 SQLite 的流量与威胁持久化
+- `learner.rs`: 未知指纹自学习机制
+- `capture/`: 物理网卡实时捕获引擎
+
+**依赖**:
+- `fingerprint-core`: 核心类型与 JA4+ 定义
+- `rusqlite`: 数据库支持
+- `pcap`: 报文捕获
+
+### 3.8 fingerprint
 
 **职责**: 主库，重新导出所有功能
 
@@ -460,6 +492,12 @@ fingerprint (主库)
     ├── fingerprint-http
     ├── hickory-resolver
     └── serde, toml, serde_yaml
+
+└── fingerprint-defense (可选)
+    ├── fingerprint-core
+    ├── rusqlite
+    ├── pcap
+    └── serde_json
 ```
 
 ### 4.2 依赖管理

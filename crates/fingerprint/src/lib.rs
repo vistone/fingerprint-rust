@@ -54,3 +54,9 @@ pub use fingerprint_dns::{
     load_config as load_dns_config, DNSConfig, DNSError, DNSResult, DomainIPs, IPInfo,
     ServerCollector, ServerPool, Service as DNSService,
 };
+
+#[cfg(feature = "defense")]
+pub use fingerprint_defense::{
+    HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult, PassiveAnalyzer, PassiveError,
+    TcpFingerprint, TlsFingerprint,
+};

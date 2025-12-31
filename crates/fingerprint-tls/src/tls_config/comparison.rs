@@ -109,7 +109,12 @@ mod tests {
         let spec1 = ClientHelloSpec::chrome_133();
         let spec2 = ClientHelloSpec::chrome_133();
         let result = compare_specs(&spec1, &spec2);
-        assert_eq!(result, FingerprintMatch::Exact);
+        // 由于集成了随机 GREASE，两次生成的 spec 在 GREASE 值上可能不同，
+        // 因此结果应该是 Similar（忽略 GREASE 后相同）
+        assert!(matches!(
+            result,
+            FingerprintMatch::Exact | FingerprintMatch::Similar
+        ));
     }
 
     #[test]

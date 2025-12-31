@@ -91,7 +91,8 @@ pub fn send_https_request(
         }
 
         // 发送 HTTP 请求
-        let http_request = request_with_cookies.build_http1_request_bytes(host, path);
+        let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
+        let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
         tls_stream
             .write_all(&http_request)
             .map_err(HttpClientError::Io)?;
@@ -182,7 +183,8 @@ pub fn send_https_request_with_pool(
             );
         }
 
-        let http_request = request_with_cookies.build_http1_request_bytes(host, path);
+        let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
+        let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
         tls_stream
             .write_all(&http_request)
             .map_err(HttpClientError::Io)?;

@@ -134,10 +134,12 @@ impl ServerPool {
 
     /// 淘汰慢的服务器（平均响应时间超过阈值或失败率过高）
     /// 返回新的服务器池，不阻塞主线程
+    /// 修复：增加 min_active_servers 参数，确保至少保留指定数量的服务器（按性能排序）
     pub fn remove_slow_servers(
         &self,
         max_avg_response_time_ms: f64,
         max_failure_rate: f64,
+        min_active_servers: usize,
     ) -> Self {
         // 安全修复：处理锁中毒情况
         let stats_guard = match self.stats.read() {
@@ -148,24 +150,55 @@ impl ServerPool {
                 return Self::new(self.servers.iter().cloned().collect());
             }
         };
-        let servers: Vec<String> = self
+
+        // 收集所有服务器的分数
+        let mut scored_servers: Vec<(String, f64, f64)> = self
             .servers
             .iter()
-            .filter(|server| {
-                if let Some(server_stat) = stats_guard.get(*server) {
-                    let avg_time = server_stat.avg_response_time_ms();
-                    let failure_rate = server_stat.failure_rate();
-                    // 保留响应时间快且失败率低的服务器
-                    avg_time <= max_avg_response_time_ms && failure_rate <= max_failure_rate
+            .map(|server| {
+                if let Some(stat) = stats_guard.get(server) {
+                    (
+                        server.clone(),
+                        stat.avg_response_time_ms(),
+                        stat.failure_rate(),
+                    )
                 } else {
-                    // 没有统计数据的服务器保留（新服务器）
-                    true
+                    // 没有统计数据的服务器（新服务器）认为性能最好
+                    (server.clone(), 0.0, 0.0)
                 }
             })
-            .cloned()
             .collect();
 
-        Self::new(servers)
+        // 初步过滤符合条件的服务器
+        let mut filtered: Vec<String> = scored_servers
+            .iter()
+            .filter(|(_, avg, fail)| *avg <= max_avg_response_time_ms && *fail <= max_failure_rate)
+            .map(|(s, _, _)| s.clone())
+            .collect();
+
+        // 容错保障：如果过滤后剩下的服务器太少，按性能排序强行保留 top N
+        if filtered.len() < min_active_servers && !scored_servers.is_empty() {
+            // 按 失败率 (第一关键字) 和 响应时间 (第二关键字) 升序排序
+            scored_servers.sort_by(|a, b| {
+                a.2.partial_cmp(&b.2)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then(a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal))
+            });
+
+            filtered = scored_servers
+                .iter()
+                .take(min_active_servers)
+                .map(|(s, _, _)| s.clone())
+                .collect();
+
+            eprintln!(
+                "[DNS ServerPool] 满足条件的服务器不足 (仅 {} 个)，强行保留性能前 {} 名",
+                filtered.len(),
+                min_active_servers
+            );
+        }
+
+        Self::new(filtered)
     }
 
     /// 从本地 JSON 文件加载服务器池（对应 Go 的 loadDefault）

@@ -90,6 +90,30 @@ impl ClientHelloSpecBuilder {
         }
     }
 
+    /// Chrome 136 的默认密码套件
+    /// 在 136 版本中，Chrome 进一步优化了加密套件权重，完全优先考虑现代 AEAD 套件
+    pub fn chrome_136_cipher_suites() -> Vec<u16> {
+        vec![
+            GREASE_CS,
+            cs::TLS_AES_128_GCM_SHA256,
+            cs::TLS_AES_256_GCM_SHA384,
+            cs::TLS_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
+            cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
+            // 136 版本在大多数平台上已经几乎不再首选这些旧套件
+            cs::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+            cs::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+            cs::TLS_RSA_WITH_AES_128_GCM_SHA256,
+            cs::TLS_RSA_WITH_AES_256_GCM_SHA384,
+            cs::TLS_RSA_WITH_AES_128_CBC_SHA,
+            cs::TLS_RSA_WITH_AES_256_CBC_SHA,
+        ]
+    }
+
     /// Chrome 133 的默认密码套件
     pub fn chrome_cipher_suites() -> Vec<u16> {
         vec![
@@ -216,6 +240,28 @@ impl ClientHelloSpecBuilder {
             Box::new(UtlsGREASEExtension::new()),
             Box::new(UtlsPaddingExtension::new()),
         ];
+
+        (extensions, metadata)
+    }
+
+    /// 构建 Chrome 136 的扩展列表
+    /// 返回扩展列表和元数据
+    pub fn chrome_136_extensions() -> (
+        Vec<Box<dyn TLSExtension>>,
+        crate::tls_config::metadata::SpecMetadata,
+    ) {
+        let (mut extensions, mut metadata) = Self::chrome_133_extensions();
+
+        // 针对 136 的微调：确保 ALPN 包含 h3 并置于首位（Chrome 136 强化了对 h3 的支持）
+        let alpn_protocols = vec!["h3".to_string(), "h2".to_string(), "http/1.1".to_string()];
+        metadata.set_alpn(alpn_protocols.clone());
+
+        // 调整扩展列表中的 ALPN
+        for ext in extensions.iter_mut() {
+            if ext.extension_id() == fingerprint_core::dicttls::extensions::EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION {
+                *ext = Box::new(ALPNExtension::new(alpn_protocols.clone()));
+            }
+        }
 
         (extensions, metadata)
     }

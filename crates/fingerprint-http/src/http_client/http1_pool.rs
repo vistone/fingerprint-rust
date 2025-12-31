@@ -1,6 +1,11 @@
 //! HTTP/1.1 with Connection Pool
 //!
-//! 使用 netconnpool 管理 TCP 连接复用
+//! 架构说明：
+//! - HTTP/1.1 采用 netconnpool 管理 TCP 连接池
+//! - 池化对象：TcpStream（裸 TCP 连接）
+//! - 复用方式：串行复用（一个连接同一时间只能处理一个请求）
+//! - 协议限制：HTTP/1.1 无法多路复用，需要大量连接支持并发
+//! - netconnpool 负责：连接创建、保持活跃、故障检测和回收
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;

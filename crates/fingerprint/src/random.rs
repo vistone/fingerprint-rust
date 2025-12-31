@@ -63,7 +63,7 @@ pub fn get_random_fingerprint_with_os(
     let random_name = random_choice_string(&name_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
 
-    let profile = clients
+    let mut profile = clients
         .get(&random_name)
         .ok_or_else(|| format!("profile {} not found", random_name))?
         .clone();
@@ -80,6 +80,10 @@ pub fn get_random_fingerprint_with_os(
         Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
         None => get_user_agent_by_profile_name(&random_name)?,
     };
+
+    // 🔥 关键修复：根据 User-Agent 同步 TCP Profile
+    // 确保浏览器指纹和 TCP 指纹完全一致
+    profile = profile.with_synced_tcp_profile(&ua);
 
     // 生成标准 HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
@@ -141,7 +145,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
     let random_name = random_choice_string(&candidate_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
 
-    let profile = clients
+    let mut profile = clients
         .get(&random_name)
         .ok_or_else(|| format!("profile {} not found", random_name))?
         .clone();
@@ -155,6 +159,10 @@ pub fn get_random_fingerprint_by_browser_with_os(
         Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
         None => get_user_agent_by_profile_name(&random_name)?,
     };
+
+    // 🔥 关键修复：根据 User-Agent 同步 TCP Profile
+    // 确保浏览器指纹和 TCP 指纹完全一致
+    profile = profile.with_synced_tcp_profile(&ua);
 
     // 生成标准 HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
@@ -196,5 +204,73 @@ mod tests {
     fn test_get_random_fingerprint_by_browser_not_found() {
         let result = get_random_fingerprint_by_browser("unknown");
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_tcp_sync_real_demo() {
+        println!("\n╔════════════════════════════════════════════════════════════════╗");
+        println!("║        TCP 指纹与浏览器指纹同步 - 真实测试                    ║");
+        println!("╚════════════════════════════════════════════════════════════════╝\n");
+
+        println!("【测试】随机选择浏览器指纹（验证 TCP 指纹自动同步）\n");
+
+        for i in 1..=5 {
+            println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+            println!("第 {} 次随机选择：", i);
+
+            let result = get_random_fingerprint().unwrap();
+            let user_agent = &result.user_agent;
+            let profile = &result.profile;
+
+            let inferred_os = if user_agent.contains("Windows NT 10.0")
+                || user_agent.contains("Windows NT 11.0")
+            {
+                "Windows"
+            } else if user_agent.contains("Macintosh") || user_agent.contains("Mac OS X") {
+                "macOS"
+            } else if user_agent.contains("Linux") || user_agent.contains("X11") {
+                "Linux"
+            } else {
+                "Unknown"
+            };
+
+            println!("  浏览器指纹: {}", result.hello_client_id);
+            println!("  User-Agent: {}", user_agent);
+            println!("  推断的操作系统: {}", inferred_os);
+
+            if let Some(tcp_profile) = &profile.tcp_profile {
+                println!("  TCP Profile:");
+                println!("    TTL: {}", tcp_profile.ttl);
+                println!("    Window Size: {}", tcp_profile.window_size);
+
+                let expected_ttl = match inferred_os {
+                    "Windows" => 128,
+                    "macOS" | "Linux" => 64,
+                    _ => {
+                        println!("    ⚠️  无法验证（未知操作系统）");
+                        continue;
+                    }
+                };
+
+                if tcp_profile.ttl == expected_ttl {
+                    println!(
+                        "    ✅ 同步验证通过！TTL ({}) 与操作系统 ({}) 匹配",
+                        tcp_profile.ttl, inferred_os
+                    );
+                } else {
+                    println!(
+                        "    ❌ 同步失败！TTL ({}) 与操作系统 ({}) 不匹配（期望: {}）",
+                        tcp_profile.ttl, inferred_os, expected_ttl
+                    );
+                }
+            } else {
+                println!("  ❌ TCP Profile 不存在 - 同步失败！");
+            }
+            println!();
+        }
+
+        println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        println!("✅ 测试完成！");
+        println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     }
 }

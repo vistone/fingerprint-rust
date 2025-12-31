@@ -84,6 +84,19 @@ impl ClientHelloSpec {
         }
     }
 
+    /// 创建 Chrome 136 指纹的 ClientHelloSpec
+    pub fn chrome_136() -> Self {
+        use crate::tls_config::ClientHelloSpecBuilder;
+        let (extensions, metadata) = ClientHelloSpecBuilder::chrome_136_extensions();
+        let mut spec = ClientHelloSpecBuilder::new()
+            .cipher_suites(ClientHelloSpecBuilder::chrome_136_cipher_suites())
+            .compression_methods(vec![COMPRESSION_NONE])
+            .extensions(extensions)
+            .build();
+        spec.metadata = Some(metadata);
+        spec
+    }
+
     /// 创建 Chrome 133 指纹的 ClientHelloSpec
     /// 对应 Go 版本的 Chrome_133 SpecFactory
     ///
@@ -199,6 +212,52 @@ impl ClientHelloSpec {
         ];
 
         spec
+    }
+
+    /// 创建 Chrome 103 指纹的 ClientHelloSpec
+    /// 对应 Go 版本的 Chrome_103 SpecFactory
+    pub fn calculate_ja4(&self) -> fingerprint_core::ja4::JA4 {
+        let transport = 't'; // Default to TCP
+        let version = if self.tls_vers_max >= VERSION_TLS13 {
+            "1.3"
+        } else {
+            "1.2"
+        };
+        let ciphers = self.cipher_suites.clone();
+        let extensions: Vec<u16> = self.extensions.iter().map(|e| e.extension_id()).collect();
+
+        let mut alpn = None;
+        let mut sig_algs = Vec::new();
+        let mut has_sni = false;
+
+        for ext in &self.extensions {
+            let any_ext = ext.as_any();
+            if let Some(sni) = any_ext.downcast_ref::<SNIExtension>() {
+                if !sni.server_name.is_empty() {
+                    has_sni = true;
+                }
+            } else if let Some(alpn_ext) = any_ext.downcast_ref::<ALPNExtension>() {
+                if let Some(first) = alpn_ext.alpn_protocols.first() {
+                    alpn = Some(first.as_str());
+                }
+            } else if let Some(sig_ext) = any_ext.downcast_ref::<SignatureAlgorithmsExtension>() {
+                sig_algs = sig_ext.supported_signature_algorithms.clone();
+            }
+        }
+
+        fingerprint_core::ja4::JA4::generate(
+            transport,
+            version,
+            has_sni,
+            &ciphers,
+            &extensions,
+            alpn,
+            &sig_algs,
+        )
+    }
+
+    pub fn ja4_string(&self) -> String {
+        self.calculate_ja4().to_fingerprint_string()
     }
 
     /// 创建 Chrome 103 指纹的 ClientHelloSpec
@@ -362,6 +421,11 @@ impl ClientHelloSpec {
 /// 对应 Go 版本的 Chrome_103 SpecFactory
 pub fn chrome_103_spec() -> Result<ClientHelloSpec, String> {
     Ok(ClientHelloSpec::chrome_103())
+}
+
+/// Chrome 136 Spec Factory
+pub fn chrome_136_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::chrome_136())
 }
 
 /// Chrome 133 Spec Factory

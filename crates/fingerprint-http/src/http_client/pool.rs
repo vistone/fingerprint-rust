@@ -24,6 +24,12 @@ pub struct ConnectionPoolManager {
     pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
     /// 默认配置
     config: PoolManagerConfig,
+    /// HTTP/2 会话池（修复：实现真正的多路复用）
+    #[cfg(feature = "http2")]
+    h2_session_pool: Arc<super::h2_session_pool::H2SessionPool>,
+    /// HTTP/3 会话池
+    #[cfg(feature = "http3")]
+    h3_session_pool: Arc<super::h3_session_pool::H3SessionPool>,
 }
 
 #[cfg(feature = "connection-pool")]
@@ -84,12 +90,28 @@ impl ConnectionPoolManager {
         Self {
             pools: Arc::new(Mutex::new(HashMap::new())),
             config,
+            #[cfg(feature = "http2")]
+            h2_session_pool: Arc::new(super::h2_session_pool::H2SessionPool::default()),
+            #[cfg(feature = "http3")]
+            h3_session_pool: Arc::new(super::h3_session_pool::H3SessionPool::default()),
         }
     }
 
     #[cfg(not(feature = "connection-pool"))]
     pub fn new(config: PoolManagerConfig) -> Self {
         Self { config }
+    }
+
+    /// 获取 HTTP/2 会话池
+    #[cfg(all(feature = "connection-pool", feature = "http2"))]
+    pub fn h2_session_pool(&self) -> &Arc<super::h2_session_pool::H2SessionPool> {
+        &self.h2_session_pool
+    }
+
+    /// 获取 HTTP/3 会话池
+    #[cfg(all(feature = "connection-pool", feature = "http3"))]
+    pub fn h3_session_pool(&self) -> &Arc<super::h3_session_pool::H3SessionPool> {
+        &self.h3_session_pool
     }
 
     /// 获取或创建连接池
@@ -143,6 +165,8 @@ impl ConnectionPoolManager {
             connection_leak_timeout: Duration::from_secs(300),
 
             // 提供 Dialer 函数来创建 TCP 连接
+            // 注意：这里无法直接访问 config.profile，因为 dialer 是闭包
+            // TCP Profile 应该在创建连接池之前就应用到 config 中
             dialer: Some(Box::new(move |_protocol| {
                 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
@@ -151,7 +175,7 @@ impl ConnectionPoolManager {
                     .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
                     .collect();
 
-                // 优先使用 IPv4，避免在“无 IPv6 路由”的环境中出现 `Network is unreachable`。
+                // 优先使用 IPv4，避免在"无 IPv6 路由"的环境中出现 `Network is unreachable`。
                 let mut v4 = Vec::new();
                 let mut v6 = Vec::new();
                 for a in addrs {
@@ -163,6 +187,8 @@ impl ConnectionPoolManager {
 
                 let mut last_err: Option<std::io::Error> = None;
                 for addr in v4.into_iter().chain(v6.into_iter()) {
+                    // 注意：这里暂时使用标准连接，TCP Profile 应该在创建连接池时通过其他方式应用
+                    // TODO: 支持在连接池中应用 TCP Profile
                     match TcpStream::connect_timeout(&addr, connect_timeout) {
                         Ok(s) => return Ok(ConnectionType::Tcp(s)),
                         Err(e) => last_err = Some(e),
