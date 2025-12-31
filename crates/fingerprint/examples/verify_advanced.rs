@@ -15,6 +15,7 @@ use std::sync::Arc;
 async fn main() {
     println!("🚀 Advanced Fingerprinting & Learner Verification\n");
 
+    #[allow(clippy::arc_with_non_send_sync)] // 在示例代码中使用，不需要跨线程
     let db = Arc::new(FingerprintDatabase::open("advanced.db").expect("Failed to open DB"));
     let analyzer = Arc::new(PassiveAnalyzer::new().expect("Failed to create analyzer"));
     let learner = SelfLearningAnalyzer::new(db.clone());

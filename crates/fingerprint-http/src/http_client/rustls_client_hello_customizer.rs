@@ -15,7 +15,7 @@
 // 暂时禁用整个模块，因为标准 rustls 不支持 ClientHelloCustomizer API
 // 如需启用，需要使用支持该 API 的 rustls fork
 // 当使用支持 ClientHelloCustomizer 的 rustls fork 时，取消下面的注释并启用相关代码
-#![cfg(feature = "__rustls_customizer_unstable__")]
+#![cfg(false)] // 暂时禁用，因为标准 rustls 不支持
 
 #[cfg(feature = "rustls-client-hello-customizer")]
 use std::sync::Arc;
