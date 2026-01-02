@@ -41,6 +41,7 @@ pub mod hassh;
 pub mod http;
 pub mod ja3;
 pub mod ja4;
+pub mod jarm;
 pub mod metadata;
 pub mod signature;
 pub mod system;
