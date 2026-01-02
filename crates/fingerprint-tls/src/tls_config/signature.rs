@@ -1,6 +1,6 @@
 //! TLS ClientHello Signature module
 //!
-//! provide TLS ClientHello 的signatureExtract and 比较Features
+//! provide TLS ClientHello 的signatureExtract and compareFeatures
 //! reference：Huginn Net  Signature struct设计
 
 use crate::tls_config::grease::{filter_grease_values, is_grease_value};
@@ -8,7 +8,7 @@ use crate::tls_config::version::TlsVersion;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
 /// TLS ClientHello signature
-/// including from  ClientHello message中Extract的all关keyinfo
+/// including from  ClientHello message中Extract的allclosekeyinfo
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
     /// TLS version
@@ -69,13 +69,13 @@ impl ClientHelloSignature {
                 .any(|&v| is_grease_value(v))
     }
 
-    /// 比较两个signaturewhether相似（ignore GREASE value）
+    /// compare twosignaturewhethersimilar（ignore GREASE value）
     ///
     /// # Parameters
-    /// * `other` - 要比较的另ansignature
+    /// * `other` - 要compare的另ansignature
     ///
     /// # Returns
-    /// * `true`  if signature相似（ignore GREASE backsame），`false` otherwise
+    /// * `true`  if signaturesimilar（ignore GREASE backsame），`false` otherwise
     pub fn similar_to(&self, other: &Self) -> bool {
         self.version == other.version
             && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -88,7 +88,7 @@ impl ClientHelloSignature {
             && self.alpn == other.alpn
     }
 
-    /// Calculatesignature的hashvalue（ for 快速比较）
+    /// Calculatesignature的hashvalue（ for fastcompare）
     /// usefilter GREASE back的value
     pub fn hash(&self) -> u64 {
         use std::collections::hash_map::DefaultHasher;
@@ -126,7 +126,7 @@ mod tests {
 
         let mut sig2 = ClientHelloSignature::new();
         sig2.version = TlsVersion::V1_2;
-        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // 不同 GREASE，butfilterbacksame
+        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // different GREASE，butfilterbacksame
         sig2.extensions = vec![0x0000, 0x0010];
 
         // filter GREASE backshouldsame

@@ -15,8 +15,8 @@ fn main() {
     let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
     let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
-    // 1. simulatean正常 Chrome request (Windows)
-    println!("1️⃣  simulate正常 Chrome request (Windows):");
+    // 1. simulateannormal Chrome request (Windows)
+    println!("1️⃣  simulatenormal Chrome request (Windows):");
     let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\nAccept: text/html\r\n\r\n";
 
     let packet = Packet {
@@ -24,7 +24,7 @@ fn main() {
         src_ip: "192.168.1.100".parse().unwrap(),
         dst_ip: "10.0.0.1".parse().unwrap(),
         src_port: 54321,
-        dst_port: 80, // 正常 HTTP 80 port
+        dst_port: 80, // normal HTTP 80 port
         ip_version: 4,
         ttl: 128, // Windows default TTL
         ip_flags: 0,
@@ -70,17 +70,17 @@ fn main() {
     }
 
     let report = analyzer.analyze_flow(&flow);
-    println!("   ✅ 一致性score: {}", report.score);
+    println!("   ✅ consistencyscore: {}", report.score);
     if report.discrepancies.is_empty() {
-        println!("   ✅ not发现异常，determine为合法traffic");
+        println!("   ✅ notdiscoverabnormal，determine为合法traffic");
     } else {
         for d in &report.discrepancies {
-            println!("   ❌ 发现偏差: {}", d);
+            println!("   ❌ discover偏差: {}", d);
         }
     }
 
     // 2. simulatean伪造fingerprint的机器人 (UA 为 Windows, but TCP trait为 Linux)
-    println!("\n2️⃣  simulatefingerprint错bit攻击 (User-Agent: Windows, TCP: Linux):");
+    println!("\n2️⃣  simulatefingerprint错bitattack (User-Agent: Windows, TCP: Linux):");
     let packet_bot = Packet {
         timestamp: 0,
         src_ip: "192.168.1.101".parse().unwrap(),
@@ -131,9 +131,9 @@ fn main() {
     }
 
     let report_bot = analyzer.analyze_flow(&flow_bot);
-    println!("   ⚠️  一致性score: {}", report_bot.score);
+    println!("   ⚠️  consistencyscore: {}", report_bot.score);
     for d in &report_bot.discrepancies {
-        println!("   ❌ 发现严重偏差: {}", d);
+        println!("   ❌ discover严重偏差: {}", d);
     }
     if report_bot.bot_detected {
         println!("   🚨 warning: detect to 机器人/fingerprintsimulate器behavior！");

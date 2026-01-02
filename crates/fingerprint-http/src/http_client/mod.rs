@@ -47,8 +47,8 @@ use fingerprint_profiles::profiles::ClientProfile;
 use std::io as std_io;
 use std::time::Duration;
 
-// Fix: useglobal单例 Runtime 避免频繁Create（ for  HTTP/2  and HTTP/3 connection poolscenario）
-// Note: 只 in connection-pool enabled when 才need，because只有connection poolscenario才needsyncwrapasync代码
+// Fix: useglobalsingleton Runtime avoidfrequentCreate（ for  HTTP/2  and HTTP/3 connection poolscenario）
+// Note: 只 in connection-pool enabled when 才need，becauseonlyconnection poolscenario才needsyncwrapasync代码
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -103,7 +103,7 @@ pub type Result<T> = std::result::Result<T, HttpClientError>;
 /// HTTP clientconfiguration
 #[derive(Debug, Clone)]
 pub struct HttpClientConfig {
-    /// 用户proxy
+    /// userproxy
     pub user_agent: String,
     /// HTTP Headers
     pub headers: HTTPHeaders,
@@ -119,9 +119,9 @@ pub struct HttpClientConfig {
     pub max_redirects: usize,
     /// whetherValidate TLS certificate
     pub verify_tls: bool,
-    /// 优先use HTTP/2
+    /// priorityuse HTTP/2
     pub prefer_http2: bool,
-    /// 优先use HTTP/3
+    /// priorityuse HTTP/3
     pub prefer_http3: bool,
     /// Cookie store（optional）
     pub cookie_store: Option<Arc<CookieStore>>,
@@ -138,8 +138,8 @@ impl Default for HttpClientConfig {
             write_timeout: Duration::from_secs(30),
             max_redirects: 10,
             verify_tls: true,
-            prefer_http2: true,  // default优先use HTTP/2
-            prefer_http3: false, // HTTP/3 defaultclose（need特殊configuration）
+            prefer_http2: true,  // defaultpriorityuse HTTP/2
+            prefer_http3: false, // HTTP/3 defaultclose（needspecialconfiguration）
             cookie_store: None,
         }
     }
@@ -165,7 +165,7 @@ impl HttpClient {
         }
     }
 
-    /// Create带connection pool HTTP client
+    /// Createbringconnection pool HTTP client
     pub fn with_pool(config: HttpClientConfig, pool_config: PoolManagerConfig) -> Self {
         Self {
             config,
@@ -189,7 +189,7 @@ impl HttpClient {
         self.pool_manager.as_ref().map(|pm| pm.get_stats())
     }
 
-    /// 清理empty闲connection
+    /// cleanupempty闲connection
     pub fn cleanup_idle_connections(&self) {
         if let Some(pm) = &self.pool_manager {
             pm.cleanup_idle();
@@ -231,7 +231,7 @@ impl HttpClient {
         )
     }
 
-    /// inside部redirectprocess（带循环detect）
+    /// inside部redirectprocess（bringloopdetect）
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,
@@ -246,10 +246,10 @@ impl HttpClient {
             )));
         }
 
-        // Checkredirect循环
+        // Checkredirectloop
         if visited_urls.contains(&request.url) {
             return Err(HttpClientError::InvalidResponse(format!(
-                "detect to redirect循环: {}",
+                "detect to redirectloop: {}",
                 request.url
             )));
         }
@@ -283,13 +283,13 @@ impl HttpClient {
                         format!("{}://{}:{}{}", scheme, host, port, location)
                     } else {
                         // 相pairpath
-                        // Fix: 正确processpath拼接，避免双斜杠
+                        // Fix: 正确processpath拼接，avoid双斜杠
                         let base_path = if path.ends_with('/') {
                             &path
                         } else {
                             path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
                         };
-                        // ensure base_path 以 / 结尾，location 不以 / 开header
+                        // ensure base_path 以 / ending，location 不以 / openheader
                         let location = location.trim_start_matches('/');
                         if base_path == "/" {
                             format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -361,7 +361,7 @@ impl HttpClient {
                     }
                 }
 
-                // 递归processredirect（传递 visited_urls 以detect循环）
+                // 递归processredirect（传递 visited_urls 以detectloop）
                 return self.send_request_with_redirects_internal(
                     &final_redirect_request,
                     redirect_count + 1,
@@ -463,7 +463,7 @@ impl HttpClient {
                 );
             }
         }
-        // otherwiseuse普通connection
+        // otherwiseuseordinaryconnection
         http1::send_http1_request(host, port, path, request, &self.config)
     }
 
@@ -475,13 +475,13 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
-        // If有connection pool, 优先useconnection pool（HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1）
+        // If有connection pool, priorityuseconnection pool（HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1）
         #[cfg(feature = "connection-pool")]
         if let Some(pool_manager) = &self.pool_manager {
             // HTTP/3 with pool（async -> syncwrap）
             #[cfg(feature = "http3")]
             if self.config.prefer_http3 {
-                // Fix: useglobal单例 Runtime
+                // Fix: useglobalsingleton Runtime
                 return SHARED_RUNTIME.block_on(async {
                     http3_pool::send_http3_request_with_pool(
                         host,
@@ -498,8 +498,8 @@ impl HttpClient {
             // HTTP/2 with pool（async -> syncwrap）
             #[cfg(feature = "http2")]
             if self.config.prefer_http2 {
-                // Fix: useglobal单例 Runtime
-                // Note: 这里不做"automatic降level"，because pool scenario我们更希望按用户偏好走specifiedprotocol
+                // Fix: useglobalsingleton Runtime
+                // Note: here不做"automatic降level"，because pool scenariowe更希望按user偏好走specifiedprotocol
                 //（test里alsowill严格Validateversion）
                 return SHARED_RUNTIME.block_on(async {
                     http2_pool::send_http2_request_with_pool(
@@ -531,11 +531,11 @@ impl HttpClient {
         #[cfg(feature = "http3")]
         {
             if self.config.prefer_http3 {
-                // If开启了 HTTP/3, 我们try它。
-                // Iffailure, 我们may希望降level，but HTTP/3  to  TCP 是不同的transferlayer，
-                // 通常 if 用户明确要求 HTTP/3，failure就should报错。
-                // but这里为了稳健性， if 是becauseprotocolerror，我们can降level。
-                // 暂 when keep简单：directlyreturn。
+                // Ifopen了 HTTP/3, wetry它。
+                // Iffailure, wemay希望降level，but HTTP/3  to  TCP 是different的transferlayer，
+                // usually if userexplicit要求 HTTP/3，failure就should报错。
+                // buthere为了稳健性， if 是becauseprotocolerror，wecan降level。
+                // 暂 when keepsimple：directlyreturn。
                 match http3::send_http3_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(e) => {
@@ -555,7 +555,7 @@ impl HttpClient {
                     Ok(resp) => return Ok(resp),
                     Err(_e) => {
                         // recorderrorbutcontinuetry HTTP/1.1
-                        //  in actual生产中shoulduse日志system
+                        //  in actual生产中shoulduselogsystem
                         // eprintln!("HTTP/2 tryfailure: {}，back to  HTTP/1.1", e);
                     }
                 }

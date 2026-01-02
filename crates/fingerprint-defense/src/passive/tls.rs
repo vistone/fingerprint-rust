@@ -1,6 +1,6 @@
-//! TLS 被动fingerprintidentify
+//! TLS passivefingerprintidentify
 //!
-//! implement TLS ClientHello 的被动analysis and JA4 fingerprintGenerate。
+//! implement TLS ClientHello 的passiveanalysis and JA4 fingerprintGenerate。
 
 use crate::passive::packet::Packet;
 

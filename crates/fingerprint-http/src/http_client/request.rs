@@ -116,7 +116,7 @@ impl HttpRequest {
         // Addother headers
         for (key, value) in &self.headers {
             if key.to_lowercase() != "host" {
-                // security清理 Key  and Value
+                // securitycleanup Key  and Value
                 let safe_key = key.replace(['\r', '\n'], "");
                 let safe_value = value.replace(['\r', '\n'], "");
                 request.push_str(&format!("{}: {}\r\n", safe_key, safe_value));
@@ -216,7 +216,7 @@ impl HttpRequest {
         out
     }
 
-    /// random化 Header 的size写（simulate某些特定fingerprint or 避免 WAF trait）
+    /// random化 Header 的size写（simulate某些specificfingerprint or avoid WAF trait）
     pub fn with_randomized_header_case(&mut self) {
         let mut new_headers = HashMap::new();
         for (key, value) in self.headers.drain() {

@@ -3,8 +3,8 @@
 //! 架构explain：
 //! - HTTP/1.1 adopt netconnpool manage TCP connection pool
 //! - pool化pair象：TcpStream（裸 TCP connection）
-//! - 复用方式：串行复用（anconnection同一 when 间只能processanrequest）
-//! - protocollimit：HTTP/1.1 unable to多路复用，need大量connectionsupportconcurrent
+//! - reuse方式：serialreuse（anconnection同一 when 间只能processanrequest）
+//! - protocollimit：HTTP/1.1 unable to多路reuse，need大量connectionsupportconcurrent
 //! - netconnpool 负责：connectionCreate、keep活跃、故障detect and 回收
 
 #[cfg(feature = "connection-pool")]
@@ -39,7 +39,7 @@ pub fn send_http1_request_with_pool(
         .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // clone TcpStream 以便我们canuse它
+    // clone TcpStream 以便wecanuse它
     let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     // Fix: Add Cookie  to request（ if  exists）
@@ -62,7 +62,7 @@ pub fn send_http1_request_with_pool(
         .write_all(http_request.as_bytes())
         .map_err(HttpClientError::Io)?;
 
-    // Fix: usecomplete的responseread逻辑（include body）
+    // Fix: usecomplete的responsereadlogic（include body）
     // connectionwillautomatic归still to connection pool（through Drop）
     let buffer =
         super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
@@ -82,7 +82,7 @@ pub fn send_http1_request_with_pool(
     _pool_manager: &std::sync::Arc<super::pool::ConnectionPoolManager>,
 ) -> Result<HttpResponse> {
     Err(HttpClientError::ConnectionFailed(
-        "connection poolFeaturesnotenabled，请use --features connection-pool 编译".to_string(),
+        "connection poolFeaturesnotenabled，请use --features connection-pool compile".to_string(),
     ))
 }
 
@@ -117,11 +117,11 @@ mod tests {
         let config = HttpClientConfig::default();
         let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
 
-        // 第一次request
+        // 第oncerequest
         let _ =
             send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
-        // 第二次request（should复用connection）
+        // 第二次request（shouldreuseconnection）
         let _ =
             send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 

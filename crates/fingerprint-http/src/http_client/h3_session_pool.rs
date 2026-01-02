@@ -1,7 +1,7 @@
 //! HTTP/3 sessionpool
 //!
-//! pool化 h3::client::SendRequest handle，implement真正 HTTP/3 多路复用
-//! 避免每次request都re进行 QUIC handshake and HTTP/3 connectionestablish
+//! pool化 h3::client::SendRequest handle，implement真正 HTTP/3 多路reuse
+//! avoid每次request都reperform QUIC handshake and HTTP/3 connectionestablish
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::Result;
@@ -24,7 +24,7 @@ use h3::client::SendRequest;
 pub struct H3SessionPool {
     /// sessionpool（按 host:port group）
     sessions: Arc<Mutex<HashMap<String, Arc<H3Session>>>>,
-    /// 正 in Create中的session（避免竞争）
+    /// 正 in Createinsession（avoid竞争）
     pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
     /// sessiontimeout duration（default 5 分钟）
     session_timeout: Duration,
@@ -35,7 +35,7 @@ pub struct H3SessionPool {
 struct H3Session {
     /// SendRequest handle（ for sendrequest）
     send_request: Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>,
-    /// back台任务handle（ for manage h3 connection驱动）
+    /// backbackground taskhandle（ for manage h3 connection驱动）
     _background_task: tokio::task::JoinHandle<()>,
     /// finallywhen used 间
     last_used: Arc<Mutex<Instant>>,
@@ -138,7 +138,7 @@ impl H3SessionPool {
         let key_clone = key.to_string();
         let sessions_clone = self.sessions.clone();
 
-        // startback台任务manageconnection生命周期
+        // startbackbackground taskmanageconnection生命cycle
         let background_task = tokio::spawn(async move {
             // 驱动 h3 connection
             let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;

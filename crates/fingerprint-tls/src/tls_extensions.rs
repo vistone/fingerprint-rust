@@ -1,6 +1,6 @@
 //! TLS extensionmodule
 //!
-//! implement各种 TLS extension，Corresponds to Go version's tls.TLSExtension
+//! implementeach种 TLS extension，Corresponds to Go version's tls.TLSExtension
 //!
 //! reference：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
 
@@ -178,7 +178,7 @@ impl TLSExtension for SNIExtension {
 
 impl TLSExtensionWriter for SNIExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // SNI Write 是 no-op，because SNI 不should被fingerprint化，是用户control的
+        // SNI Write 是 no-op，because SNI 不should被fingerprint化，是usercontrol的
         Ok(buf.len())
     }
 }

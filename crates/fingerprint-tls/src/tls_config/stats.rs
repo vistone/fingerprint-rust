@@ -20,9 +20,9 @@ pub struct FingerprintStats {
     pub fingerprints_with_alpn: usize,
     /// TLS version分布
     pub version_distribution: HashMap<String, usize>,
-    /// 最常见's cipher suites（front 10）
+    /// most common's cipher suites（front 10）
     pub top_cipher_suites: Vec<(u16, usize)>,
-    /// 最常见's extensions（front 10）
+    /// most common's extensions（front 10）
     pub top_extensions: Vec<(u16, usize)>,
 }
 
@@ -75,13 +75,13 @@ impl FingerprintStats {
             }
         }
 
-        // Get最常见's cipher suites
+        // Getmost common's cipher suites
         let mut cipher_vec: Vec<(u16, usize)> = cipher_suite_counts.into_iter().collect();
         cipher_vec.sort_by_key(|(_, count)| *count);
         cipher_vec.reverse();
         stats.top_cipher_suites = cipher_vec.into_iter().take(10).collect();
 
-        // Get最常见's extensions
+        // Getmost common's extensions
         let mut ext_vec: Vec<(u16, usize)> = extension_counts.into_iter().collect();
         ext_vec.sort_by_key(|(_, count)| *count);
         ext_vec.reverse();
@@ -137,13 +137,13 @@ impl FingerprintStats {
             }
         }
 
-        // Get最常见's cipher suites
+        // Getmost common's cipher suites
         let mut cipher_vec: Vec<(u16, usize)> = cipher_suite_counts.into_iter().collect();
         cipher_vec.sort_by_key(|(_, count)| *count);
         cipher_vec.reverse();
         stats.top_cipher_suites = cipher_vec.into_iter().take(10).collect();
 
-        // Get最常见's extensions
+        // Getmost common's extensions
         let mut ext_vec: Vec<(u16, usize)> = extension_counts.into_iter().collect();
         ext_vec.sort_by_key(|(_, count)| *count);
         ext_vec.reverse();

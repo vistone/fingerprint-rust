@@ -5,7 +5,7 @@
 use fingerprint_core::types::BrowserType;
 use fingerprint_core::utils::{extract_chrome_version, extract_platform, random_choice_string};
 
-/// 全球语言list（按use频率sort）
+/// 全球语言list（按usefrequencysort）
 pub static LANGUAGES: &[&str] = &[
     "en-US,en;q=0.9",          // 英语（美国）
     "zh-CN,zh;q=0.9,en;q=0.8", // 中文（简体）
@@ -66,7 +66,7 @@ pub struct HTTPHeaders {
     pub sec_ch_ua_platform: String,
     /// Upgrade-Insecure-Requests header
     pub upgrade_insecure_requests: String,
-    /// 用户custom headers（如 Cookie、Authorization、X-API-Key 等）
+    /// usercustom headers（如 Cookie、Authorization、X-API-Key 等）
     pub custom: std::collections::HashMap<String, String>,
 }
 
@@ -92,7 +92,7 @@ impl HTTPHeaders {
 
     /// clone HTTPHeaders pair象，returnannew副本
     ///
-    /// Note: 此methodname and standard库的 `Clone::clone` 不同，以避免命名冲突
+    /// Note: 此methodname and standard库的 `Clone::clone` different，以avoid命名冲突
     #[allow(clippy::should_implement_trait)]
     pub fn clone(&self) -> Self {
         Self {
@@ -112,8 +112,8 @@ impl HTTPHeaders {
         }
     }
 
-    /// settings用户custom header（systemwillautomaticmerge to  to_map() 中）
-    /// 这是推荐的方式，settingsbackcall to_map() 即可automaticincludingcustom headers
+    /// settingsusercustom header（systemwillautomaticmerge to  to_map() 中）
+    /// this is推荐的方式，settingsbackcall to_map() 即可automaticincludingcustom headers
     /// Examples：result.headers.set("Cookie", "session_id=abc123")
     pub fn set(&mut self, key: &str, value: &str) {
         if value.is_empty() {
@@ -123,7 +123,7 @@ impl HTTPHeaders {
         }
     }
 
-    /// bulksettings用户custom headers（systemwillautomaticmerge to  to_map() 中）
+    /// bulksettingsusercustom headers（systemwillautomaticmerge to  to_map() 中）
     /// Examples：result.headers.set_headers(&[("Cookie", "session_id=abc123"), ("X-API-Key", "key")])
     pub fn set_headers(&mut self, custom_headers: &[(&str, &str)]) {
         for (key, value) in custom_headers {
@@ -132,14 +132,14 @@ impl HTTPHeaders {
     }
 
     /// will HTTPHeaders convert to HashMap
-    /// systemwillautomaticmerge Custom 中的用户custom headers（如 Cookie、Authorization、X-API-Key 等）
+    /// systemwillautomaticmerge Custom inusercustom headers（如 Cookie、Authorization、X-API-Key 等）
     pub fn to_map(&self) -> std::collections::HashMap<String, String> {
         self.to_map_with_custom(&[])
     }
 
-    /// will HTTPHeaders convert to HashMap，并merge用户custom headers
-    /// custom_headers: 用户custom headers（如 session、cookie、apikey 等）
-    /// 用户custom headers priority更高，will覆盖systemGenerate headers
+    /// will HTTPHeaders convert to HashMap，并mergeusercustom headers
+    /// custom_headers: usercustom headers（如 session、cookie、apikey 等）
+    /// usercustom headers priority更高，will覆盖systemGenerate headers
     pub fn to_map_with_custom(
         &self,
         custom_headers: &[(&str, &str)],
@@ -210,7 +210,7 @@ impl HTTPHeaders {
         headers
     }
 
-    /// will HTTPHeaders convert to有序 Vec，遵循specified header_order
+    /// will HTTPHeaders convert to有序 Vec，followspecified header_order
     pub fn to_ordered_vec(&self, order: &[String]) -> Vec<(String, String)> {
         let map = self.to_map();
         let mut result = Vec::with_capacity(map.len());
@@ -218,7 +218,7 @@ impl HTTPHeaders {
 
         // 1. 先按specified order orderAdd
         for key in order {
-            // find map is否 existsmatch key (ignoresize写进行match，butpreserve order 中的size写)
+            // find map is否 existsmatch key (ignoresize写performmatch，butpreserve order insize写)
             for (m_key, m_val) in &map {
                 if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
                     result.push((key.clone(), m_val.clone()));
@@ -295,7 +295,7 @@ pub fn generate_headers(
             headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
             headers.accept_encoding = "gzip, deflate, br".to_string();
             // Firefox 不use Sec-Fetch-* headers（旧version）
-            // 新version Firefox use，butformat不同
+            // 新version Firefox use，butformatdifferent
             if is_mobile {
                 headers.sec_fetch_site = "none".to_string();
                 headers.sec_fetch_mode = "navigate".to_string();

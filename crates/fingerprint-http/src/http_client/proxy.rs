@@ -26,7 +26,7 @@ pub struct ProxyConfig {
     pub host: String,
     /// proxyserverport
     pub port: u16,
-    /// 用户名（optional）
+    /// user名（optional）
     pub username: Option<String>,
     /// cipher（optional）
     pub password: Option<String>,
@@ -55,7 +55,7 @@ impl ProxyConfig {
         }
     }
 
-    /// settings认证info
+    /// settingsauthenticationinfo
     pub fn with_auth(mut self, username: String, password: String) -> Self {
         self.username = Some(username);
         self.password = Some(password);
@@ -125,11 +125,11 @@ fn connect_socks5_proxy(
         .map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxyfailure: {}", e)))?;
 
     // SOCKS5 handshake
-    // 1. send认证method
+    // 1. sendauthenticationmethod
     let auth_methods = if proxy.username.is_some() {
-        vec![0x05, 0x02, 0x00, 0x02] // version5，2个method：无认证 and 用户名cipher认证
+        vec![0x05, 0x02, 0x00, 0x02] // version5，2个method：无authentication and user名cipherauthentication
     } else {
-        vec![0x05, 0x01, 0x00] // version5，1个method：无认证
+        vec![0x05, 0x01, 0x00] // version5，1个method：无authentication
     };
 
     stream
@@ -148,10 +148,10 @@ fn connect_socks5_proxy(
         ));
     }
 
-    // 3.  if need认证
+    // 3.  if needauthentication
     if response[1] == 0x02 {
         if let (Some(username), Some(password)) = (&proxy.username, &proxy.password) {
-            let mut auth_request = vec![0x01]; // 认证version
+            let mut auth_request = vec![0x01]; // authenticationversion
             auth_request.push(username.len() as u8);
             auth_request.extend_from_slice(username.as_bytes());
             auth_request.push(password.len() as u8);
@@ -168,17 +168,17 @@ fn connect_socks5_proxy(
 
             if auth_response[1] != 0x00 {
                 return Err(HttpClientError::ConnectionFailed(
-                    "SOCKS5 认证failure".to_string(),
+                    "SOCKS5 authenticationfailure".to_string(),
                 ));
             }
         } else {
             return Err(HttpClientError::ConnectionFailed(
-                "proxyneed认证butnotprovide凭据".to_string(),
+                "proxyneedauthenticationbutnotprovide凭据".to_string(),
             ));
         }
     } else if response[1] != 0x00 {
         return Err(HttpClientError::ConnectionFailed(format!(
-            "不support的认证method: {}",
+            "不support的authenticationmethod: {}",
             response[1]
         )));
     }

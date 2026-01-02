@@ -1,6 +1,6 @@
-//! JA4+ fingerprint系列implement
+//! JA4+ fingerprintseriesimplement
 //!
-//! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) 等algorithm的抽象 and Calculate逻辑。
+//! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) 等algorithm的abstract and Calculatelogic。
 //! reference自 FoxIO  JA4+ 规范。
 
 use serde::{Deserialize, Serialize};
@@ -185,7 +185,7 @@ impl JA4H {
         let r = if has_referer { "r" } else { "n" };
         let count = format!("{:02}", headers.len().min(99));
 
-        // 简化版 Header Hash
+        // simplify版 Header Hash
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
         let mut hasher = DefaultHasher::new();
@@ -225,7 +225,7 @@ impl std::fmt::Display for JA4T {
     }
 }
 
-/// JA4S TLS serverfingerprint（JA4 风格）
+/// JA4S TLS serverfingerprint（JA4 style）
 /// 
 ///  and JA3S 类似，butuse SHA256 而非 MD5
 /// format: t_v_c_e (例如: t13d_1301_0000)
@@ -249,13 +249,13 @@ pub struct JA4S {
     pub transport: char,
     /// TLS version
     pub version: String,
-    /// select's cipher suitescount（通常为 1）
+    /// select's cipher suitescount（usually为 1）
     pub cipher_count: usize,
     /// extensioncount
     pub extension_count: usize,
     /// first ALPN（ if 有）
     pub alpn: String,
-    /// select's cipher suites（十六进制）
+    /// select's cipher suites（hexadecimal）
     pub cipher: u16,
     /// extensionhash (SHA256 front 12-bit)
     pub extension_hash: String,
@@ -351,12 +351,12 @@ impl std::fmt::Display for JA4S {
     }
 }
 
-/// fingerprint一致性报告
+/// fingerprintconsistencyreport
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ConsistencyReport {
-    /// 总体score (0-100)
+    /// overallscore (0-100)
     pub score: u8,
-    /// 发现的不一致项
+    /// discover的不consistent项
     pub discrepancies: Vec<String>,
     /// whether疑似机器人
     pub bot_detected: bool,
@@ -462,7 +462,7 @@ mod ja4s_tests {
 
 /// JA4L - 轻量levelfingerprint（Light Version）
 ///
-/// 简化版 JA4，适 for 资source受限environment
+/// simplify版 JA4，适 for 资source受限environment
 /// - use更快的hashalgorithm
 /// - decreaseCalculate复杂度
 /// - 更小的inside存占用
@@ -499,10 +499,10 @@ pub struct JA4L {
     /// extensioncount
     pub extension_count: usize,
     
-    /// cipher suite采样（front3个，十六进制）
+    /// cipher suite采样（front3个，hexadecimal）
     pub cipher_sample: String,
     
-    /// extension采样（front3个，十六进制）
+    /// extension采样（front3个，hexadecimal）
     pub extension_sample: String,
 }
 
@@ -606,7 +606,7 @@ impl JA4L {
             destination: ja4.destination,
             cipher_count: ja4.cipher_count,
             extension_count: ja4.extension_count,
-            //  from hash中Extract采样（简化）
+            //  from hash中Extract采样（simplify）
             cipher_sample: ja4.cipher_hash[0..12.min(ja4.cipher_hash.len())].to_string(),
             extension_sample: ja4.extension_hash[0..12.min(ja4.extension_hash.len())].to_string(),
         }

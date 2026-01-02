@@ -19,20 +19,20 @@ impl TLSHandshakeBuilder {
         // 1. Create ClientHello message
         let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
 
-        // 2. 序列化 ClientHello message体
+        // 2. serialize ClientHello message体
         let body = client_hello.to_bytes();
 
         // 3. Createhandshakemessage
         let handshake = TLSHandshake::client_hello(body);
 
-        // 4. 序列化handshakemessage
+        // 4. serializehandshakemessage
         let handshake_bytes = handshake.to_bytes();
 
         // 5. Create TLS record
-        // use TLS 1.0 (0x0301) asrecordversion（为了兼容性）
+        // use TLS 1.0 (0x0301) asrecordversion（为了compatible性）
         let record = TLSRecord::handshake(0x0301, handshake_bytes);
 
-        // 6. 序列化 TLS record
+        // 6. serialize TLS record
         Ok(record.to_bytes())
     }
 
@@ -69,7 +69,7 @@ impl TLSHandshakeBuilder {
 
         println!("\n✅ TLS ClientHello Buildcomplete！");
         println!(
-            "   use我们自己的fingerprint: {} cipher suite, {} extension\n",
+            "   usewe自己的fingerprint: {} cipher suite, {} extension\n",
             spec.cipher_suites.len(),
             spec.extensions.len()
         );
@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_build_client_hello() {
-        // Createan简单 ClientHelloSpec
+        // Createansimple ClientHelloSpec
         let spec = ClientHelloSpec {
             cipher_suites: vec![
                 0xc02f, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
@@ -126,6 +126,6 @@ mod tests {
         println!("\nGenerate Chrome 133 ClientHello: {} bytes", bytes.len());
 
         // Chrome 133 should有较多's cipher suites and extension
-        assert!(bytes.len() > 200); // Chrome  ClientHello 通常很大
+        assert!(bytes.len() > 200); // Chrome  ClientHello usually很大
     }
 }

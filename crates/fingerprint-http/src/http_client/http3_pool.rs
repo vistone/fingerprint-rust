@@ -1,11 +1,11 @@
 //! HTTP/3 with Connection Pool
 //!
 //! 架构explain：
-//! - HTTP/3 adoptsessionpool（H3SessionPool）implement QUIC session复用
+//! - HTTP/3 adoptsessionpool（H3SessionPool）implement QUIC sessionreuse
 //! - pool化pair象：h3::client::SendRequest handle（alreadyhandshakecomplete QUIC session）
-//! - 复用方式：concurrent多路复用（an QUIC connection可同 when processmultiple Stream）
+//! - reuse方式：concurrent多路reuse（an QUIC connection可同 when processmultiple Stream）
 //! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，无需 netconnpool
-//! - sessionestablishback，connection生命周期由 H3Session 的back台任务（Driver）manage
+//! - sessionestablishback，connection生命cycle由 H3Session 的backbackground task（Driver）manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -29,7 +29,7 @@ pub async fn send_http3_request_with_pool(
     use h3_quinn::quinn;
     use http::{Request as HttpRequest2, Version};
 
-    // Fix: use H3SessionPool implement真正的多路复用
+    // Fix: use H3SessionPool implement真正的多路reuse
     let session_pool = pool_manager.h3_session_pool();
     let key = format!("{}:{}", host, port);
 
@@ -48,7 +48,7 @@ pub async fn send_http3_request_with_pool(
                     "DNS Parse无result".to_string(),
                 ));
             }
-            addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
+            addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 priority
             let remote_addr = addrs[0];
 
             // Create QUIC clientconfiguration
@@ -185,7 +185,7 @@ pub async fn send_http3_request_with_pool(
     // readresponse体
     let mut body_data = Vec::new();
 
-    // securitylimit：prevent HTTP/3 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/3 responsebody too largecauseinsidememory exhausted
     const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(mut chunk) = stream
@@ -196,10 +196,10 @@ pub async fn send_http3_request_with_pool(
         // use Buf trait readcount据
         let chunk_len = chunk.remaining();
 
-        // securityCheck：preventresponse体过大
+        // securityCheck：preventresponsebody too large
         if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
-                "HTTP/3 response体过大（>{} bytes）",
+                "HTTP/3 responsebody too large（>{} bytes）",
                 MAX_HTTP3_BODY_SIZE
             )));
         }
@@ -212,7 +212,7 @@ pub async fn send_http3_request_with_pool(
     // Parseresponse
     let status_code = response.status().as_u16();
 
-    // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹攻击
+    // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹attack
     const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的minimumvalue)
     let total_header_size: usize = response
         .headers()
@@ -221,7 +221,7 @@ pub async fn send_http3_request_with_pool(
         .sum();
     if total_header_size > MAX_HTTP3_HEADER_SIZE {
         return Err(HttpClientError::InvalidResponse(format!(
-            "HTTP/3 responseheader过大（>{} bytes）",
+            "HTTP/3 responseheadertoo large（>{} bytes）",
             MAX_HTTP3_HEADER_SIZE
         )));
     }

@@ -37,7 +37,7 @@ impl Default for TcpProfile {
 impl TcpProfile {
     /// Based onoperating systemtypeGenerates corresponding TCP Profile
     ///
-    /// ensure TCP fingerprint and browserfingerprint（User-Agent）一致
+    /// ensure TCP fingerprint and browserfingerprint（User-Agent）consistent
     pub fn for_os(os: crate::types::OperatingSystem) -> Self {
         match os {
             crate::types::OperatingSystem::Windows10 | crate::types::OperatingSystem::Windows11 => {
@@ -76,7 +76,7 @@ impl TcpProfile {
 
     ///  from  User-Agent stringinferoperating system并Generates corresponding TCP Profile
     ///
-    /// 这是统一fingerprintGenerate的corefunction，ensurebrowserfingerprint and TCP fingerprintsync
+    /// this is统一fingerprintGenerate的corefunction，ensurebrowserfingerprint and TCP fingerprintsync
     pub fn from_user_agent(user_agent: &str) -> Self {
         use crate::types::OperatingSystem;
 
@@ -104,7 +104,7 @@ impl TcpProfile {
         } else if user_agent.contains("Linux") || user_agent.contains("Android") {
             OperatingSystem::Linux
         } else {
-            // defaultuse Windows（最常见的browserenvironment）
+            // defaultuse Windows（most commonbrowserenvironment）
             OperatingSystem::Windows10
         };
 
@@ -144,7 +144,7 @@ pub struct TcpFingerprint {
     /// Window Scale
     pub window_scale: Option<u8>,
 
-    /// TCP optionsstring（ for  p0f 兼容）
+    /// TCP optionsstring（ for  p0f compatible）
     pub options_str: Option<String>,
 
     /// metadata
@@ -208,7 +208,7 @@ impl TcpFingerprint {
     /// inferinitialbeginning TTL
     pub fn infer_initial_ttl(&self) -> u8 {
         // Based on TTL inferinitialbeginning TTL
-        // 常见的initialbeginning TTL value：64 (Linux), 128 (Windows), 255 (Unix)
+        // common的initialbeginning TTL value：64 (Linux), 128 (Windows), 255 (Unix)
         if self.ttl <= 64 {
             64
         } else if self.ttl <= 128 {
@@ -251,8 +251,8 @@ impl Fingerprint for TcpFingerprint {
             return false;
         }
 
-        // TCP fingerprint的相似度judge：allow一定的容差
-        // 这里简化process，actualshould考虑 TTL 的infervalue、Window Size 的倍count关系等
+        // TCP fingerprint的similar度judge：allow一定的容差
+        // heresimplifyprocess，actualshould考虑 TTL 的infervalue、Window Size 的倍countclose系等
         self.hash() == other.hash()
     }
 

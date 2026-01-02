@@ -114,9 +114,9 @@ impl P0fDatabase {
         Ok(db)
     }
 
-    /// Parse TCP signature（use详细Parse器）
+    /// Parse TCP signature（usedetailedParse器）
     fn parse_tcp_signature(label: &str, sig: &str) -> Result<TcpSignature, P0fError> {
-        // use详细的Parse器
+        // usedetailed的Parse器
         let p0f_sig = p0f_parser::parse_tcp_signature(label, sig)
             .map_err(|e| P0fError::Parse(e.to_string()))?;
 
@@ -126,7 +126,7 @@ impl P0fDatabase {
 
     /// Parse HTTP signature
     fn parse_http_signature(label: &str, _sig: &str) -> Result<P0fHttpSignature, P0fError> {
-        // 简化Parse
+        // simplifyParse
         Ok(P0fHttpSignature {
             id: format!("http-{}", label.replace(':', "-")),
             label: label.to_string(),
@@ -203,7 +203,7 @@ mod tests {
         println!("║              print p0f allcount据                                ║");
         println!("╚════════════════════════════════════════════════════════════════╝\n");
 
-        // try from 常见bit置load p0f database
+        // try from commonbit置load p0f database
         let p0f_paths = vec![
             "p0f.fp",
             "/etc/p0f/p0f.fp",
@@ -236,7 +236,7 @@ mod tests {
             for path in &p0f_paths {
                 println!("     - {}", path);
             }
-            println!("\n    or 者CreateanExamplesdatabase进行test");
+            println!("\n    or 者CreateanExamplesdatabaseperformtest");
 
             // CreateanExamplesdatabase for demo
             println!("\n【CreateExamplesdatabase for demo】\n");
@@ -291,7 +291,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
             println!("  windowsize: {}", sig.window_size);
             println!("  MSS: {:?}", sig.mss);
             println!("  Window Scale: {:?}", sig.window_scale);
-            println!("  置信度: {:.2}", sig.confidence);
+            println!("  confidence: {:.2}", sig.confidence);
             println!("  样本count: {}", sig.sample_count);
             println!();
         }
@@ -312,7 +312,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
             println!("  windowsize: {}", sig.window_size);
             println!("  MSS: {:?}", sig.mss);
             println!("  Window Scale: {:?}", sig.window_scale);
-            println!("  置信度: {:.2}", sig.confidence);
+            println!("  confidence: {:.2}", sig.confidence);
             println!("  样本count: {}", sig.sample_count);
             println!();
         }

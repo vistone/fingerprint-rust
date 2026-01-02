@@ -1,6 +1,6 @@
 //! DNS serverpoolmodule
 //!
-//! manage DNS serverlist，include from localfileload/save and 健康CheckFeatures
+//! manage DNS serverlist，include from localfileload/save and healthCheckFeatures
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -78,7 +78,7 @@ impl ServerStats {
 #[derive(Debug, Clone)]
 pub struct ServerPool {
     servers: Arc<Vec<String>>,
-    /// server性能statistics（only in run when use，不持久化）
+    /// server性能statistics（only in run when use，不persistent化）
     stats: Arc<std::sync::RwLock<HashMap<String, ServerStats>>>,
 }
 
@@ -91,7 +91,7 @@ impl ServerPool {
         }
     }
 
-    /// Createdefaultserverpool（use公共 DNS server）
+    /// Createdefaultserverpool（usepublic DNS server）
     #[allow(clippy::new_without_default, clippy::should_implement_trait)]
     pub fn default() -> Self {
         Self::new(vec![
@@ -133,7 +133,7 @@ impl ServerPool {
     }
 
     /// 淘汰慢的server（averageresponse when 间超过阈value or failure率过高）
-    /// returnnewserverpool，不阻塞main线程
+    /// returnnewserverpool，non-blockingmainthread
     /// Fix: increase min_active_servers parameter，ensure至少preservespecifiedcount的server（按性能sort）
     pub fn remove_slow_servers(
         &self,
@@ -178,7 +178,7 @@ impl ServerPool {
 
         // 容错保障： if filterback剩down的server太少，按性能sort强行preserve top N
         if filtered.len() < min_active_servers && !scored_servers.is_empty() {
-            // 按 failure率 (第一关key字)  and response when 间 (第二关key字) 升序sort
+            // 按 failure率 (第一closekey字)  and response when 间 (第二closekey字) 升序sort
             scored_servers.sort_by(|a, b| {
                 a.2.partial_cmp(&b.2)
                     .unwrap_or(std::cmp::Ordering::Equal)
@@ -261,12 +261,12 @@ impl ServerPool {
             serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
         // securityFix: 原child性write，use唯一的temporaryfile名prevent竞态条件
-        // use进程 ID ensuretemporaryfile名唯一，避免多进程同 when write when 的竞态条件
+        // use进程 ID ensuretemporaryfile名唯一，avoid多进程同 when write when 的竞态条件
         let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
         fs::write(&temp_path, json_content)
             .map_err(|e| crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e)))?;
         fs::rename(&temp_path, path).map_err(|e| {
-            // If重命名failure, 清理temporaryfile
+            // If重命名failure, cleanuptemporaryfile
             let _ = std::fs::remove_file(&temp_path);
             crate::dns::types::DNSError::Config(format!("unable to重命名file: {}", e))
         })?;
@@ -319,7 +319,7 @@ impl ServerPool {
         (
             Self {
                 servers: Arc::new(new_servers),
-                stats: self.stats.clone(), // Fix: 继承原有的statisticscount据，避免丢失历史性能count据
+                stats: self.stats.clone(), // Fix: 继承original的statisticscount据，avoid丢失历史性能count据
             },
             true,
         )
@@ -340,8 +340,8 @@ impl ServerPool {
         self.servers.is_empty()
     }
 
-    /// 健康Check并增量save：高concurrenttest DNS server，每detect to 一batchavailableserver就立即save
-    ///  in back台任务中run，不阻塞main线程
+    /// healthCheck并增量save：高concurrenttest DNS server，每detect to 一batchavailableserver就immediatelysave
+    ///  in backbackground task中run，non-blockingmainthread
     pub async fn health_check_and_save_incremental(
         &self,
         test_domain: &str,
@@ -387,12 +387,12 @@ impl ServerPool {
         opts.timeout = timeout;
         opts.attempts = 1;
 
-        //  for collectavailableserver的共享status
+        //  for collectavailableserver的sharedstatus
         let available_servers: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         let processed_count: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
         let total_count = servers_to_test.len();
 
-        // clone for 闭包inside部 and outside部use
+        // clone for close包inside部 and outside部use
         let available_servers_for_closure = available_servers.clone();
         let available_servers_for_progress = available_servers.clone();
         let processed_count_for_progress = processed_count.clone();
@@ -424,19 +424,19 @@ impl ServerPool {
                             // Checkwhether真的return了IPaddress
                             let ip_count = lookup_result.iter().count();
                             if ip_count > 0 {
-                                // querysuccess且return了IPaddress，serveravailable，立即Add to list
+                                // querysuccess且return了IPaddress，serveravailable，immediatelyAdd to list
                                 let mut servers = match available_servers.lock() {
                                     Ok(guard) => guard,
                                     Err(e) => {
                                         eprintln!("Warning: Lock poisoned in health check: {}", e);
-                                        // If锁中毒, skip这个server
+                                        // If锁中毒, skipthisserver
                                         return None;
                                     }
                                 };
                                 servers.push(server_str.clone());
                                 let current_count = servers.len();
 
-                                // 每达 to batch次size就save一次
+                                // 每达 to batch次size就saveonce
                                 if current_count.is_multiple_of(save_batch_size) {
                                     let pool = Self::new(servers.clone());
                                     if let Err(e) = pool.save_default() {
@@ -477,10 +477,10 @@ impl ServerPool {
                 }
             };
 
-            // 每process1000个就output一次进度
+            // 每process1000个就outputonce进度
             if current_processed.is_multiple_of(1000) {
                 eprintln!(
-                    "alreadytest {}/{} 个server，发现 {} 个available",
+                    "alreadytest {}/{} 个server，discover {} 个available",
                     current_processed, total_count, current_available
                 );
             }
@@ -506,7 +506,7 @@ impl ServerPool {
         Self::new(final_servers)
     }
 
-    /// 健康Check：test哪些 DNS server是available的
+    /// healthCheck：test哪些 DNS server是available的
     /// throughqueryanalready知domain（如 google.com）来testserverwhetheravailable
     pub async fn health_check(
         &self,

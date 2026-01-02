@@ -24,7 +24,7 @@ pub struct SystemProtectionStats {
     /// allowthroughcountpacketcount
     pub allowed_packets: u64,
 
-    /// detect to 的威胁count
+    /// detect to 的threatcount
     pub threat_detected: u64,
 
     /// start when 间
@@ -80,7 +80,7 @@ impl SystemProtectionStats {
         self.last_update_time = Instant::now();
     }
 
-    /// increase威胁detectcount
+    /// increasethreatdetectcount
     pub fn increment_threat(&mut self) {
         self.threat_detected += 1;
         self.last_update_time = Instant::now();
@@ -91,7 +91,7 @@ impl SystemProtectionStats {
         self.start_time.elapsed().as_secs()
     }
 
-    /// Getcountpacketprocess速率（包/秒）
+    /// Getcountpacketprocessrate（包/秒）
     pub fn packets_per_second(&self) -> f64 {
         let uptime = self.uptime_seconds() as f64;
         if uptime > 0.0 {

@@ -1,4 +1,4 @@
-//! p0f signatureParse器（详细implement）
+//! p0f signatureParse器（detailedimplement）
 //!
 //! completeimplement p0f.fp format的Parse，supportallfield and pattern。
 
@@ -78,7 +78,7 @@ pub enum SystemType {
 pub enum TtlPattern {
     /// 通配符 *
     Wildcard,
-    /// 具体value
+    /// concretevalue
     Value(u8),
 }
 
@@ -100,7 +100,7 @@ pub enum WindowMode {
 pub enum WindowSizePattern {
     /// 通配符 *
     Wildcard,
-    /// 具体value
+    /// concretevalue
     Value(u16),
     /// 倍countpattern：m*N
     Multiple(u16),
@@ -207,7 +207,7 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
     let mss_str = parts[4];
     let options_str = if parts.len() > 5 { parts[5] } else { "" };
 
-    // merge MSS pattern and optionsorder进行Parse
+    // merge MSS pattern and optionsorderperformParse
     let full_options_str = if !options_str.is_empty() {
         format!("{}:{}", mss_str, options_str)
     } else {

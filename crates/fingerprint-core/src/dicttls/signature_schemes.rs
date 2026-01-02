@@ -29,11 +29,11 @@ pub mod signature_schemes {
 
 pub use signature_schemes::*;
 
-/// SignatureScheme type别名
+/// SignatureScheme typealias
 /// Corresponds to Go version's tls.SignatureScheme
 pub type SignatureScheme = u16;
 
-/// 为了 and Go versionkeep一致，provide别名
+/// 为了 and Go versionkeepconsistent，providealias
 /// Corresponds to Go version's tls.ECDSAWithP256AndSHA256
 pub const ECDSA_WITH_P256_AND_SHA256: u16 = signature_schemes::ECDSA_WITH_P256_AND_SHA256;
 /// Corresponds to Go version's tls.PSSWithSHA256

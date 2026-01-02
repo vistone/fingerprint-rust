@@ -3,7 +3,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-/// IP address详细info（Corresponds to Go version's IPInfo struct）
+/// IP addressdetailedinfo（Corresponds to Go version's IPInfo struct）
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct IPInfo {
@@ -80,10 +80,10 @@ impl DomainIPs {
         ips
     }
 
-    /// Checkwhether有new IP address（ and 另an DomainIPs 比较）
+    /// Checkwhether有new IP address（ and 另an DomainIPs compare）
     ///
     /// `self` 是新Parse IP set，`other` 是beforesave IP set
-    /// If `self` 中有 `other` no IP, return true（发现new IP）
+    /// If `self` 中有 `other` no IP, return true（discovernew IP）
     pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
         let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
         let other_ips: HashSet<String> = other.all_ips().into_iter().collect();
@@ -129,7 +129,7 @@ pub enum DNSError {
     Toml(#[from] toml::de::Error),
     #[error("HTTP error: {0}")]
     Http(String),
-    #[error("TOML 序列化error: {0}")]
+    #[error("TOML serializeerror: {0}")]
     TomlSerialize(String),
     #[error("inside部error: {0}")]
     Internal(String),
@@ -146,7 +146,7 @@ pub struct DNSConfig {
     /// store目录（optional，defaultcurrent目录）
     #[serde(default = "default_domain_ips_dir")]
     pub domain_ips_dir: String,
-    /// Check间隔（optional，default "2m"）
+    /// Checkinterval（optional，default "2m"）
     #[serde(default = "default_interval")]
     pub interval: String,
     /// DNS querymaximumconcurrentcount（optional，default 500）

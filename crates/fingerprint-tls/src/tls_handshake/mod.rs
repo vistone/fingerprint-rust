@@ -1,7 +1,7 @@
 //! custom TLS handshakeimplement
 //!
 //! Based on ClientHelloSpec Generatereal TLS ClientHello message
-//! 完全use我们自己的fingerprint库，不dependoutside部 TLS 库
+//! completelyusewe自己的fingerprint库，不dependoutside部 TLS 库
 
 pub mod builder;
 pub mod handshake;

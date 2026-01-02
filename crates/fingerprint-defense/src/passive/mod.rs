@@ -1,6 +1,6 @@
-//! 被动fingerprintidentifymodule
+//! passivefingerprintidentifymodule
 //!
-//! implement p0f 风格的被动fingerprintidentify，include TCP、HTTP、TLS analysis。
+//! implement p0f style的passivefingerprintidentify，include TCP、HTTP、TLS analysis。
 
 pub mod consistency;
 pub mod http;
@@ -17,10 +17,10 @@ pub use packet::{Packet, PacketParser};
 pub use tcp::{TcpAnalyzer, TcpFeatures, TcpFingerprint};
 pub use tls::{TlsAnalyzer, TlsFingerprint};
 
-// use core 中的systemlevel抽象
+// use core insystemlevelabstract
 use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
 
-/// 被动analysis器（多protocol）
+/// passiveanalysis器（多protocol）
 pub struct PassiveAnalyzer {
     tcp_analyzer: TcpAnalyzer,
     http_analyzer: HttpAnalyzer,
@@ -28,7 +28,7 @@ pub struct PassiveAnalyzer {
 }
 
 impl PassiveAnalyzer {
-    /// Create a new被动analysis器
+    /// Create a newpassiveanalysis器
     pub fn new() -> Result<Self, PassiveError> {
         Ok(Self {
             tcp_analyzer: TcpAnalyzer::new().map_err(PassiveError::Tcp)?,
@@ -70,7 +70,7 @@ impl PassiveAnalyzer {
             (true, 80, _) | (true, _, 80) => ProtocolType::Http,
             (true, 443, _) | (true, _, 443) => ProtocolType::Https,
             (true, _, _) => ProtocolType::Tcp,
-            (false, 53, _) | (false, _, 53) => ProtocolType::Udp, // 简单 DNS identify
+            (false, 53, _) | (false, _, 53) => ProtocolType::Udp, // simple DNS identify
             (false, _, _) if packet.src_port > 0 || packet.dst_port > 0 => ProtocolType::Udp,
             _ => ProtocolType::Icmp,
         };
@@ -88,8 +88,8 @@ impl PassiveAnalyzer {
         context.timestamp = chrono::Utc::now();
         context.packet_size = packet.payload.len();
 
-        // 智能方向identify： if 是私有address发往公网，通常是 Outbound；反之是 Inbound
-        // 这里的逻辑canBased on部署environment（gateway vs final端）进一步微调
+        // 智能方向identify： if 是privateaddress发往公网，usually是 Outbound；反之是 Inbound
+        // here的logiccanBased on部署environment（gateway vs final端）进一步微调
         let src_is_local = match packet.src_ip {
             std::net::IpAddr::V4(ip) => ip.is_loopback() || ip.is_private(),
             std::net::IpAddr::V6(ip) => ip.is_loopback(),
@@ -100,7 +100,7 @@ impl PassiveAnalyzer {
             TrafficDirection::Inbound
         };
 
-        // 3. call原有 analyze methodGetfingerprint
+        // 3. calloriginal analyze methodGetfingerprint
         let analysis_result = self.analyze(packet);
 
         // 4. Create NetworkFlow
@@ -132,10 +132,10 @@ pub struct AnalysisResult {
     pub tls: Option<TlsFingerprint>,
 }
 
-// export别名
+// exportalias
 pub use AnalysisResult as PassiveAnalysisResult;
 
-/// 被动analysiserror
+/// passiveanalysiserror
 #[derive(Debug, thiserror::Error)]
 pub enum PassiveError {
     #[error("TCP analysiserror: {0}")]

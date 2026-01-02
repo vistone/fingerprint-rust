@@ -78,10 +78,10 @@ impl HttpResponse {
             return Err("count据太短，unable toincluding headers endmarker".to_string());
         }
 
-        // use saturating_sub preventdown溢，butneed额outsideCheckedge界
+        // use saturating_sub preventdown溢，butneed额outsideCheckedgeboundary
         let max_i = data.len().saturating_sub(3);
         for i in 0..max_i {
-            // securityCheck：ensure不will越界access
+            // securityCheck：ensure不will越boundaryaccess
             if i + 4 <= data.len() && &data[i..i + 4] == b"\r\n\r\n" {
                 return Ok((i, i + 4));
             }
@@ -153,7 +153,7 @@ impl HttpResponse {
     /// Parse chunked encoding
     fn parse_chunked(data: &[u8]) -> Result<Vec<u8>, String> {
         /// maximumallow的single chunk size（10MB）
-        /// prevent恶意serversend超大 chunk 导致inside存耗尽
+        /// preventmaliciousserversend超大 chunk causeinsidememory exhausted
         const MAX_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB
 
         let mut result = Vec::new();
@@ -166,7 +166,7 @@ impl HttpResponse {
                 .position(|w| w == b"\r\n")
                 .ok_or("Invalid chunked encoding: missing CRLF after size")?;
 
-            // Parse chunk size（十六进制）
+            // Parse chunk size（hexadecimal）
             let size_str = std::str::from_utf8(&data[pos..pos + size_line_end])
                 .map_err(|_| "Invalid chunk size: not UTF-8")?;
 
@@ -176,7 +176,7 @@ impl HttpResponse {
             let size = usize::from_str_radix(size_str, 16)
                 .map_err(|e| format!("Invalid chunk size '{}': {}", size_str, e))?;
 
-            // securityCheck：prevent恶意serversend超大 chunk
+            // securityCheck：preventmaliciousserversend超大 chunk
             if size > MAX_CHUNK_SIZE {
                 return Err(format!(
                     "Chunk size {} exceeds maximum allowed size {} bytes",
@@ -255,7 +255,7 @@ impl HttpResponse {
 
     #[cfg(not(feature = "compression"))]
     fn decompress_gzip(_data: &[u8]) -> Result<Vec<u8>, String> {
-        Err("compressionFeaturesnotenabled，请use --features compression 编译".to_string())
+        Err("compressionFeaturesnotenabled，请use --features compression compile".to_string())
     }
 
     /// decompression deflate
@@ -284,7 +284,7 @@ impl HttpResponse {
 
     #[cfg(not(feature = "compression"))]
     fn decompress_deflate(_data: &[u8]) -> Result<Vec<u8>, String> {
-        Err("compressionFeaturesnotenabled，请use --features compression 编译".to_string())
+        Err("compressionFeaturesnotenabled，请use --features compression compile".to_string())
     }
 
     /// decompression brotli

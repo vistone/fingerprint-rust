@@ -1,7 +1,7 @@
-//! TLS fingerprint比较module
+//! TLS fingerprintcomparemodule
 //!
-//! providefingerprint比较 and matchFeatures
-//! reference：Huginn Net 的fingerprint比较implement
+//! providefingerprintcompare and matchFeatures
+//! reference：Huginn Net 的fingerprintcompareimplement
 
 use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
@@ -10,15 +10,15 @@ use crate::tls_config::spec::ClientHelloSpec;
 /// fingerprintmatchresult
 #[derive(Debug, Clone, PartialEq)]
 pub enum FingerprintMatch {
-    /// 完全match（include GREASE value）
+    /// completelymatch（include GREASE value）
     Exact,
-    /// 相似match（ignore GREASE valuebacksame）
+    /// similarmatch（ignore GREASE valuebacksame）
     Similar,
     /// does not match
     None,
 }
 
-/// 比较两个 ClientHelloSpec 的相似度
+/// compare two ClientHelloSpec 的similar度
 ///
 /// # Parameters
 /// * `spec1` - first ClientHelloSpec
@@ -41,7 +41,7 @@ pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> Finger
     compare_signatures(&sig1, &sig2)
 }
 
-/// 比较两个signature的相似度
+/// compare twosignature的similar度
 ///
 /// # Parameters
 /// * `sig1` - firstsignature
@@ -53,12 +53,12 @@ pub fn compare_signatures(
     sig1: &ClientHelloSignature,
     sig2: &ClientHelloSignature,
 ) -> FingerprintMatch {
-    // 完全match
+    // completelymatch
     if sig1 == sig2 {
         return FingerprintMatch::Exact;
     }
 
-    // 相似match（ignore GREASE）
+    // similarmatch（ignore GREASE）
     if sig1.similar_to(sig2) {
         return FingerprintMatch::Similar;
     }
@@ -66,14 +66,14 @@ pub fn compare_signatures(
     FingerprintMatch::None
 }
 
-/// find and 给定signature最相似的fingerprintconfiguration
+/// find and 给定signature最similar的fingerprintconfiguration
 ///
 /// # Parameters
 /// * `signature` - 要match的signature
 /// * `specs` - 候选 ClientHelloSpec list
 ///
 /// # Returns
-/// * `Option<usize>` - 最相似configuration的index， if no找 to 则return None
+/// * `Option<usize>` - 最similarconfiguration的index， if no找 to 则return None
 pub fn find_best_match(
     signature: &ClientHelloSignature,
     specs: &[ClientHelloSpec],
@@ -109,7 +109,7 @@ mod tests {
         let spec1 = ClientHelloSpec::chrome_133();
         let spec2 = ClientHelloSpec::chrome_133();
         let result = compare_specs(&spec1, &spec2);
-        // 由于set成了random GREASE，两次Generate spec  in GREASE valueupmay不同，
+        // due toset成了random GREASE，两次Generate spec  in GREASE valueupmaydifferent，
         // thereforeresultshould是 Similar（ignore GREASE backsame）
         assert!(matches!(
             result,

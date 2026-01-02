@@ -6,7 +6,7 @@
 use std::fmt;
 
 /// TLS versionenum
-/// include传统 SSL version以supportcomplete JA4 规范兼容性
+/// include传统 SSL version以supportcomplete JA4 规范compatible性
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TlsVersion {
     /// TLS 1.3

@@ -91,7 +91,7 @@ impl ClientHelloSpecBuilder {
     }
 
     /// Chrome 136 的defaultcipher suite
-    ///  in 136 version中，Chrome 进一步优化了encryptionsuiteweight，完全优先考虑现代 AEAD suite
+    ///  in 136 version中，Chrome 进一步优化了encryptionsuiteweight，completelypriority考虑现代 AEAD suite
     pub fn chrome_136_cipher_suites() -> Vec<u16> {
         vec![
             GREASE_CS,
@@ -137,7 +137,7 @@ impl ClientHelloSpecBuilder {
     }
 
     /// Chrome 的defaultsignaturealgorithm
-    /// return静态reference，避免不必要的inside存allocate
+    /// returnstaticreference，avoid不必要的inside存allocate
     pub fn chrome_signature_algorithms() -> &'static [u16] {
         &[
             ECDSA_WITH_P256_AND_SHA256,

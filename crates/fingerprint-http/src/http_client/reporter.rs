@@ -1,11 +1,11 @@
-//! Validate报告Generator
+//! ValidatereportGenerator
 //!
-//!  for Generate详细的Validate and test报告
+//!  for Generatedetailed的Validate and testreport
 
 use std::fs::File;
 use std::io::Write;
 
-/// Validate报告
+/// Validatereport
 #[derive(Debug, Clone)]
 pub struct ValidationReport {
     pub title: String,
@@ -14,7 +14,7 @@ pub struct ValidationReport {
     pub summary: ReportSummary,
 }
 
-/// 报告section
+/// reportsection
 #[derive(Debug, Clone)]
 pub struct ReportSection {
     pub title: String,
@@ -22,7 +22,7 @@ pub struct ReportSection {
     pub subsections: Vec<ReportSection>,
 }
 
-/// 报告digest
+/// reportdigest
 #[derive(Debug, Clone)]
 pub struct ReportSummary {
     pub total_tests: usize,
@@ -32,7 +32,7 @@ pub struct ReportSummary {
 }
 
 impl ValidationReport {
-    /// Create新报告
+    /// Create新report
     pub fn new(title: String) -> Self {
         #[cfg(feature = "reporter")]
         let generated_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -74,7 +74,7 @@ impl ValidationReport {
         };
     }
 
-    /// Generate Markdown format报告
+    /// Generate Markdown formatreport
     pub fn to_markdown(&self) -> String {
         let mut md = String::new();
 
@@ -94,7 +94,7 @@ impl ValidationReport {
         ));
         md.push_str("---\n\n");
 
-        // 各个section
+        // each个section
         for section in &self.sections {
             md.push_str(&section.to_markdown(2));
         }
@@ -102,7 +102,7 @@ impl ValidationReport {
         md
     }
 
-    /// Generate纯文本报告
+    /// Generate纯文本report
     pub fn to_text(&self) -> String {
         let mut text = String::new();
 
@@ -121,7 +121,7 @@ impl ValidationReport {
         text.push_str(&"=".repeat(70));
         text.push_str("\n\n");
 
-        // 各个section
+        // each个section
         for section in &self.sections {
             text.push_str(&section.to_text(0));
         }
@@ -214,7 +214,7 @@ impl ReportSection {
     }
 }
 
-/// 报告format
+/// reportformat
 #[derive(Debug, Clone, Copy)]
 pub enum ReportFormat {
     Markdown,

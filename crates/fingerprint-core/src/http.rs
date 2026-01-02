@@ -67,7 +67,7 @@ impl HttpFingerprint {
         let mut hasher = Sha256::new();
         hasher.update(user_agent.as_bytes());
 
-        // pair headers 进行sortbackhash
+        // pair headers performsortbackhash
         let mut header_vec: Vec<_> = headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
@@ -109,7 +109,7 @@ impl Fingerprint for HttpFingerprint {
         let mut hasher = DefaultHasher::new();
         self.user_agent.hash(&mut hasher);
 
-        // pair headers 进行sortbackhash
+        // pair headers performsortbackhash
         let mut header_vec: Vec<_> = self.headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
@@ -135,7 +135,7 @@ impl Fingerprint for HttpFingerprint {
         }
 
         // tryconvert to HttpFingerprint
-        // Note: 这里needtypeConvert，but由于 trait 的limit，我们只能比较hashvalue
+        // Note: hereneedtypeConvert，butdue to trait 的limit，we只能comparehashvalue
         self.hash() == other.hash()
     }
 

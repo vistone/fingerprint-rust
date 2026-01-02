@@ -64,12 +64,12 @@ impl TlsClientObserved {
         self.signature_algorithms.len()
     }
 
-    /// Checkwhetherincluding特定extension
+    /// Checkwhetherincludingspecificextension
     pub fn has_extension(&self, ext_id: u16) -> bool {
         self.extensions.contains(&ext_id)
     }
 
-    /// Checkwhetherincluding特定cipher suite
+    /// Checkwhetherincludingspecificcipher suite
     pub fn has_cipher_suite(&self, suite: u16) -> bool {
         self.cipher_suites.contains(&suite)
     }

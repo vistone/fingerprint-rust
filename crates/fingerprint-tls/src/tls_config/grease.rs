@@ -5,7 +5,7 @@
 
 /// TLS GREASE valueconstant
 /// Based on RFC 8701，GREASE value的pattern是：0x1a1a, 0x2a2a, 0x3a3a, ..., 0xfafa
-/// and 0x0a0a (特殊value)
+/// and 0x0a0a (specialvalue)
 pub const TLS_GREASE_VALUES: [u16; 16] = [
     0x0a0a, 0x1a1a, 0x2a2a, 0x3a3a, 0x4a4a, 0x5a5a, 0x6a6a, 0x7a7a, 0x8a8a, 0x9a9a, 0xaaaa, 0xbaba,
     0xcaca, 0xdada, 0xeaea, 0xfafa,
@@ -56,7 +56,7 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
 ///  from  u16 list中remove GREASE value（原地modify）
 ///
 /// # Parameters
-/// * `values` - 要modify u16 valuelist（可变reference）
+/// * `values` - 要modify u16 valuelist（mutablereference）
 ///
 /// # Examples
 /// ```

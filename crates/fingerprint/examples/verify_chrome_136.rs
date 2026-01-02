@@ -51,7 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client_hello = TLSHandshakeBuilder::build_client_hello(&spec, "www.google.com")?;
     println!("   ✅ successGenerate ClientHello: {} bytes", client_hello.len());
 
-    // 简单Check ALPN whether in bytesstream中 (h3, h2, http/1.1)
+    // simpleCheck ALPN whether in bytesstream中 (h3, h2, http/1.1)
     if client_hello.windows(2).any(|w| w == b"h3") && client_hello.windows(2).any(|w| w == b"h2") {
         println!("   ✅ bytesstream中including h3  and h2 identifier");
     }

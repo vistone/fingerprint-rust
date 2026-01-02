@@ -1,4 +1,4 @@
-//! networktraffic抽象
+//! networktrafficabstract
 //!
 //! definesystemlevel的networktraffic，includingcomplete的updown文 and fingerprintinfo。
 
@@ -26,10 +26,10 @@ pub struct FlowCharacteristics {
     /// averagecountpacketsize
     pub avg_packet_size: f64,
 
-    /// countpacket速率（包/秒）
+    /// countpacketrate（包/秒）
     pub packet_rate: f64,
 
-    /// bytes速率（bytes/秒）
+    /// bytesrate（bytes/秒）
     pub byte_rate: f64,
 }
 
@@ -53,7 +53,7 @@ impl FlowCharacteristics {
         self.total_bytes += packet_size as u64;
         self.avg_packet_size = self.total_bytes as f64 / self.packet_count as f64;
 
-        // If duration is not零, Calculate速率
+        // If duration is not零, Calculaterate
         if !self.duration.is_zero() {
             let secs = self.duration.as_secs_f64();
             self.packet_rate = self.packet_count as f64 / secs;
@@ -61,7 +61,7 @@ impl FlowCharacteristics {
         }
     }
 
-    /// settings持续 when 间并Update速率
+    /// settings持续 when 间并Updaterate
     pub fn set_duration(&mut self, duration: Duration) {
         self.duration = duration;
         if !duration.is_zero() {
@@ -84,7 +84,7 @@ impl Default for FlowCharacteristics {
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneed from **networktraffic**的角度进行analysis and protection，而is notonlyonlyfocussingleservice：
+/// systemlevelprotectionneed from **networktraffic**的角度performanalysis and protection，而is notonlyonlyfocussingleservice：
 /// - complete的systemupdown文（source/target、protocol、方向等）
 /// - detect to 的fingerprintinfo（TLS、HTTP、TCP等）
 /// - traffic的statisticstrait and behaviorpattern
@@ -107,7 +107,7 @@ pub struct NetworkFlow {
     pub context: SystemContext,
 
     /// detect to 的fingerprintlist（ if 有）
-    /// Note: 由于 trait object 的limit，这里不能directly Clone，needmanualprocess
+    /// Note: due to trait object 的limit，herecannotdirectly Clone，needmanualprocess
     #[cfg_attr(test, allow(dead_code))]
     fingerprints: Vec<Box<dyn Fingerprint>>,
 
@@ -163,7 +163,7 @@ impl NetworkFlow {
     }
 }
 
-// Manual implementation Debug，because Box<dyn Fingerprint> 不能automaticimplement Debug
+// Manual implementation Debug，because Box<dyn Fingerprint> cannotautomaticimplement Debug
 impl std::fmt::Debug for NetworkFlow {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("NetworkFlow")
@@ -174,14 +174,14 @@ impl std::fmt::Debug for NetworkFlow {
     }
 }
 
-// Manual implementation Clone，because Box<dyn Fingerprint> 不能automatic Clone
+// Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for NetworkFlow {
     fn clone(&self) -> Self {
-        // Note: fingerprints 不能 Clone，so新instance from emptyliststart
-        // 这是合理的，becausefingerprint通常不should被copy，而是throughreference共享
+        // Note: fingerprints cannot Clone，so新instance from emptyliststart
+        // this is合理的，becausefingerprintusually不should被copy，而是throughreferenceshared
         Self {
             context: self.context.clone(),
-            fingerprints: Vec::new(), // 不能 Clone trait object
+            fingerprints: Vec::new(), // cannot Clone trait object
             characteristics: self.characteristics.clone(),
         }
     }

@@ -77,7 +77,7 @@ fn load_from_json(path: &Path) -> Result<DomainIPs, DNSError> {
 
 /// save为 YAML（原child性write）
 fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
-    // use serde_yaml directly序列化
+    // use serde_yaml directlyserialize
     let yaml_string =
         serde_yaml::to_string(domain_ips).map_err(|e| DNSError::Yaml(e.to_string()))?;
     atomic_write(path, yaml_string.as_bytes())?;
@@ -87,7 +87,7 @@ fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
 ///  from  YAML load
 fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
     let content = fs::read_to_string(path)?;
-    // use serde_yaml directly反序列化
+    // use serde_yaml directly反serialize
     let domain_ips: DomainIPs =
         serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?;
     Ok(domain_ips)

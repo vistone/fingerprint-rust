@@ -8,7 +8,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http3")]
 use quinn::{ClientConfig, Endpoint, TransportConfig};
 
-// Fix: useglobal单例 Runtime 避免频繁Create
+// Fix: useglobalsingleton Runtime avoidfrequentCreate
 #[cfg(feature = "http3")]
 use once_cell::sync::Lazy;
 
@@ -25,7 +25,7 @@ pub fn send_http3_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // Fix: useglobal单例 Runtime，避免每次request都Create a newrun when 
+    // Fix: useglobalsingleton Runtime，avoid每次request都Create a newrun when 
     RUNTIME.block_on(async { send_http3_request_async(host, port, path, request, config).await })
 }
 
@@ -56,22 +56,22 @@ async fn send_http3_request_async(
     let mut transport = TransportConfig::default();
 
     // connectionmigrate (Connection Migration) 优化
-    // QUIC allow in IP toggle when keepconnection，这pairmobilesimulate至关重要
+    // QUIC allow in IP toggle when keepconnection，这pairmobilesimulate至close重要
     transport.initial_rtt(Duration::from_millis(100));
     transport.max_idle_timeout(Some(
         Duration::from_secs(60)
             .try_into()
             .map_err(|e| HttpClientError::ConnectionFailed(format!("configurationtimeoutfailure: {}", e)))?,
     ));
-    // increase保活频率以auxiliaryconnectionmigrateidentify
+    // increase保活frequency以auxiliaryconnectionmigrateidentify
     transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
-    // allowpair端migrate（defaultalready开启，此处显式explain其重要性）
+    // allowpair端migrate（defaultalreadyopen，此处explicitexplain其重要性）
     // transport.allow_peer_migration(true);
 
-    // simulate Chrome 的streamcontrolwindow (Chrome 通常use较大的window以提升吞吐)
-    transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome 风格)
-    transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome 风格)
+    // simulate Chrome 的streamcontrolwindow (Chrome usuallyuse较大的window以提升吞吐)
+    transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome style)
+    transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome style)
 
     // allow更多concurrentstream
     transport.max_concurrent_bidi_streams(100u32.into());
@@ -79,7 +79,7 @@ async fn send_http3_request_async(
 
     client_config.transport_config(Arc::new(transport));
 
-    // 2. DNS Parse（优先 IPv4，避免 IPv4 endpoint connection IPv6 remote 导致 invalid remote address）
+    // 2. DNS Parse（priority IPv4，avoid IPv4 endpoint connection IPv6 remote cause invalid remote address）
     let addr_str = format!("{}:{}", host, port);
     let mut addrs: Vec<SocketAddr> = addr_str
         .to_socket_addrs()
@@ -88,9 +88,9 @@ async fn send_http3_request_async(
     if addrs.is_empty() {
         return Err(HttpClientError::InvalidUrl("unable toParseaddress".to_string()));
     }
-    addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
+    addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 priority
 
-    // 4. connection to server (Happy Eyeballs 简化版：循环tryallParse to 的address)
+    // 4. connection to server (Happy Eyeballs simplify版：looptryallParse to 的address)
     let mut connection_result = Err(HttpClientError::ConnectionFailed("无availableaddress".to_string()));
 
     for remote_addr in addrs {
@@ -174,7 +174,7 @@ async fn send_http3_request_async(
     http_request = http_request.header("user-agent", &config.user_agent);
 
     for (key, value) in &request_with_cookies.headers {
-        // skip host header（ if 用户传入了）
+        // skip host header（ if user传入了）
         if key.to_lowercase() != "host" {
             http_request = http_request.header(key, value);
         }
@@ -215,8 +215,8 @@ async fn send_http3_request_async(
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
-    // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹攻击
-    // h3 crate 0.0.4 的defaultlimit通常较大，我们Add额outside的Check
+    // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹attack
+    // h3 crate 0.0.4 的defaultlimitusually较大，weAdd额outside的Check
     const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的minimumvalue)
     let total_header_size: usize = headers
         .iter()
@@ -224,7 +224,7 @@ async fn send_http3_request_async(
         .sum();
     if total_header_size > MAX_HTTP3_HEADER_SIZE {
         return Err(HttpClientError::InvalidResponse(format!(
-            "HTTP/3 responseheader过大（>{} bytes）",
+            "HTTP/3 responseheadertoo large（>{} bytes）",
             MAX_HTTP3_HEADER_SIZE
         )));
     }
@@ -233,7 +233,7 @@ async fn send_http3_request_async(
     use bytes::Buf;
     let mut body_data = Vec::new();
 
-    // securitylimit：prevent HTTP/3 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/3 responsebody too largecauseinsidememory exhausted
     const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(mut chunk) = stream
@@ -244,10 +244,10 @@ async fn send_http3_request_async(
         // use Buf trait readcount据
         let chunk_len = chunk.remaining();
 
-        // securityCheck：preventresponse体过大
+        // securityCheck：preventresponsebody too large
         if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
-                "HTTP/3 response体过大（>{} bytes）",
+                "HTTP/3 responsebody too large（>{} bytes）",
                 MAX_HTTP3_BODY_SIZE
             )));
         }
@@ -288,7 +288,7 @@ pub fn send_http3_request(
     _config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
     Err(HttpClientError::InvalidResponse(
-        "HTTP/3 supportnotenabled，请use --features http3 编译".to_string(),
+        "HTTP/3 supportnotenabled，请use --features http3 compile".to_string(),
     ))
 }
 

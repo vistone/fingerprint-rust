@@ -1,11 +1,11 @@
-//! 工具functionmodule
+//! toolfunctionmodule
 //!
-//! providerandomly select、stringprocess等工具function
+//! providerandomly select、stringprocess等toolfunction
 
 use rand::Rng;
 
-///  from slice中randomly selectanelement（线程security）
-/// use thread_rng() ensure线程security
+///  from slice中randomly selectanelement（threadsecurity）
+/// use thread_rng() ensurethreadsecurity
 pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     if items.is_empty() {
         return None;
@@ -15,7 +15,7 @@ pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     Some(items[index].clone())
 }
 
-///  from stringslice中randomly selectanelement（线程security）
+///  from stringslice中randomly selectanelement（threadsecurity）
 pub fn random_choice_string(items: &[&str]) -> Option<String> {
     random_choice(items).map(|s| s.to_string())
 }
@@ -86,7 +86,7 @@ pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSy
     } else if user_agent.contains("Linux") || user_agent.contains("Android") {
         OperatingSystem::Linux
     } else {
-        // defaultuse Windows（最常见的browserenvironment）
+        // defaultuse Windows（most commonbrowserenvironment）
         OperatingSystem::Windows10
     }
 }

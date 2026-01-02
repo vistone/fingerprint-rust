@@ -20,11 +20,11 @@ pub mod supported_groups {
 
 pub use supported_groups::*;
 
-/// CurveID type别名
+/// CurveID typealias
 /// Corresponds to Go version's tls.CurveID
 pub type CurveID = u16;
 
-/// 为了 and Go versionkeep一致，provide别名
+/// 为了 and Go versionkeepconsistent，providealias
 /// Corresponds to Go version's tls.CurveP256
 pub const CURVE_P256: u16 = supported_groups::SECP256R1;
 /// Corresponds to Go version's tls.CurveP384
@@ -32,5 +32,5 @@ pub const CURVE_P384: u16 = supported_groups::SECP384R1;
 /// Corresponds to Go version's tls.X25519
 pub const X25519: u16 = supported_groups::X25519;
 /// Corresponds to Go version's tls.X25519MLKEM768 (Chrome 133 新增)
-/// Note: 这是 ML-KEM 曲线
+/// Note: this is ML-KEM 曲线
 pub const X25519_MLKEM768: u16 = 0x6399;

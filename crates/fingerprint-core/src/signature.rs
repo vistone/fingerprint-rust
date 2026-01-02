@@ -1,6 +1,6 @@
 //! TLS ClientHello Signature module
 //!
-//! provide TLS ClientHello 的signatureExtract and 比较Features
+//! provide TLS ClientHello 的signatureExtract and compareFeatures
 //! reference：Huginn Net  Signature struct设计
 
 use crate::dicttls::supported_groups::CurveID;
@@ -11,7 +11,7 @@ use crate::version::TlsVersion;
 use sha2::{Digest, Sha256};
 
 /// TLS ClientHello signature
-/// including from  ClientHello message中Extract的all关key information
+/// including from  ClientHello message中Extract的allclosekey information
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
     /// fingerprint ID（based on JA4 hash  or signaturetrait的hash）
@@ -106,13 +106,13 @@ impl ClientHelloSignature {
                 .any(|&v| is_grease_value(v))
     }
 
-    /// 比较两个signaturewhether相似（ignore GREASE value）
+    /// compare twosignaturewhethersimilar（ignore GREASE value）
     ///
     /// # Parameters
-    /// * `other` - 要比较的另ansignature
+    /// * `other` - 要compare的另ansignature
     ///
     /// # Returns
-    /// * `true`  if signature相似（ignore GREASE backsame），`false` otherwise
+    /// * `true`  if signaturesimilar（ignore GREASE backsame），`false` otherwise
     pub fn similar_to(&self, other: &Self) -> bool {
         self.version == other.version
             && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -125,7 +125,7 @@ impl ClientHelloSignature {
             && self.alpn == other.alpn
     }
 
-    /// Calculatesignature的hashvalue（ for 快速比较）
+    /// Calculatesignature的hashvalue（ for fastcompare）
     /// usefilter GREASE back的value
     pub fn hash(&self) -> u64 {
         use std::collections::hash_map::DefaultHasher;
@@ -171,8 +171,8 @@ impl Fingerprint for ClientHelloSignature {
         }
 
         // tryconvert to ClientHelloSignature
-        // 由于 trait 的limit，我们只能比较hashvalue
-        // actualuse中，shouldthroughtypeConvert来比较
+        // due to trait 的limit，we只能comparehashvalue
+        // actualuse中，shouldthroughtypeConvert来compare
         self.hash() == other.hash()
     }
 
@@ -206,7 +206,7 @@ mod tests {
 
         let mut sig2 = ClientHelloSignature::new();
         sig2.version = TlsVersion::V1_2;
-        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // 不同 GREASE，butfilterbacksame
+        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // different GREASE，butfilterbacksame
         sig2.extensions = vec![0x0000, 0x0010];
 
         // filter GREASE backshouldsame

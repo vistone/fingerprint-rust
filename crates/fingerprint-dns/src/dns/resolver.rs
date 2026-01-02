@@ -20,7 +20,7 @@ pub struct DNSResolver {
     timeout: Duration,
     /// DNS serverpool
     server_pool: Arc<ServerPool>,
-    /// Fix: cache resolver instance，避免频繁Create and destroy
+    /// Fix: cache resolver instance，avoidfrequentCreate and destroy
     /// use Arc<Mutex<HashMap>> storeeach DNS server resolver
     resolver_cache:
         Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioAsyncResolver>>>>,
@@ -91,12 +91,12 @@ impl DNSResolver {
     }
 
     /// Parse IPv4 (A)  or  IPv6 (AAAA) record
-    /// usecollect to 的全球 DNS server进行query
+    /// usecollect to 的全球 DNS serverperformquery
     async fn resolve_aaaa_or_a(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
         self.resolve_with_hickory(domain, ipv6).await
     }
 
-    /// use hickory-resolver 进行 DNS query，concurrentquerymultiple DNS server以Getallmay IP
+    /// use hickory-resolver perform DNS query，concurrentquerymultiple DNS server以Getallmay IP
     async fn resolve_with_hickory(
         &self,
         domain: &str,
@@ -120,7 +120,7 @@ impl DNSResolver {
         let servers_with_sockets: Vec<_> = servers
             .iter()
             .filter_map(|server_str| {
-                // Parseserveraddressformat：can是 "ip:port"  or 只有 "ip"（defaultport 53）
+                // Parseserveraddressformat：can是 "ip:port"  or only "ip"（defaultport 53）
                 let (ip_str, port) = if let Some(colon_pos) = server_str.find(':') {
                     let ip = &server_str[..colon_pos];
                     let port = server_str[colon_pos + 1..].parse::<u16>().unwrap_or(53);
@@ -157,17 +157,17 @@ impl DNSResolver {
         // configurationParseoptions
         let mut opts = ResolverOpts::default();
         opts.timeout = Duration::from_millis(1000); // singleservertimeout duration 1 秒
-        opts.attempts = 1; // eachserver只try一次，because我们concurrentquerymultiple
+        opts.attempts = 1; // eachserver只tryonce，becauseweconcurrentquerymultiple
         eprintln!(
-            "[DNS Resolver] singleservertimeout: {:?}, 总体timeout: {:?}",
+            "[DNS Resolver] singleservertimeout: {:?}, overalltimeout: {:?}",
             opts.timeout, self.timeout
         );
 
         // concurrentquerymultiple DNS server
-        // usetimeoutwrap，避免single慢server阻塞整个query
+        // usetimeoutwrap，avoidsingle慢server阻塞整个query
         let server_pool = self.server_pool.clone();
-        let query_timeout = self.timeout; // use resolver 的总体timeout duration
-                                          // Fix: 共享 resolver cache
+        let query_timeout = self.timeout; // use resolver 的overalltimeout duration
+                                          // Fix: shared resolver cache
         let resolver_cache = self.resolver_cache.clone();
         let query_tasks = stream::iter(servers_with_sockets)
             .map(move |(server_str, socket_addr)| {
@@ -182,9 +182,9 @@ impl DNSResolver {
                 async move {
                     let start_time = std::time::Instant::now();
 
-                    // usetimeoutwrapquery，避免singleserver阻塞
+                    // usetimeoutwrapquery，avoidsingleserver阻塞
                     let query_result = tokio::time::timeout(query_timeout, async {
-                        // Fix: 复用 resolver instance，避免频繁Create and destroy
+                        // Fix: reuse resolver instance，avoidfrequentCreate and destroy
                         // use server_str as key 来cache resolver
                         let resolver = {
                             let mut cache = resolver_cache.lock().unwrap_or_else(|e| {
@@ -243,7 +243,7 @@ impl DNSResolver {
                             // recordsuccessresponse when 间
                             let response_time = start_time.elapsed();
                             if !ips.is_empty() {
-                                // print详细日志，displayreturn的all IP
+                                // printdetailedlog，displayreturn的all IP
                                 eprintln!("[DNS Query] ✅ server {} success，return {} 个 IP（共 {} 条record），耗 when : {:?}",
                                          server_str, ips.len(), record_count, response_time);
                                 if ips.len() > 1 {
@@ -262,7 +262,7 @@ impl DNSResolver {
                             Ok(ips)
                         }
                         Ok(Err(_)) | Err(_) => {
-                            // recordfailure（queryfailure or timeout），不print日志以decreaseoutput
+                            // recordfailure（queryfailure or timeout），不printlog以decreaseoutput
                             let _ = server_pool.record_failure(&server_str);
                             // singleserverfailure不影响whole，returnemptyresult
                             Ok::<Vec<String>, DNSError>(Vec::new())
@@ -270,13 +270,13 @@ impl DNSResolver {
                     }
                 }
             })
-            .buffer_unordered(50); // Fix: 降低concurrentcount to  50，避免filedescribe符耗尽 and 资source爆炸
+            .buffer_unordered(50); // Fix: 降低concurrentcount to  50，avoidfiledescribe符耗尽 and 资source爆炸
 
         eprintln!("[DNS Resolver] startconcurrentquery，concurrentcount: 50");
 
         // stream式collectresult，waitallserverresponse，collect尽may多 IP
-        //  for 大量server，increase总体timeout duration
-        let overall_timeout = Duration::from_secs(30); // 总体timeout 30 秒，ensureallserver都有机willresponse
+        //  for 大量server，increaseoveralltimeout duration
+        let overall_timeout = Duration::from_secs(30); // overalltimeout 30 秒，ensureallserver都有机willresponse
         let mut all_ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP 只willpreservean
         let mut query_tasks = query_tasks;
         let mut success_count = 0usize;
@@ -288,10 +288,10 @@ impl DNSResolver {
         tokio::pin!(timeout_future);
         let start_time = std::time::Instant::now();
         let mut last_log_time = std::time::Instant::now();
-        let log_interval = Duration::from_millis(500); // 每500msprint一次进度
+        let log_interval = Duration::from_millis(500); // 每500msprintonce进度
 
         eprintln!(
-            "[DNS Resolver] startcollectqueryresult（总体timeout: {:?}，总servercount: {}）",
+            "[DNS Resolver] startcollectqueryresult（overalltimeout: {:?}，总servercount: {}）",
             overall_timeout, total_servers
         );
 
@@ -302,7 +302,7 @@ impl DNSResolver {
                     match result {
                         Some(Ok(ips)) => {
                             success_count += 1;
-                            let ips_count = ips.len(); // 先save IP count，避免movebackunable toaccess
+                            let ips_count = ips.len(); // 先save IP count，avoidmovebackunable toaccess
                             total_ips_received += ips_count; // statistics收 to 的总 IP count（deduplicatefront）
 
                             let before_count = all_ips.len();
@@ -312,13 +312,13 @@ impl DNSResolver {
                             let after_count = all_ips.len();
                             let new_ips_count = after_count - before_count;
 
-                            // If这个serverreturn IP 中有重复的, will in 日志中display
+                            // Ifthisserverreturn IP 中有重复的, will in log中display
                             if ips_count > new_ips_count {
                                 eprintln!("[DNS Resolver] serverreturn {} 个 IP，其中 {} 个是new IP，{} 个是重复的（alreadyautomaticdeduplicate）",
                                          ips_count, new_ips_count, ips_count - new_ips_count);
                             }
 
-                            // 定期print进度，displaydeduplicatestatistics
+                            // regularprint进度，displaydeduplicatestatistics
                             if last_log_time.elapsed() >= log_interval {
                                 let duplicate_count = total_ips_received - all_ips.len();
                                 eprintln!("[DNS Resolver] 进度: {}/{} servercomplete，success {} 个，failure {} 个",
@@ -330,7 +330,7 @@ impl DNSResolver {
                         }
                         Some(Err(_)) => {
                             failure_count += 1;
-                            // 定期print进度
+                            // regularprint进度
                             if last_log_time.elapsed() >= log_interval {
                                 eprintln!("[DNS Resolver] 进度: {}/{} servercomplete，success {} 个，failure {} 个，alreadycollect IP: {} 个",
                                          success_count + failure_count, total_servers, success_count, failure_count, all_ips.len());
@@ -352,7 +352,7 @@ impl DNSResolver {
                 // timeout
                 _ = &mut timeout_future => {
                     let duplicate_count = total_ips_received - all_ips.len();
-                    eprintln!("[DNS Resolver] ⏱️  query总体timeout（{}秒），complete {}/{} server，success {} 个，failure {} 个",
+                    eprintln!("[DNS Resolver] ⏱️  queryoveralltimeout（{}秒），complete {}/{} server，success {} 个，failure {} 个",
                              overall_timeout.as_secs(), success_count + failure_count, total_servers, success_count, failure_count);
                     eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to  {} 个 IP，deduplicateback {} 个唯一 IP，filter了 {} 个重复 IP",
                              total_ips_received, all_ips.len(), duplicate_count);

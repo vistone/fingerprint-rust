@@ -51,7 +51,7 @@ impl TLSHandshake {
         Self::new(TLSHandshakeType::ClientHello, body)
     }
 
-    /// 序列化为bytesstream
+    /// serialize为bytesstream
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
 
@@ -96,7 +96,7 @@ impl TLSHandshake {
 
         if data.len() < 4 + length {
             return Err(format!(
-                "count据不complete，need {} bytes，actual只有 {} bytes",
+                "count据不complete，need {} bytes，actualonly {} bytes",
                 4 + length,
                 data.len()
             ));

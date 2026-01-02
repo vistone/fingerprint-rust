@@ -1,13 +1,13 @@
-//! TCP 被动fingerprintidentify
+//! TCP passivefingerprintidentify
 //!
-//! implement p0f 风格 TCP fingerprintidentify。
+//! implement p0f style TCP fingerprintidentify。
 
 use crate::passive::packet::{Packet, TcpHeader};
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// TCP signature（简化版， for match）
+/// TCP signature（simplify版， for match）
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TcpSignature {
     pub id: String,
@@ -32,7 +32,7 @@ pub struct TcpFingerprint {
     /// match的signature
     pub signature: Option<TcpSignature>,
 
-    /// 相似度
+    /// similar度
     pub similarity: f64,
 
     /// detect to 的operating system
@@ -145,7 +145,7 @@ impl TcpAnalyzer {
     /// loaddefaultsignature
     fn load_default_signatures(&mut self) -> Result<(), String> {
         // Addsome基础signatureasExamples
-        // 这些是常见的operating systemsignature
+        // 这些是common的operating systemsignature
 
         // Linux Examplessignature
         let linux_sig = TcpSignature {
@@ -247,7 +247,7 @@ impl TcpAnalyzer {
     /// inferinitialbeginning TTL
     fn infer_initial_ttl(&self, ttl: u8) -> u8 {
         // Based onobserve to  TTL inferinitialbeginning TTL
-        // 常见的initialbeginning TTL value：32, 64, 128, 255
+        // common的initialbeginning TTL value：32, 64, 128, 255
         if ttl <= 32 {
             32
         } else if ttl <= 64 {
@@ -318,7 +318,7 @@ impl TcpAnalyzer {
 
         if let Some((sig, sim)) = best_match {
             if sim > 0.6 {
-                // 相似度阈value
+                // similar度阈value
                 (Some(sig.clone()), sim)
             } else {
                 (None, sim)
@@ -328,7 +328,7 @@ impl TcpAnalyzer {
         }
     }
 
-    /// Calculate相似度
+    /// Calculatesimilar度
     fn calculate_similarity(&self, features: &TcpFeatures, signature: &TcpSignature) -> f64 {
         let mut score = 0.0;
         let mut total = 0.0;
@@ -346,7 +346,7 @@ impl TcpAnalyzer {
             }
         }
 
-        // Window Size match（简化）
+        // Window Size match（simplify）
         if signature.window_size > 0 {
             total += 1.0;
             let window_diff = (features.window as i32 - signature.window_size as i32).abs();

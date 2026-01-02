@@ -1,23 +1,23 @@
-//! countpacket捕获module
+//! countpacketcapturemodule
 //!
-//! use纯 Rust implement from networkinterface or file实 when 捕获countpacket（无systemdepend）。
+//! use纯 Rust implement from networkinterface or file实 when capturecountpacket（无systemdepend）。
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
 use std::sync::Arc;
 
-/// 捕获引擎
+/// capture引擎
 pub struct CaptureEngine {
     analyzer: Arc<PassiveAnalyzer>,
 }
 
 impl CaptureEngine {
-    /// Create a new捕获引擎
+    /// Create a newcapture引擎
     pub fn new(analyzer: Arc<PassiveAnalyzer>) -> Self {
         Self { analyzer }
     }
 
-    ///  from specified网卡start实 when 捕获
+    ///  from specified网卡start实 when capture
     pub async fn start_live(&self, device_name: &str) -> Result<(), String> {
         // findspecified的networkinterface
         let interface = datalink::interfaces()
@@ -37,7 +37,7 @@ impl CaptureEngine {
         Ok(())
     }
 
-    ///  from networkinterface捕获countpacket（阻塞式）
+    ///  from networkinterfacecapturecountpacket（阻塞式）
     fn capture_from_interface(
         interface: NetworkInterface,
         analyzer: Arc<PassiveAnalyzer>,
@@ -49,14 +49,14 @@ impl CaptureEngine {
             Err(e) => return Err(format!("Create通道failure: {}", e)),
         };
 
-        // 循环receivecountpacket
+        // loopreceivecountpacket
         loop {
             match rx.next() {
                 Ok(packet) => {
-                    // securityCheck：limitmaximumcountpacketsize以prevent DoS 攻击（65535 bytes = maximum IP 包）
+                    // securityCheck：limitmaximumcountpacketsize以prevent DoS attack（65535 bytes = maximum IP 包）
                     const MAX_PACKET_SIZE: usize = 65535;
                     if packet.len() > MAX_PACKET_SIZE {
-                        eprintln!("[Capture] countpacket过大，alreadyignore: {} bytes", packet.len());
+                        eprintln!("[Capture] countpackettoo large，alreadyignore: {} bytes", packet.len());
                         continue;
                     }
                     
@@ -88,7 +88,7 @@ impl CaptureEngine {
 
         // readallcountpacket
         let mut packet_count = 0;
-        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcountpacketcount以preventinside存耗尽
+        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcountpacketcount以preventinsidememory exhausted
         
         while let Some(packet) = pcap_reader.next_packet() {
             // securityCheck：limitprocess的countpacketcount
@@ -104,11 +104,11 @@ impl CaptureEngine {
                     const MAX_PACKET_SIZE: usize = 65535;
                     let data = pkt.data;
                     if data.len() > MAX_PACKET_SIZE {
-                        eprintln!("[Capture] countpacket过大，alreadyignore: {} bytes", data.len());
+                        eprintln!("[Capture] countpackettoo large，alreadyignore: {} bytes", data.len());
                         continue;
                     }
                     
-                    // pcap file中的count据通常including以太网frameheader
+                    // pcap fileincount据usuallyincluding以太网frameheader
                     if data.len() > 14 {
                         // skip以太网frameheader（14 bytes）
                         let ip_packet = &data[14..];

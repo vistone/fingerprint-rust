@@ -8,7 +8,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http2")]
 use h2::client;
 
-// Fix: useglobal单例 Runtime 避免频繁Create
+// Fix: useglobalsingleton Runtime avoidfrequentCreate
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
@@ -25,7 +25,7 @@ pub fn send_http2_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // Fix: useglobal单例 Runtime，避免每次request都Create a newrun when 
+    // Fix: useglobalsingleton Runtime，avoid每次request都Create a newrun when 
     RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
@@ -140,7 +140,7 @@ async fn send_http2_request_async(
     http_request = http_request.header("user-agent", &config.user_agent);
 
     for (key, value) in &request_with_cookies.headers {
-        // skip host header（ if 用户传入了）
+        // skip host header（ if user传入了）
         if key.to_lowercase() != "host" {
             http_request = http_request.header(key, value);
         }
@@ -152,17 +152,17 @@ async fn send_http2_request_async(
         .map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
 
     // 6. sendrequest（Get SendStream  for send body）
-    // Fix: end_of_stream must为 false，otherwisestreamwill立即close，unable tosend body
+    // Fix: end_of_stream must为 false，otherwisestreamwillimmediatelyclose，unable tosend body
     let has_body = request_with_cookies.body.is_some()
         && !request_with_cookies.body.as_ref().unwrap().is_empty();
     let (response_future, mut send_stream) = client
-        .send_request(http_request, false) // Fix: 改为 false，只有 in send完 body back才endstream
+        .send_request(http_request, false) // Fix: 改为 false，only in send完 body back才endstream
         .map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;
 
     // Fix: through SendStream sendrequest体（ if  exists）
     if let Some(body) = &request_with_cookies.body {
         if !body.is_empty() {
-            // send body count据，end_of_stream = true represent这是finally的count据
+            // send body count据，end_of_stream = true representthis isfinally的count据
             send_stream
                 .send_data(bytes::Bytes::from(body.clone()), true)
                 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
@@ -187,8 +187,8 @@ async fn send_http2_request_async(
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
-    // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹攻击
-    // h2 crate 0.4 的default MAX_HEADER_LIST_SIZE 通常较大，我们Add额outside的Check
+    // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹attack
+    // h2 crate 0.4 的default MAX_HEADER_LIST_SIZE usually较大，weAdd额outside的Check
     const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的minimumvalue)
     let total_header_size: usize = headers
         .iter()
@@ -196,7 +196,7 @@ async fn send_http2_request_async(
         .sum();
     if total_header_size > MAX_HTTP2_HEADER_SIZE {
         return Err(HttpClientError::InvalidResponse(format!(
-            "HTTP/2 responseheader过大（>{} bytes）",
+            "HTTP/2 responseheadertoo large（>{} bytes）",
             MAX_HTTP2_HEADER_SIZE
         )));
     }
@@ -205,7 +205,7 @@ async fn send_http2_request_async(
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
 
-    // securitylimit：prevent HTTP/2 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/2 responsebody too largecauseinsidememory exhausted
     const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(chunk) = body_stream.data().await {
@@ -213,10 +213,10 @@ async fn send_http2_request_async(
             HttpClientError::Io(std::io::Error::other(format!("read body failure: {}", e)))
         })?;
 
-        // securityCheck：preventresponse体过大
+        // securityCheck：preventresponsebody too large
         if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
-                "HTTP/2 response体过大（>{} bytes）",
+                "HTTP/2 responsebody too large（>{} bytes）",
                 MAX_HTTP2_BODY_SIZE
             )));
         }
@@ -285,7 +285,7 @@ pub fn send_http2_request(
     _config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
     Err(HttpClientError::InvalidResponse(
-        "HTTP/2 supportnotenabled，请use --features http2 编译".to_string(),
+        "HTTP/2 supportnotenabled，请use --features http2 compile".to_string(),
     ))
 }
 

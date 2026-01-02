@@ -120,7 +120,7 @@ pub fn send_https_request(
 /// useconnection poolsend HTTPS（HTTP/1.1 over TLS）request
 ///
 /// explain：
-/// - 这是“connection pool + TLS”的syncimplement（面向 `kh.google.com` 这类 https 站点）
+/// - this is“connection pool + TLS”的syncimplement（面向 `kh.google.com` 这类 https 站点）
 /// - 目front只 for 回归test and `HttpClient`  https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(
@@ -143,7 +143,7 @@ pub fn send_https_request_with_pool(
         .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // keep conn 生命周期覆盖整个request；同 when 用 clone 得 to available std::net::TcpStream
+    // keep conn 生命cycle覆盖整个request；同 when 用 clone 得 to available std::net::TcpStream
     let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     tcp_stream
@@ -153,7 +153,7 @@ pub fn send_https_request_with_pool(
         .set_write_timeout(Some(config.write_timeout))
         .map_err(HttpClientError::Io)?;
 
-    // rustls path and send_https_request keep一致
+    // rustls path and send_https_request keepconsistent
     #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
@@ -222,7 +222,7 @@ mod tests {
         let config = HttpClientConfig::default();
         let response = send_https_request("httpbin.org", 443, "/get", &request, &config).unwrap();
 
-        // outside部servicemaywill短暂return 429/503 等；这里mainValidate“能establish TLS + 能Parseresponse”。
+        // outside部servicemaywill短暂return 429/503 等；heremainValidate“能establish TLS + 能Parseresponse”。
         assert!(response.status_code > 0);
     }
 }

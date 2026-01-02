@@ -33,7 +33,7 @@ pub struct ExportKeyShare {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum ExportExtension {
-    SNI, // 只有type，nocount据（由clientrun when decide）
+    SNI, // onlytype，nocount据（由clientrun when decide）
     StatusRequest,
     SupportedCurves(Vec<u16>),
     SupportedPoints(Vec<u8>),
@@ -74,7 +74,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                 .extensions
                 .iter()
                 .map(|ext| {
-                    // use as_any 进行向down转型
+                    // use as_any perform向down转型
                     let any_ext = ext.as_any();
 
                     if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {
@@ -137,7 +137,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                                     }
                                     #[cfg(not(feature = "hex"))]
                                     {
-                                        // Ifno hex feature, use十六进制formatmanualencoding
+                                        // Ifno hex feature, usehexadecimalformatmanualencoding
                                         ks.data
                                             .iter()
                                             .map(|b| format!("{:02x}", b))

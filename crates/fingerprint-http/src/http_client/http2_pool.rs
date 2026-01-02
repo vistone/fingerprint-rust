@@ -1,11 +1,11 @@
 //! HTTP/2 with Connection Pool
 //!
 //! 架构explain：
-//! - HTTP/2 adoptsessionpool（H2SessionPool）implement真正的多路复用
+//! - HTTP/2 adoptsessionpool（H2SessionPool）implement真正的多路reuse
 //! - pool化pair象：h2::client::SendRequest handle（alreadyhandshakecomplete的session）
-//! - 复用方式：concurrent多路复用（ansession可同 when processmultiplerequest）
-//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource（加速connectionestablish）
-//! - sessionestablishback，connection生命周期由 H2Session 的back台任务（Driver）manage
+//! - reuse方式：concurrent多路reuse（ansession可同 when processmultiplerequest）
+//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource（accelerateconnectionestablish）
+//! - sessionestablishback，connection生命cycle由 H2Session 的backbackground task（Driver）manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -27,9 +27,9 @@ pub async fn send_http2_request_with_pool(
     use http::{Request as HttpRequest2, Version};
     use tokio_rustls::TlsConnector;
 
-    // Note: connection pool中的connection in Create when maynoapplication TCP Profile
-    // 为了ensure TCP fingerprint一致性，我们建议 in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
-    // 这里我们仍然 from connection poolGetconnection，but新Create的connectionwillapplication TCP Profile（ if configuration了）
+    // Note: connection poolinconnection in Create when maynoapplication TCP Profile
+    // 为了ensure TCP fingerprintconsistency，we建议 in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
+    // herewe仍然 from connection poolGetconnection，but新Create的connectionwillapplication TCP Profile（ if configuration了）
 
     //  from connection poolGetconnection
     let pool = pool_manager.get_pool(host, port)?;
@@ -45,7 +45,7 @@ pub async fn send_http2_request_with_pool(
         .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // clone TcpStream 以便我们canuse它
+    // clone TcpStream 以便wecanuse它
     let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     // convert to tokio TcpStream
@@ -69,8 +69,8 @@ pub async fn send_http2_request_with_pool(
         .await
         .map_err(|e| HttpClientError::TlsError(format!("TLS handshakefailure: {}", e)))?;
 
-    // Fix: use HTTP/2 sessionpoolimplement真正的多路复用
-    // 避免每次request都re进行 TLS  and HTTP/2 handshake
+    // Fix: use HTTP/2 sessionpoolimplement真正的多路reuse
+    // avoid每次request都reperform TLS  and HTTP/2 handshake
     let session_key = format!("{}:{}", host, port);
     let h2_session_pool = pool_manager.h2_session_pool();
 
@@ -128,7 +128,7 @@ pub async fn send_http2_request_with_pool(
                 .await
                 .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 handshakefailure: {}", e)))?;
 
-            // return SendRequest  and Connection（sessionpoolwillmanage Connection 的生命周期）
+            // return SendRequest  and Connection（sessionpoolwillmanage Connection 的生命cycle）
             Ok((client, h2_conn))
         })
         .await?;
@@ -182,19 +182,19 @@ pub async fn send_http2_request_with_pool(
         .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
 
     // sendrequest（Get SendStream  for send body）
-    // Fix: end_of_stream must为 false，otherwisestreamwill立即close，unable tosend body
+    // Fix: end_of_stream must为 false，otherwisestreamwillimmediatelyclose，unable tosend body
     let has_body = request.body.is_some() && !request.body.as_ref().unwrap().is_empty();
     let (response, mut send_stream) = client
-        .send_request(http2_request, false) // Fix: 改为 false，只有 in send完 body back才endstream
+        .send_request(http2_request, false) // Fix: 改为 false，only in send完 body back才endstream
         .map_err(|e| HttpClientError::Http2Error(format!("sendrequestfailure: {}", e)))?;
 
-    // release锁，allowotherrequest复用同ansession
+    // release锁，allowotherrequestreuse同ansession
     drop(client);
 
     // Fix: through SendStream sendrequest体（ if  exists）
     if let Some(body) = &request.body {
         if !body.is_empty() {
-            // send body count据，end_of_stream = true represent这是finally的count据
+            // send body count据，end_of_stream = true representthis isfinally的count据
             send_stream
                 .send_data(::bytes::Bytes::from(body.clone()), true)
                 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
@@ -219,7 +219,7 @@ pub async fn send_http2_request_with_pool(
     // 先Extract status  and headers
     let status_code = response.status().as_u16();
 
-    // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹攻击
+    // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹attack
     const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的minimumvalue)
     let total_header_size: usize = response
         .headers()
@@ -228,7 +228,7 @@ pub async fn send_http2_request_with_pool(
         .sum();
     if total_header_size > MAX_HTTP2_HEADER_SIZE {
         return Err(HttpClientError::InvalidResponse(format!(
-            "HTTP/2 responseheader过大（>{} bytes）",
+            "HTTP/2 responseheadertoo large（>{} bytes）",
             MAX_HTTP2_HEADER_SIZE
         )));
     }
@@ -248,7 +248,7 @@ pub async fn send_http2_request_with_pool(
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
 
-    // securitylimit：prevent HTTP/2 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/2 responsebody too largecauseinsidememory exhausted
     const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(chunk) = body_stream.data().await {
@@ -256,10 +256,10 @@ pub async fn send_http2_request_with_pool(
             HttpClientError::Io(std::io::Error::other(format!("read body failure: {}", e)))
         })?;
 
-        // securityCheck：preventresponse体过大
+        // securityCheck：preventresponsebody too large
         if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
-                "HTTP/2 response体过大（>{} bytes）",
+                "HTTP/2 responsebody too large（>{} bytes）",
                 MAX_HTTP2_BODY_SIZE
             )));
         }
@@ -290,7 +290,7 @@ mod tests {
     #[tokio::test]
     #[ignore] // neednetworkconnection
     async fn test_http2_with_pool() {
-        // clearbefore的日志
+        // clearbefore的log
         let _ = std::fs::remove_file("/home/stone/fingerprint-rust/.cursor/debug.log");
 
         let user_agent = "TestClient/1.0".to_string();
@@ -328,7 +328,7 @@ mod tests {
         // wait一小segment when 间，ensuresessionalreadyestablish
         tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
-        println!("\n📡 send第二个 HTTP/2 request（should复用session）...");
+        println!("\n📡 send第二个 HTTP/2 request（shouldreusesession）...");
         let result2 = send_http2_request_with_pool(
             "httpbin.org",
             443,
@@ -347,15 +347,15 @@ mod tests {
             println!("  ❌ 第二个requestfailure: {:?}", result2);
         }
 
-        // read日志并analysis
-        println!("\n📋 debug日志analysis:");
+        // readlog并analysis
+        println!("\n📋 debugloganalysis:");
         if let Ok(log_content) =
             std::fs::read_to_string("/home/stone/fingerprint-rust/.cursor/debug.log")
         {
             let mut create_count = 0;
             let mut reuse_count = 0;
             for line in log_content.lines() {
-                // 简单的stringmatch来Parse JSON 日志
+                // simple的stringmatch来Parse JSON log
                 if line.contains("\"message\"") {
                     let location = if let Some(start) = line.find("\"location\":\"") {
                         let end = line[start + 12..].find('"').unwrap_or(0);
@@ -373,24 +373,24 @@ mod tests {
 
                     if message.contains("Create新session") {
                         create_count += 1;
-                    } else if message.contains("复用现有session") {
+                    } else if message.contains("reuseexistingsession") {
                         reuse_count += 1;
                     }
                 }
             }
             println!("\n📊 sessionpoolstatistics:");
             println!("  Create新session: {} 次", create_count);
-            println!("  复用session: {} 次", reuse_count);
+            println!("  reusesession: {} 次", reuse_count);
 
             if reuse_count > 0 {
-                println!("  ✅ session复用success！HTTP/2 多路复用正常工作");
+                println!("  ✅ sessionreusesuccess！HTTP/2 多路reusenormal工作");
             } else if create_count > 1 {
-                println!("  ⚠️  sessionnot复用，每次request都Create新session");
+                println!("  ⚠️  sessionnotreuse，每次request都Create新session");
             } else {
-                println!("  ℹ️  只send了anrequest，unable toValidatesession复用");
+                println!("  ℹ️  只send了anrequest，unable toValidatesessionreuse");
             }
         } else {
-            println!("  ⚠️  unable toread日志file");
+            println!("  ⚠️  unable toreadlogfile");
         }
     }
 }

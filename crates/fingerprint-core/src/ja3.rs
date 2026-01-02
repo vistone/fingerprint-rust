@@ -1,6 +1,6 @@
 //! JA3/JA3S TLS fingerprintimplement
 //!
-//! JA3 是 Salesforce 开发 TLS clientfingerprintidentifymethod，alreadybecome行业standard。
+//! JA3 是 Salesforce open发 TLS clientfingerprintidentifymethod，alreadybecome行业standard。
 //! JA3S 是pair应的server端fingerprint。
 //!
 //! ## reference
@@ -28,19 +28,19 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA3 {
-    /// SSL/TLS version（十进制）
+    /// SSL/TLS version（decimal）
     pub ssl_version: u16,
     
-    /// cipher suitelist（逗号分隔的十进制）
+    /// cipher suitelist（comma-separated decimal）
     pub ciphers: String,
     
-    /// extensionlist（逗号分隔的十进制）
+    /// extensionlist（comma-separated decimal）
     pub extensions: String,
     
-    /// elliptic curvelist（逗号分隔的十进制）
+    /// elliptic curvelist（comma-separated decimal）
     pub elliptic_curves: String,
     
-    /// elliptic curve点formatlist（逗号分隔的十进制）
+    /// elliptic curve点formatlist（comma-separated decimal）
     pub ec_point_formats: String,
     
     /// complete JA3 string（ for Calculatehash）
@@ -55,10 +55,10 @@ impl JA3 {
     ///
     /// # Parameters
     /// - `ssl_version`: TLS version（例如：771 = TLS 1.2, 772 = TLS 1.3）
-    /// - `ciphers`: cipher suitelist（十六进制value）
-    /// - `extensions`: extensionlist（十六进制value）
-    /// - `elliptic_curves`: elliptic curvelist（十六进制value）
-    /// - `ec_point_formats`: elliptic curve点formatlist（十六进制value）
+    /// - `ciphers`: cipher suitelist（hexadecimalvalue）
+    /// - `extensions`: extensionlist（hexadecimalvalue）
+    /// - `elliptic_curves`: elliptic curvelist（hexadecimalvalue）
+    /// - `ec_point_formats`: elliptic curve点formatlist（hexadecimalvalue）
     ///
     /// # Returns
     /// JA3 fingerprintstruct
@@ -88,7 +88,7 @@ impl JA3 {
             .cloned()
             .collect();
 
-        // convert to逗号分隔的十进制string（JA3 use十进制，is not十六进制）
+        // convert tocomma-separated decimalstring（JA3 usedecimal，is nothexadecimal）
         let ciphers_str = filtered_ciphers
             .iter()
             .map(|c| c.to_string())
@@ -143,7 +143,7 @@ impl JA3 {
 
     ///  from  ClientHello 原beginningcount据Generate JA3
     ///
-    /// 这是an便捷method， for  from complete ClientHello message中Extract并Generate JA3
+    /// this isan便捷method， for  from complete ClientHello message中Extract并Generate JA3
     pub fn from_client_hello(client_hello: &crate::signature::ClientHelloSignature) -> Self {
         // Convertelliptic curve CurveID 为 u16
         let curves: Vec<u16> = client_hello
@@ -181,13 +181,13 @@ impl std::fmt::Display for JA3 {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA3S {
-    /// SSL/TLS version（十进制）
+    /// SSL/TLS version（decimal）
     pub ssl_version: u16,
     
-    /// select's cipher suites（十进制）
+    /// select's cipher suites（decimal）
     pub cipher: u16,
     
-    /// extensionlist（逗号分隔的十进制）
+    /// extensionlist（comma-separated decimal）
     pub extensions: String,
     
     /// complete JA3S string（ for Calculatehash）
@@ -212,7 +212,7 @@ impl JA3S {
             .cloned()
             .collect();
 
-        // convert to逗号分隔的十进制string
+        // convert tocomma-separated decimalstring
         let extensions_str = filtered_extensions
             .iter()
             .map(|e| e.to_string())
@@ -322,7 +322,7 @@ mod tests {
     #[test]
     fn test_ja3_known_fingerprint() {
         // testanalready知 JA3 fingerprint
-        // 这是an简化 Chrome ClientHello
+        // this isansimplify Chrome ClientHello
         let ja3 = JA3::generate(
             771, // TLS 1.2
             &[0xc02b, 0xc02f, 0xc00a],

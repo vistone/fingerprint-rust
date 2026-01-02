@@ -1,6 +1,6 @@
 //! DNS servercollect器module
 //!
-//! collectavailable DNS server，include from  public-dns.info Get公共 DNS serverlist
+//! collectavailable DNS server，include from  public-dns.info Getpublic DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::DNSError;
@@ -10,7 +10,7 @@ use std::time::Duration;
 pub struct ServerCollector;
 
 impl ServerCollector {
-    ///  from  public-dns.info Get公共 DNS serverlist
+    ///  from  public-dns.info Getpublic DNS serverlist
     /// Corresponds to Go version's collectPublicDNS function
     pub async fn collect_public_dns(timeout: Option<Duration>) -> Result<ServerPool, DNSError> {
         let timeout = timeout.unwrap_or(Duration::from_secs(30));
@@ -74,7 +74,7 @@ impl ServerCollector {
 
     /// collectsystem DNS server
     pub fn collect_system_dns() -> ServerPool {
-        // 目frontreturndefault的公共 DNS server
+        // 目frontreturndefault的public DNS server
         // not来canextension为 from systemconfigurationread
         ServerPool::default()
     }
@@ -86,8 +86,8 @@ impl ServerCollector {
         ServerPool::default()
     }
 
-    /// Validate并Update现有file中 DNS server
-    ///  from fileloadallserver，进行健康Check，只preserveavailable的server并save回file
+    /// Validate并Updateexistingfile中 DNS server
+    ///  from fileloadallserver，performhealthCheck，只preserveavailable的server并save回file
     ///
     /// # Parameters
     /// - `test_domain`:  for test的domain，default为 "google.com"
@@ -125,7 +125,7 @@ impl ServerCollector {
         eprintln!(" from fileload了 {} 个 DNS server", total_count);
         eprintln!("正 in test DNS serveravailable性（testdomain: {}）...", test_domain);
 
-        // 进行健康Check
+        // performhealthCheck
         let validated_pool = pool
             .health_check(test_domain, test_timeout, max_concurrency)
             .await;
@@ -133,7 +133,7 @@ impl ServerCollector {
         let valid_count = validated_pool.len();
         let invalid_count = total_count - valid_count;
 
-        eprintln!("健康Checkcomplete:");
+        eprintln!("healthCheckcomplete:");
         eprintln!("   总servercount: {}", total_count);
         eprintln!(
             "   availableserver: {} ({:.2}%)",
@@ -173,7 +173,7 @@ impl ServerCollector {
     }
 
     /// collectallavailable DNS server（pair应 Go  BootstrapPoolInternal）
-    ///  from multiplesourcecollect，并 in savefront进行健康Check，只preserveavailable的server
+    ///  from multiplesourcecollect，并 in savefrontperformhealthCheck，只preserveavailable的server
     pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
         // 先try from localfileload（pair应 Go  loadDefault）
         let pool = ServerPool::load_default();
@@ -183,8 +183,8 @@ impl ServerCollector {
                 " from localfileload了 {} 个 DNS server（alreadythroughValidate，directlyuse）",
                 pool.len()
             );
-            // file中的serveralreadythroughValidate，directlyuse，不进行全面Check
-            // 只 in back台asyncdetect and 淘汰慢node，不阻塞main线程
+            // fileinserveralreadythroughValidate，directlyuse，不perform全面Check
+            // 只 in back台asyncdetect and 淘汰慢node，non-blockingmainthread
             return pool;
         }
 
@@ -196,12 +196,12 @@ impl ServerCollector {
                 let new_count = new_pool.len();
                 eprintln!(" from networkcollect了 {} 个 DNS server", new_count);
 
-                //  in savefront进行健康Check，只preserveavailable的server
-                // use高concurrentdetect，每detect to 一batch就立即save，快速complete不长 when 间阻塞
+                //  in savefrontperformhealthCheck，只preserveavailable的server
+                // use高concurrentdetect，每detect to 一batch就immediatelysave，fastcomplete不长 when 间阻塞
                 eprintln!("正 in 高concurrenttest DNS serveravailable性（test哪些servercanreturn IP address）...");
                 let test_timeout = Duration::from_secs(2); // decreasetimeout duration，加快detect
-                let max_concurrency = 500; // 大幅increaseconcurrentcount，加快detect速度
-                let save_batch_size = 100; // 每detect to 100个availableserver就save一次
+                let max_concurrency = 500; // 大幅increaseconcurrentcount，加快detectspeed
+                let save_batch_size = 100; // 每detect to 100个availableserver就saveonce
 
                 let validated_pool = new_pool
                     .health_check_and_save_incremental(
@@ -214,7 +214,7 @@ impl ServerCollector {
 
                 let valid_count = validated_pool.len();
                 let invalid_count = new_count - valid_count;
-                eprintln!("健康Checkcomplete:");
+                eprintln!("healthCheckcomplete:");
                 eprintln!("   总servercount: {}", new_count);
                 eprintln!(
                     "   availableserver: {} ({:.2}%)",
@@ -264,8 +264,8 @@ fn is_valid_ip_address(s: &str) -> bool {
         if s.parse::<SocketAddr>().is_ok() {
             return true;
         }
-        // alsomay是 IPv6:port，butformat更复杂，need特殊process
-        // 简化process： if including []，tryParse
+        // alsomay是 IPv6:port，butformat更复杂，needspecialprocess
+        // simplifyprocess： if including []，tryParse
         if s.starts_with('[') {
             return s.parse::<SocketAddr>().is_ok();
         }

@@ -42,7 +42,7 @@ impl ClientHelloMessage {
     /// Ifunable toGetencryptionsecurity的randomcount（ in no `crypto` feature  when ）, willreturnerror。
     /// 建议 in 生产environment中enabled `crypto` feature 以ensuresecurity性。
     pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
-        // use TLS 1.2 asclientversion（为了兼容性）
+        // use TLS 1.2 asclientversion（为了compatible性）
         let client_version = spec.tls_vers_max.max(0x0303);
 
         // Generaterandomcount (32 bytes)
@@ -50,10 +50,10 @@ impl ClientHelloMessage {
 
         // front 4 bytes: Unix  when 间戳
         // usecurrent when 间， if Getfailure则use 0（虽然不太mayfailure）
-        // fix 2038 年溢出问题：明确truncate高bit，ensure u32 rangeinside
+        // fix 2038 年溢出问题：explicittruncate高bit，ensure u32 rangeinside
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // 明确truncate高bit，prevent 2038 年溢出
+            .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicittruncate高bit，prevent 2038 年溢出
             .unwrap_or(0);
         random.extend_from_slice(&timestamp.to_be_bytes());
 
@@ -102,7 +102,7 @@ impl ClientHelloMessage {
             spec.compression_methods.clone()
         };
 
-        // 序列化extension
+        // serializeextension
         let extensions = Self::serialize_extensions(&spec.extensions, server_name);
 
         Ok(Self {
@@ -115,7 +115,7 @@ impl ClientHelloMessage {
         })
     }
 
-    /// 序列化extension
+    /// serializeextension
     fn serialize_extensions(extensions: &[Box<dyn TLSExtension>], server_name: &str) -> Vec<u8> {
         let mut ext_bytes = Vec::new();
         let mut has_sni = false;
@@ -123,7 +123,7 @@ impl ClientHelloMessage {
         for ext in extensions {
             let ext_id = ext.extension_id();
 
-            // If是 SNI extension（ID == 0）, 我们need特殊process
+            // If是 SNI extension（ID == 0）, weneedspecialprocess
             if ext_id == 0 {
                 // skip重复 SNI extension
                 if has_sni {
@@ -131,7 +131,7 @@ impl ClientHelloMessage {
                 }
                 has_sni = true;
 
-                // 动态Build SNI extensioncount据
+                // dynamicBuild SNI extensioncount据
                 let sni_data = Self::build_sni_extension(server_name);
 
                 // extensionformat: ID (2 bytes) + Length (2 bytes) + Data
@@ -141,7 +141,7 @@ impl ClientHelloMessage {
                 continue;
             }
 
-            // otherextension：正常序列化
+            // otherextension：normalserialize
             let ext_len = ext.len();
             if ext_len == 0 {
                 // emptyextensionalsoneedwrite ID  and length
@@ -188,7 +188,7 @@ impl ClientHelloMessage {
         data
     }
 
-    /// 序列化为bytesstream
+    /// serialize为bytesstream
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
 
@@ -246,7 +246,7 @@ mod tests {
 
     #[test]
     fn test_clienthello_basic() {
-        // Createan简单 ClientHelloSpec
+        // Createansimple ClientHelloSpec
         let spec = ClientHelloSpec {
             cipher_suites: vec![0xc02f, 0xc030], // 两个cipher suite
             compression_methods: vec![0],
@@ -264,7 +264,7 @@ mod tests {
         assert_eq!(msg.cipher_suites.len(), 2);
         assert_eq!(msg.compression_methods, vec![0]);
 
-        // 序列化
+        // serialize
         let bytes = msg.to_bytes();
         println!("ClientHello size: {} bytes", bytes.len());
         println!("{}", msg.debug_info());

@@ -1,7 +1,7 @@
 //! HTTP/2 sessionpool
 //!
-//! pool化 h2::client::SendRequest handle，implement真正 HTTP/2 多路复用
-//! 避免每次request都re进行 TLS  and HTTP/2 handshake
+//! pool化 h2::client::SendRequest handle，implement真正 HTTP/2 多路reuse
+//! avoid每次request都reperform TLS  and HTTP/2 handshake
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::Result;
@@ -20,13 +20,13 @@ use tokio::sync::Mutex as TokioMutex;
 use h2::client::SendRequest;
 
 /// HTTP/2 sessionpoolmanage器
-/// Fix: pool化 SendRequest handle，implement真正的多路复用
+/// Fix: pool化 SendRequest handle，implement真正的多路reuse
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub struct H2SessionPool {
     /// sessionpool（按 host:port group）
-    /// eachsessionincluding SendRequest handle、back台任务handle and finallywhen used 间
+    /// eachsessionincluding SendRequest handle、backbackground taskhandle and finallywhen used 间
     sessions: Arc<Mutex<HashMap<String, Arc<H2Session>>>>,
-    /// 正 in Create中的session（避免same key 的concurrentCreate竞争）
+    /// 正 in Createinsession（avoidsame key 的concurrentCreate竞争）
     pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
     /// sessiontimeout duration（default 5 分钟）
     session_timeout: Duration,
@@ -37,12 +37,12 @@ pub struct H2SessionPool {
 struct H2Session {
     /// SendRequest handle（ for sendrequest）
     send_request: Arc<TokioMutex<SendRequest<bytes::Bytes>>>,
-    /// back台任务handle（ for manage h2_conn 生命周期）
-    /// whenconnection失效 when ，任务willend，我们candetect to 并removesession
+    /// backbackground taskhandle（ for manage h2_conn 生命cycle）
+    /// whenconnection失效 when ，任务willend，wecandetect to 并removesession
     _background_task: tokio::task::JoinHandle<()>,
     /// finallywhen used 间
     last_used: Arc<Mutex<Instant>>,
-    /// connectionwhethervalid（由back台任务Update）
+    /// connectionwhethervalid（由backbackground taskUpdate）
     is_valid: Arc<Mutex<bool>>,
 }
 
@@ -80,11 +80,11 @@ impl H2SessionPool {
                 self.sessions.lock().expect("unable toGetsessionpool锁")
             });
 
-            // 清理expire and 失效的session
+            // cleanupexpire and 失效的session
             self.cleanup_expired_sessions(&mut sessions);
 
             // Checkwhether有available的session
-            // 先Checksessionwhether exists且valid，避免 in hold锁 when 进行复杂operation
+            // 先Checksessionwhether exists且valid，avoid in hold锁 when perform复杂operation
             let session_valid = sessions.get(key).and_then(|session| {
                 let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
                 let is_finished = session._background_task.is_finished();
@@ -123,18 +123,18 @@ impl H2SessionPool {
                 // marker为正 in Create
                 let (_tx, rx) = watch::channel(false);
                 pending.insert(key.to_string(), rx.clone());
-                // 这里我们稍微违反一down原则，为了逻辑清晰directly in 这里return None represent我们need亲自Create
-                // but我们willpreserve tx  in back续use
+                // herewe稍微violate一down原则，为了logic清晰directly in herereturn None representweneed亲自Create
+                // butwewillpreserve tx  in back续use
                 None
             }
         };
 
         if let Some(mut rx) = rx {
-            // wait原有Create任务complete
+            // waitoriginalCreate任务complete
             let _ = rx.changed().await;
             // Createcompleteback递归call以Get新Create的session
-            // Note: 由于 Fut 的limit，这里不能directly递归，我们actualupshould in outsidelayer循环
-            // but为了代码简洁，我们这里directlyjump to reCheck逻辑
+            // Note: due to Fut 的limit，herecannotdirectly递归，weactualupshould in outsidelayerloop
+            // but为了代码简洁，weheredirectlyjump to reChecklogic
             return Box::pin(self.get_or_create_session(key, create_session)).await;
         }
 
@@ -151,7 +151,7 @@ impl H2SessionPool {
         let key_clone = key.to_string();
         let sessions_clone = self.sessions.clone();
 
-        // startback台任务manageconnection生命周期
+        // startbackbackground taskmanageconnection生命cycle
         let background_task = tokio::spawn(async move {
             // run h2_conn 直 to connectionclose
             if let Err(e) = h2_conn.await {
@@ -174,21 +174,21 @@ impl H2SessionPool {
             is_valid,
         });
 
-        // writepool中并清理 pending status
+        // writepool中并cleanup pending status
         {
             if let Ok(mut sessions) = self.sessions.lock() {
                 sessions.insert(key.to_string(), session);
             }
             if let Ok(mut pending) = self.pending_sessions.lock() {
                 pending.remove(key);
-                // 这里不need显式通知，tx destroywillautomatic通知 rx
+                // here不needexplicit通知，tx destroywillautomatic通知 rx
             }
         }
 
         Ok(send_request)
     }
 
-    /// 清理expire and 失效的session
+    /// cleanupexpire and 失效的session
     fn cleanup_expired_sessions(&self, sessions: &mut HashMap<String, Arc<H2Session>>) {
         let now = Instant::now();
         sessions.retain(|_key, session| {
@@ -196,7 +196,7 @@ impl H2SessionPool {
             let is_valid = session.is_valid.lock().map(|v| *v).unwrap_or(false);
             let is_finished = session._background_task.is_finished();
 
-            // preservevalid的session，且notexpire，且back台任务仍 in run
+            // preservevalid的session，且notexpire，且backbackground task仍 in run
             if is_valid && !is_finished {
                 if let Ok(last_used) = session.last_used.lock() {
                     now.duration_since(*last_used) < self.session_timeout
@@ -216,7 +216,7 @@ impl H2SessionPool {
         }
     }
 
-    /// 清理allsession
+    /// cleanupallsession
     pub fn clear(&self) {
         if let Ok(mut sessions) = self.sessions.lock() {
             sessions.clear();

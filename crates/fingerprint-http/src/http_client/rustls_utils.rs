@@ -1,4 +1,4 @@
-//! rustls configuration工具（供 HTTP/1/2/3 复用）
+//! rustls configurationtool（供 HTTP/1/2/3 reuse）
 //!
 //! target：
 //! - 单一入口Build root store
@@ -37,7 +37,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
         return;
     }
 
-    // Note: rustls 0.21  API may不同
+    // Note: rustls 0.21  API maydifferent
     // If verify_tls=false, use dangerous configurationacceptallcertificate
     // 这need rustls  dangerous_configuration feature
     #[cfg(feature = "dangerous_configuration")]
@@ -109,7 +109,7 @@ pub fn build_client_config(
 
     let mut cfg = builder;
 
-    // 强化fingerprint：match特定's cipher suites and TLS version
+    // 强化fingerprint：matchspecific's cipher suites and TLS version
     // FIXME: s.suite() as u16 fail on rustls 0.21. Restore this when fixed.
     /*
     if let Some(profile) = profile {
@@ -125,7 +125,7 @@ pub fn build_client_config(
             }
 
             if !suites.is_empty() {
-                // reBuildconfiguration以application特定suite
+                // reBuildconfiguration以applicationspecificsuite
                 let mut versions = Vec::new();
                 if spec.tls_vers_max >= 0x0304 { // TLS 1.3
                     versions.push(&rustls::version::TLS13);

@@ -1,6 +1,6 @@
 //! fingerprintdatabaseimplement
 //!
-//! providefingerprint的持久化store and queryFeatures。
+//! providefingerprint的persistent化store and queryFeatures。
 
 use fingerprint_core::system::NetworkFlow;
 use rusqlite::{params, Connection, Result as SqliteResult};
@@ -68,7 +68,7 @@ impl FingerprintDatabase {
             ],
         ).map_err(|e| e.to_string())?;
 
-        // store各个layerlevel的fingerprint
+        // storeeach个layerlevel的fingerprint
         for fp in flow.fingerprints() {
             let fp_type = format!("{:?}", fp.fingerprint_type());
             let fp_id = fp.id();

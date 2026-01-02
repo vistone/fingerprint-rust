@@ -1,6 +1,6 @@
 //! connection poolmanage
 //!
-//! based on netconnpool implementconnection复用 and 生命周期manage
+//! based on netconnpool implementconnectionreuse and 生命cyclemanage
 
 use super::{HttpClientError, Result};
 use std::time::Duration;
@@ -24,7 +24,7 @@ pub struct ConnectionPoolManager {
     pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
     /// defaultconfiguration
     config: PoolManagerConfig,
-    /// HTTP/2 sessionpool（Fix: implement真正的多路复用）
+    /// HTTP/2 sessionpool（Fix: implement真正的多路reuse）
     #[cfg(feature = "http2")]
     h2_session_pool: Arc<super::h2_session_pool::H2SessionPool>,
     /// HTTP/3 sessionpool
@@ -64,9 +64,9 @@ pub struct PoolManagerConfig {
     pub connect_timeout: Duration,
     /// empty闲timeout
     pub idle_timeout: Duration,
-    /// maximum生命周期
+    /// maximum生命cycle
     pub max_lifetime: Duration,
-    /// whetherenabledconnection复用
+    /// whetherenabledconnectionreuse
     pub enable_reuse: bool,
 }
 
@@ -141,7 +141,7 @@ impl ConnectionPoolManager {
     #[cfg(not(feature = "connection-pool"))]
     pub fn get_pool(&self, _host: &str, _port: u16) -> Result<()> {
         Err(HttpClientError::ConnectionFailed(
-            "connection poolFeaturesnotenabled，请use --features connection-pool 编译".to_string(),
+            "connection poolFeaturesnotenabled，请use --features connection-pool compile".to_string(),
         ))
     }
 
@@ -165,7 +165,7 @@ impl ConnectionPoolManager {
             connection_leak_timeout: Duration::from_secs(300),
 
             // provide Dialer function来Create TCP connection
-            // Note: 这里unable todirectlyaccess config.profile，because dialer 是闭包
+            // Note: hereunable todirectlyaccess config.profile，because dialer 是close包
             // TCP Profile should in Createconnection poolbefore就application to  config 中
             dialer: Some(Box::new(move |_protocol| {
                 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
@@ -175,7 +175,7 @@ impl ConnectionPoolManager {
                     .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
                     .collect();
 
-                // 优先use IPv4，避免 in "无 IPv6 route"的environment中出现 `Network is unreachable`。
+                // priorityuse IPv4，avoid in "无 IPv6 route"的environment中appear `Network is unreachable`。
                 let mut v4 = Vec::new();
                 let mut v6 = Vec::new();
                 for a in addrs {
@@ -187,7 +187,7 @@ impl ConnectionPoolManager {
 
                 let mut last_err: Option<std::io::Error> = None;
                 for addr in v4.into_iter().chain(v6.into_iter()) {
-                    // Note: 这里暂 when usestandardconnection，TCP Profile should in Createconnection pool when throughother方式application
+                    // Note: here暂 when usestandardconnection，TCP Profile should in Createconnection pool when throughother方式application
                     // TODO: support in connection pool中application TCP Profile
                     match TcpStream::connect_timeout(&addr, connect_timeout) {
                         Ok(s) => return Ok(ConnectionType::Tcp(s)),
@@ -247,10 +247,10 @@ impl ConnectionPoolManager {
         vec![]
     }
 
-    /// 清理empty闲connection
+    /// cleanupempty闲connection
     #[cfg(feature = "connection-pool")]
     pub fn cleanup_idle(&self) {
-        // netconnpool willautomatic清理，这里只是provideinterface
+        // netconnpool willautomaticcleanup，here只是provideinterface
         if let Ok(pools) = self.pools.lock() {
             println!("connection poolstatus: {} 个端点", pools.len());
         }

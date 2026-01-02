@@ -31,7 +31,7 @@ impl TLSRecordType {
 pub struct TLSRecord {
     /// inside容type
     pub content_type: TLSRecordType,
-    /// protocolversion（通常是 TLS 1.0 = 0x0301， for 兼容性）
+    /// protocolversion（usually是 TLS 1.0 = 0x0301， for compatible性）
     pub version: u16,
     /// count据inside容
     pub fragment: Vec<u8>,
@@ -52,7 +52,7 @@ impl TLSRecord {
         Self::new(TLSRecordType::Handshake, version, data)
     }
 
-    /// 序列化为bytesstream
+    /// serialize为bytesstream
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
 
@@ -91,7 +91,7 @@ impl TLSRecord {
 
         if data.len() < 5 + length {
             return Err(format!(
-                "count据不complete，need {} bytes，actual只有 {} bytes",
+                "count据不complete，need {} bytes，actualonly {} bytes",
                 5 + length,
                 data.len()
             ));

@@ -1,6 +1,6 @@
 //! fingerprintmetadata
 //!
-//! definefingerprint的metadata，includebrowsertype、operating system、置信度等info.
+//! definefingerprint的metadata，includebrowsertype、operating system、confidence等info.
 
 use crate::types::{BrowserType, OperatingSystem};
 use chrono::{DateTime, Utc};
@@ -17,16 +17,16 @@ pub struct FingerprintMetadata {
     /// operating systemtype
     pub os_type: Option<OperatingSystem>,
 
-    /// 置信度 (0.0 - 1.0)
+    /// confidence (0.0 - 1.0)
     pub confidence: f64,
 
     /// 样本count
     pub sample_count: u64,
 
-    /// 首次发现 when 间
+    /// 首次discover when 间
     pub first_seen: DateTime<Utc>,
 
-    /// finally发现 when 间
+    /// finallydiscover when 间
     pub last_seen: DateTime<Utc>,
 
     /// tag
@@ -52,7 +52,7 @@ impl FingerprintMetadata {
         }
     }
 
-    /// Create带browser and operating system的metadata
+    /// Createbringbrowser and operating system的metadata
     pub fn with_browser_os(
         browser_type: Option<BrowserType>,
         os_type: Option<OperatingSystem>,
@@ -63,13 +63,13 @@ impl FingerprintMetadata {
         metadata
     }
 
-    /// Update样本（increase样本count，Updatefinally发现 when 间）
+    /// Update样本（increase样本count，Updatefinallydiscover when 间）
     pub fn update_sample(&mut self) {
         self.sample_count += 1;
         self.last_seen = Utc::now();
     }
 
-    /// Update置信度
+    /// Updateconfidence
     pub fn update_confidence(&mut self, confidence: f64) {
         self.confidence = confidence.clamp(0.0, 1.0);
     }

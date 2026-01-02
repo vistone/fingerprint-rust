@@ -1,6 +1,6 @@
 //! ClientHelloSpec Extractmodule
 //!
-//!  from  ClientHelloSpec 中Extractsignatureinfo， for fingerprint比较 and match
+//!  from  ClientHelloSpec 中Extractsignatureinfo， for fingerprintcompare and match
 //!
 //! reference：Huginn Net  Signature Extractimplement
 
@@ -42,7 +42,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
         .map(|ext| ext.extension_id())
         .collect();
 
-    //  from metadata中Extractextension的具体count据
+    //  from metadata中Extractextension的concretecount据
     if let Some(ref metadata) = spec.metadata {
         // Extract SNI
         if let Some(sni) = metadata.get_sni() {

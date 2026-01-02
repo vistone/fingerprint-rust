@@ -81,7 +81,7 @@ impl Ja4RawFingerprint {
 }
 
 /// JA4 载荷struct
-/// 遵循官方 FoxIO 规范
+/// follow官方 FoxIO 规范
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ja4Payload {
     /// JA4_a: TLS version + SNI + cipher suitecount + extensioncount + ALPN
@@ -117,13 +117,13 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
 
 /// Generate 12 characterhash（SHA256 的front 12character）
 ///
-/// SHA256 hash总是produce 64十六进制character，sofront 12character总是 exists。
+/// SHA256 hashalwaysproduce 64hexadecimalcharacter，sofront 12characteralways exists。
 /// 此function for  JA4 fingerprintGenerate。
 pub fn hash12(input: &str) -> String {
     let hash = Sha256::digest(input.as_bytes());
     let hash_hex = format!("{:x}", hash);
-    // SHA256 hash总是 64十六进制character，sofront 12character总是 exists
-    // use get() methodsecurity地Getslice，避免潜 in  panic
+    // SHA256 hashalways 64hexadecimalcharacter，sofront 12characteralways exists
+    // use get() methodsecurity地Getslice，avoid潜 in  panic
     hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
 }
 
@@ -172,10 +172,10 @@ impl Ja4Signature {
         // SNI indicate器：'d'  if  exists SNI，'i'  if 不 exists
         let sni_indicator = if self.sni.is_some() { "d" } else { "i" };
 
-        // cipher suitecount（2-bit十进制，maximum 99）- use原beginningcount（filterfront）
+        // cipher suitecount（2-bitdecimal，maximum 99）- use原beginningcount（filterfront）
         let cipher_count = format!("{:02}", self.cipher_suites.len().min(99));
 
-        // extensioncount（2-bit十进制，maximum 99）- use原beginningcount（filterfront）
+        // extensioncount（2-bitdecimal，maximum 99）- use原beginningcount（filterfront）
         let extension_count = format!("{:02}", self.extensions.len().min(99));
 
         // ALPN first and lastcharacter
@@ -189,7 +189,7 @@ impl Ja4Signature {
             "{protocol}{tls_version_str}{sni_indicator}{cipher_count}{extension_count}{alpn_first}{alpn_last}"
         );
 
-        // JA4_b: cipher suite（sort or 原beginningorder，逗号分隔，4-bit十六进制）- filter GREASE
+        // JA4_b: cipher suite（sort or 原beginningorder，comma-separated，4-bithexadecimal）- filter GREASE
         let mut ciphers_for_b = filtered_ciphers;
         if !original_order {
             ciphers_for_b.sort_unstable();
@@ -200,7 +200,7 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // JA4_c: extension（sort or 原beginningorder，逗号分隔，4-bit十六进制）+ "_" + signaturealgorithm
+        // JA4_c: extension（sort or 原beginningorder，comma-separated，4-bithexadecimal）+ "_" + signaturealgorithm
         let mut extensions_for_c = filtered_extensions;
 
         //  for sortversion：remove SNI (0x0000)  and ALPN (0x0010) 并sort
@@ -223,7 +223,7 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // Based on规范， if nosignaturealgorithm，string不below划线结尾
+        // Based on规范， if nosignaturealgorithm，string不below划线ending
         let ja4_c_raw = if sig_algs_str.is_empty() {
             extensions_str
         } else if extensions_str.is_empty() {

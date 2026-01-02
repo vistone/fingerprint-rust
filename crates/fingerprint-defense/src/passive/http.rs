@@ -1,6 +1,6 @@
-//! HTTP 被动fingerprintidentify
+//! HTTP passivefingerprintidentify
 //!
-//! implement HTTP request/response的被动fingerprintidentify。
+//! implement HTTP request/response的passivefingerprintidentify。
 
 use crate::passive::packet::Packet;
 use std::collections::HashMap;
@@ -20,7 +20,7 @@ pub struct HttpFingerprint {
     /// match的signature
     pub signature: Option<HttpSignature>,
 
-    /// 相似度
+    /// similar度
     pub similarity: f64,
 
     /// User-Agent
@@ -147,15 +147,15 @@ impl HttpAnalyzer {
 
     /// Parse HTTP request
     fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
-        // limitParse的count据量，prevent超大包导致inside存耗尽
-        let limit = 8192; // 8KB 足够常规request
+        // limitParse的count据量，prevent超大包causeinsidememory exhausted
+        let limit = 8192; // 8KB 足够regularrequest
         let parse_data = if data.len() > limit {
             &data[..limit]
         } else {
             data
         };
 
-        // 简单 HTTP requestParse
+        // simple HTTP requestParse
         let text = String::from_utf8_lossy(parse_data);
         let mut lines = text.lines();
 

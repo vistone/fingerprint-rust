@@ -1,6 +1,6 @@
 //! HASSH SSH fingerprintimplement
 //!
-//! HASSH 是 Salesforce 开发 SSH client/serverfingerprintidentifymethod。
+//! HASSH 是 Salesforce open发 SSH client/serverfingerprintidentifymethod。
 //! 类似于 JA3 for TLS，HASSH  for identify SSH client and server。
 //!
 //! ## reference
@@ -30,16 +30,16 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSH {
-    /// keyswapalgorithmlist（分号分隔）
+    /// keyswapalgorithmlist（semicolon-separated）
     pub kex_algorithms: String,
     
-    /// encryptionalgorithmlist（分号分隔）
+    /// encryptionalgorithmlist（semicolon-separated）
     pub encryption_algorithms: String,
     
-    /// MAC algorithmlist（分号分隔）
+    /// MAC algorithmlist（semicolon-separated）
     pub mac_algorithms: String,
     
-    /// compressionalgorithmlist（分号分隔）
+    /// compressionalgorithmlist（semicolon-separated）
     pub compression_algorithms: String,
     
     /// complete HASSH string（ for Calculatehash）
@@ -69,7 +69,7 @@ impl HASSH {
         mac_algorithms: &[&str],
         compression_algorithms: &[&str],
     ) -> Self {
-        // connectionalgorithmlist（use分号分隔）
+        // connectionalgorithmlist（usesemicolon-separated）
         let kex_str = kex_algorithms.join(";");
         let enc_str = encryption_algorithms.join(";");
         let mac_str = mac_algorithms.join(";");
@@ -200,16 +200,16 @@ impl std::fmt::Display for HASSH {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSHServer {
-    /// keyswapalgorithmlist（分号分隔）
+    /// keyswapalgorithmlist（semicolon-separated）
     pub kex_algorithms: String,
     
-    /// encryptionalgorithmlist（分号分隔）
+    /// encryptionalgorithmlist（semicolon-separated）
     pub encryption_algorithms: String,
     
-    /// MAC algorithmlist（分号分隔）
+    /// MAC algorithmlist（semicolon-separated）
     pub mac_algorithms: String,
     
-    /// compressionalgorithmlist（分号分隔）
+    /// compressionalgorithmlist（semicolon-separated）
     pub compression_algorithms: String,
     
     /// complete HASSH Server string
@@ -363,9 +363,9 @@ impl SSHKexInit {
 
     ///  from 原beginning SSH countpacketParse (simplified version)
     ///
-    /// Note: 这是anSimplified implementation，complete SSH protocolParseneed更复杂的status机
+    /// Note: this isanSimplified implementation，complete SSH protocolParseneed更复杂的status机
     pub fn parse(data: &[u8]) -> Result<Self, String> {
-        // SSH protocolformat复杂，这里provide基本框架
+        // SSH protocolformat复杂，hereprovide基本框架
         // actualapplication中应use专门 SSH protocolParse库
         
         if data.len() < 16 {
@@ -377,8 +377,8 @@ impl SSHKexInit {
             return Err("is not KEX_INIT message".to_string());
         }
 
-        // 这里shouldParse name-list field
-        // 由于 SSH protocolParse复杂，暂 when returnemptystruct
+        // hereshouldParse name-list field
+        // due to SSH protocolParse复杂，暂 when returnemptystruct
         Ok(Self::new())
     }
 }
@@ -488,9 +488,9 @@ mod tests {
     }
 }
 
-/// JA4SSH - SSH fingerprint（JA4 风格）
+/// JA4SSH - SSH fingerprint（JA4 style）
 ///
-/// 类似于 HASSH，butuse SHA256 而非 MD5，并adopt JA4 系列的format风格
+/// 类似于 HASSH，butuse SHA256 而非 MD5，并adopt JA4 series的formatstyle
 /// 
 /// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
 ///
@@ -553,7 +553,7 @@ impl JA4SSH {
         mac_algorithms: &[&str],
         compression_algorithms: &[&str],
     ) -> Self {
-        // Calculate各algorithmlist SHA256 hash
+        // Calculateeachalgorithmlist SHA256 hash
         let kex_hash = Self::compute_hash(kex_algorithms);
         let enc_hash = Self::compute_hash(encryption_algorithms);
         let mac_hash = Self::compute_hash(mac_algorithms);

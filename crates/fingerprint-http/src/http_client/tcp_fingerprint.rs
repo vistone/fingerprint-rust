@@ -1,6 +1,6 @@
 //! TCP fingerprintapplicationmodule
 //!
-//!  in Create TCP connection when application TCP Profile，ensure TCP fingerprint and browserfingerprint一致
+//!  in Create TCP connection when application TCP Profile，ensure TCP fingerprint and browserfingerprintconsistent
 
 use fingerprint_core::tcp::TcpProfile;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -25,14 +25,14 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
     // 2. settings TCP options
     // Note: socket2 不directlysupportsettings Window Size、MSS、Window Scale
     // 这些parameterneed in TCP handshake when through TCP optionssettings
-    // but我们canthroughsettings socket options来影响这些parameter
+    // butwecanthroughsettings socket options来影响这些parameter
 
     // settings TCP_NODELAY（disabled Nagle algorithm，提升性能）
     socket.set_nodelay(true)?;
 
     // 3. settingsreceivebuffersize（影响 Window Size）
-    // Window Size 通常 and receivebuffersize相关
-    // Note: actual Window Size 是 in TCP handshake when 协商的，这里只是settingsbuffer
+    // Window Size usually and receivebuffersize相close
+    // Note: actual Window Size 是 in TCP handshake when 协商的，here只是settingsbuffer
     let recv_buffer_size = tcp_profile.window_size as usize;
     socket.set_recv_buffer_size(recv_buffer_size)?;
 
@@ -42,7 +42,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
     Ok(())
 }
 
-/// Create带有 TCP Profile  TCP socket
+/// Createbring有 TCP Profile  TCP socket
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -72,7 +72,7 @@ pub fn create_tcp_socket_with_profile(
     Ok(socket)
 }
 
-/// Create带有 TCP Profile  TcpStream（async）
+/// Createbring有 TCP Profile  TcpStream（async）
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -93,12 +93,12 @@ pub async fn connect_tcp_with_profile(
     // connection to targetaddress（非阻塞）
     match socket.connect(&addr.into()) {
         Ok(()) => {
-            // connection立即success（localconnection）
+            // connectionimmediatelysuccess（localconnection）
             let std_stream: std::net::TcpStream = socket.into();
             TcpStream::from_std(std_stream)
         }
         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-            // 非阻塞connectionwillreturn WouldBlock，这是正常的
+            // 非阻塞connectionwillreturn WouldBlock，this isnormal的
             // convert to tokio::net::TcpStream 并waitconnectioncomplete
             let std_stream: std::net::TcpStream = socket.into();
             let stream = TcpStream::from_std(std_stream)?;
@@ -110,7 +110,7 @@ pub async fn connect_tcp_with_profile(
             match stream.try_write(&[]) {
                 Ok(_) => Ok(stream),
                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                    // connectionstill in 进行中，againwait
+                    // connectionstill in perform中，againwait
                     stream.writable().await?;
                     Ok(stream)
                 }
@@ -121,7 +121,7 @@ pub async fn connect_tcp_with_profile(
     }
 }
 
-/// Create带有 TCP Profile  TcpStream（sync）
+/// Createbring有 TCP Profile  TcpStream（sync）
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -209,7 +209,7 @@ mod tests {
                             let _fd = stream.as_raw_fd();
 
                             // tryGetreceivebuffersize（影响 Window Size）
-                            // Note: 这need libc crate，but为了简化，我们暂 when comment掉
+                            // Note: 这need libc crate，but为了simplify，we暂 when comment掉
                             // actualValidateshoulduse tcpdump  or  wireshark 抓包analysis
                             println!("  🔍 server端 TCP parameterdetect：");
                             println!("    ⚠️  Note: TTL  in service端unable todirectlydetect（transfer过程中will递减）");
@@ -245,7 +245,7 @@ mod tests {
 
         thread::sleep(Duration::from_millis(500));
 
-        // test不同 TCP Profile
+        // testdifferent TCP Profile
         let test_cases = vec![
             ("Windows", TcpProfile::for_os(OperatingSystem::Windows10)),
             ("macOS", TcpProfile::for_os(OperatingSystem::MacOS14)),

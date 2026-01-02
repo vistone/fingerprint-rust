@@ -14,15 +14,15 @@ fn main() {
     println!("🗄️  Fingerprint Database & Persistence Verification\n");
 
     let db_path = "fingerprints.db";
-    let _ = fs::remove_file(db_path); // 清理旧count据
+    let _ = fs::remove_file(db_path); // cleanup旧count据
 
     let db = FingerprintDatabase::open(db_path).expect("Failed to open database");
     let analyzer = ConsistencyAnalyzer::new();
     let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
     let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
-    // 1. simulate并store正常 Chrome traffic
-    println!("1️⃣  store正常的traffic:");
+    // 1. simulate并storenormal Chrome traffic
+    println!("1️⃣  storenormal的traffic:");
     let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\n\r\n";
     let packet = Packet {
         timestamp: 0,

@@ -15,7 +15,7 @@ pub enum BrowserType {
 impl BrowserType {
     ///  from stringconvert tobrowsertype
     ///
-    /// Note: 此methodname and standard库的 `FromStr::from_str` 不同，以避免命名冲突
+    /// Note: 此methodname and standard库的 `FromStr::from_str` different，以avoid命名冲突
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
@@ -93,7 +93,7 @@ pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
     OperatingSystem::LinuxDebian,
 ];
 
-/// 为了keep and Go version的兼容性，provide别名
+/// 为了keep and Go version的compatible性，providealias
 pub type OperatingSystems = [OperatingSystem; 8];
 
 /// User-Agent  templates

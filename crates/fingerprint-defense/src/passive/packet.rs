@@ -32,7 +32,7 @@ pub struct Packet {
     /// IP flag
     pub ip_flags: u8,
 
-    /// countpacket负载
+    /// countpacketload
     pub payload: Bytes,
 
     /// TCP headerinfo（ if 有）
@@ -173,7 +173,7 @@ impl PacketParser {
             return Err(PacketError::InvalidVersion);
         }
 
-        // 负载length（16bit，bytes 4-5）
+        // loadlength（16bit，bytes 4-5）
         let payload_length = u16::from_be_bytes([raw_packet[4], raw_packet[5]]) as usize;
 
         // nextheader（protocoltype，bytes 6）
@@ -222,7 +222,7 @@ impl PacketParser {
             raw_packet[39],
         ]);
 
-        // 负载count据（ from bytes 40 start）
+        // loadcount据（ from bytes 40 start）
         let payload_start = 40;
         let payload_end = (payload_start + payload_length).min(raw_packet.len());
         let payload = Bytes::copy_from_slice(&raw_packet[payload_start..payload_end]);
@@ -311,7 +311,7 @@ impl PacketParser {
         let mut options = Vec::new();
         let header_len = data_offset * 4;
         
-        // securityCheck：ensure不will越界access
+        // securityCheck：ensure不will越boundaryaccess
         if header_len > data.len() {
             return Err(PacketError::TooShort);
         }
@@ -336,7 +336,7 @@ impl PacketParser {
                     }
                     let length = data[offset + 1] as usize;
                     
-                    // securityCheck：length must至少为 2，且不能导致越界
+                    // securityCheck：length must至少为 2，且cannotcause越boundary
                     if length < 2 || offset + length > data.len() || offset + length > header_len {
                         break;
                     }

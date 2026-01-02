@@ -47,7 +47,7 @@ pub type CipherSuiteID = u16;
 /// TLS Client Hello configuration
 /// Corresponds to Go version's tls.ClientHelloSpec
 ///
-/// Note: 由于extension是 trait pair象，Clone implementwillCreate a newextensioninstance
+/// Note: due toextension是 trait pair象，Clone implementwillCreate a newextensioninstance
 #[derive(Debug)]
 pub struct ClientHelloSpec {
     /// cipher suitelist
@@ -122,7 +122,7 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// Create Chrome 133 fingerprint ClientHelloSpec（旧implement，preserve for 兼容）
+    /// Create Chrome 133 fingerprint ClientHelloSpec（旧implement，preserve for compatible）
     #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
     pub fn chrome_133_old() -> Self {
         let mut spec = Self::new();

@@ -19,7 +19,7 @@ pub struct FingerprintResult {
     pub profile: ClientProfile,
     /// pair应 User-Agent
     pub user_agent: String,
-    /// Client Hello ID（ and tls-client keep一致）
+    /// Client Hello ID（ and tls-client keepconsistent）
     pub hello_client_id: String,
     /// standard HTTP requestheader（including全球语言support）
     pub headers: fingerprint_headers::headers::HTTPHeaders,
@@ -58,7 +58,7 @@ pub fn get_random_fingerprint_with_os(
     // Getallavailable的fingerprint name
     let names: Vec<String> = clients.keys().cloned().collect();
 
-    // randomly selectan（线程security）
+    // randomly selectan（threadsecurity）
     let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
     let random_name = random_choice_string(&name_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -81,8 +81,8 @@ pub fn get_random_fingerprint_with_os(
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 关keyFix: Based on User-Agent sync TCP Profile
-    // ensurebrowserfingerprint and TCP fingerprint完全一致
+    // 🔥 closekeyFix: Based on User-Agent sync TCP Profile
+    // ensurebrowserfingerprint and TCP fingerprintcompletelyconsistent
     profile = profile.with_synced_tcp_profile(&ua);
 
     // Generatestandard HTTP Headers
@@ -140,7 +140,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
         }));
     }
 
-    // randomly selectan（线程security）
+    // randomly selectan（threadsecurity）
     let candidate_refs: Vec<&str> = candidates.iter().map(|s| s.as_str()).collect();
     let random_name = random_choice_string(&candidate_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -160,8 +160,8 @@ pub fn get_random_fingerprint_by_browser_with_os(
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 关keyFix: Based on User-Agent sync TCP Profile
-    // ensurebrowserfingerprint and TCP fingerprint完全一致
+    // 🔥 closekeyFix: Based on User-Agent sync TCP Profile
+    // ensurebrowserfingerprint and TCP fingerprintcompletelyconsistent
     profile = profile.with_synced_tcp_profile(&ua);
 
     // Generatestandard HTTP Headers

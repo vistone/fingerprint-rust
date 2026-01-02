@@ -1,12 +1,12 @@
-//! fingerprint一致性Check器
+//! fingerprintconsistencyCheck器
 //!
-//! 交叉Validate TCP、TLS  and HTTP layer的count据，detect欺骗behavior and 异常机器人。
+//! 交叉Validate TCP、TLS  and HTTP layer的count据，detect欺骗behavior and abnormal机器人。
 
 use fingerprint_core::fingerprint::FingerprintType;
 use fingerprint_core::ja4::ConsistencyReport;
 use fingerprint_core::system::NetworkFlow;
 
-/// 一致性analysis引擎
+/// consistencyanalysis引擎
 pub struct ConsistencyAnalyzer;
 
 impl Default for ConsistencyAnalyzer {
@@ -22,7 +22,7 @@ impl ConsistencyAnalyzer {
 }
 
 impl ConsistencyAnalyzer {
-    /// analysistraffic中的多layer一致性
+    /// analysistrafficin多layerconsistency
     pub fn analyze_flow(&self, flow: &NetworkFlow) -> ConsistencyReport {
         let mut report = ConsistencyReport::new();
 
@@ -30,7 +30,7 @@ impl ConsistencyAnalyzer {
         let http_fingerprints = flow.get_fingerprints_by_type(FingerprintType::Http);
         let tcp_fingerprints = flow.get_fingerprints_by_type(FingerprintType::Tcp);
 
-        // 1. Validate TCP  and HTTP (OS level一致性)
+        // 1. Validate TCP  and HTTP (OS levelconsistency)
         if let (Some(tcp), Some(http)) = (tcp_fingerprints.first(), http_fingerprints.first()) {
             let tcp_os = tcp.to_string().to_lowercase();
             let ua = http.to_string().to_lowercase();
@@ -56,11 +56,11 @@ impl ConsistencyAnalyzer {
 
             // Check TTL  and OS whethermatch
             if ua.contains("windows") && tcp_os.contains("linux") {
-                // mayuse了proxy or fingerprint混淆不完全
+                // mayuse了proxy or fingerprint混淆不completely
             }
         }
 
-        // 2. Validate TLS  and HTTP (browserlevel一致性)
+        // 2. Validate TLS  and HTTP (browserlevelconsistency)
         if let (Some(tls), Some(http)) = (tls_fingerprints.first(), http_fingerprints.first()) {
             let tls_info = tls.to_string().to_lowercase();
             let ua = http.to_string().to_lowercase();
@@ -87,23 +87,23 @@ impl ConsistencyAnalyzer {
             }
         }
 
-        // 3. Validateprotocol降level异常
+        // 3. Validateprotocol降levelabnormal
         if flow.context.protocol == fingerprint_core::system::ProtocolType::Http
             && (flow.context.target_port == Some(443))
         {
             report.add_discrepancy(
-                " in 443 portdetect to 明文 HTTP traffic (may是强制protocol降level攻击)".to_string(),
+                " in 443 portdetect to 明文 HTTP traffic (may是强制protocol降levelattack)".to_string(),
                 50,
             );
         }
 
-        // 4. JA4+ 系列交叉Validate (更深layer的fingerprint一致性)
+        // 4. JA4+ series交叉Validate (更深layer的fingerprintconsistency)
         if let (Some(tls), Some(http)) = (tls_fingerprints.first(), http_fingerprints.first()) {
             if let (Some(ja4), Some(ja4h)) =
                 (tls.metadata().get("ja4"), http.metadata().get("ja4h"))
             {
                 //  if  JA4 display是现代 Chrome (t13d...), but JA4H display是 HTTP/1.1 (..11..) 且no Cookie (..n..)
-                // 这是an常见的爬虫trait
+                // this isancommon的爬虫trait
                 if ja4.starts_with("t13") && ja4h.contains("11n") {
                     report.add_discrepancy(
                         format!("detect to 现代 TLS trait (JA4: {})，but HTTP behavior表现为传统无 Cookie request (JA4H: {})", ja4, ja4h),
@@ -111,7 +111,7 @@ impl ConsistencyAnalyzer {
                     );
                 }
 
-                // Check ALPN 一致性
+                // Check ALPN consistency
                 if ja4.contains("h2") && ja4h.contains("11") {
                     // TLS 协商了 h2，butactualsend了 HTTP/1.1
                     report.add_discrepancy(

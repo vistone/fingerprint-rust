@@ -31,7 +31,7 @@ impl SelfLearningAnalyzer {
 
     /// processanalysisresult并学习
     pub fn process_result(&self, result: &PassiveAnalysisResult) {
-        // 分别process各个layerlevel的fingerprint
+        // respectivelyprocesseach个layerlevel的fingerprint
         if let Some(tls) = &result.tls {
             // TLS 目frontdirectlyobserve ID (JA4)
             self.observe(tls.id(), "tls");

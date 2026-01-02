@@ -1,6 +1,6 @@
-//! fingerprintcore抽象
+//! fingerprintcoreabstract
 //!
-//! define统一的fingerprint抽象，support TLS、HTTP、TCP 等多种fingerprinttype。
+//! define统一的fingerprintabstract，support TLS、HTTP、TCP 等多种fingerprinttype。
 
 use crate::metadata::FingerprintMetadata;
 
@@ -32,36 +32,36 @@ impl std::fmt::Display for FingerprintType {
     }
 }
 
-/// fingerprint抽象 trait
+/// fingerprintabstract trait
 ///
-/// allfingerprinttype（TLS、HTTP、TCP）都shouldimplement这个 trait
+/// allfingerprinttype（TLS、HTTP、TCP）都shouldimplementthis trait
 pub trait Fingerprint: Send + Sync {
     /// Getfingerprinttype
     fn fingerprint_type(&self) -> FingerprintType;
 
-    /// Getfingerprint的唯一identifier符（通常是hashvalue）
+    /// Getfingerprint的唯一identifier符（usually是hashvalue）
     fn id(&self) -> String;
 
     /// Getfingerprint的metadata
     fn metadata(&self) -> &FingerprintMetadata;
 
-    /// Getfingerprint的metadata（可变reference）
+    /// Getfingerprint的metadata（mutablereference）
     fn metadata_mut(&mut self) -> &mut FingerprintMetadata;
 
-    /// Calculatefingerprint的hashvalue（ for 快速比较）
+    /// Calculatefingerprint的hashvalue（ for fastcompare）
     fn hash(&self) -> u64;
 
-    /// 比较两个fingerprintwhether相似
+    /// compare twofingerprintwhethersimilar
     fn similar_to(&self, other: &dyn Fingerprint) -> bool;
 
-    /// Getfingerprint的stringrepresent（ for debug and 日志）
+    /// Getfingerprint的stringrepresent（ for debug and log）
     fn to_string(&self) -> String;
 }
 
-/// fingerprint比较result
+/// fingerprintcompareresult
 #[derive(Debug, Clone, PartialEq)]
 pub struct FingerprintComparison {
-    /// 相似度分count (0.0 - 1.0)
+    /// similar度分count (0.0 - 1.0)
     pub similarity: f64,
 
     /// whethermatch
@@ -75,7 +75,7 @@ pub struct FingerprintComparison {
 }
 
 impl FingerprintComparison {
-    /// Create a new比较result
+    /// Create a newcompareresult
     pub fn new(similarity: f64, matched: bool) -> Self {
         Self {
             similarity,
@@ -85,7 +85,7 @@ impl FingerprintComparison {
         }
     }
 
-    /// Create完全match的result
+    /// Createcompletelymatch的result
     pub fn perfect_match() -> Self {
         Self {
             similarity: 1.0,
@@ -95,7 +95,7 @@ impl FingerprintComparison {
         }
     }
 
-    /// Create完全does not match的result
+    /// Createcompletelydoes not match的result
     pub fn no_match() -> Self {
         Self {
             similarity: 0.0,
@@ -106,26 +106,26 @@ impl FingerprintComparison {
     }
 }
 
-/// fingerprint比较器
+/// fingerprintcompare器
 pub struct FingerprintComparator;
 
 impl FingerprintComparator {
-    /// 比较两个fingerprint
+    /// compare twofingerprint
     pub fn compare(f1: &dyn Fingerprint, f2: &dyn Fingerprint) -> FingerprintComparison {
         // typemustsame
         if f1.fingerprint_type() != f2.fingerprint_type() {
             return FingerprintComparison::no_match();
         }
 
-        // use similar_to method进行比较
+        // use similar_to methodperformcompare
         if f1.similar_to(f2) {
             FingerprintComparison::perfect_match()
         } else {
-            // Calculate相似度（based onhashvalue）
+            // Calculatesimilar度（based onhashvalue）
             let h1 = f1.hash();
             let h2 = f2.hash();
 
-            // 简单的相似度Calculate（based onhashvalue的汉明距离）
+            // simple的similar度Calculate（based onhashvalue的汉明距离）
             let similarity = if h1 == h2 {
                 1.0
             } else {
@@ -137,7 +137,7 @@ impl FingerprintComparator {
 
             FingerprintComparison {
                 similarity,
-                matched: similarity > 0.8, // 相似度阈value
+                matched: similarity > 0.8, // similar度阈value
                 matched_fields: Vec::new(),
                 unmatched_fields: Vec::new(),
             }
