@@ -73,7 +73,7 @@ async fn send_http3_request_async(
  transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome style)
  transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome style)
 
- // allow更多concurrentstream
+ // allowmoreconcurrentstream
  transport.max_concurrent_bidi_streams(100u32.into());
  transport.max_concurrent_uni_streams(100u32.into());
 
@@ -144,7 +144,7 @@ async fn send_http3_request_async(
 
  let (driver, mut send_request) = connection_result?;
 
- // in back台驱动connection：h3 0.0.4 driver need被持续 poll_close
+ // in backdriverconnection：h3 0.0.4 driver need被continuous poll_close
  tokio::spawn(async move {
  let mut driver = driver;
  let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
@@ -174,7 +174,7 @@ async fn send_http3_request_async(
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
- // skip host header（ if user传入了）
+ // skip host header（ if userpassed in）
  if key.to_lowercase() != "host" {
  http_request = http_request.header(key, value);
  }

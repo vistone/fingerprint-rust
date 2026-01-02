@@ -93,7 +93,7 @@ impl PacketParser {
 
  let ihl = (raw_packet[0] & 0x0F) as usize;
  
- // securityCheck：IHL mustat least as 5（20 bytes），最多 as 15（60 bytes）
+ // securityCheck：IHL mustat least as 5（20 bytes），at most as 15（60 bytes）
  if ihl < 5 || ihl > 15 {
  return Err(PacketError::Other("invalid IHL value".to_string()));
  }
@@ -299,7 +299,7 @@ impl PacketParser {
  };
  let data_offset = ((data[12] >> 4) & 0x0F) as usize;
  
- // securityCheck：data_offset mustat least as 5（20 bytes），最多 as 15（60 bytes）
+ // securityCheck：data_offset mustat least as 5（20 bytes），at most as 15（60 bytes）
  if data_offset < 5 || data_offset > 15 {
  return Err(PacketError::Other("invalid TCP data offset".to_string()));
  }

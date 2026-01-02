@@ -13,7 +13,7 @@ pub enum ThreatType {
  /// not知fingerprint
  UnknownFingerprint,
 
- /// 可疑behavior
+ /// suspiciousbehavior
  SuspiciousBehavior,
 
  /// already知attack
@@ -31,7 +31,7 @@ pub enum ThreatType {
  /// portscan
  PortScan,
 
- /// 暴力破解
+ /// brute force
  BruteForce,
 }
 
@@ -40,17 +40,17 @@ impl ThreatType {
  pub fn as_str(&self) -> &'static str {
  match self {
  Self::UnknownFingerprint => "not知fingerprint",
- Self::SuspiciousBehavior => "可疑behavior",
+ Self::SuspiciousBehavior => "suspiciousbehavior",
  Self::KnownAttack => "already知attack",
  Self::AbnormalTrafficPattern => "abnormaltrafficpattern",
  Self::MaliciousIP => "maliciousIP",
  Self::DDoS => "DDoSattack",
  Self::PortScan => "portscan",
- Self::BruteForce => "暴力破解",
+ Self::BruteForce => "brute force",
  }
  }
 
- /// Getthreat严重程度 (0.0 - 1.0)
+ /// Getthreatseverity (0.0 - 1.0)
  pub fn severity(&self) -> f64 {
  match self {
  Self::UnknownFingerprint => 0.3,
@@ -71,7 +71,7 @@ impl std::fmt::Display for ThreatType {
  }
 }
 
-/// analysis详情
+/// analysisdetails
 ///
 /// includinganalysisdetailedinfo and 证data。
 #[derive(Debug, Clone, Default)]
@@ -85,7 +85,7 @@ pub struct AnalysisDetails {
  /// behaviortrait
  pub behavior_features: Vec<String>,
 
- /// abnormal指标
+ /// abnormalindicator
  pub anomalies: Vec<String>,
 
  /// 额outsideinfo
@@ -93,7 +93,7 @@ pub struct AnalysisDetails {
 }
 
 impl AnalysisDetails {
- /// Create a newanalysis详情
+ /// Create a newanalysisdetails
  pub fn new() -> Self {
  Self::default()
  }
@@ -108,7 +108,7 @@ impl AnalysisDetails {
  self.behavior_features.push(feature);
  }
 
- /// Addabnormal指标
+ /// Addabnormalindicator
  pub fn add_anomaly(&mut self, anomaly: String) {
  self.anomalies.push(anomaly);
  }
@@ -124,18 +124,18 @@ pub struct SystemAnalysisResult {
 
  /// risk score (0.0 - 1.0)
  /// - 0.0: completelysecurity
- /// - 1.0: 极high风险
+ /// - 1.0: 极highrisk
  pub risk_score: f64,
 
  /// confidence (0.0 - 1.0)
- /// - 0.0: completely不确信
- /// - 1.0: completely确信
+ /// - 0.0: completelynot confident
+ /// - 1.0: completelyconfident
  pub confidence: f64,
 
  /// threattypelist
  pub threat_types: Vec<ThreatType>,
 
- /// analysis详情
+ /// analysisdetails
  pub details: AnalysisDetails,
 }
 
@@ -186,7 +186,7 @@ impl SystemAnalysisResult {
  if self.threat_types.is_empty() {
  self.risk_score = 0.0;
  } else {
- // use最high严重程度asrisk score
+ // use最highseverityasrisk score
  self.risk_score = self
 .threat_types
 .iter()
@@ -200,7 +200,7 @@ impl SystemAnalysisResult {
  !self.threat_types.is_empty() && self.risk_score > 0.0
  }
 
- /// judgewhether as high风险
+ /// judgewhether as highrisk
  pub fn is_high_risk(&self) -> bool {
  self.risk_score >= 0.7
  }
@@ -245,7 +245,7 @@ impl Clone for SystemAnalysisResult {
 ///
 /// ## Core Concept
 ///
-/// systemlevelanalysis from **system角度**analysisnetworktraffic：
+/// systemlevelanalysis from **systemperspective**analysisnetworktraffic：
 /// - not onlyonly is singleprotocolParse，而 is 综合analysis
 /// - considersystemwholebehaviorpattern
 /// - detectsystemlevelthreat（DDoS、scan、abnormaltraffic etc.）

@@ -1,6 +1,6 @@
 //! fingerprintcoreabstract
 //!
-//! defineunifiedfingerprintabstract，support TLS、HTTP、TCP etc.多种fingerprinttype。
+//! defineunifiedfingerprintabstract，support TLS、HTTP、TCP etc.multiplefingerprinttype。
 
 use crate::metadata::FingerprintMetadata;
 
@@ -137,7 +137,7 @@ impl FingerprintComparator {
 
  FingerprintComparison {
  similarity,
- matched: similarity > 0.8, // similar度阈value
+ matched: similarity > 0.8, // similarthresholdvalue
  matched_fields: Vec::new(),
  unmatched_fields: Vec::new(),
  }

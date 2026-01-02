@@ -4,7 +4,7 @@
 //! similar于 JA3 for TLS，HASSH for identify SSH client and server。
 //!
 //! ## reference
-//! - 论文: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
+//! - paper: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
 //! - GitHub: https://github.com/salesforce/hassh
 //!
 //! ## algorithm
@@ -365,7 +365,7 @@ impl SSHKexInit {
  ///
  /// Note: this isanSimplified implementation，complete SSH protocolParseneed更complexstatus机
  pub fn parse(data: &[u8]) -> Result<Self, String> {
- // SSH protocolformatcomplex，hereprovide基本框架
+ // SSH protocolformatcomplex，hereprovidebasic框架
  // actualapplication in 应use专门 SSH protocolParse库
  
  if data.len() < 16 {
@@ -490,7 +490,7 @@ mod tests {
 
 /// JA4SSH - SSH fingerprint（JA4 style）
 ///
-/// similar于 HASSH，butuse SHA256 而非 MD5，并adopt JA4 seriesformatstyle
+/// similar于 HASSH，butuse SHA256 rather than MD5，并adopt JA4 seriesformatstyle
 /// 
 /// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
 ///

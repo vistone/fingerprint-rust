@@ -300,7 +300,7 @@ impl PoolStats {
  pub fn print(&self) {
  println!("\n📊 connection poolstatistics: {}", self.endpoint);
  println!(" 总connectioncount: {}", self.total_connections);
- println!(" 活跃connection: {}", self.active_connections);
+ println!(" activeconnection: {}", self.active_connections);
  println!(" empty闲connection: {}", self.idle_connections);
  println!(" 总requestcount: {}", self.total_requests);
  println!(" successrequest: {}", self.successful_requests);

@@ -74,7 +74,7 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
 
  let n = reader.read(&mut tmp)?;
  if n == 0 {
- // EOF：connectionclose（ or bottomlayer没更多countdata）
+ // EOF：connectionclose（ or bottomlayer没morecountdata）
  break;
  }
  buf.extend_from_slice(&tmp[..n]);
@@ -105,7 +105,7 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
  let body = &buf[end..];
  if find_subsequence(body, b"0\r\n\r\n").is_some() {
  // here不try精determinebitendbit置（trailer situation较complex），
- // as long as读 to endflag即可return，交给back续Parseprocess。
+ // as long as读 to endflagcanreturn，交给back续Parseprocess。
  break;
  }
  }

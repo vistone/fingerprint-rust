@@ -13,7 +13,7 @@ pub static LANGUAGES: &[&str] = &[
  "fr-FR,fr;q=0.9,en;q=0.8", // 法语
  "de-DE,de;q=0.9,en;q=0.8", // 德语
  "ja-JP,ja;q=0.9,en;q=0.8", // 日语
- "pt-BR,pt;q=0.9,en;q=0.8", // 葡萄牙语（巴西）
+ "pt-BR,pt;q=0.9,en;q=0.8", // Portuguese（巴西）
  "ru-RU,ru;q=0.9,en;q=0.8", // 俄语
  "ar-SA,ar;q=0.9,en;q=0.8", // 阿拉伯语
  "ko-KR,ko;q=0.9,en;q=0.8", // 韩语
@@ -35,7 +35,7 @@ pub static LANGUAGES: &[&str] = &[
  "no-NO,no;q=0.9,en;q=0.8", // 挪威语
  "he-IL,he;q=0.9,en;q=0.8", // 希伯来语
  "uk-UA,uk;q=0.9,en;q=0.8", // 乌克兰语
- "pt-PT,pt;q=0.9,en;q=0.8", // 葡萄牙语（葡萄牙）
+ "pt-PT,pt;q=0.9,en;q=0.8", // Portuguese（葡萄牙）
  "zh-TW,zh;q=0.9,en;q=0.8", // in 文（繁体）
 ];
 
@@ -92,7 +92,7 @@ impl HTTPHeaders {
 
  /// clone HTTPHeaders pair象，returnannew副本
  ///
- /// Note: 此methodname and standard库的 `Clone::clone` different，以avoid命名conflict
+ /// Note: 此methodname and standardlibrary `Clone::clone` different，以avoidnamingconflict
  #[allow(clippy::should_implement_trait)]
  pub fn clone(&self) -> Self {
  Self {
@@ -113,7 +113,7 @@ impl HTTPHeaders {
  }
 
  /// settingsusercustom header（systemwillautomaticmerge to to_map() in ）
- /// this isrecommendmethod，settingsbackcall to_map() 即可automaticincludingcustom headers
+ /// this isrecommendmethod，settingsbackcall to_map() canautomaticincludingcustom headers
  /// Examples：result.headers.set("Cookie", "session_id=abc123")
  pub fn set(&mut self, key: &str, value: &str) {
  if value.is_empty() {
@@ -210,7 +210,7 @@ impl HTTPHeaders {
  headers
  }
 
- /// will HTTPHeaders convert to有序 Vec，followspecified header_order
+ /// will HTTPHeaders convert toordered Vec，followspecified header_order
  pub fn to_ordered_vec(&self, order: &[String]) -> Vec<(String, String)> {
  let map = self.to_map();
  let mut result = Vec::with_capacity(map.len());

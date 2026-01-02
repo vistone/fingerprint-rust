@@ -283,13 +283,13 @@ impl HttpClient {
  format!("{}://{}:{}{}", scheme, host, port, location)
  } else {
  // 相pairpath
- // Fix: correctprocesspath拼接，avoid双斜杠
+ // Fix: correctprocesspathconcatenate，avoid双斜杠
  let base_path = if path.ends_with('/') {
  &path
  } else {
  path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
  };
- // ensure base_path 以 / ending，location 不以 / openheader
+ // ensure base_path 以 / ending，location not / openheader
  let location = location.trim_start_matches('/');
  if base_path == "/" {
  format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -384,7 +384,7 @@ impl HttpClient {
  } else if let Some(stripped) = url.strip_prefix("http://") {
  ("http", stripped)
  } else {
- return Err(HttpClientError::InvalidUrl("缺少protocol".to_string()));
+ return Err(HttpClientError::InvalidUrl("missingprotocol".to_string()));
  };
 
  // remove fragment（# back面partial）
@@ -394,7 +394,7 @@ impl HttpClient {
  rest
  };
 
- // 分离 query parameter（? back面partial） and path
+ // separate query parameter（? back面partial） and path
  let (host_port, path_with_query) = if let Some(pos) = rest.find('/') {
  (&rest[..pos], &rest[pos..])
  } else {
@@ -500,7 +500,7 @@ impl HttpClient {
  if self.config.prefer_http2 {
  // Fix: useglobalsingleton Runtime
  // Note: here不做"automatic降level"，because pool scenariowe更希望按user偏好走specifiedprotocol
- //（test里alsowill严格Validateversion）
+ //（test里alsowillstrictValidateversion）
  return SHARED_RUNTIME.block_on(async {
  http2_pool::send_http2_request_with_pool(
  host,

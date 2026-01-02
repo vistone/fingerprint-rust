@@ -2,7 +2,7 @@
 //!
 //! useofficial rustls asbottomlayer TLS implement
 //! through ClientHelloCustomizer applicationbrowserfingerprint（Chrome、Firefox、Safari etc.）
-//! simulate市场成熟browser TLS fingerprint，不customselffingerprint
+//! simulatemarket maturebrowser TLS fingerprint，不customselffingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -33,7 +33,7 @@ impl Default for TlsConnector {
 ///
 /// useofficial rustls asbottomlayer TLS implement
 /// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
-/// simulate市场成熟browser TLS fingerprint（Chrome、Firefox、Safari etc.）
+/// simulatemarket maturebrowser TLS fingerprint（Chrome、Firefox、Safari etc.）
 pub fn send_https_request(
  host: &str,
  port: u16,

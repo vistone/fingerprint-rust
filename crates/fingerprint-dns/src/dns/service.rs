@@ -138,8 +138,8 @@ impl Service {
  let dns_timeout_for_cleanup = dns_timeout;
  tokio::spawn(async move {
  let cleanup_interval = Duration::from_secs(300); // 每5minutescleanuponce（pair应 Go 项destinationregularcleanup）
- let max_avg_response_time_ms = 2000.0; // averageresponse when betweenexceed2seconds淘汰
- let max_failure_rate = 0.5; // failure率exceed50%淘汰
+ let max_avg_response_time_ms = 2000.0; // averageresponse when betweenexceed2secondseliminate
+ let max_failure_rate = 0.5; // failure率exceed50%eliminate
 
  loop {
  tokio::time::sleep(cleanup_interval).await;
@@ -157,7 +157,7 @@ impl Service {
 
  if removed_count > 0 {
  eprintln!(
- "[DNS Service] back台cleanup：淘汰了 {} 慢DNSserver（剩余 {} ）",
+ "[DNS Service] back台cleanup：eliminate了 {} 慢DNSserver（remaining {} ）",
  removed_count, new_count
  );
 
@@ -220,7 +220,7 @@ impl Service {
  resolve_duration.as_secs_f64()
  );
 
- // 智能intervaladjust：discovernew IP when high频detect，otherwise指countbackoff
+ // intelligentintervaladjust：discovernew IP when high频detect，otherwise指countbackoff
  if has_new_ips {
  current_interval = base_interval;
  last_has_new_ips = true;
@@ -246,11 +246,11 @@ impl Service {
  Err(e) => {
  let resolve_duration = resolve_start.elapsed();
  eprintln!(
- "[DNS Service] DNS Parse出错（耗 when: {:.2}seconds）: {}",
+ "[DNS Service] DNS Parseerror（耗 when: {:.2}seconds）: {}",
  resolve_duration.as_secs_f64(),
  e
  );
- // 出错 when usebasicinterval
+ // error when usebasicinterval
  current_interval = base_interval;
  }
  }
@@ -400,7 +400,7 @@ async fn resolve_and_save_all_internal(
  }
  Err(e) => {
  eprintln!("[DNS Service] Failed to get IP info for {}: {}", ip, e);
- // 即使failure，alsosave基本 IP info
+ // 即使failure，alsosavebasic IP info
  domain_ips.ipv4.push(IPInfo::new(ip));
  }
  }

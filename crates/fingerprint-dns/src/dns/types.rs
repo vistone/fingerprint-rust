@@ -139,9 +139,9 @@ pub enum DNSError {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DNSConfig {
- /// IPInfo.io API Token（必填）
+ /// IPInfo.io API Token（required）
  pub ipinfo_token: String,
- /// domainlist（必填）
+ /// domainlist（required）
  pub domain_list: Vec<String>,
  /// storedirectory（optional，defaultcurrentdirectory）
  #[serde(default = "default_domain_ips_dir")]

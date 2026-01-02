@@ -2,7 +2,7 @@
 //!
 //! target：
 //! - single entryBuild root store
-//! - single entryapplication verify_tls（optionaldisabled校验，only for debug/inside网）
+//! - single entryapplication verify_tls（optionaldisabledvalidate，only for debug/inside网）
 //! - single entryconfiguration ALPN
 
 #![cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
@@ -160,10 +160,10 @@ pub fn build_client_config(
  cfg.alpn_protocols = alpn_protocols;
  apply_verify_tls(&mut cfg, verify_tls);
 
- // optional： in send ClientHello before按fingerprint spec 重排extensionencodingorder（need配套 rustls fork）。
+ // optional： in send ClientHello before按fingerprint spec reorderextensionencodingorder（need配套 rustls fork）。
  // Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork，standard rustls 不support。
  // current被disabled，becausestandard rustls excluding ClientHelloCustomizer API。
- // if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork 并enabled相应 feature。
+ // if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork 并enabledcorresponding feature。
  #[cfg(false)] // 暂 when disabled，becausestandard rustls 不support
  if let Some(profile) = profile {
  if let Some(customizer) = ProfileClientHelloCustomizer::try_from_profile(profile) {

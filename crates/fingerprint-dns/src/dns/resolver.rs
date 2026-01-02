@@ -275,7 +275,7 @@ impl DNSResolver {
  eprintln!("[DNS Resolver] startconcurrentquery，concurrentcount: 50");
 
  // stream式collectresult，waitallserverresponse，collect尽may多 IP
- // for 大量server，increaseoveralltimeout duration
+ // for large numberserver，increaseoveralltimeout duration
  let overall_timeout = Duration::from_secs(30); // overalltimeout 30 seconds，ensureallserver都有机willresponse
  let mut all_ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP 只willpreservean
  let mut query_tasks = query_tasks;

@@ -1,6 +1,6 @@
 //! fingerprintconsistencyChecker
 //!
-//! 交叉Validate TCP、TLS and HTTP layercountdata，detect欺骗behavior and abnormal机er人。
+//! crossValidate TCP、TLS and HTTP layercountdata，detect欺骗behavior and abnormal机er人。
 
 use fingerprint_core::fingerprint::FingerprintType;
 use fingerprint_core::ja4::ConsistencyReport;
@@ -97,7 +97,7 @@ impl ConsistencyAnalyzer {
  );
  }
 
- // 4. JA4+ series交叉Validate (更深layerfingerprintconsistency)
+ // 4. JA4+ seriescrossValidate (更深layerfingerprintconsistency)
  if let (Some(tls), Some(http)) = (tls_fingerprints.first(), http_fingerprints.first()) {
  if let (Some(ja4), Some(ja4h)) =
  (tls.metadata().get("ja4"), http.metadata().get("ja4h"))
@@ -106,7 +106,7 @@ impl ConsistencyAnalyzer {
  // this isancommon爬虫trait
  if ja4.starts_with("t13") && ja4h.contains("11n") {
  report.add_discrepancy(
- format!("detect to modern TLS trait (JA4: {})，but HTTP behavior表现 as 传统无 Cookie request (JA4H: {})", ja4, ja4h),
+ format!("detect to modern TLS trait (JA4: {})，but HTTP behaviorperform as traditional无 Cookie request (JA4H: {})", ja4, ja4h),
  20,
  );
  }

@@ -318,7 +318,7 @@ impl TcpAnalyzer {
 
  if let Some((sig, sim)) = best_match {
  if sim > 0.6 {
- // similar度阈value
+ // similarthresholdvalue
  (Some(sig.clone()), sim)
  } else {
  (None, sim)

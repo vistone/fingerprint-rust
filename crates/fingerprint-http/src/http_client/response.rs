@@ -39,7 +39,7 @@ impl HttpResponse {
  pub fn parse(raw_response: &[u8]) -> Result<Self, String> {
  let start = std::time::Instant::now();
 
- // 1. 分离 headers and body
+ // 1. separate headers and body
  let (headers_end, body_start) = Self::find_headers_end(raw_response)?;
 
  let header_bytes = &raw_response[..headers_end];
@@ -50,7 +50,7 @@ impl HttpResponse {
  let mut lines = header_str.lines();
 
  // 3. Parsestatus行: HTTP/1.1 200 OK
- let status_line = lines.next().ok_or("缺少status行")?;
+ let status_line = lines.next().ok_or("missingstatus行")?;
  let (http_version, status_code, status_text) = Self::parse_status_line(status_line)?;
 
  // 4. Parse headers

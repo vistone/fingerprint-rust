@@ -6,7 +6,7 @@
 use serde::{Deserialize, Serialize};
 
 /// JA4 TLS clientfingerprint
-/// format: t_p_c_e_s_k (例如: t13d1516h2_8daaf6152771_000a)
+/// format: t_p_c_e_s_k (for example: t13d1516h2_8daaf6152771_000a)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4 {
  /// transferprotocol (t=tcp, q=quic)
@@ -227,8 +227,8 @@ impl std::fmt::Display for JA4T {
 
 /// JA4S TLS serverfingerprint（JA4 style）
 /// 
-/// and JA3S similar，butuse SHA256 而非 MD5
-/// format: t_v_c_e (例如: t13d_1301_0000)
+/// and JA3S similar，butuse SHA256 rather than MD5
+/// format: t_v_c_e (for example: t13d_1301_0000)
 /// 
 /// ## Examples
 /// ```
@@ -612,13 +612,13 @@ impl JA4L {
  }
  }
 
- /// 估算fingerprintCalculate成本（相pairvalue）
+ /// estimatefingerprintCalculate成本（相pairvalue）
  /// returnvalue：1-10，1 as 最lightweight，10 as 最重
  pub fn computational_cost() -> u8 {
  2 // JA4L is lightweightlevel的，成本评分 as 2/10
  }
 
- /// 估算inside存usage（bytes）
+ /// estimateinside存usage（bytes）
  pub fn memory_footprint(&self) -> usize {
  std::mem::size_of::<Self>()
  + self.version.capacity()

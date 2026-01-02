@@ -3,7 +3,7 @@
 //! architectureexplain：
 //! - HTTP/3 adoptsessionpool（H3SessionPool）implement QUIC sessionreuse
 //! - pool化pair象：h3::client::SendRequest handle（alreadyhandshakecomplete QUIC session）
-//! - reusemethod：concurrentmultiplereuse（an QUIC connection可同 when processmultiple Stream）
+//! - reusemethod：concurrentmultiplereuse（an QUIC connectioncan when processmultiple Stream）
 //! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，no need netconnpool
 //! - sessionestablishback，connectionlifecycle由 H3Session backbackground task（Driver）manage
 
@@ -73,7 +73,7 @@ pub async fn send_http3_request_with_pool(
  transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
  transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
- // allow更多concurrentstream
+ // allowmoreconcurrentstream
  transport_config.max_concurrent_bidi_streams(100u32.into());
  transport_config.max_concurrent_uni_streams(100u32.into());
 

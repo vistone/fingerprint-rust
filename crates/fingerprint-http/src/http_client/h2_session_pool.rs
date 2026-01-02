@@ -26,7 +26,7 @@ pub struct H2SessionPool {
  /// sessionpool（按 host:port group）
  /// eachsessionincluding SendRequest handle、backbackground taskhandle and finallywhen used between
  sessions: Arc<Mutex<HashMap<String, Arc<H2Session>>>>,
- /// 正 in Createinsession（avoidsame key concurrentCreate竞争）
+ /// 正 in Createinsession（avoidsame key concurrentCreatecompetition）
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
  /// sessiontimeout duration（default 5 minutes）
  session_timeout: Duration,
@@ -123,7 +123,7 @@ impl H2SessionPool {
  // marker as 正 in Create
  let (_tx, rx) = watch::channel(false);
  pending.insert(key.to_string(), rx.clone());
- // herewe稍微violate一down原则，in order tologic清晰directly in herereturn None representweneed亲自Create
+ // herewe稍微violate一down原则，in order tologic清晰directly in herereturn None representweneedpersonallyCreate
  // butwewillpreserve tx in back续use
  None
  }
@@ -138,7 +138,7 @@ impl H2SessionPool {
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 
- // 亲自Create新session
+ // personallyCreate新session
  let (send_request_h2, h2_conn) = create_session.await.inspect_err(|_e| {
  // Createfailurealsoneed from pending in remove
  if let Ok(mut pending) = self.pending_sessions.lock() {
@@ -181,7 +181,7 @@ impl H2SessionPool {
  }
  if let Ok(mut pending) = self.pending_sessions.lock() {
  pending.remove(key);
- // here不needexplicit通知，tx destroywillautomatic通知 rx
+ // here不needexplicitnotification，tx destroywillautomaticnotification rx
  }
  }
 

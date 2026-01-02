@@ -17,7 +17,7 @@ pub struct FlowCharacteristics {
  /// 总bytescount
  pub total_bytes: u64,
 
- /// 持续 when between
+ /// continuous when between
  pub duration: Duration,
 
  /// whetherencryption
@@ -61,7 +61,7 @@ impl FlowCharacteristics {
  }
  }
 
- /// settings持续 when between并Updaterate
+ /// settingscontinuous when between并Updaterate
  pub fn set_duration(&mut self, duration: Duration) {
  self.duration = duration;
  if !duration.is_zero() {
@@ -84,7 +84,7 @@ impl Default for FlowCharacteristics {
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneed from **networktraffic**角度performanalysis and protection，而is notonlyonlyfocussingleservice：
+/// systemlevelprotectionneed from **networktraffic**perspectiveperformanalysis and protection，而is notonlyonlyfocussingleservice：
 /// - completesystemupdown文（source/target、protocol、direction etc.）
 /// - detect to fingerprintinfo（TLS、HTTP、TCP etc.）
 /// - trafficstatisticstrait and behaviorpattern

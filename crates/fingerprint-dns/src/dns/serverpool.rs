@@ -146,7 +146,7 @@ impl ServerPool {
  Ok(guard) => guard,
  Err(e) => {
  eprintln!("Warning: Lock poisoned in remove_slow_servers: {}", e);
- // Iflock in 毒, returnallserver（不淘汰anyserver）
+ // Iflock in 毒, returnallserver（不eliminateanyserver）
  return Self::new(self.servers.iter().cloned().collect());
  }
  };
@@ -176,7 +176,7 @@ impl ServerPool {
 .map(|(s, _, _)| s.clone())
 .collect();
 
- // 容错保障： if filterback剩downserver太少，按performancesort强行preserve top N
+ // 容错保障： if filterback剩downserver太少，按performancesortforcepreserve top N
  if filtered.len() < min_active_servers && !scored_servers.is_empty() {
  // 按 failure率 (firstclosekey字) and response when between (secondclosekey字) 升序sort
  scored_servers.sort_by(|a, b| {
@@ -192,7 +192,7 @@ impl ServerPool {
 .collect();
 
  eprintln!(
- "[DNS ServerPool] 满足条件serverinsufficient (only {} )，强行preserveperformancefront {} 名",
+ "[DNS ServerPool] 满足条件serverinsufficient (only {} )，forcepreserveperformancefront {} 名",
  filtered.len(),
  min_active_servers
  );
@@ -260,8 +260,8 @@ impl ServerPool {
  let json_content =
  serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
- // securityFix: 原child性write，useunique temporaryfile名prevent竞态条件
- // use进程 ID ensuretemporaryfile名unique，avoid多进程同 when write when 竞态条件
+ // securityFix: 原child性write，useunique temporaryfile名preventrace condition
+ // use进程 ID ensuretemporaryfile名unique，avoid多进程同 when write when race condition
  let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
  fs::write(&temp_path, json_content)
 .map_err(|e| crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e)))?;
@@ -340,7 +340,7 @@ impl ServerPool {
  self.servers.is_empty()
  }
 
- /// healthCheck并增量save：highconcurrenttest DNS server，每detect to 一batchavailableserver就immediatelysave
+ /// healthCheck并incrementalsave：highconcurrenttest DNS server，每detect to 一batchavailableserver就immediatelysave
  /// in backbackground task in run，non-blockingmainthread
  pub async fn health_check_and_save_incremental(
  &self,
@@ -440,7 +440,7 @@ impl ServerPool {
  if current_count.is_multiple_of(save_batch_size) {
  let pool = Self::new(servers.clone());
  if let Err(e) = pool.save_default() {
- eprintln!("Warning: 增量savefailure: {}", e);
+ eprintln!("Warning: incrementalsavefailure: {}", e);
  } else {
  eprintln!("alreadysave {} availableserver to file", current_count);
  }
@@ -506,7 +506,7 @@ impl ServerPool {
  Self::new(final_servers)
  }
 
- /// healthCheck：test哪些 DNS server is available的
+ /// healthCheck：testwhich DNS server is available的
  /// throughqueryanalready知domain（如 google.com）来testserverwhetheravailable
  pub async fn health_check(
  &self,

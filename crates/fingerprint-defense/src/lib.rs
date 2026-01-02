@@ -9,12 +9,12 @@
 //! ## 目frontalreadyimplementFeatures
 //!
 //! - ✅ **passivefingerprintidentify** (`passive`): TCP/IP (p0f), HTTP, TLS passiveidentify
-//! - ✅ **crosslayerconsistency审计** (`consistency`): JA4+ consistency校验
+//! - ✅ **crosslayerconsistency审计** (`consistency`): JA4+ consistencyvalidate
 //! - ✅ **fingerprintdatabase** (`database`): SQLite store and analysisfingerprinttrait
-//! - ✅ **learn机制** (`learner`): automaticdiscover and recordnot知fingerprint
+//! - ✅ **learnmechanism** (`learner`): automaticdiscover and recordnot知fingerprint
 //! - ✅ **countpacketcapture** (`capture`): 纯 Rust implement实 when network interface and pcap filecapture（无systemdepend）
 //!
-//! ## 计划inFeatures
+//! ## planinFeatures
 //!
 //! - **systemanalysiser** (`analyzer`): implement `SystemAnalyzer` trait
 //! - **systemprotectioner** (`protector`): implement `SystemProtector` trait

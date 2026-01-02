@@ -128,7 +128,7 @@ impl CookieStore {
  if let Ok(mut cookies) = self.cookies.lock() {
  let domain_cookies = cookies.entry(cookie.domain.clone()).or_default();
 
- // Checkwhetheralready exists同名 Cookie， if exists则Update
+ // Checkwhetheralready existssame name Cookie， if exists则Update
  if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
  domain_cookies[pos] = cookie;
  } else {
@@ -174,7 +174,7 @@ impl CookieStore {
  // shouldmatch example.com and all *.example.com
  domain_lower == base || domain_lower.ends_with(&format!(".{}", base))
  } else {
- // Cookie domain 不以. openheader（如 example.com）
+ // Cookie domain not. openheader（如 example.com）
  // shouldmatch example.com and all *.example.com
  domain_lower == cookie_domain_lower
  || domain_lower.ends_with(&format!(".{}", cookie_domain_lower))

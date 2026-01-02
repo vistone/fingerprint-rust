@@ -94,7 +94,7 @@ impl FingerprintMetadata {
  /// settingscustomproperty（through tags store，format as "key:value"）
  pub fn set(&mut self, key: &str, value: &str) {
  let tag = format!("{}:{}", key, value);
- // 先removeold 同名 key
+ // 先removeold same name key
  self.tags.retain(|t| !t.starts_with(&format!("{}:", key)));
  self.add_tag(tag);
  }

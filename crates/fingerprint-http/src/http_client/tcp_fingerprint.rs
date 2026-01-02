@@ -210,11 +210,11 @@ mod tests {
 
  // tryGetreceivebuffersize（impact Window Size）
  // Note: 这need libc crate，butin order tosimplify，we暂 when comment掉
- // actualValidateshoulduse tcpdump or wireshark 抓包analysis
+ // actualValidateshoulduse tcpdump or wireshark packet captureanalysis
  println!(" 🔍 server端 TCP parameterdetect：");
  println!(" ⚠️ Note: TTL in service端unable todirectlydetect（transferprocess in will递减）");
- println!(" 💡 suggest：use tcpdump or wireshark 抓包Validate TTL");
- println!(" 💡 命令：sudo tcpdump -i lo -n 'tcp port 9876' -v");
+ println!(" 💡 suggest：use tcpdump or wireshark packet captureValidate TTL");
+ println!(" 💡 command：sudo tcpdump -i lo -n 'tcp port 9876' -v");
  }
 
  let mut buffer = [0; 1024];

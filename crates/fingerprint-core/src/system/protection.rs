@@ -8,7 +8,7 @@ use std::time::Duration;
 
 /// systemlevelprotectiondecision
 ///
-/// representsystemlevelprotectionsystempairnetworktraffic做出decision。
+/// representsystemlevelprotectionsystempairnetworktrafficmakedecision。
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemProtectionDecision {
  /// allowthrough
@@ -25,7 +25,7 @@ pub enum SystemProtectionDecision {
  /// 每secondsmaximumcountpacketcount
  max_packets_per_second: u64,
 
- /// rate limit持续 when between
+ /// rate limitcontinuous when between
  duration: Duration,
  },
 
@@ -35,7 +35,7 @@ pub enum SystemProtectionDecision {
  reason: String,
  },
 
- /// need进一步analysis
+ /// needfurtheranalysis
  RequiresAnalysis,
 }
 
@@ -65,12 +65,12 @@ impl SystemProtectionDecision {
  duration,
  } => {
  format!(
- "rate limit: {} 包/seconds, 持续 when between: {:?}",
+ "rate limit: {} 包/seconds, continuous when between: {:?}",
  max_packets_per_second, duration
  )
  }
  Self::Log { reason } => format!("record: {}", reason),
- Self::RequiresAnalysis => "need进一步analysis".to_string(),
+ Self::RequiresAnalysis => "needfurtheranalysis".to_string(),
  }
  }
 }
@@ -85,12 +85,12 @@ pub struct SystemProtectionResult {
 
  /// risk score (0.0 - 1.0)
  /// - 0.0: completelysecurity
- /// - 1.0: 极high风险
+ /// - 1.0: 极highrisk
  pub risk_score: f64,
 
  /// confidence (0.0 - 1.0)
- /// - 0.0: completely不确信
- /// - 1.0: completely确信
+ /// - 0.0: completelynot confident
+ /// - 1.0: completelyconfident
  pub confidence: f64,
 
  /// decisionreason
@@ -132,7 +132,7 @@ impl SystemProtectionResult {
  risk_score,
  confidence: 1.0,
  reason,
- suggested_actions: vec!["Add to 黑名单".to_string(), "recordlog".to_string()],
+ suggested_actions: vec!["Add to blacklist".to_string(), "recordlog".to_string()],
  }
  }
 
@@ -157,9 +157,9 @@ impl SystemProtectionResult {
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotection from **system角度**做出protectiondecision：
+/// systemlevelprotection from **systemperspective**makeprotectiondecision：
 /// - not onlyonly is singleserviceprotection，而 is 整systemprotection
-/// - can实施systemlevel措施（黑名单、rate limit、防火墙rule etc.）
+/// - can实施systemlevelmeasure（blacklist、rate limit、防火墙rule etc.）
 /// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example
@@ -186,7 +186,7 @@ impl SystemProtectionResult {
 /// }
 /// ```
 pub trait SystemProtector: Send {
- /// analysisnetworktraffic并做出protectiondecision
+ /// analysisnetworktraffic并makeprotectiondecision
  ///
  /// # Parameters
  ///
@@ -199,7 +199,7 @@ pub trait SystemProtector: Send {
 
  /// Updatesystemstatus
  ///
- /// in 做出protectiondecisionback，canBased onresultUpdatesystemstatus（如Update黑名单、statisticsinfo etc.）。
+ /// in makeprotectiondecisionback，canBased onresultUpdatesystemstatus（如Updateblacklist、statisticsinfo etc.）。
  ///
  /// # Parameters
  ///

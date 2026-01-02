@@ -198,9 +198,9 @@ impl ServerCollector {
 
  // in savefrontperformhealthCheck，只preserveavailableserver
  // usehighconcurrentdetect，每detect to 一batch就immediatelysave，fastcomplete不长 when betweenblocking
- eprintln!("正 in highconcurrenttest DNS serveravailable性（test哪些servercanreturn IP address）...");
- let test_timeout = Duration::from_secs(2); // decreasetimeout duration，加快detect
- let max_concurrency = 500; // 大幅increaseconcurrentcount，加快detectspeed
+ eprintln!("正 in highconcurrenttest DNS serveravailable性（testwhichservercanreturn IP address）...");
+ let test_timeout = Duration::from_secs(2); // decreasetimeout duration，speed updetect
+ let max_concurrency = 500; // 大幅increaseconcurrentcount，speed updetectspeed
  let save_batch_size = 100; // 每detect to 100availableserver就saveonce
 
  let validated_pool = new_pool
@@ -235,7 +235,7 @@ impl ServerCollector {
  }
  );
 
- // filealready in 增量saveprocess in Update了，directlyreturn
+ // filealready in incrementalsaveprocess in Update了，directlyreturn
  if valid_count > 0 {
  validated_pool
  } else {

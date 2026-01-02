@@ -4,7 +4,7 @@
 //! JA3S is pair应server端fingerprint。
 //!
 //! ## reference
-//! - 论文: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
+//! - paper: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
 //! - GitHub: https://github.com/salesforce/ja3
 
 use serde::{Deserialize, Serialize};
@@ -54,7 +54,7 @@ impl JA3 {
  /// Generate JA3 fingerprint
  ///
  /// # Parameters
- /// - `ssl_version`: TLS version（例如：771 = TLS 1.2, 772 = TLS 1.3）
+ /// - `ssl_version`: TLS version（for example：771 = TLS 1.2, 772 = TLS 1.3）
  /// - `ciphers`: cipher suitelist（hexadecimalvalue）
  /// - `extensions`: extensionlist（hexadecimalvalue）
  /// - `elliptic_curves`: elliptic curvelist（hexadecimalvalue）

@@ -3,9 +3,9 @@
 //! architectureexplain：
 //! - HTTP/1.1 adopt netconnpool manage TCP connection pool
 //! - pool化pair象：TcpStream（裸 TCP connection）
-//! - reusemethod：serialreuse（anconnection同一 when betweencan onlyprocessanrequest）
-//! - protocollimit：HTTP/1.1 unable tomultiplereuse，need大量connectionsupportconcurrent
-//! - netconnpool 负责：connectionCreate、keep活跃、故障detect and 回收
+//! - reusemethod：serialreuse（anconnectionsame when betweencan onlyprocessanrequest）
+//! - protocollimit：HTTP/1.1 unable tomultiplereuse，needlarge numberconnectionsupportconcurrent
+//! - netconnpool 负责：connectionCreate、keepactive、故障detect and 回收
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;

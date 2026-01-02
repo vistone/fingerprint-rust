@@ -2,14 +2,14 @@
 //!
 //! **systemlevelprotectioncoreabstractlayer**
 //!
-//! from **单一serviceprotection**improve to **systemlevelprotection**，providesystemlevelcoreabstract and interface。
+//! from **singleserviceprotection**improve to **systemlevelprotection**，providesystemlevelcoreabstract and interface。
 //!
 //! ## core定bit
 //!
 //! `fingerprint-core` is systemlevelprotectioncore，alloutside部component都围绕thiscore展open：
 //!
 //! - **systemlevelabstract**: systemupdown文、networktraffic、protectiondecision etc.
-//! - **攻防unifiedinterface**: fingerprintabstract、analysisinterface、protectioninterface etc.
+//! - **offense and defenseunifiedinterface**: fingerprintabstract、analysisinterface、protectioninterface etc.
 //! - **coretype and tool**: typedefine、metadata、toolfunction etc.
 //!
 //! ## coreFeatures
@@ -21,9 +21,9 @@
 //! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotectionunifiedinterface
 //! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysisunifiedinterface
 //!
-//! ### 攻防unifiedabstract
+//! ### offense and defenseunifiedabstract
 //!
-//! - **fingerprintabstract** (`Fingerprint` trait): support TLS、HTTP、TCP etc.多种fingerprinttype
+//! - **fingerprintabstract** (`Fingerprint` trait): support TLS、HTTP、TCP etc.multiplefingerprinttype
 //! - **fingerprintmetadata** (`FingerprintMetadata`): includingbrowser、operating system、confidence etc.info
 //! - **TLS fingerprint** (`ClientHelloSignature`): TLS ClientHello signature
 //! - **HTTP fingerprint** (`HttpFingerprint`): HTTP requestfingerprint

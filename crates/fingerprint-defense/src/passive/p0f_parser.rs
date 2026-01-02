@@ -368,8 +368,8 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  } else {
  // Ifnosecondpartial, mayoptionsorder就 in firstpartial（ in MSS patternafter）
  // format: mss*20,10 or mss,1460
- // 这种situationdown，optionsordermay不 exists， or 者need from other地方Extract
- // 暂 when 不process这种situation
+ // thissituationdown，optionsordermay不 exists， or 者need from other地方Extract
+ // 暂 when 不processthissituation
  }
 
  Ok((mss_pattern, options_order))
@@ -397,7 +397,7 @@ fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
  // findfirst逗号backcount字
  if let Some(pos) = mss_str.find(',') {
  let value_str = &mss_str[pos + 1..];
- // maystill有更多逗号，只取firstcount字partial
+ // maystill有more逗号，只取firstcount字partial
  let value_part = value_str.split(',').next().unwrap_or(value_str);
  if let Ok(value) = value_part.parse::<u16>() {
  return Ok(MssPattern::Fixed(value));

@@ -1,7 +1,7 @@
 //! TLS metadatastoremodule
 //!
 //! in Build ClientHelloSpec when saveextensionmetadata（SNI、ALPN etc.）
-//! 这样can in Extractsignature when Getcompleteinfo
+//! this waycan in Extractsignature when Getcompleteinfo
 
 use std::collections::HashMap;
 

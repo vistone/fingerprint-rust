@@ -100,10 +100,10 @@ impl HttpRequest {
 
  /// Build HTTP/1.1 requeststring
  ///
- /// Note: 该methodwill把 body when作 UTF-8 text拼接 to string in ，**不适 for 二进制 body**。
- /// if neededsend二进制countdata，请use `build_http1_request_bytes`。
+ /// Note: 该methodwill把 body when作 UTF-8 textconcatenate to string in ，**不适 for binary body**。
+ /// if neededsendbinarycountdata，请use `build_http1_request_bytes`。
  pub fn build_http1_request(&self, host: &str, path: &str) -> String {
- // security清洗：prevent CRLF 注入
+ // securityclean：prevent CRLF 注入
  let safe_method = self.method.as_str().replace(['\r', '\n'], "");
  let safe_path = path.replace(['\r', '\n'], "");
  let safe_host = host.replace(['\r', '\n'], "");
@@ -155,14 +155,14 @@ impl HttpRequest {
  path: &str,
  header_order: Option<&[String]>,
  ) -> Vec<u8> {
- // security清洗
+ // securityclean
  let safe_method = self.method.as_str().replace(['\r', '\n'], "");
  let safe_path = path.replace(['\r', '\n'], "");
  let safe_host = host.replace(['\r', '\n'], "");
 
  let mut head = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
- // use有序list（ if provide）
+ // useorderedlist（ if provide）
  let ordered_headers = if let Some(order) = header_order {
  let mut h = HTTPHeaders::new();
  for (k, v) in &self.headers {

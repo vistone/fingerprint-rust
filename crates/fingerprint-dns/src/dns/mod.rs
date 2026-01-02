@@ -7,7 +7,7 @@
 //! - ✅ **concurrent DNS Parse**：supporthighconcurrent DNS query
 //! - ✅ **多formatconfiguration**：support JSON、YAML、TOML threeconfigurationformat
 //! - ✅ **IP geographicinfo**：set成 IPInfo.io Getdetailedgeographicbit置 and ISP info
-//! - ✅ **智能intervaladjust**：discovernew IP when high频detect，otherwise指countbackoff
+//! - ✅ **intelligentintervaladjust**：discovernew IP when high频detect，otherwise指countbackoff
 //! - ✅ **多formatoutput**：support JSON、YAML、TOML threeoutputformat
 //! - ✅ **原child性write**：usetemporaryfileensurecountdatasecurity
 //! - ✅ **易于set成**：providesimple Start/Stop interface，supportas库use

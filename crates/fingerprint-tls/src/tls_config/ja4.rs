@@ -242,7 +242,7 @@ impl Ja4Signature {
  // JA4 原beginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
  let ja4_raw_full = format!("{ja4_a}_{ja4_b_raw}_{ja4_c_raw}");
 
- // Based onorderCreate相应enumvariant
+ // Based onorderCreatecorrespondingenumvariant
  let ja4_fingerprint = if original_order {
  Ja4Fingerprint::Unsorted(ja4_hashed)
  } else {

@@ -60,7 +60,7 @@ impl CaptureEngine {
  continue;
  }
  
- // skip以太网frameheader（14 bytes）
+ // skipEthernetframeheader（14 bytes）
  if packet.len() > 14 {
  let ip_packet = &packet[14..];
  if let Ok(p) = PacketParser::parse(ip_packet) {
@@ -108,9 +108,9 @@ impl CaptureEngine {
  continue;
  }
  
- // pcap fileincountdatausuallyincluding以太网frameheader
+ // pcap fileincountdatausuallyincludingEthernetframeheader
  if data.len() > 14 {
- // skip以太网frameheader（14 bytes）
+ // skipEthernetframeheader（14 bytes）
  let ip_packet = &data[14..];
  if let Ok(p) = PacketParser::parse(ip_packet) {
  let _ = self.analyzer.analyze(&p);

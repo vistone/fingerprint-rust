@@ -109,7 +109,7 @@ async fn send_http2_request_async(
 .await
 .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 handshakefailure: {}", e)))?;
 
- // in back台驱动 HTTP/2 connection
+ // in backdriver HTTP/2 connection
  tokio::spawn(async move {
  if let Err(e) = h2_conn.await {
  eprintln!("warning: HTTP/2 connectionerror: {}", e);
@@ -140,7 +140,7 @@ async fn send_http2_request_async(
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
- // skip host header（ if user传入了）
+ // skip host header（ if userpassed in）
  if key.to_lowercase() != "host" {
  http_request = http_request.header(key, value);
  }

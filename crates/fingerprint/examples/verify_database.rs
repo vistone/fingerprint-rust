@@ -68,7 +68,7 @@ fn main() {
  let report = analyzer.analyze_flow(&flow);
  db.store_flow(&flow, report.score, report.bot_detected)
 .expect("Failed to store flow");
- println!(" ✅ trafficalready存入 SQLite");
+ println!(" ✅ trafficalreadystore into SQLite");
 
  // 2. simulate并store机er人traffic
  println!("\n2️⃣ store机er人traffic:");
@@ -94,7 +94,7 @@ fn main() {
  let report_bot = analyzer.analyze_flow(&flow_bot);
  db.store_flow(&flow_bot, report_bot.score, report_bot.bot_detected)
 .expect("Failed to store bot flow");
- println!(" ✅ 机er人trafficalready存入 SQLite");
+ println!(" ✅ 机er人trafficalreadystore into SQLite");
 
  // 3. readstatisticsinfo
  println!("\n3️⃣ databasestatistics:");

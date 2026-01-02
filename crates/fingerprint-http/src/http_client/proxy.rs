@@ -186,7 +186,7 @@ fn connect_socks5_proxy(
  // 4. sendconnectionrequest
  let mut connect_request = vec![
  0x05, // version
- 0x01, // CONNECT 命令
+ 0x01, // CONNECT command
  0x00, // preserve
  0x03, // domaintype
  ];
@@ -212,7 +212,7 @@ fn connect_socks5_proxy(
  )));
  }
 
- // read剩余addressinfo
+ // readremainingaddressinfo
  match connect_response[3] {
  0x01 => {
  // IPv4

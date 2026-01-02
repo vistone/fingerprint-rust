@@ -24,7 +24,7 @@ use h3::client::SendRequest;
 pub struct H3SessionPool {
  /// sessionpool（按 host:port group）
  sessions: Arc<Mutex<HashMap<String, Arc<H3Session>>>>,
- /// 正 in Createinsession（avoid竞争）
+ /// 正 in Createinsession（avoidcompetition）
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
  /// sessiontimeout duration（default 5 minutes）
  session_timeout: Duration,
@@ -35,7 +35,7 @@ pub struct H3SessionPool {
 struct H3Session {
  /// SendRequest handle（ for sendrequest）
  send_request: Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>,
- /// backbackground taskhandle（ for manage h3 connection驱动）
+ /// backbackground taskhandle（ for manage h3 connectiondriver）
  _background_task: tokio::task::JoinHandle<()>,
  /// finallywhen used between
  last_used: Arc<Mutex<Instant>>,
@@ -140,7 +140,7 @@ impl H3SessionPool {
 
  // startbackbackground taskmanageconnectionlifecycle
  let background_task = tokio::spawn(async move {
- // 驱动 h3 connection
+ // driver h3 connection
  let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
 
  // marker as invalid

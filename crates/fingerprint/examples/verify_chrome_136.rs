@@ -37,9 +37,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  if let Some(alpn) = metadata.get_alpn() {
  println!(" configuration ALPN: {:?}", alpn);
  if alpn.first() == Some(&"h3".to_string()) {
- println!(" ✅ h3 alreadycorrect置于首bit");
+ println!(" ✅ h3 alreadycorrectput firstbit");
  } else {
- println!(" ❌ h3 not置于首bit: {:?}", alpn.first());
+ println!(" ❌ h3 notput firstbit: {:?}", alpn.first());
  }
  } else {
  println!(" ❌ not找 to ALPN metadata");
@@ -61,6 +61,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  let ja4 = chrome_136.get_ja4_string()?;
  println!(" ✅ JA4: {}", ja4);
 
- println!("\n✨ Chrome 136 微调Validatethrough！");
+ println!("\n✨ Chrome 136 fine-tuneValidatethrough！");
  Ok(())
 }

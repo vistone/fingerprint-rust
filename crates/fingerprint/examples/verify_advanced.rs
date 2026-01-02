@@ -63,7 +63,7 @@ async fn main() {
  }
 
  // 2. simulate自learnprocess
- println!("\n2️⃣ 自learn机制Validate:");
+ println!("\n2️⃣ 自learnmechanismValidate:");
  for i in 1..=12 {
  learner.process_result(&result);
  if i == 5 {

@@ -16,9 +16,9 @@
 //! - ✅ **globallanguagesupport**：30+ 种language Accept-Language
 //! - ✅ **operating systemrandom化**：randomly selectoperating system
 //! - ✅ **highperformance**：零allocateclosekeyoperation，concurrentsecurity
-//! - ✅ **Rust standard**：严格follow Rust languagestandard and 最佳实践
+//! - ✅ **Rust standard**：strictfollow Rust languagestandard and best practice
 //! - ✅ **independent库**：不dependother TLS client库
-//! - ✅ **code质量**：throughall Clippy Check，follow Rust 最佳实践
+//! - ✅ **code质量**：throughall Clippy Check，follow Rust best practice
 
 #[cfg(feature = "export")]
 pub mod export;

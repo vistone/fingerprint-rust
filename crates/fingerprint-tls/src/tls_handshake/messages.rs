@@ -50,10 +50,10 @@ impl ClientHelloMessage {
 
  // front 4 bytes: Unix when between戳
  // usecurrent when between， if Getfailure则use 0（虽然不太mayfailure）
- // fix 2038 年溢出issue：explicittruncatehighbit，ensure u32 rangeinside
+ // fix 2038 year overflowissue：explicittruncatehighbit，ensure u32 rangeinside
  let timestamp = std::time::SystemTime::now()
 .duration_since(std::time::UNIX_EPOCH)
-.map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicittruncatehighbit，prevent 2038 年溢出
+.map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicittruncatehighbit，prevent 2038 year overflow
 .unwrap_or(0);
  random.extend_from_slice(&timestamp.to_be_bytes());
 
@@ -258,7 +258,7 @@ mod tests {
 
  let msg = ClientHelloMessage::from_spec(&spec, "example.com").unwrap();
 
- // Validate基本field
+ // Validatebasicfield
  assert_eq!(msg.client_version, 0x0303);
  assert_eq!(msg.random.len(), 32);
  assert_eq!(msg.cipher_suites.len(), 2);

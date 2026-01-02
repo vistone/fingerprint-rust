@@ -1,6 +1,6 @@
 //! ClientHelloSpec Builder module
 //!
-//! provide Builder pattern来Build ClientHelloSpec，使code更清晰、typesecurity
+//! provide Builder pattern来Build ClientHelloSpec，使codeclearer、typesecurity
 
 use crate::tls_config::spec::{
  ClientHelloSpec, CERT_COMPRESSION_BROTLI, POINT_FORMAT_UNCOMPRESSED, PSK_MODE_DHE,
@@ -25,7 +25,7 @@ use fingerprint_core::dicttls::{
 };
 
 /// ClientHelloSpec Builder
-/// use Builder patternBuild ClientHelloSpec，使code更清晰
+/// use Builder patternBuild ClientHelloSpec，使codeclearer
 #[derive(Debug, Default)]
 pub struct ClientHelloSpecBuilder {
  cipher_suites: Vec<u16>,
@@ -91,7 +91,7 @@ impl ClientHelloSpecBuilder {
  }
 
  /// Chrome 136 defaultcipher suite
- /// in 136 version in ，Chrome 进一步optimize了encryptionsuiteweight，completelypriorityconsidermodern AEAD suite
+ /// in 136 version in ，Chrome furtheroptimize了encryptionsuiteweight，completelypriorityconsidermodern AEAD suite
  pub fn chrome_136_cipher_suites() -> Vec<u16> {
  vec![
  GREASE_CS,
@@ -252,7 +252,7 @@ impl ClientHelloSpecBuilder {
  ) {
  let (mut extensions, mut metadata) = Self::chrome_133_extensions();
 
- // 针pair 136 微调：ensure ALPN including h3 并置于首bit（Chrome 136 强化了pair h3 support）
+ // 针pair 136 fine-tune：ensure ALPN including h3 并put firstbit（Chrome 136 强化了pair h3 support）
  let alpn_protocols = vec!["h3".to_string(), "h2".to_string(), "http/1.1".to_string()];
  metadata.set_alpn(alpn_protocols.clone());
 

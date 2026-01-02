@@ -74,7 +74,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
 .extensions
 .iter()
 .map(|ext| {
- // use as_any perform向down转型
+ // use as_any perform向downtransform
  let any_ext = ext.as_any();
 
  if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {

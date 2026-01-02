@@ -1,10 +1,10 @@
-//! rustls ClientHello 定制er（optional）
+//! rustls ClientHello customizeer（optional）
 //!
 //! 目front只做一件事：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**。
 //!
 //! explain：
-//! - rustls 并不一定willsend spec 里列出allextension；herewill以 rustls actual `used` as 准，
-//! onlypair交set做重排，并把notcover's extensions按 rustls defaultorder追加，ensure仍 is anvalid排列。
+//! - rustls 并不一定willsend spec 里listallextension；herewill以 rustls actual `used` as 准，
+//! onlypair交setreorder，并把notcover's extensions按 rustls defaultorder追加，ensure仍 is anvalidarrange。
 //! - spec 里mayappearmultiple GREASE extension（ in realbrowser in themusually is different GREASE value）。
 //! as avoid"duplicateextensiontype"cause rustls refuse，wewill把each GREASE 占bit符map成different GREASE value。
 //!
@@ -32,7 +32,7 @@ use rustls::internal::msgs::enums::ExtensionType;
 #[cfg(feature = "rustls-client-hello-customizer")]
 /// from `ClientHelloSpec` Calculate"expected's extensionsorder"（以 u16 represent）。
 ///
-/// - deduplicate：同一extensiontype只preserve第onceappear
+/// - deduplicate：sameextensiontype只preserve第onceappear
 /// - GREASE：把duplicate GREASE 占bit符map成different GREASE value
 fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
  let mut out: Vec<u16> = Vec::with_capacity(spec.extensions.len());
@@ -62,10 +62,10 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
 }
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// will rustls current `used` 's extensionsorder，按 `desired`（from spec）重排。
+/// will rustls current `used` 's extensionsorder，按 `desired`（from spec）reorder。
 ///
 /// rule：
-/// - 只pair `used` 里appear's extensions做重排（交set）
+/// - 只pair `used` 里appear's extensionsreorder（交set）
 /// - `desired` 里duplicate/不 in `used` will被ignore
 /// - `used` 里notappear in `desired` 's extensionskeep原相pairorder并追加 to end尾
 fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<ExtensionType> {
@@ -88,7 +88,7 @@ fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<Ext
 }
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// based on `ClientProfile` ClientHello extensionorder定制er。
+/// based on `ClientProfile` ClientHello extensionordercustomizeer。
 #[derive(Debug)]
 pub struct ProfileClientHelloCustomizer {
  desired_extension_ids: Vec<u16>,
