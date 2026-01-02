@@ -1,4 +1,4 @@
-//! User-Agent 生成模块
+//! User-Agent generation module
 //!
 //! 根据指纹配置生成对应的 User-Agent
 

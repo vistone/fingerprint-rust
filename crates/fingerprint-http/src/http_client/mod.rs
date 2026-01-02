@@ -1,4 +1,4 @@
-//! HTTP 客户端模块
+//! HTTP client module
 //!
 //! 结合 netconnpool + fingerprint-rust 实现完整的 HTTP 客户端
 //!

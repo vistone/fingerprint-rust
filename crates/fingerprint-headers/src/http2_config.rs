@@ -1,7 +1,7 @@
-//! HTTP/2 配置模块
+//! HTTP/2 configuration module
 //!
-//! 提供 HTTP/2 Settings、Pseudo Header Order 等配置
-//! 对应 Go 版本的 http2.Settings 和 http2.PriorityParam
+//! Provides HTTP/2 Settings, Pseudo Header Order, and other configurations
+//! Corresponds to Go version's http2.Settings and http2.PriorityParam
 
 use std::collections::HashMap;
 
