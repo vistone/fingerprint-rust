@@ -7,24 +7,24 @@
 /// Corresponds to Go version's tls.SignatureScheme constant
 #[allow(clippy::module_inception)]
 pub mod signature_schemes {
-    // RSA PKCS1
-    pub const RSA_PKCS1_SHA256: u16 = 0x0401;
-    pub const RSA_PKCS1_SHA384: u16 = 0x0501;
-    pub const RSA_PKCS1_SHA512: u16 = 0x0601;
+ // RSA PKCS1
+ pub const RSA_PKCS1_SHA256: u16 = 0x0401;
+ pub const RSA_PKCS1_SHA384: u16 = 0x0501;
+ pub const RSA_PKCS1_SHA512: u16 = 0x0601;
 
-    // RSA PSS
-    pub const RSA_PSS_RSAE_SHA256: u16 = 0x0804;
-    pub const RSA_PSS_RSAE_SHA384: u16 = 0x0805;
-    pub const RSA_PSS_RSAE_SHA512: u16 = 0x0806;
+ // RSA PSS
+ pub const RSA_PSS_RSAE_SHA256: u16 = 0x0804;
+ pub const RSA_PSS_RSAE_SHA384: u16 = 0x0805;
+ pub const RSA_PSS_RSAE_SHA512: u16 = 0x0806;
 
-    // ECDSA
-    pub const ECDSA_WITH_P256_AND_SHA256: u16 = 0x0403;
-    pub const ECDSA_WITH_P384_AND_SHA384: u16 = 0x0503;
-    pub const ECDSA_WITH_P521_AND_SHA512: u16 = 0x0603;
+ // ECDSA
+ pub const ECDSA_WITH_P256_AND_SHA256: u16 = 0x0403;
+ pub const ECDSA_WITH_P384_AND_SHA384: u16 = 0x0503;
+ pub const ECDSA_WITH_P521_AND_SHA512: u16 = 0x0603;
 
-    // EdDSA
-    pub const ED25519: u16 = 0x0807;
-    pub const ED448: u16 = 0x0808;
+ // EdDSA
+ pub const ED25519: u16 = 0x0807;
+ pub const ED448: u16 = 0x0808;
 }
 
 pub use signature_schemes::*;
@@ -33,7 +33,7 @@ pub use signature_schemes::*;
 /// Corresponds to Go version's tls.SignatureScheme
 pub type SignatureScheme = u16;
 
-/// 为了 and Go versionkeepconsistent，providealias
+/// in order to and Go versionkeepconsistent，providealias
 /// Corresponds to Go version's tls.ECDSAWithP256AndSHA256
 pub const ECDSA_WITH_P256_AND_SHA256: u16 = signature_schemes::ECDSA_WITH_P256_AND_SHA256;
 /// Corresponds to Go version's tls.PSSWithSHA256

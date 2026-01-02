@@ -1,38 +1,38 @@
 //! # fingerprint-core
 //!
-//! **systemlevelprotection的coreabstractlayer**
+//! **systemlevelprotectioncoreabstractlayer**
 //!
-//!  from **单一serviceprotection**提升 to **systemlevelprotection**，providesystemlevel的coreabstract and interface。
+//! from **单一serviceprotection**提升 to **systemlevelprotection**，providesystemlevelcoreabstract and interface。
 //!
 //! ## core定bit
 //!
-//! `fingerprint-core` 是systemlevelprotection的core，alloutside部component都围绕thiscore展open：
+//! `fingerprint-core` is systemlevelprotectioncore，alloutside部component都围绕thiscore展open：
 //!
-//! - **systemlevelabstract**: systemupdown文、networktraffic、protectiondecision等
-//! - **攻防统一interface**: fingerprintabstract、analysisinterface、protectioninterface等
-//! - **coretype and tool**: typedefine、metadata、toolfunction等
+//! - **systemlevelabstract**: systemupdown文、networktraffic、protectiondecision etc.
+//! - **攻防统一interface**: fingerprintabstract、analysisinterface、protectioninterface etc.
+//! - **coretype and tool**: typedefine、metadata、toolfunction etc.
 //!
 //! ## coreFeatures
 //!
 //! ### systemlevelabstract
 //!
-//! - **systemupdown文** (`SystemContext`): networkentity的completeinfo（IP、port、protocol、方向等）
-//! - **networktraffic** (`NetworkFlow`): systemlevel的networktraffic，includingupdown文 and fingerprintinfo
-//! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotection的统一interface
-//! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysis的统一interface
+//! - **systemupdown文** (`SystemContext`): networkentitycompleteinfo（IP、port、protocol、方向 etc.）
+//! - **networktraffic** (`NetworkFlow`): systemlevelnetworktraffic，includingupdown文 and fingerprintinfo
+//! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotection统一interface
+//! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysis统一interface
 //!
 //! ### 攻防统一abstract
 //!
-//! - **fingerprintabstract** (`Fingerprint` trait): support TLS、HTTP、TCP 等多种fingerprinttype
-//! - **fingerprintmetadata** (`FingerprintMetadata`): includingbrowser、operating system、confidence等info
+//! - **fingerprintabstract** (`Fingerprint` trait): support TLS、HTTP、TCP etc.多种fingerprinttype
+//! - **fingerprintmetadata** (`FingerprintMetadata`): includingbrowser、operating system、confidence etc.info
 //! - **TLS fingerprint** (`ClientHelloSignature`): TLS ClientHello signature
 //! - **HTTP fingerprint** (`HttpFingerprint`): HTTP requestfingerprint
 //! - **TCP fingerprint** (`TcpFingerprint`): TCP connectionfingerprint
 //!
 //! ### coretype and tool
 //!
-//! - **typesystem**: `BrowserType`、`OperatingSystem` 等coretype
-//! - **toolfunction**: GREASE process、randomly select等toolfunction
+//! - **typesystem**: `BrowserType`、`OperatingSystem` etc.coretype
+//! - **toolfunction**: GREASE process、randomly select etc.toolfunction
 
 pub mod database;
 pub mod dicttls;
@@ -62,8 +62,8 @@ pub use metadata::FingerprintMetadata;
 // TLS 相close
 pub use dicttls::*;
 pub use grease::{
-    filter_grease_values, get_random_grease, is_grease_value, remove_grease_values,
-    TLS_GREASE_VALUES,
+ filter_grease_values, get_random_grease, is_grease_value, remove_grease_values,
+ TLS_GREASE_VALUES,
 };
 pub use hassh::{HASSH, HASSHServer, JA4SSH, SSHKexInit};
 pub use ja3::{JA3, JA3S};
@@ -79,33 +79,33 @@ pub use tcp::{TcpFingerprint, TcpProfile};
 
 // typesystem
 pub use types::{
-    BrowserType, OperatingSystem, OperatingSystems, UserAgentTemplate, OPERATING_SYSTEMS,
+ BrowserType, OperatingSystem, OperatingSystems, UserAgentTemplate, OPERATING_SYSTEMS,
 };
 
 // toolfunction
 pub use utils::{
-    extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
-    random_choice, random_choice_string,
+ extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
+ random_choice, random_choice_string,
 };
 
 // systemlevelabstract
 pub use system::{
-    AnalysisDetails,
-    FlowCharacteristics,
-    // networktraffic
-    NetworkFlow,
-    ProtocolType,
-    SystemAnalysisResult,
-    // systemanalysis
-    SystemAnalyzer,
-    // systemupdown文
-    SystemContext,
-    SystemProtectionDecision,
-    SystemProtectionResult,
-    // systemstatistics
-    SystemProtectionStats,
-    // systemprotection
-    SystemProtector,
-    ThreatType,
-    TrafficDirection,
+ AnalysisDetails,
+ FlowCharacteristics,
+ // networktraffic
+ NetworkFlow,
+ ProtocolType,
+ SystemAnalysisResult,
+ // systemanalysis
+ SystemAnalyzer,
+ // systemupdown文
+ SystemContext,
+ SystemProtectionDecision,
+ SystemProtectionResult,
+ // systemstatistics
+ SystemProtectionStats,
+ // systemprotection
+ SystemProtector,
+ ThreatType,
+ TrafficDirection,
 };

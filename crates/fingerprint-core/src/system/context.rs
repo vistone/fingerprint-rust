@@ -1,6 +1,6 @@
 //! systemupdown文
 //!
-//! definesystemlevelprotection的updown文info，includenetworkentity、 when 间、protocol等。
+//! definesystemlevelprotectionupdown文info，includenetworkentity、 when between、protocol etc.。
 
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
@@ -8,111 +8,111 @@ use std::net::IpAddr;
 /// traffic方向
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TrafficDirection {
-    /// inputtraffic（entersystem）
-    Inbound,
+ /// inputtraffic（entersystem）
+ Inbound,
 
-    /// outputtraffic（leavesystem）
-    Outbound,
+ /// outputtraffic（leavesystem）
+ Outbound,
 
-    /// inside部traffic（systeminside部）
-    Internal,
+ /// inside部traffic（systeminside部）
+ Internal,
 }
 
 impl TrafficDirection {
-    /// convert tostring
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Inbound => "inbound",
-            Self::Outbound => "outbound",
-            Self::Internal => "internal",
-        }
-    }
+ /// convert tostring
+ pub fn as_str(&self) -> &'static str {
+ match self {
+ Self::Inbound => "inbound",
+ Self::Outbound => "outbound",
+ Self::Internal => "internal",
+ }
+ }
 }
 
 impl std::fmt::Display for TrafficDirection {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.as_str())
-    }
+ fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+ write!(f, "{}", self.as_str())
+ }
 }
 
 /// protocoltype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProtocolType {
-    /// TCP protocol
-    Tcp,
+ /// TCP protocol
+ Tcp,
 
-    /// UDP protocol
-    Udp,
+ /// UDP protocol
+ Udp,
 
-    /// ICMP protocol
-    Icmp,
+ /// ICMP protocol
+ Icmp,
 
-    /// HTTP protocol
-    Http,
+ /// HTTP protocol
+ Http,
 
-    /// HTTPS protocol（TLS over TCP）
-    Https,
+ /// HTTPS protocol（TLS over TCP）
+ Https,
 
-    /// otherprotocol
-    Other(u8),
+ /// otherprotocol
+ Other(u8),
 }
 
 impl ProtocolType {
-    ///  from  IP protocol号Create
-    pub fn from_ip_protocol(protocol: u8) -> Self {
-        match protocol {
-            6 => Self::Tcp,
-            17 => Self::Udp,
-            1 => Self::Icmp,
-            other => Self::Other(other),
-        }
-    }
+ /// from IP protocol号Create
+ pub fn from_ip_protocol(protocol: u8) -> Self {
+ match protocol {
+ 6 => Self::Tcp,
+ 17 => Self::Udp,
+ 1 => Self::Icmp,
+ other => Self::Other(other),
+ }
+ }
 
-    /// convert to IP protocol号
-    pub fn to_ip_protocol(&self) -> u8 {
-        match self {
-            Self::Tcp => 6,
-            Self::Udp => 17,
-            Self::Icmp => 1,
-            Self::Http => 6,  // HTTP over TCP
-            Self::Https => 6, // HTTPS over TCP
-            Self::Other(p) => *p,
-        }
-    }
+ /// convert to IP protocol号
+ pub fn to_ip_protocol(&self) -> u8 {
+ match self {
+ Self::Tcp => 6,
+ Self::Udp => 17,
+ Self::Icmp => 1,
+ Self::Http => 6, // HTTP over TCP
+ Self::Https => 6, // HTTPS over TCP
+ Self::Other(p) => *p,
+ }
+ }
 
-    /// convert tostring
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Tcp => "TCP",
-            Self::Udp => "UDP",
-            Self::Icmp => "ICMP",
-            Self::Http => "HTTP",
-            Self::Https => "HTTPS",
-            Self::Other(_) => "Other",
-        }
-    }
+ /// convert tostring
+ pub fn as_str(&self) -> &'static str {
+ match self {
+ Self::Tcp => "TCP",
+ Self::Udp => "UDP",
+ Self::Icmp => "ICMP",
+ Self::Http => "HTTP",
+ Self::Https => "HTTPS",
+ Self::Other(_) => "Other",
+ }
+ }
 }
 
 impl std::fmt::Display for ProtocolType {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::Other(p) => write!(f, "Other({})", p),
-            _ => write!(f, "{}", self.as_str()),
-        }
-    }
+ fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+ match self {
+ Self::Other(p) => write!(f, "Other({})", p),
+ _ => write!(f, "{}", self.as_str()),
+ }
+ }
 }
 
 /// systemupdown文
 ///
-/// representsystemlevelprotection的updown文info，includingnetworktraffic的completemetadata。
+/// representsystemlevelprotectionupdown文info，includingnetworktrafficcompletemetadata。
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneed考虑complete的systemupdown文，而not onlyonly是singleservice or port：
-/// - networkentity的completeinfo（source/target IP、port）
+/// systemlevelprotectionneed考虑completesystemupdown文，而not onlyonly is singleservice or port：
+/// - networkentitycompleteinfo（source/target IP、port）
 /// - protocoltype and 方向
-/// -  when 间戳 and 网卡interface
-/// - countpacketlevel的info
+/// - when between戳 and 网卡interface
+/// - countpacketlevelinfo
 ///
 /// ## Examples
 ///
@@ -122,158 +122,158 @@ impl std::fmt::Display for ProtocolType {
 /// use chrono::Utc;
 ///
 /// let ctx = SystemContext {
-///     source_ip: "192.168.1.100".parse().unwrap(),
-///     target_ip: "10.0.0.1".parse().unwrap(),
-///     source_port: Some(54321),
-///     target_port: Some(80),
-///     protocol: ProtocolType::Http,
-///     timestamp: Utc::now(),
-///     interface: Some("eth0".to_string()),
-///     packet_size: 1024,
-///     direction: TrafficDirection::Inbound,
+/// source_ip: "192.168.1.100".parse().unwrap(),
+/// target_ip: "10.0.0.1".parse().unwrap(),
+/// source_port: Some(54321),
+/// target_port: Some(80),
+/// protocol: ProtocolType::Http,
+/// timestamp: Utc::now(),
+/// interface: Some("eth0".to_string()),
+/// packet_size: 1024,
+/// direction: TrafficDirection::Inbound,
 /// };
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SystemContext {
-    /// source IP address
-    pub source_ip: IpAddr,
+ /// source IP address
+ pub source_ip: IpAddr,
 
-    /// target IP address
-    pub target_ip: IpAddr,
+ /// target IP address
+ pub target_ip: IpAddr,
 
-    /// sourceport（ for  UDP/TCP）
-    pub source_port: Option<u16>,
+ /// sourceport（ for UDP/TCP）
+ pub source_port: Option<u16>,
 
-    /// targetport（ for  UDP/TCP）
-    pub target_port: Option<u16>,
+ /// targetport（ for UDP/TCP）
+ pub target_port: Option<u16>,
 
-    /// protocoltype
-    pub protocol: ProtocolType,
+ /// protocoltype
+ pub protocol: ProtocolType,
 
-    ///  when 间戳
-    pub timestamp: DateTime<Utc>,
+ /// when between戳
+ pub timestamp: DateTime<Utc>,
 
-    /// 网卡interfacename
-    pub interface: Option<String>,
+ /// 网卡interfacename
+ pub interface: Option<String>,
 
-    /// countpacketsize（bytes）
-    pub packet_size: usize,
+ /// countpacketsize（bytes）
+ pub packet_size: usize,
 
-    /// traffic方向（input/output）
-    pub direction: TrafficDirection,
+ /// traffic方向（input/output）
+ pub direction: TrafficDirection,
 }
 
 impl SystemContext {
-    /// Create a newsystemupdown文
-    pub fn new(source_ip: IpAddr, target_ip: IpAddr, protocol: ProtocolType) -> Self {
-        Self {
-            source_ip,
-            target_ip,
-            source_port: None,
-            target_port: None,
-            protocol,
-            timestamp: Utc::now(),
-            interface: None,
-            packet_size: 0,
-            direction: TrafficDirection::Inbound,
-        }
-    }
+ /// Create a newsystemupdown文
+ pub fn new(source_ip: IpAddr, target_ip: IpAddr, protocol: ProtocolType) -> Self {
+ Self {
+ source_ip,
+ target_ip,
+ source_port: None,
+ target_port: None,
+ protocol,
+ timestamp: Utc::now(),
+ interface: None,
+ packet_size: 0,
+ direction: TrafficDirection::Inbound,
+ }
+ }
 
-    /// Createbringport的systemupdown文
-    pub fn with_ports(
-        source_ip: IpAddr,
-        target_ip: IpAddr,
-        source_port: u16,
-        target_port: u16,
-        protocol: ProtocolType,
-    ) -> Self {
-        Self {
-            source_ip,
-            target_ip,
-            source_port: Some(source_port),
-            target_port: Some(target_port),
-            protocol,
-            timestamp: Utc::now(),
-            interface: None,
-            packet_size: 0,
-            direction: TrafficDirection::Inbound,
-        }
-    }
+ /// Createbringportsystemupdown文
+ pub fn with_ports(
+ source_ip: IpAddr,
+ target_ip: IpAddr,
+ source_port: u16,
+ target_port: u16,
+ protocol: ProtocolType,
+ ) -> Self {
+ Self {
+ source_ip,
+ target_ip,
+ source_port: Some(source_port),
+ target_port: Some(target_port),
+ protocol,
+ timestamp: Utc::now(),
+ interface: None,
+ packet_size: 0,
+ direction: TrafficDirection::Inbound,
+ }
+ }
 
-    /// judgewhether为localtraffic（source or target为localaddress）
-    pub fn is_local(&self) -> bool {
-        self.is_source_local() || self.is_target_local()
-    }
+ /// judgewhether as localtraffic（source or target as localaddress）
+ pub fn is_local(&self) -> bool {
+ self.is_source_local() || self.is_target_local()
+ }
 
-    /// judgesourceaddresswhether为localaddress
-    pub fn is_source_local(&self) -> bool {
-        match self.source_ip {
-            IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
-            IpAddr::V6(ip) => ip.is_loopback() || ip.is_unspecified(),
-        }
-    }
+ /// judgesourceaddresswhether as localaddress
+ pub fn is_source_local(&self) -> bool {
+ match self.source_ip {
+ IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
+ IpAddr::V6(ip) => ip.is_loopback() || ip.is_unspecified(),
+ }
+ }
 
-    /// judgetargetaddresswhether为localaddress
-    pub fn is_target_local(&self) -> bool {
-        match self.target_ip {
-            IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
-            IpAddr::V6(ip) => ip.is_loopback() || ip.is_unspecified(),
-        }
-    }
+ /// judgetargetaddresswhether as localaddress
+ pub fn is_target_local(&self) -> bool {
+ match self.target_ip {
+ IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
+ IpAddr::V6(ip) => ip.is_loopback() || ip.is_unspecified(),
+ }
+ }
 
-    /// Gettraffic的唯一identifier符（ for 追踪）
-    pub fn flow_id(&self) -> String {
-        format!(
-            "{}:{}->{}:{}:{}",
-            self.source_ip,
-            self.source_port.map(|p| p.to_string()).unwrap_or_default(),
-            self.target_ip,
-            self.target_port.map(|p| p.to_string()).unwrap_or_default(),
-            self.protocol.as_str()
-        )
-    }
+ /// Gettraffic唯一identifier符（ for 追踪）
+ pub fn flow_id(&self) -> String {
+ format!(
+ "{}:{}->{}:{}:{}",
+ self.source_ip,
+ self.source_port.map(|p| p.to_string()).unwrap_or_default(),
+ self.target_ip,
+ self.target_port.map(|p| p.to_string()).unwrap_or_default(),
+ self.protocol.as_str()
+ )
+ }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+ use super::*;
 
-    #[test]
-    fn test_traffic_direction() {
-        assert_eq!(TrafficDirection::Inbound.as_str(), "inbound");
-        assert_eq!(TrafficDirection::Outbound.as_str(), "outbound");
-    }
+ #[test]
+ fn test_traffic_direction() {
+ assert_eq!(TrafficDirection::Inbound.as_str(), "inbound");
+ assert_eq!(TrafficDirection::Outbound.as_str(), "outbound");
+ }
 
-    #[test]
-    fn test_protocol_type() {
-        assert_eq!(ProtocolType::from_ip_protocol(6), ProtocolType::Tcp);
-        assert_eq!(ProtocolType::from_ip_protocol(17), ProtocolType::Udp);
-        assert_eq!(ProtocolType::Tcp.to_ip_protocol(), 6);
-    }
+ #[test]
+ fn test_protocol_type() {
+ assert_eq!(ProtocolType::from_ip_protocol(6), ProtocolType::Tcp);
+ assert_eq!(ProtocolType::from_ip_protocol(17), ProtocolType::Udp);
+ assert_eq!(ProtocolType::Tcp.to_ip_protocol(), 6);
+ }
 
-    #[test]
-    fn test_system_context() {
-        let ctx = SystemContext::with_ports(
-            "192.168.1.100".parse().unwrap(),
-            "10.0.0.1".parse().unwrap(),
-            54321,
-            80,
-            ProtocolType::Http,
-        );
+ #[test]
+ fn test_system_context() {
+ let ctx = SystemContext::with_ports(
+ "192.168.1.100".parse().unwrap(),
+ "10.0.0.1".parse().unwrap(),
+ 54321,
+ 80,
+ ProtocolType::Http,
+ );
 
-        assert_eq!(ctx.source_port, Some(54321));
-        assert_eq!(ctx.target_port, Some(80));
-        assert!(ctx.flow_id().contains("192.168.1.100"));
-    }
+ assert_eq!(ctx.source_port, Some(54321));
+ assert_eq!(ctx.target_port, Some(80));
+ assert!(ctx.flow_id().contains("192.168.1.100"));
+ }
 
-    #[test]
-    fn test_is_local() {
-        let local_ctx = SystemContext::new(
-            "127.0.0.1".parse().unwrap(),
-            "192.168.1.1".parse().unwrap(),
-            ProtocolType::Tcp,
-        );
-        assert!(local_ctx.is_source_local());
-        assert!(local_ctx.is_local());
-    }
+ #[test]
+ fn test_is_local() {
+ let local_ctx = SystemContext::new(
+ "127.0.0.1".parse().unwrap(),
+ "192.168.1.1".parse().unwrap(),
+ ProtocolType::Tcp,
+ );
+ assert!(local_ctx.is_source_local());
+ assert!(local_ctx.is_local());
+ }
 }

@@ -4,12 +4,12 @@
 //!
 //! ## Features
 //!
-//! - ✅ **concurrent DNS Parse**：support高concurrent DNS query
+//! - ✅ **concurrent DNS Parse**：supporthighconcurrent DNS query
 //! - ✅ **多formatconfiguration**：support JSON、YAML、TOML 三种configurationformat
-//! - ✅ **IP 地理info**：set成 IPInfo.io Getdetailed的地理bit置 and ISP info
-//! - ✅ **智能intervaladjust**：discovernew IP  when 高频detect，otherwise指count退避
+//! - ✅ **IP 地理info**：set成 IPInfo.io Getdetailed地理bit置 and ISP info
+//! - ✅ **智能intervaladjust**：discovernew IP when high频detect，otherwise指count退避
 //! - ✅ **多formatoutput**：support JSON、YAML、TOML 三种outputformat
-//! - ✅ **原child性write**：usetemporaryfileensurecount据security
+//! - ✅ **原child性write**：usetemporaryfileensurecountdatasecurity
 //! - ✅ **易于set成**：providesimple Start/Stop interface，supportas库use
 
 mod collector;
