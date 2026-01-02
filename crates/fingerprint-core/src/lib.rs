@@ -63,7 +63,7 @@ pub use grease::{
     filter_grease_values, get_random_grease, is_grease_value, remove_grease_values,
     TLS_GREASE_VALUES,
 };
-pub use hassh::{HASSH, HASSHServer, SSHKexInit};
+pub use hassh::{HASSH, HASSHServer, JA4SSH, SSHKexInit};
 pub use ja3::{JA3, JA3S};
 pub use ja4::{ConsistencyReport, JA4, JA4H, JA4S, JA4T};
 pub use signature::ClientHelloSignature;
