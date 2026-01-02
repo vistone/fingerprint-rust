@@ -35,7 +35,7 @@ pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0x00;
 /// PSK patternconstant
 pub const PSK_MODE_DHE: u8 = 0x01;
 
-/// re协商constant
+/// renegotiateconstant
 pub const RENEGOTIATE_ONCE_AS_CLIENT: u8 = 1;
 
 /// certificatecompressionalgorithmconstant
@@ -66,7 +66,7 @@ pub struct ClientHelloSpec {
  /// Corresponds to Go version's TLSVersMax uint16
  pub tls_vers_max: u16,
  /// extensionmetadata（ for store SNI、ALPN etc.countdata）
- /// reference：Huginn Net Profiler 设计
+ /// reference：Huginn Net Profiler design
  pub metadata: Option<crate::tls_config::metadata::SpecMetadata>,
 }
 

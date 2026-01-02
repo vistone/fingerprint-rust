@@ -282,7 +282,7 @@ impl TlsAnalyzer {
  };
 
  let ja4 = fingerprint_core::ja4::JA4::generate(
- 't', // 假设 is TCP，actual应 from packet judge
+ 't', // assume is TCP，actual应 from packet judge
  tls_ver_str,
  has_sni,
  &cipher_suites,

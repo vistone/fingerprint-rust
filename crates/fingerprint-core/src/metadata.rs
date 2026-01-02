@@ -20,7 +20,7 @@ pub struct FingerprintMetadata {
  /// confidence (0.0 - 1.0)
  pub confidence: f64,
 
- /// 样本count
+ /// samplecount
  pub sample_count: u64,
 
  /// 首次discover when between
@@ -63,7 +63,7 @@ impl FingerprintMetadata {
  metadata
  }
 
- /// Update样本（increase样本count，Updatefinallydiscover when between）
+ /// Updatesample（increasesamplecount，Updatefinallydiscover when between）
  pub fn update_sample(&mut self) {
  self.sample_count += 1;
  self.last_seen = Utc::now();

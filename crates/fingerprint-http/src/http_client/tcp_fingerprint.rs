@@ -24,15 +24,15 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
 
  // 2. settings TCP options
  // Note: socket2 不directlysupportsettings Window Size、MSS、Window Scale
- // 这些parameterneed in TCP handshake when through TCP optionssettings
- // butwecanthroughsettings socket options来影响这些parameter
+ // theseparameterneed in TCP handshake when through TCP optionssettings
+ // butwecanthroughsettings socket options来impacttheseparameter
 
- // settings TCP_NODELAY（disabled Nagle algorithm，提升performance）
+ // settings TCP_NODELAY（disabled Nagle algorithm，improveperformance）
  socket.set_nodelay(true)?;
 
- // 3. settingsreceivebuffersize（影响 Window Size）
+ // 3. settingsreceivebuffersize（impact Window Size）
  // Window Size usually and receivebuffersize相close
- // Note: actual Window Size is in TCP handshake when 协商的，here只 is settingsbuffer
+ // Note: actual Window Size is in TCP handshake when negotiate的，here只 is settingsbuffer
  let recv_buffer_size = tcp_profile.window_size as usize;
  socket.set_recv_buffer_size(recv_buffer_size)?;
 
@@ -87,10 +87,10 @@ pub async fn connect_tcp_with_profile(
  // Create socket
  let socket = create_tcp_socket_with_profile(&addr, tcp_profile)?;
 
- // settings as 非阻塞pattern（tokio need）
+ // settings as non-blockingpattern（tokio need）
  socket.set_nonblocking(true)?;
 
- // connection to targetaddress（非阻塞）
+ // connection to targetaddress（non-blocking）
  match socket.connect(&addr.into()) {
  Ok(()) => {
  // connectionimmediatelysuccess（localconnection）
@@ -98,7 +98,7 @@ pub async fn connect_tcp_with_profile(
  TcpStream::from_std(std_stream)
  }
  Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
- // 非阻塞connectionwillreturn WouldBlock，this isnormal的
+ // non-blockingconnectionwillreturn WouldBlock，this isnormal的
  // convert to tokio::net::TcpStream 并waitconnectioncomplete
  let std_stream: std::net::TcpStream = socket.into();
  let stream = TcpStream::from_std(std_stream)?;
@@ -173,7 +173,7 @@ mod tests {
  assert_eq!(ttl, 128);
  }
 
- /// actual TCP connectiontest：Createserver and client，Validate TCP Profile whether真正application
+ /// actual TCP connectiontest：Createserver and client，Validate TCP Profile whethertrueapplication
  #[test]
  fn test_tcp_profile_real_connection() {
  use std::io::{Read, Write};
@@ -208,12 +208,12 @@ mod tests {
  use std::os::unix::io::AsRawFd;
  let _fd = stream.as_raw_fd();
 
- // tryGetreceivebuffersize（影响 Window Size）
+ // tryGetreceivebuffersize（impact Window Size）
  // Note: 这need libc crate，butin order tosimplify，we暂 when comment掉
  // actualValidateshoulduse tcpdump or wireshark 抓包analysis
  println!(" 🔍 server端 TCP parameterdetect：");
- println!(" ⚠️ Note: TTL in service端unable todirectlydetect（transfer过程 in will递减）");
- println!(" 💡 建议：use tcpdump or wireshark 抓包Validate TTL");
+ println!(" ⚠️ Note: TTL in service端unable todirectlydetect（transferprocess in will递减）");
+ println!(" 💡 suggest：use tcpdump or wireshark 抓包Validate TTL");
  println!(" 💡 命令：sudo tcpdump -i lo -n 'tcp port 9876' -v");
  }
 

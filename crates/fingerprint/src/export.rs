@@ -1,6 +1,6 @@
 //! configurationexportmodule
 //!
-//! will ClientHelloSpec export as JSON format，以便供otherlanguage（如 Go uTLS）use。
+//! will ClientHelloSpec export as JSON format，so that供otherlanguage（如 Go uTLS）use。
 
 #[cfg(feature = "export")]
 use fingerprint_tls::tls_config::ClientHelloSpec;

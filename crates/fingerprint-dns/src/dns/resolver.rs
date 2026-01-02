@@ -91,7 +91,7 @@ impl DNSResolver {
  }
 
  /// Parse IPv4 (A) or IPv6 (AAAA) record
- /// usecollect to 全球 DNS serverperformquery
+ /// usecollect to global DNS serverperformquery
  async fn resolve_aaaa_or_a(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
  self.resolve_with_hickory(domain, ipv6).await
  }
@@ -164,7 +164,7 @@ impl DNSResolver {
  );
 
  // concurrentquerymultiple DNS server
- // usetimeoutwrap，avoidsingle慢server阻塞整query
+ // usetimeoutwrap，avoidsingle慢serverblocking整query
  let server_pool = self.server_pool.clone();
  let query_timeout = self.timeout; // use resolver overalltimeout duration
  // Fix: shared resolver cache
@@ -182,7 +182,7 @@ impl DNSResolver {
  async move {
  let start_time = std::time::Instant::now();
 
- // usetimeoutwrapquery，avoidsingleserver阻塞
+ // usetimeoutwrapquery，avoidsingleserverblocking
  let query_result = tokio::time::timeout(query_timeout, async {
  // Fix: reuse resolver instance，avoidfrequentCreate and destroy
  // use server_str as key 来cache resolver
@@ -264,7 +264,7 @@ impl DNSResolver {
  Ok(Err(_)) | Err(_) => {
  // recordfailure（queryfailure or timeout），不printlog以decreaseoutput
  let _ = server_pool.record_failure(&server_str);
- // singleserverfailure不影响whole，returnemptyresult
+ // singleserverfailure不impactwhole，returnemptyresult
  Ok::<Vec<String>, DNSError>(Vec::new())
  }
  }
@@ -288,7 +288,7 @@ impl DNSResolver {
  tokio::pin!(timeout_future);
  let start_time = std::time::Instant::now();
  let mut last_log_time = std::time::Instant::now();
- let log_interval = Duration::from_millis(500); // 每500msprintonce进度
+ let log_interval = Duration::from_millis(500); // 每500msprintonceprogress
 
  eprintln!(
  "[DNS Resolver] startcollectqueryresult（overalltimeout: {:?}，总servercount: {}）",
@@ -318,21 +318,21 @@ impl DNSResolver {
  ips_count, new_ips_count, ips_count - new_ips_count);
  }
 
- // regularprint进度，displaydeduplicatestatistics
+ // regularprintprogress，displaydeduplicatestatistics
  if last_log_time.elapsed() >= log_interval {
  let duplicate_count = total_ips_received - all_ips.len();
- eprintln!("[DNS Resolver] 进度: {}/{} servercomplete，success {} ，failure {} ",
+ eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ，failure {} ",
  success_count + failure_count, total_servers, success_count, failure_count);
- eprintln!("[DNS Resolver] IP statistics: 收 to {} IP，deduplicateback {} 唯一 IP，filter了 {} duplicate IP",
+ eprintln!("[DNS Resolver] IP statistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
  total_ips_received, all_ips.len(), duplicate_count);
  last_log_time = std::time::Instant::now();
  }
  }
  Some(Err(_)) => {
  failure_count += 1;
- // regularprint进度
+ // regularprintprogress
  if last_log_time.elapsed() >= log_interval {
- eprintln!("[DNS Resolver] 进度: {}/{} servercomplete，success {} ，failure {} ，alreadycollect IP: {} ",
+ eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ，failure {} ，alreadycollect IP: {} ",
  success_count + failure_count, total_servers, success_count, failure_count, all_ips.len());
  last_log_time = std::time::Instant::now();
  }
@@ -343,7 +343,7 @@ impl DNSResolver {
  let duplicate_count = total_ips_received - all_ips.len();
  eprintln!("[DNS Resolver] ✅ allquerycomplete: success {} ，failure {} ",
  success_count, failure_count);
- eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} 唯一 IP，filter了 {} duplicate IP",
+ eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
  total_ips_received, all_ips.len(), duplicate_count);
  break;
  }
@@ -354,7 +354,7 @@ impl DNSResolver {
  let duplicate_count = total_ips_received - all_ips.len();
  eprintln!("[DNS Resolver] ⏱️ queryoveralltimeout（{}seconds），complete {}/{} server，success {} ，failure {} ",
  overall_timeout.as_secs(), success_count + failure_count, total_servers, success_count, failure_count);
- eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} 唯一 IP，filter了 {} duplicate IP",
+ eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
  total_ips_received, all_ips.len(), duplicate_count);
  break;
  }
@@ -364,7 +364,7 @@ impl DNSResolver {
  let total_time = start_time.elapsed();
  let duplicate_count = total_ips_received - all_ips.len();
  eprintln!("[DNS Resolver] querycomplete，总耗 when: {:?}", total_time);
- eprintln!("[DNS Resolver] 最final IP deduplicatestatistics: 收 to {} IP，deduplicateback {} 唯一 IP，filter了 {} duplicate IP（deduplicate率: {:.2}%）",
+ eprintln!("[DNS Resolver] 最final IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP（deduplicate率: {:.2}%）",
  total_ips_received, all_ips.len(), duplicate_count,
  if total_ips_received > 0 { (duplicate_count as f64 / total_ips_received as f64) * 100.0 } else { 0.0 });
 
@@ -373,7 +373,7 @@ impl DNSResolver {
  let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
  eprintln!(
- "[DNS Resolver] convert to IPInfo，最finalreturn {} 唯一 IP address（alreadydeduplicate）",
+ "[DNS Resolver] convert to IPInfo，最finalreturn {} unique IP address（alreadydeduplicate）",
  ip_infos.len()
  );
 
@@ -386,7 +386,7 @@ impl DNSResolver {
  }
  }
 
- /// usesystem DNS Parse（back方案）
+ /// usesystem DNS Parse（backsolution）
  async fn resolve_with_system(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
  use std::net::ToSocketAddrs;
 

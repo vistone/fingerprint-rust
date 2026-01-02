@@ -18,7 +18,7 @@ pub struct FingerprintStats {
  pub fingerprints_with_sni: usize,
  /// including ALPN fingerprintcount
  pub fingerprints_with_alpn: usize,
- /// TLS version分布
+ /// TLS versiondistribution
  pub version_distribution: HashMap<String, usize>,
  /// most common's cipher suites（front 10）
  pub top_cipher_suites: Vec<(u16, usize)>,
@@ -60,7 +60,7 @@ impl FingerprintStats {
  stats.fingerprints_with_alpn += 1;
  }
 
- // TLS version分布
+ // TLS versiondistribution
  let version_str = format!("{}", signature.version);
  *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
@@ -122,7 +122,7 @@ impl FingerprintStats {
  stats.fingerprints_with_alpn += 1;
  }
 
- // TLS version分布
+ // TLS versiondistribution
  let version_str = format!("{}", signature.version);
  *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 

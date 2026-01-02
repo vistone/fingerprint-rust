@@ -79,7 +79,7 @@ pub struct AnalysisDetails {
  /// detect to fingerprinttype
  pub fingerprint_types: Vec<crate::fingerprint::FingerprintType>,
 
- /// match规则 or pattern
+ /// matchrule or pattern
  pub matched_rules: Vec<String>,
 
  /// behaviortrait
@@ -98,7 +98,7 @@ impl AnalysisDetails {
  Self::default()
  }
 
- /// Addmatch规则
+ /// Addmatchrule
  pub fn add_matched_rule(&mut self, rule: String) {
  self.matched_rules.push(rule);
  }
@@ -116,13 +116,13 @@ impl AnalysisDetails {
 
 /// systemlevelanalysisresult
 ///
-/// includinganalysisresult、threattype、风险评分 etc.info。
+/// includinganalysisresult、threattype、risk score etc.info。
 pub struct SystemAnalysisResult {
  /// detect to fingerprintlist
  /// Note: due to trait object limit，herecannotdirectly Clone
  fingerprints: Vec<Box<dyn Fingerprint>>,
 
- /// 风险评分 (0.0 - 1.0)
+ /// risk score (0.0 - 1.0)
  /// - 0.0: completelysecurity
  /// - 1.0: 极high风险
  pub risk_score: f64,
@@ -176,17 +176,17 @@ impl SystemAnalysisResult {
  pub fn add_threat_type(&mut self, threat_type: ThreatType) {
  if !self.threat_types.contains(&threat_type) {
  self.threat_types.push(threat_type);
- // Based onthreattypeUpdate风险评分
+ // Based onthreattypeUpdaterisk score
  self.update_risk_score();
  }
  }
 
- /// Update风险评分（based onthreattype）
+ /// Updaterisk score（based onthreattype）
  fn update_risk_score(&mut self) {
  if self.threat_types.is_empty() {
  self.risk_score = 0.0;
  } else {
- // use最high严重程度as风险评分
+ // use最high严重程度asrisk score
  self.risk_score = self
 .threat_types
 .iter()
@@ -247,7 +247,7 @@ impl Clone for SystemAnalysisResult {
 ///
 /// systemlevelanalysis from **system角度**analysisnetworktraffic：
 /// - not onlyonly is singleprotocolParse，而 is 综合analysis
-/// - 考虑systemwholebehaviorpattern
+/// - considersystemwholebehaviorpattern
 /// - detectsystemlevelthreat（DDoS、scan、abnormaltraffic etc.）
 ///
 /// ## Implementation Example
@@ -277,7 +277,7 @@ pub trait SystemAnalyzer: Send + Sync {
  ///
  /// # Returns
  ///
- /// systemlevelanalysisresult，includingfingerprint、threattype、风险评分 etc.info
+ /// systemlevelanalysisresult，includingfingerprint、threattype、risk score etc.info
  fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult;
 
  /// bulkanalysismultipletraffic

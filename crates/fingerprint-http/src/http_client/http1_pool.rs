@@ -1,10 +1,10 @@
 //! HTTP/1.1 with Connection Pool
 //!
-//! 架构explain：
+//! architectureexplain：
 //! - HTTP/1.1 adopt netconnpool manage TCP connection pool
 //! - pool化pair象：TcpStream（裸 TCP connection）
 //! - reusemethod：serialreuse（anconnection同一 when betweencan onlyprocessanrequest）
-//! - protocollimit：HTTP/1.1 unable to多路reuse，need大量connectionsupportconcurrent
+//! - protocollimit：HTTP/1.1 unable tomultiplereuse，need大量connectionsupportconcurrent
 //! - netconnpool 负责：connectionCreate、keep活跃、故障detect and 回收
 
 #[cfg(feature = "connection-pool")]
@@ -39,7 +39,7 @@ pub fn send_http1_request_with_pool(
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
- // clone TcpStream 以便wecanuse它
+ // clone TcpStream so thatwecanuse它
  let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
  // Fix: Add Cookie to request（ if exists）
@@ -103,7 +103,7 @@ mod tests {
  let result =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // maywillfailure（network问题），but不should panic
+ // maywillfailure（networkissue），but不should panic
  if let Ok(response) = result {
  println!("status code: {}", response.status_code);
  assert!(response.status_code > 0);
@@ -121,7 +121,7 @@ mod tests {
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // 第二次request（shouldreuseconnection）
+ // second次request（shouldreuseconnection）
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 

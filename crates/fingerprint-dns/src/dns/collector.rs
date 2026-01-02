@@ -81,7 +81,7 @@ impl ServerCollector {
 
  /// from configurationfilecollect DNS server
  pub fn collect_from_config(_servers: Vec<String>) -> ServerPool {
- // Ifconfiguration了customserver, use它们
+ // Ifconfiguration了customserver, usethem
  // otherwiseusedefaultserver
  ServerPool::default()
  }
@@ -184,7 +184,7 @@ impl ServerCollector {
  pool.len()
  );
  // fileinserveralreadythroughValidate，directlyuse，不perform全面Check
- // 只 in back台asyncdetect and 淘汰慢node，non-blockingmainthread
+ // 只 in back台asyncdetect and slow eliminationnode，non-blockingmainthread
  return pool;
  }
 
@@ -197,7 +197,7 @@ impl ServerCollector {
  eprintln!(" from networkcollect了 {} DNS server", new_count);
 
  // in savefrontperformhealthCheck，只preserveavailableserver
- // usehighconcurrentdetect，每detect to 一batch就immediatelysave，fastcomplete不长 when between阻塞
+ // usehighconcurrentdetect，每detect to 一batch就immediatelysave，fastcomplete不长 when betweenblocking
  eprintln!("正 in highconcurrenttest DNS serveravailable性（test哪些servercanreturn IP address）...");
  let test_timeout = Duration::from_secs(2); // decreasetimeout duration，加快detect
  let max_concurrency = 500; // 大幅increaseconcurrentcount，加快detectspeed
@@ -235,7 +235,7 @@ impl ServerCollector {
  }
  );
 
- // filealready in 增量save过程 in Update了，directlyreturn
+ // filealready in 增量saveprocess in Update了，directlyreturn
  if valid_count > 0 {
  validated_pool
  } else {
@@ -264,7 +264,7 @@ fn is_valid_ip_address(s: &str) -> bool {
  if s.parse::<SocketAddr>().is_ok() {
  return true;
  }
- // alsomay is IPv6:port，butformat更复杂，needspecialprocess
+ // alsomay is IPv6:port，butformat更complex，needspecialprocess
  // simplifyprocess： if including []，tryParse
  if s.starts_with('[') {
  return s.parse::<SocketAddr>().is_ok();

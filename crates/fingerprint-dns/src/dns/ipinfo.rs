@@ -1,6 +1,6 @@
 //! IPInfo.io set成module
 //!
-//! from IPInfo.io API Get IP addressdetailedinfo（地理bit置、ISP etc.）
+//! from IPInfo.io API Get IP addressdetailedinfo（geographicbit置、ISP etc.）
 
 use crate::dns::types::{DNSError, IPInfo};
 use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
@@ -20,7 +20,7 @@ impl IPInfoClient {
 
  /// Get IP addressdetailedinfo
  pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
- // securityFix: use HTTP Header 传递 token，而is not URL parameter
+ // securityFix: use HTTP Header pass token，而is not URL parameter
  // 这样canavoid token 泄露 to log、errormessage、proxyserver etc.
  let url = format!("https://ipinfo.io/{}", ip);
 

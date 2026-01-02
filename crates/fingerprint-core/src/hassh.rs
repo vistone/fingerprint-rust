@@ -1,7 +1,7 @@
 //! HASSH SSH fingerprintimplement
 //!
 //! HASSH is Salesforce open发 SSH client/serverfingerprintidentifymethod。
-//! 类似于 JA3 for TLS，HASSH for identify SSH client and server。
+//! similar于 JA3 for TLS，HASSH for identify SSH client and server。
 //!
 //! ## reference
 //! - 论文: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
@@ -149,7 +149,7 @@ impl HASSH {
 
  /// from SSH KEX_INIT messageParse HASSH
  ///
- /// SSH KEX_INIT messageincludingalgorithm协商info
+ /// SSH KEX_INIT messageincludingalgorithmnegotiateinfo
  pub fn from_kex_init(kex_init: &SSHKexInit) -> Self {
  Self::generate(
  &kex_init
@@ -363,13 +363,13 @@ impl SSHKexInit {
 
  /// from 原beginning SSH countpacketParse (simplified version)
  ///
- /// Note: this isanSimplified implementation，complete SSH protocolParseneed更复杂status机
+ /// Note: this isanSimplified implementation，complete SSH protocolParseneed更complexstatus机
  pub fn parse(data: &[u8]) -> Result<Self, String> {
- // SSH protocolformat复杂，hereprovide基本框架
+ // SSH protocolformatcomplex，hereprovide基本框架
  // actualapplication in 应use专门 SSH protocolParse库
  
  if data.len() < 16 {
- return Err("countpacket太短".to_string());
+ return Err("countpackettoo short".to_string());
  }
 
  // SSH KEX_INIT messagetype as 20 (SSH_MSG_KEXINIT)
@@ -378,7 +378,7 @@ impl SSHKexInit {
  }
 
  // hereshouldParse name-list field
- // due to SSH protocolParse复杂，暂 when returnemptystruct
+ // due to SSH protocolParsecomplex，暂 when returnemptystruct
  Ok(Self::new())
  }
 }
@@ -490,7 +490,7 @@ mod tests {
 
 /// JA4SSH - SSH fingerprint（JA4 style）
 ///
-/// 类似于 HASSH，butuse SHA256 而非 MD5，并adopt JA4 seriesformatstyle
+/// similar于 HASSH，butuse SHA256 而非 MD5，并adopt JA4 seriesformatstyle
 /// 
 /// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
 ///

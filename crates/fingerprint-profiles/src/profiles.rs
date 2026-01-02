@@ -123,7 +123,7 @@ impl ClientProfile {
 
  /// Based on User-Agent automaticGeneratematch TCP Profile
  ///
- /// this is统一fingerprintGeneratecoremethod，ensurebrowserfingerprint and TCP fingerprintsync
+ /// this isunifiedfingerprintGeneratecoremethod，ensurebrowserfingerprint and TCP fingerprintsync
  ///
  /// # Parameters
  /// - `user_agent`: User-Agent string， for inferoperating system
@@ -204,7 +204,7 @@ impl ClientProfile {
  }
 
  /// Get ClientHelloSpec（Corresponds to Go version's GetClientHelloSpec()）
- /// this is真正 TLS fingerprintconfiguration，can for actual TLS handshake
+ /// this istrue TLS fingerprintconfiguration，can for actual TLS handshake
  pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
  self.client_hello_id.to_spec()
  }
@@ -573,7 +573,7 @@ pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
 .ok_or_else(|| format!("Profile '{}' not found", profile_name))
 }
 
-/// 统一fingerprintGeneratefunction
+/// unifiedfingerprintGeneratefunction
 ///
 /// Based on profile name and User-Agent Generatesyncbrowserfingerprint and TCP fingerprint
 ///

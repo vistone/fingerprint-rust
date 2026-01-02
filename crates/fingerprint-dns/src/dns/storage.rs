@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::Path;
 
 /// willdomain IP infosave to file（原child性write）
-/// support JSON、YAML、TOML 三种format
+/// support JSON、YAML、TOML threeformat
 pub fn save_domain_ips<P: AsRef<Path>>(
  domain: &str,
  domain_ips: &DomainIPs,
@@ -16,7 +16,7 @@ pub fn save_domain_ips<P: AsRef<Path>>(
 ) -> Result<(), DNSError> {
  let base_dir = base_dir.as_ref();
 
- // ensure目录 exists
+ // ensuredirectory exists
  fs::create_dir_all(base_dir)?;
 
  // save as JSON
@@ -109,7 +109,7 @@ fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
 }
 
 /// 原child性writefile
-/// 先writetemporaryfile，then重命名，ensurecountdatasecurity
+/// 先writetemporaryfile，thenrename，ensurecountdatasecurity
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
  let parent = path.parent().ok_or_else(|| {
  DNSError::IO(std::io::Error::new(
@@ -127,7 +127,7 @@ fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
  temp_file.sync_all()?;
  drop(temp_file);
 
- // 原child性重命名
+ // 原child性rename
  fs::rename(&temp_path, path)?;
 
  Ok(())

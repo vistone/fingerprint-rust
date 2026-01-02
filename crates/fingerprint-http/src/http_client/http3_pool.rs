@@ -1,11 +1,11 @@
 //! HTTP/3 with Connection Pool
 //!
-//! 架构explain：
+//! architectureexplain：
 //! - HTTP/3 adoptsessionpool（H3SessionPool）implement QUIC sessionreuse
 //! - pool化pair象：h3::client::SendRequest handle（alreadyhandshakecomplete QUIC session）
-//! - reusemethod：concurrent多路reuse（an QUIC connection可同 when processmultiple Stream）
-//! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，无需 netconnpool
-//! - sessionestablishback，connection生命cycle由 H3Session backbackground task（Driver）manage
+//! - reusemethod：concurrentmultiplereuse（an QUIC connection可同 when processmultiple Stream）
+//! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，no need netconnpool
+//! - sessionestablishback，connectionlifecycle由 H3Session backbackground task（Driver）manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -29,7 +29,7 @@ pub async fn send_http3_request_with_pool(
  use h3_quinn::quinn;
  use http::{Request as HttpRequest2, Version};
 
- // Fix: use H3SessionPool implement真正多路reuse
+ // Fix: use H3SessionPool implementtrue multiplexreuse
  let session_pool = pool_manager.h3_session_pool();
  let key = format!("{}:{}", host, port);
 
@@ -60,7 +60,7 @@ pub async fn send_http3_request_with_pool(
 
  let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
- // 优化transferconfiguration以提升performance
+ // optimizetransferconfiguration以improveperformance
  let mut transport_config = quinn::TransportConfig::default();
  transport_config.initial_rtt(Duration::from_millis(100));
  transport_config.max_idle_timeout(Some(
@@ -69,7 +69,7 @@ pub async fn send_http3_request_with_pool(
  ));
  transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
- // 增大receivewindow以提升吞吐量
+ // 增大receivewindow以improve吞吐量
  transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
  transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
@@ -128,7 +128,7 @@ pub async fn send_http3_request_with_pool(
  })
 .uri(uri)
 .version(Version::HTTP_3)
- // 不要manualAdd host header，h3 willautomatic from URI Extract
+ // do notmanualAdd host header，h3 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
  // Fix: Add Cookie to request（ if exists）
@@ -212,8 +212,8 @@ pub async fn send_http3_request_with_pool(
  // Parseresponse
  let status_code = response.status().as_u16();
 
- // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹attack
- const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议minimumvalue)
+ // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compressionbombattack
+ const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 suggestminimumvalue)
  let total_header_size: usize = response
 .headers()
 .iter()
@@ -278,7 +278,7 @@ mod tests {
  )
 .await;
 
- // maywillfailure（network问题 or server不support HTTP/3），but不should panic
+ // maywillfailure（networkissue or server不support HTTP/3），but不should panic
  if let Ok(response) = result {
  assert_eq!(response.http_version, "HTTP/3");
  }

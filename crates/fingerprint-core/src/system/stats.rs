@@ -18,7 +18,7 @@ pub struct SystemProtectionStats {
  /// alreadyblockcountpacketcount
  pub blocked_packets: u64,
 
- /// 限速countpacketcount
+ /// rate limitcountpacketcount
  pub rate_limited_packets: u64,
 
  /// allowthroughcountpacketcount
@@ -68,7 +68,7 @@ impl SystemProtectionStats {
  self.last_update_time = Instant::now();
  }
 
- /// increase限速countpacketcount
+ /// increaserate limitcountpacketcount
  pub fn increment_rate_limited(&mut self) {
  self.rate_limited_packets += 1;
  self.last_update_time = Instant::now();

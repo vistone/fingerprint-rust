@@ -48,7 +48,7 @@ use std::io as std_io;
 use std::time::Duration;
 
 // Fix: useglobalsingleton Runtime avoidfrequentCreate（ for HTTP/2 and HTTP/3 connection poolscenario）
-// Note: 只 in connection-pool enabled when 才need，becauseonlyconnection poolscenario才needsyncwrapasync代码
+// Note: 只 in connection-pool enabled when 才need，becauseonlyconnection poolscenario才needsyncwrapasynccode
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -241,7 +241,7 @@ impl HttpClient {
  // Checkredirect次count
  if redirect_count >= self.config.max_redirects {
  return Err(HttpClientError::InvalidResponse(format!(
- "redirect次count超过limit: {}",
+ "redirect次countexceedlimit: {}",
  self.config.max_redirects
  )));
  }
@@ -305,7 +305,7 @@ impl HttpClient {
  HttpMethod::Get
  }
  307 | 308 => {
- // 307, 308: keeporiginal HTTP method（POST 仍然 is POST）
+ // 307, 308: keeporiginal HTTP method（POST still is POST）
  request.method
  }
  _ => {
@@ -361,7 +361,7 @@ impl HttpClient {
  }
  }
 
- // 递归processredirect（传递 visited_urls 以detectloop）
+ // recursiveprocessredirect（pass visited_urls 以detectloop）
  return self.send_request_with_redirects_internal(
  &final_redirect_request,
  redirect_count + 1,
@@ -402,7 +402,7 @@ impl HttpClient {
  };
 
  // Extract path（remove query parameter，butpreserve in path in send）
- // Note: query parametershouldpreserve in path in ，becauseserverneed它们
+ // Note: query parametershouldpreserve in path in ，becauseserverneedthem
  let path = path_with_query.to_string();
 
  // Parse host and port
@@ -540,7 +540,7 @@ impl HttpClient {
  Ok(resp) => return Ok(resp),
  Err(e) => {
  // Ifonlyonly is 偏好, cantry降level
- // If is Connection failed, may is network问题，alsomay is server不support
+ // If is Connection failed, may is networkissue，alsomay is server不support
  eprintln!("warning: HTTP/3 failure，try降level: {}", e);
  }
  }
@@ -555,7 +555,7 @@ impl HttpClient {
  Ok(resp) => return Ok(resp),
  Err(_e) => {
  // recorderrorbutcontinuetry HTTP/1.1
- // in actual生产 in shoulduselogsystem
+ // in actualproduction in shoulduselogsystem
  // eprintln!("HTTP/2 tryfailure: {}，back to HTTP/1.1", e);
  }
  }

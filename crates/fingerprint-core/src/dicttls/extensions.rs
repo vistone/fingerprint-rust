@@ -67,7 +67,7 @@ pub mod cert_compression {
 
 pub use cert_compression::*;
 
-/// re协商constant
+/// renegotiateconstant
 pub mod renegotiation {
  pub const RENEGOTIATE_ONCE_AS_CLIENT: u8 = 1;
 }

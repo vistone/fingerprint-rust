@@ -75,7 +75,7 @@ impl TLSRecord {
  /// from bytesstreamParse
  pub fn from_bytes(data: &[u8]) -> Result<(Self, usize), String> {
  if data.len() < 5 {
- return Err("countdata太短，unable toParse TLS record".to_string());
+ return Err("countdatatoo short，unable toParse TLS record".to_string());
  }
 
  let content_type = match data[0] {

@@ -292,7 +292,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
  println!(" MSS: {:?}", sig.mss);
  println!(" Window Scale: {:?}", sig.window_scale);
  println!(" confidence: {:.2}", sig.confidence);
- println!(" 样本count: {}", sig.sample_count);
+ println!(" samplecount: {}", sig.sample_count);
  println!();
  }
 
@@ -313,7 +313,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
  println!(" MSS: {:?}", sig.mss);
  println!(" Window Scale: {:?}", sig.window_scale);
  println!(" confidence: {:.2}", sig.confidence);
- println!(" 样本count: {}", sig.sample_count);
+ println!(" samplecount: {}", sig.sample_count);
  println!();
  }
 

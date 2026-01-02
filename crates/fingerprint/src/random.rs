@@ -21,7 +21,7 @@ pub struct FingerprintResult {
  pub user_agent: String,
  /// Client Hello ID（ and tls-client keepconsistent）
  pub hello_client_id: String,
- /// standard HTTP requestheader（including全球languagesupport）
+ /// standard HTTP requestheader（includinggloballanguagesupport）
  pub headers: fingerprint_headers::headers::HTTPHeaders,
 }
 
@@ -259,7 +259,7 @@ mod tests {
  );
  } else {
  println!(
- " ❌ syncfailure！TTL ({}) and operating system ({}) does not match（期望: {}）",
+ " ❌ syncfailure！TTL ({}) and operating system ({}) does not match（expected: {}）",
  tcp_profile.ttl, inferred_os, expected_ttl
  );
  }

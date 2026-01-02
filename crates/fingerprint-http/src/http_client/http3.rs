@@ -25,7 +25,7 @@ pub fn send_http3_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // Fix: useglobalsingleton Runtime，avoid每次request都Create a newrun when 
+ // Fix: useglobalsingleton Runtime，avoideach timerequest都Create a newrun when 
  RUNTIME.block_on(async { send_http3_request_async(host, port, path, request, config).await })
 }
 
@@ -52,10 +52,10 @@ async fn send_http3_request_async(
 
  let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
- // 优化transferconfiguration以提升performance and connectionmigratecapability
+ // optimizetransferconfiguration以improveperformance and connectionmigratecapability
  let mut transport = TransportConfig::default();
 
- // connectionmigrate (Connection Migration) 优化
+ // connectionmigrate (Connection Migration) optimize
  // QUIC allow in IP toggle when keepconnection，这pairmobilesimulate至closeimportant
  transport.initial_rtt(Duration::from_millis(100));
  transport.max_idle_timeout(Some(
@@ -69,7 +69,7 @@ async fn send_http3_request_async(
  // allowpair端migrate（defaultalreadyopen，此处explicitexplain其important性）
  // transport.allow_peer_migration(true);
 
- // simulate Chrome streamcontrolwindow (Chrome usuallyuse较大window以提升吞吐)
+ // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)
  transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome style)
  transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome style)
 
@@ -170,7 +170,7 @@ async fn send_http3_request_async(
  }
 
  // Add headers
- // Note: 不要manualAdd host header，h3 willautomatic from URI Extract
+ // Note: do notmanualAdd host header，h3 willautomatic from URI Extract
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
@@ -215,9 +215,9 @@ async fn send_http3_request_async(
  let status_code = response.status().as_u16();
  let headers = response.headers().clone();
 
- // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹attack
- // h3 crate 0.0.4 defaultlimitusually较大，weAdd额outsideCheck
- const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议minimumvalue)
+ // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compressionbombattack
+ // h3 crate 0.0.4 defaultlimitusuallylarger，weAdd额outsideCheck
+ const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 suggestminimumvalue)
  let total_header_size: usize = headers
 .iter()
 .map(|(k, v)| k.as_str().len() + v.len())

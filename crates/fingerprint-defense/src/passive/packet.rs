@@ -93,14 +93,14 @@ impl PacketParser {
 
  let ihl = (raw_packet[0] & 0x0F) as usize;
  
- // securityCheck：IHL must至少 as 5（20 bytes），最多 as 15（60 bytes）
+ // securityCheck：IHL mustat least as 5（20 bytes），最多 as 15（60 bytes）
  if ihl < 5 || ihl > 15 {
  return Err(PacketError::Other("invalid IHL value".to_string()));
  }
  
  let header_len = ihl * 4;
  
- // securityCheck：ensurecountpacket足够长
+ // securityCheck：ensurecountpacketenough长
  if raw_packet.len() < header_len {
  return Err(PacketError::TooShort);
  }
@@ -279,7 +279,7 @@ impl PacketParser {
  /// Parse ICMP header
  fn parse_icmp(_data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
  // ICMP noport概念，return 0
- // ICMP type and 代码 in data[0] and data[1]
+ // ICMP type and code in data[0] and data[1]
  Ok((0, 0, None))
  }
 
@@ -299,7 +299,7 @@ impl PacketParser {
  };
  let data_offset = ((data[12] >> 4) & 0x0F) as usize;
  
- // securityCheck：data_offset must至少 as 5（20 bytes），最多 as 15（60 bytes）
+ // securityCheck：data_offset mustat least as 5（20 bytes），最多 as 15（60 bytes）
  if data_offset < 5 || data_offset > 15 {
  return Err(PacketError::Other("invalid TCP data offset".to_string()));
  }
@@ -336,7 +336,7 @@ impl PacketParser {
  }
  let length = data[offset + 1] as usize;
  
- // securityCheck：length must至少 as 2，且cannotcause越boundary
+ // securityCheck：length mustat least as 2，且cannotcause越boundary
  if length < 2 || offset + length > data.len() || offset + length > header_len {
  break;
  }
@@ -365,7 +365,7 @@ impl PacketParser {
 /// countpacketParseerror
 #[derive(Debug, thiserror::Error)]
 pub enum PacketError {
- #[error("countpacket太短")]
+ #[error("countpackettoo short")]
  TooShort,
 
  #[error("invalid IP version")]
@@ -421,7 +421,7 @@ mod security_tests {
  packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
  
  let result = PacketParser::parse(&packet);
- assert!(result.is_err(), "shouldrefuse header_len 超过 packet lengthcountpacket");
+ assert!(result.is_err(), "shouldrefuse header_len exceed packet lengthcountpacket");
  }
 
  #[test]
@@ -504,7 +504,7 @@ mod security_tests {
  let packet = vec![0x45; 10];
  
  let result = PacketParser::parse(&packet);
- assert!(result.is_err(), "太短countpacketshould被refuse");
+ assert!(result.is_err(), "too shortcountpacketshould被refuse");
  }
 
  #[test]

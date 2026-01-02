@@ -73,9 +73,9 @@ impl HttpResponse {
 
  /// find headers endbit置（\r\n\r\n）
  fn find_headers_end(data: &[u8]) -> Result<(usize, usize), String> {
- // securityCheck：ensurecountdatalength至少 as 4 bytes
+ // securityCheck：ensurecountdatalengthat least as 4 bytes
  if data.len() < 4 {
- return Err("countdata太短，unable toincluding headers endmarker".to_string());
+ return Err("countdatatoo short，unable toincluding headers endmarker".to_string());
  }
 
  // use saturating_sub preventdown溢，butneed额outsideCheckedgeboundary
@@ -153,7 +153,7 @@ impl HttpResponse {
  /// Parse chunked encoding
  fn parse_chunked(data: &[u8]) -> Result<Vec<u8>, String> {
  /// maximumallowsingle chunk size（10MB）
- /// preventmaliciousserversend超大 chunk causeinsidememory exhausted
+ /// preventmaliciousserversendoversized chunk causeinsidememory exhausted
  const MAX_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB
 
  let mut result = Vec::new();
@@ -176,7 +176,7 @@ impl HttpResponse {
  let size = usize::from_str_radix(size_str, 16)
 .map_err(|e| format!("Invalid chunk size '{}': {}", size_str, e))?;
 
- // securityCheck：preventmaliciousserversend超大 chunk
+ // securityCheck：preventmaliciousserversendoversized chunk
  if size > MAX_CHUNK_SIZE {
  return Err(format!(
  "Chunk size {} exceeds maximum allowed size {} bytes",
@@ -192,7 +192,7 @@ impl HttpResponse {
  // skip size 行 and \r\n
  pos += size_line_end + 2;
 
- // Checkwhether有足够countdata
+ // Checkwhether有enoughcountdata
  if pos + size > data.len() {
  return Err(format!("Chunk size {} exceeds available data", size));
  }

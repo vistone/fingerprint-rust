@@ -1,11 +1,11 @@
 //! HTTP/2 with Connection Pool
 //!
-//! 架构explain：
-//! - HTTP/2 adoptsessionpool（H2SessionPool）implement真正多路reuse
+//! architectureexplain：
+//! - HTTP/2 adoptsessionpool（H2SessionPool）implementtrue multiplexreuse
 //! - pool化pair象：h2::client::SendRequest handle（alreadyhandshakecompletesession）
-//! - reusemethod：concurrent多路reuse（ansession可同 when processmultiplerequest）
+//! - reusemethod：concurrentmultiplereuse（ansession可同 when processmultiplerequest）
 //! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource（accelerateconnectionestablish）
-//! - sessionestablishback，connection生命cycle由 H2Session backbackground task（Driver）manage
+//! - sessionestablishback，connectionlifecycle由 H2Session backbackground task（Driver）manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -28,8 +28,8 @@ pub async fn send_http2_request_with_pool(
  use tokio_rustls::TlsConnector;
 
  // Note: connection poolinconnection in Create when maynoapplication TCP Profile
- // in order toensure TCP fingerprintconsistency，we建议 in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
- // herewe仍然 from connection poolGetconnection，but新Createconnectionwillapplication TCP Profile（ if configuration了）
+ // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
+ // herewestill from connection poolGetconnection，but新Createconnectionwillapplication TCP Profile（ if configuration了）
 
  // from connection poolGetconnection
  let pool = pool_manager.get_pool(host, port)?;
@@ -45,7 +45,7 @@ pub async fn send_http2_request_with_pool(
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
- // clone TcpStream 以便wecanuse它
+ // clone TcpStream so thatwecanuse它
  let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
  // convert to tokio TcpStream
@@ -69,8 +69,8 @@ pub async fn send_http2_request_with_pool(
 .await
 .map_err(|e| HttpClientError::TlsError(format!("TLS handshakefailure: {}", e)))?;
 
- // Fix: use HTTP/2 sessionpoolimplement真正多路reuse
- // avoid每次request都reperform TLS and HTTP/2 handshake
+ // Fix: use HTTP/2 sessionpoolimplementtrue multiplexreuse
+ // avoideach timerequest都reperform TLS and HTTP/2 handshake
  let session_key = format!("{}:{}", host, port);
  let h2_session_pool = pool_manager.h2_session_pool();
 
@@ -128,7 +128,7 @@ pub async fn send_http2_request_with_pool(
 .await
 .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 handshakefailure: {}", e)))?;
 
- // return SendRequest and Connection（sessionpoolwillmanage Connection 生命cycle）
+ // return SendRequest and Connection（sessionpoolwillmanage Connection lifecycle）
  Ok((client, h2_conn))
  })
 .await?;
@@ -154,7 +154,7 @@ pub async fn send_http2_request_with_pool(
  })
 .uri(uri)
 .version(Version::HTTP_2)
- // 不要manualAdd host header，h2 willautomatic from URI Extract
+ // do notmanualAdd host header，h2 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
  // Fix: Add Cookie to request（ if exists）
@@ -219,8 +219,8 @@ pub async fn send_http2_request_with_pool(
  // 先Extract status and headers
  let status_code = response.status().as_u16();
 
- // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹attack
- const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议minimumvalue)
+ // securityFix: Check HTTP/2 responseheadersize，prevent Header compressionbombattack
+ const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 suggestminimumvalue)
  let total_header_size: usize = response
 .headers()
 .iter()
@@ -315,7 +315,7 @@ mod tests {
  )
 .await;
 
- // maywillfailure（network问题），but不should panic
+ // maywillfailure（networkissue），but不should panic
  if let Ok(response) = &result1 {
  assert_eq!(response.http_version, "HTTP/2");
  assert!(response.status_code > 0);
@@ -328,7 +328,7 @@ mod tests {
  // wait一小segment when between，ensuresessionalreadyestablish
  tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
- println!("\n📡 send第二 HTTP/2 request（shouldreusesession）...");
+ println!("\n📡 sendsecond HTTP/2 request（shouldreusesession）...");
  let result2 = send_http2_request_with_pool(
  "httpbin.org",
  443,
@@ -342,9 +342,9 @@ mod tests {
  if let Ok(response) = &result2 {
  assert_eq!(response.http_version, "HTTP/2");
  assert!(response.status_code > 0);
- println!(" ✅ 第二requestsuccess: {}", response.status_code);
+ println!(" ✅ secondrequestsuccess: {}", response.status_code);
  } else {
- println!(" ❌ 第二requestfailure: {:?}", result2);
+ println!(" ❌ secondrequestfailure: {:?}", result2);
  }
 
  // readlog并analysis
@@ -383,9 +383,9 @@ mod tests {
  println!(" reusesession: {} 次", reuse_count);
 
  if reuse_count > 0 {
- println!(" ✅ sessionreusesuccess！HTTP/2 多路reusenormal工作");
+ println!(" ✅ sessionreusesuccess！HTTP/2 multiplereusenormal工作");
  } else if create_count > 1 {
- println!(" ⚠️ sessionnotreuse，每次request都Create新session");
+ println!(" ⚠️ sessionnotreuse，each timerequest都Create新session");
  } else {
  println!(" ℹ️ 只send了anrequest，unable toValidatesessionreuse");
  }

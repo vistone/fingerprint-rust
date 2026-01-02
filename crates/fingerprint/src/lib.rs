@@ -13,12 +13,12 @@
 //! - ✅ **HTTP/2 & HTTP/3**：complete HTTP/2 configuration，compatible HTTP/3
 //! - ✅ **User-Agent match**：automaticGeneratematch User-Agent
 //! - ✅ **standard HTTP Headers**：complete's standard HTTP requestheader
-//! - ✅ **全球languagesupport**：30+ 种language Accept-Language
+//! - ✅ **globallanguagesupport**：30+ 种language Accept-Language
 //! - ✅ **operating systemrandom化**：randomly selectoperating system
 //! - ✅ **highperformance**：零allocateclosekeyoperation，concurrentsecurity
 //! - ✅ **Rust standard**：严格follow Rust languagestandard and 最佳实践
 //! - ✅ **independent库**：不dependother TLS client库
-//! - ✅ **代码质量**：throughall Clippy Check，follow Rust 最佳实践
+//! - ✅ **code质量**：throughall Clippy Check，follow Rust 最佳实践
 
 #[cfg(feature = "export")]
 pub mod export;

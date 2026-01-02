@@ -22,7 +22,7 @@ pub enum FingerprintMatch {
 ///
 /// # Parameters
 /// * `spec1` - first ClientHelloSpec
-/// * `spec2` - 第二 ClientHelloSpec
+/// * `spec2` - second ClientHelloSpec
 ///
 /// # Returns
 /// * `FingerprintMatch` - matchresult
@@ -45,7 +45,7 @@ pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> Finger
 ///
 /// # Parameters
 /// * `sig1` - firstsignature
-/// * `sig2` - 第二signature
+/// * `sig2` - secondsignature
 ///
 /// # Returns
 /// * `FingerprintMatch` - matchresult

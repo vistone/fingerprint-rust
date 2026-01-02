@@ -1,7 +1,7 @@
 //! TLS ClientHello Signature module
 //!
 //! provide TLS ClientHello signatureExtract and compareFeatures
-//! reference：Huginn Net Signature struct设计
+//! reference：Huginn Net Signature structdesign
 
 use crate::dicttls::supported_groups::CurveID;
 use crate::fingerprint::{Fingerprint, FingerprintType};

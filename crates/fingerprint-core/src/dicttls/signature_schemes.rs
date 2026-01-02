@@ -1,9 +1,9 @@
-//! TLS signature方案constant
+//! TLS signaturesolutionconstant
 //!
 //! 来source：https://www.iana.org/assignments/tls-parameters/tls-signaturescheme.csv
 //! finallyUpdate：March 2023
 
-/// TLS signature方案constant
+/// TLS signaturesolutionconstant
 /// Corresponds to Go version's tls.SignatureScheme constant
 #[allow(clippy::module_inception)]
 pub mod signature_schemes {

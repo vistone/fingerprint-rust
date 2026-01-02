@@ -59,13 +59,13 @@ pub fn extract_platform(user_agent: &str) -> String {
 
 /// from User-Agent in Extractoperating systemtype
 ///
-/// for 统一fingerprintGenerate，ensurebrowserfingerprint and TCP fingerprintsync
+/// for unifiedfingerprintGenerate，ensurebrowserfingerprint and TCP fingerprintsync
 pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
  use crate::types::OperatingSystem;
 
- // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmove设备
+ // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
  if user_agent.contains("iPhone") || user_agent.contains("iPad") {
- // iOS 设备：use macOS TCP fingerprint（iOS based on macOS）
+ // iOS device：use macOS TCP fingerprint（iOS based on macOS）
  OperatingSystem::MacOS14
  } else if user_agent.contains("Windows NT 10.0") {
  OperatingSystem::Windows10

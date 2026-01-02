@@ -78,7 +78,7 @@ impl ValidationReport {
  pub fn to_markdown(&self) -> String {
  let mut md = String::new();
 
- // 标题
+ // title
  md.push_str(&format!("# {}\n\n", self.title));
  md.push_str(&format!("**Generate when between**: {}\n\n", self.generated_at));
  md.push_str("---\n\n");
@@ -106,7 +106,7 @@ impl ValidationReport {
  pub fn to_text(&self) -> String {
  let mut text = String::new();
 
- // 标题
+ // title
  text.push_str(&format!("# {}\n\n", self.title));
  text.push_str(&format!("Generate when between: {}\n", self.generated_at));
  text.push_str(&"=".repeat(70));
@@ -167,7 +167,7 @@ impl ReportSection {
  fn to_markdown(&self, level: usize) -> String {
  let mut md = String::new();
 
- // section标题
+ // sectiontitle
  md.push_str(&"#".repeat(level));
  md.push_str(&format!(" {}\n\n", self.title));
 
@@ -193,7 +193,7 @@ impl ReportSection {
  let mut text = String::new();
  let indent_str = " ".repeat(indent);
 
- // section标题
+ // sectiontitle
  text.push_str(&format!("{}{}\n", indent_str, self.title));
  text.push_str(&format!("{}{}\n", indent_str, "-".repeat(self.title.len())));
 
@@ -251,7 +251,7 @@ mod tests {
 
  let md = report.to_markdown();
  assert!(md.contains("# Test Report"));
- // Checksuccess率field exists（不强制require精确format）
+ // Checksuccess率field exists（不强制requirepreciseformat）
  assert!(md.contains("success率") || md.contains("Success"));
  assert!(md.contains("90."));
  }

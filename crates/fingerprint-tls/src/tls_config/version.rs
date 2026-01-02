@@ -1,12 +1,12 @@
 //! TLS versionmodule
 //!
 //! provide TLS versionenum and ConvertFeatures
-//! reference：Huginn Net TlsVersion 设计
+//! reference：Huginn Net TlsVersion design
 
 use std::fmt;
 
 /// TLS versionenum
-/// include传统 SSL version以supportcomplete JA4 规范compatible性
+/// include传统 SSL version以supportcomplete JA4 specificationcompatible性
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TlsVersion {
  /// TLS 1.3

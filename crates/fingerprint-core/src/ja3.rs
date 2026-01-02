@@ -255,7 +255,7 @@ mod tests {
 
  #[test]
  fn test_ja3_generation() {
- // test Chrome browser典型 ClientHello
+ // test Chrome browsertypical ClientHello
  let ja3 = JA3::generate(
  771, // TLS 1.2
  &[0x1301, 0x1302, 0x1303, 0xc02b, 0xc02f],

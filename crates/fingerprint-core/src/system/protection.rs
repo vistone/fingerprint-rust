@@ -20,12 +20,12 @@ pub enum SystemProtectionDecision {
  reason: String,
  },
 
- /// 限速
+ /// rate limit
  RateLimit {
  /// 每secondsmaximumcountpacketcount
  max_packets_per_second: u64,
 
- /// 限速持续 when between
+ /// rate limit持续 when between
  duration: Duration,
  },
 
@@ -50,7 +50,7 @@ impl SystemProtectionDecision {
  matches!(self, Self::Deny {.. })
  }
 
- /// judgewhether as 限速
+ /// judgewhether as rate limit
  pub fn is_rate_limit(&self) -> bool {
  matches!(self, Self::RateLimit {.. })
  }
@@ -65,7 +65,7 @@ impl SystemProtectionDecision {
  duration,
  } => {
  format!(
- "限速: {} 包/seconds, 持续 when between: {:?}",
+ "rate limit: {} 包/seconds, 持续 when between: {:?}",
  max_packets_per_second, duration
  )
  }
@@ -83,7 +83,7 @@ pub struct SystemProtectionResult {
  /// protectiondecision
  pub decision: SystemProtectionDecision,
 
- /// 风险评分 (0.0 - 1.0)
+ /// risk score (0.0 - 1.0)
  /// - 0.0: completelysecurity
  /// - 1.0: 极high风险
  pub risk_score: f64,
@@ -96,7 +96,7 @@ pub struct SystemProtectionResult {
  /// decisionreason
  pub reason: String,
 
- /// 建议back续action
+ /// suggestback续action
  pub suggested_actions: Vec<String>,
 }
 
@@ -136,7 +136,7 @@ impl SystemProtectionResult {
  }
  }
 
- /// Create限速decision
+ /// Createrate limitdecision
  pub fn rate_limit(max_packets_per_second: u64, duration: Duration, risk_score: f64) -> Self {
  Self {
  decision: SystemProtectionDecision::RateLimit {
@@ -145,7 +145,7 @@ impl SystemProtectionResult {
  },
  risk_score,
  confidence: 0.8,
- reason: "trafficabnormal，need限速".to_string(),
+ reason: "trafficabnormal，needrate limit".to_string(),
  suggested_actions: vec!["monitortraffic".to_string()],
  }
  }
@@ -159,8 +159,8 @@ impl SystemProtectionResult {
 ///
 /// systemlevelprotection from **system角度**做出protectiondecision：
 /// - not onlyonly is singleserviceprotection，而 is 整systemprotection
-/// - can实施systemlevel措施（黑名单、限速、防火墙规则 etc.）
-/// - need考虑systemwholesecuritystatus
+/// - can实施systemlevel措施（黑名单、rate limit、防火墙rule etc.）
+/// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example
 ///
@@ -194,7 +194,7 @@ pub trait SystemProtector: Send {
  ///
  /// # Returns
  ///
- /// systemlevelprotectionresult，includingdecision、风险评分、confidence etc.info
+ /// systemlevelprotectionresult，includingdecision、risk score、confidence etc.info
  fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult;
 
  /// Updatesystemstatus

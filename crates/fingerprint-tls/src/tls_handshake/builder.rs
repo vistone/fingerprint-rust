@@ -41,7 +41,7 @@ impl TLSHandshakeBuilder {
  // 1. Create ClientHello message
  let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
  println!("\n╔══════════════════════════════════════════════════════════╗");
- println!("║ Build TLS ClientHello（use自己fingerprint） ║");
+ println!("║ Build TLS ClientHello（useselffingerprint） ║");
  println!("╚══════════════════════════════════════════════════════════╝\n");
 
  println!("📋 ClientHelloSpec info:");
@@ -69,7 +69,7 @@ impl TLSHandshakeBuilder {
 
  println!("\n✅ TLS ClientHello Buildcomplete！");
  println!(
- " usewe自己fingerprint: {} cipher suite, {} extension\n",
+ " useweselffingerprint: {} cipher suite, {} extension\n",
  spec.cipher_suites.len(),
  spec.extensions.len()
  );

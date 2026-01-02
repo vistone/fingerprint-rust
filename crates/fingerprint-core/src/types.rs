@@ -15,7 +15,7 @@ pub enum BrowserType {
 impl BrowserType {
  /// from stringconvert tobrowsertype
  ///
- /// Note: 此methodname and standard库的 `FromStr::from_str` different，以avoid命名冲突
+ /// Note: 此methodname and standard库的 `FromStr::from_str` different，以avoid命名conflict
  #[allow(clippy::should_implement_trait)]
  pub fn from_str(s: &str) -> Option<Self> {
  match s.to_lowercase().as_str() {

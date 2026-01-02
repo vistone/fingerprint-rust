@@ -4,7 +4,7 @@
 //!
 //! ## Usage Example
 //!
-//! ### use预definefingerprint
+//! ### usepredefinefingerprint
 //! ```rust,no_run
 //! use fingerprint_tls::tls_config::ClientHelloSpec;
 //! let spec = ClientHelloSpec::chrome_133();

@@ -15,7 +15,7 @@ use std::sync::Arc;
 async fn main() {
  println!("🚀 Advanced Fingerprinting & Learner Verification\n");
 
- #[allow(clippy::arc_with_non_send_sync)] // in Examples代码 in use，不needcrossthread
+ #[allow(clippy::arc_with_non_send_sync)] // in Examplescode in use，不needcrossthread
  let db = Arc::new(FingerprintDatabase::open("advanced.db").expect("Failed to open DB"));
  let analyzer = Arc::new(PassiveAnalyzer::new().expect("Failed to create analyzer"));
  let learner = SelfLearningAnalyzer::new(db.clone());
@@ -62,15 +62,15 @@ async fn main() {
  }
  }
 
- // 2. simulate自学习过程
- println!("\n2️⃣ 自学习机制Validate:");
+ // 2. simulate自learnprocess
+ println!("\n2️⃣ 自learn机制Validate:");
  for i in 1..=12 {
  learner.process_result(&result);
  if i == 5 {
  println!("... observenot知fingerprint 5 次");
  }
  if i == 10 {
- println!("... observenot知fingerprint 10 次 (trigger学习阈value)");
+ println!("... observenot知fingerprint 10 次 (triggerlearning thresholdvalue)");
  }
  }
 

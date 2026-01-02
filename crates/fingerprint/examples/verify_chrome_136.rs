@@ -26,7 +26,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  println!(" - 0x{:04x}", suite);
  }
 
- // 预期first is TLS_AES_128_GCM_SHA256 (0x1301)
+ // expectfirst is TLS_AES_128_GCM_SHA256 (0x1301)
  if spec.cipher_suites.contains(&0x1301) {
  println!(" ✅ including TLS_AES_128_GCM_SHA256");
  }

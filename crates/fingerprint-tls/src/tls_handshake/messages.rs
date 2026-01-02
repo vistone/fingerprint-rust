@@ -40,7 +40,7 @@ impl ClientHelloMessage {
  /// # Errors
  ///
  /// Ifunable toGetencryptionsecurityrandomcount（ in no `crypto` feature when ）, willreturnerror。
- /// 建议 in 生产environment in enabled `crypto` feature 以ensuresecurity性。
+ /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurity性。
  pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
  // use TLS 1.2 asclientversion（in order tocompatible性）
  let client_version = spec.tls_vers_max.max(0x0303);
@@ -50,7 +50,7 @@ impl ClientHelloMessage {
 
  // front 4 bytes: Unix when between戳
  // usecurrent when between， if Getfailure则use 0（虽然不太mayfailure）
- // fix 2038 年溢出问题：explicittruncatehighbit，ensure u32 rangeinside
+ // fix 2038 年溢出issue：explicittruncatehighbit，ensure u32 rangeinside
  let timestamp = std::time::SystemTime::now()
 .duration_since(std::time::UNIX_EPOCH)
 .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicittruncatehighbit，prevent 2038 年溢出
@@ -69,20 +69,20 @@ impl ClientHelloMessage {
  #[cfg(not(feature = "crypto"))]
  {
  // Ifno crypto feature, try from systemrandomcountsourceGetencryptionsecurityrandomcount
- // Ifunable toGet, directlyreturnerror，不allowuse不security降level方案
+ // Ifunable toGet, directlyreturnerror，不allowuse不security降levelsolution
  use std::io::Read;
  let mut random_bytes = [0u8; 28];
 
  // try from /dev/urandom (Unix) Getrandomcount
  let mut rng = std::fs::File::open("/dev/urandom")
 .map_err(|e| format!(
- "unable toaccesssystemrandomcountsource /dev/urandom: {}. 建议enabled 'crypto' feature 以useencryptionsecurityrandomcountGenerator",
+ "unable toaccesssystemrandomcountsource /dev/urandom: {}. suggestenabled 'crypto' feature 以useencryptionsecurityrandomcountGenerator",
  e
  ))?;
 
  rng.read_exact(&mut random_bytes)
 .map_err(|e| format!(
- "unable to from /dev/urandom readrandomcount: {}. 建议enabled 'crypto' feature 以useencryptionsecurityrandomcountGenerator",
+ "unable to from /dev/urandom readrandomcount: {}. suggestenabled 'crypto' feature 以useencryptionsecurityrandomcountGenerator",
  e
  ))?;
 

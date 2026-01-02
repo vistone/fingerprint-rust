@@ -1,7 +1,7 @@
 //! JA4+ fingerprintseriesimplement
 //!
 //! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) etc.algorithmabstract and Calculatelogic。
-//! reference自 FoxIO JA4+ 规范。
+//! reference自 FoxIO JA4+ specification。
 
 use serde::{Deserialize, Serialize};
 
@@ -227,7 +227,7 @@ impl std::fmt::Display for JA4T {
 
 /// JA4S TLS serverfingerprint（JA4 style）
 /// 
-/// and JA3S 类似，butuse SHA256 而非 MD5
+/// and JA3S similar，butuse SHA256 而非 MD5
 /// format: t_v_c_e (例如: t13d_1301_0000)
 /// 
 /// ## Examples
@@ -451,7 +451,7 @@ mod ja4s_tests {
 
  #[test]
  fn test_ja4s_extension_sorting() {
- // testextensionsort（pairhash影响）
+ // testextensionsort（pairhashimpact）
  let ja4s1 = JA4S::generate('t', "1.3", 0x1301, &[0, 10, 11], None);
  let ja4s2 = JA4S::generate('t', "1.3", 0x1301, &[11, 10, 0], None);
  
@@ -460,12 +460,12 @@ mod ja4s_tests {
  }
 }
 
-/// JA4L - 轻量levelfingerprint（Light Version）
+/// JA4L - lightweightlevelfingerprint（Light Version）
 ///
 /// simplify版 JA4，适 for 资source受限environment
 /// - use更快hashalgorithm
-/// - decreaseCalculate复杂度
-/// - 更小inside存占用
+/// - decreaseCalculatecomplex度
+/// - 更小inside存usage
 ///
 /// format: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
 ///
@@ -499,15 +499,15 @@ pub struct JA4L {
  /// extensioncount
  pub extension_count: usize,
  
- /// cipher suite采样（front3，hexadecimal）
+ /// cipher suitesampling（front3，hexadecimal）
  pub cipher_sample: String,
  
- /// extension采样（front3，hexadecimal）
+ /// extensionsampling（front3，hexadecimal）
  pub extension_sample: String,
 }
 
 impl JA4L {
- /// Generate JA4L 轻量levelfingerprint
+ /// Generate JA4L lightweightlevelfingerprint
  ///
  /// # Parameters
  /// - `transport`: transferprotocol ('t' for TCP, 'q' for QUIC)
@@ -548,7 +548,7 @@ impl JA4L {
  let cipher_count = filtered_ciphers.len().min(99);
  let extension_count = filtered_extensions.len().min(99);
 
- // 采样front3cipher suite（轻量levelmethod）
+ // samplingfront3cipher suite（lightweightlevelmethod）
  let cipher_sample = filtered_ciphers
 .iter()
 .take(3)
@@ -556,7 +556,7 @@ impl JA4L {
 .collect::<Vec<_>>()
 .join("");
 
- // 采样front3extension（轻量levelmethod）
+ // samplingfront3extension（lightweightlevelmethod）
  let extension_sample = filtered_extensions
 .iter()
 .take(3)
@@ -598,7 +598,7 @@ impl JA4L {
  )
  }
 
- /// from complete JA4 fingerprintGenerate轻量levelversion
+ /// from complete JA4 fingerprintGeneratelightweightlevelversion
  pub fn from_ja4(ja4: &JA4) -> Self {
  Self {
  transport: ja4.transport,
@@ -606,19 +606,19 @@ impl JA4L {
  destination: ja4.destination,
  cipher_count: ja4.cipher_count,
  extension_count: ja4.extension_count,
- // from hash in Extract采样（simplify）
+ // from hash in Extractsampling（simplify）
  cipher_sample: ja4.cipher_hash[0..12.min(ja4.cipher_hash.len())].to_string(),
  extension_sample: ja4.extension_hash[0..12.min(ja4.extension_hash.len())].to_string(),
  }
  }
 
  /// 估算fingerprintCalculate成本（相pairvalue）
- /// returnvalue：1-10，1 as 最轻量，10 as 最重
+ /// returnvalue：1-10，1 as 最lightweight，10 as 最重
  pub fn computational_cost() -> u8 {
- 2 // JA4L is 轻量level的，成本评分 as 2/10
+ 2 // JA4L is lightweightlevel的，成本评分 as 2/10
  }
 
- /// 估算inside存占用（bytes）
+ /// 估算inside存usage（bytes）
  pub fn memory_footprint(&self) -> usize {
  std::mem::size_of::<Self>()
  + self.version.capacity()
@@ -684,7 +684,7 @@ mod ja4l_tests {
  #[test]
  fn test_ja4l_computational_cost() {
  let cost = JA4L::computational_cost();
- assert!(cost <= 3); // should is 轻量level的
+ assert!(cost <= 3); // should is lightweightlevel的
  }
 
  #[test]
@@ -692,7 +692,7 @@ mod ja4l_tests {
  let ja4l = JA4L::generate('t', "1.3", true, &[0x1301], &[0]);
  let footprint = ja4l.memory_footprint();
  
- // inside存占用should很小
+ // inside存usageshould很小
  assert!(footprint < 200); // 少于 200 bytes
  }
 }

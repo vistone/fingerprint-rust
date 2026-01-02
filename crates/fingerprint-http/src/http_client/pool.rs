@@ -1,6 +1,6 @@
 //! connection poolmanage
 //!
-//! based on netconnpool implementconnectionreuse and 生命cyclemanage
+//! based on netconnpool implementconnectionreuse and lifecyclemanage
 
 use super::{HttpClientError, Result};
 use std::time::Duration;
@@ -24,7 +24,7 @@ pub struct ConnectionPoolManager {
  pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
  /// defaultconfiguration
  config: PoolManagerConfig,
- /// HTTP/2 sessionpool（Fix: implement真正多路reuse）
+ /// HTTP/2 sessionpool（Fix: implementtrue multiplexreuse）
  #[cfg(feature = "http2")]
  h2_session_pool: Arc<super::h2_session_pool::H2SessionPool>,
  /// HTTP/3 sessionpool
@@ -64,7 +64,7 @@ pub struct PoolManagerConfig {
  pub connect_timeout: Duration,
  /// empty闲timeout
  pub idle_timeout: Duration,
- /// maximum生命cycle
+ /// maximumlifecycle
  pub max_lifetime: Duration,
  /// whetherenabledconnectionreuse
  pub enable_reuse: bool,
@@ -77,7 +77,7 @@ impl Default for PoolManagerConfig {
  min_idle: 10,
  connect_timeout: Duration::from_secs(30),
  idle_timeout: Duration::from_secs(90),
- max_lifetime: Duration::from_secs(600), // 10分钟
+ max_lifetime: Duration::from_secs(600), // 10minutes
  enable_reuse: true,
  }
  }
@@ -316,7 +316,7 @@ mod tests {
  #[test]
  fn test_pool_manager_creation() {
  let manager = ConnectionPoolManager::default();
- // connection poolFeaturesnotenabled when ，无需Checkinside部status
+ // connection poolFeaturesnotenabled when ，no needCheckinside部status
  assert_eq!(manager.get_stats().len(), 0);
  }
 

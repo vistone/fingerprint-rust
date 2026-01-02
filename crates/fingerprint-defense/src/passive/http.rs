@@ -147,8 +147,8 @@ impl HttpAnalyzer {
 
  /// Parse HTTP request
  fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
- // limitParsecountdata量，prevent超大包causeinsidememory exhausted
- let limit = 8192; // 8KB 足够regularrequest
+ // limitParsecountdata量，preventoversized包causeinsidememory exhausted
+ let limit = 8192; // 8KB enoughregularrequest
  let parse_data = if data.len() > limit {
  &data[..limit]
  } else {

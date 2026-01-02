@@ -5,7 +5,7 @@
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
 
-/// traffic方向
+/// trafficdirection
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TrafficDirection {
  /// inputtraffic（entersystem）
@@ -108,10 +108,10 @@ impl std::fmt::Display for ProtocolType {
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneed考虑completesystemupdown文，而not onlyonly is singleservice or port：
+/// systemlevelprotectionneedconsidercompletesystemupdown文，而not onlyonly is singleservice or port：
 /// - networkentitycompleteinfo（source/target IP、port）
-/// - protocoltype and 方向
-/// - when between戳 and 网卡interface
+/// - protocoltype and direction
+/// - when between戳 and network interfaceinterface
 /// - countpacketlevelinfo
 ///
 /// ## Examples
@@ -153,13 +153,13 @@ pub struct SystemContext {
  /// when between戳
  pub timestamp: DateTime<Utc>,
 
- /// 网卡interfacename
+ /// network interfaceinterfacename
  pub interface: Option<String>,
 
  /// countpacketsize（bytes）
  pub packet_size: usize,
 
- /// traffic方向（input/output）
+ /// trafficdirection（input/output）
  pub direction: TrafficDirection,
 }
 
@@ -221,7 +221,7 @@ impl SystemContext {
  }
  }
 
- /// Gettraffic唯一identifier符（ for 追踪）
+ /// Gettrafficuniqueidentifier符（ for 追踪）
  pub fn flow_id(&self) -> String {
  format!(
  "{}:{}->{}:{}:{}",

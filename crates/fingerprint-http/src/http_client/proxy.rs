@@ -200,7 +200,7 @@ fn connect_socks5_proxy(
 .map_err(HttpClientError::Io)?;
 
  // 5. readconnectionresponse
- let mut connect_response = [0u8; 10]; // 至少10bytes
+ let mut connect_response = [0u8; 10]; // at least10bytes
  stream
 .read_exact(&mut connect_response[..4])
 .map_err(HttpClientError::Io)?;

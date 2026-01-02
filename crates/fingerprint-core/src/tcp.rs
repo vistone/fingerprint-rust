@@ -27,7 +27,7 @@ impl Default for TcpProfile {
  fn default() -> Self {
  Self {
  ttl: 64, // Linux default
- window_size: 64240, // 典型value
+ window_size: 64240, // typicalvalue
  mss: None, // operating systemdefault
  window_scale: None, // operating systemdefault
  }
@@ -41,7 +41,7 @@ impl TcpProfile {
  pub fn for_os(os: crate::types::OperatingSystem) -> Self {
  match os {
  crate::types::OperatingSystem::Windows10 | crate::types::OperatingSystem::Windows11 => {
- // Windows: TTL=128, Window Size=64240 (Windows 10/11 典型value)
+ // Windows: TTL=128, Window Size=64240 (Windows 10/11 typicalvalue)
  Self {
  ttl: 128,
  window_size: 64240,
@@ -52,7 +52,7 @@ impl TcpProfile {
  crate::types::OperatingSystem::MacOS13
  | crate::types::OperatingSystem::MacOS14
  | crate::types::OperatingSystem::MacOS15 => {
- // macOS: TTL=64, Window Size=65535 (macOS 典型value)
+ // macOS: TTL=64, Window Size=65535 (macOS typicalvalue)
  Self {
  ttl: 64,
  window_size: 65535,
@@ -63,7 +63,7 @@ impl TcpProfile {
  crate::types::OperatingSystem::Linux
  | crate::types::OperatingSystem::LinuxUbuntu
  | crate::types::OperatingSystem::LinuxDebian => {
- // Linux: TTL=64, Window Size=65535 (Linux 典型value)
+ // Linux: TTL=64, Window Size=65535 (Linux typicalvalue)
  Self {
  ttl: 64,
  window_size: 65535,
@@ -76,14 +76,14 @@ impl TcpProfile {
 
  /// from User-Agent stringinferoperating system并Generates corresponding TCP Profile
  ///
- /// this is统一fingerprintGeneratecorefunction，ensurebrowserfingerprint and TCP fingerprintsync
+ /// this isunifiedfingerprintGeneratecorefunction，ensurebrowserfingerprint and TCP fingerprintsync
  pub fn from_user_agent(user_agent: &str) -> Self {
  use crate::types::OperatingSystem;
 
  // from User-Agent inferoperating system
- // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmove设备
+ // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
  let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
- // iOS 设备：use macOS TCP fingerprint（iOS based on macOS）
+ // iOS device：use macOS TCP fingerprint（iOS based on macOS）
  OperatingSystem::MacOS14
  } else if user_agent.contains("Windows NT 10.0") {
  OperatingSystem::Windows10
@@ -252,7 +252,7 @@ impl Fingerprint for TcpFingerprint {
  }
 
  // TCP fingerprintsimilar度judge：allow一定容差
- // heresimplifyprocess，actualshould考虑 TTL infervalue、Window Size 倍countclose系 etc.
+ // heresimplifyprocess，actualshouldconsider TTL infervalue、Window Size 倍countclose系 etc.
  self.hash() == other.hash()
  }
 

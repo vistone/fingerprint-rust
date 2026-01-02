@@ -18,10 +18,10 @@ pub struct IPInfo {
  /// 地区（optional）
  #[serde(skip_serializing_if = "Option::is_none")]
  pub region: Option<String>,
- /// 国家代码（optional）
+ /// 国家code（optional）
  #[serde(skip_serializing_if = "Option::is_none")]
  pub country: Option<String>,
- /// 地理坐标（optional）
+ /// geographic坐标（optional）
  #[serde(skip_serializing_if = "Option::is_none")]
  pub loc: Option<String>,
  /// group织/ISP（optional）
@@ -143,7 +143,7 @@ pub struct DNSConfig {
  pub ipinfo_token: String,
  /// domainlist（必填）
  pub domain_list: Vec<String>,
- /// store目录（optional，defaultcurrent目录）
+ /// storedirectory（optional，defaultcurrentdirectory）
  #[serde(default = "default_domain_ips_dir")]
  pub domain_ips_dir: String,
  /// Checkinterval（optional，default "2m"）

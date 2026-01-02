@@ -76,7 +76,7 @@ pub enum SystemType {
 /// TTL pattern
 #[derive(Debug, Clone, PartialEq)]
 pub enum TtlPattern {
- /// 通配符 *
+ /// wildcard *
  Wildcard,
  /// concretevalue
  Value(u8),
@@ -98,7 +98,7 @@ pub enum WindowMode {
 /// windowsizevaluepattern
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowSizePattern {
- /// 通配符 *
+ /// wildcard *
  Wildcard,
  /// concretevalue
  Value(u16),
@@ -164,7 +164,7 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
  let parts: Vec<&str> = sig.split(':').collect();
  if parts.len() < 7 {
  return Err(P0fParseError::InvalidSignature(format!(
- "signaturepartialcount不足: 期望7，actual{}",
+ "signaturepartialcountinsufficient: expected7，actual{}",
  parts.len()
  )));
  }
@@ -255,7 +255,7 @@ fn parse_label(label: &str) -> Result<SignatureLabel, P0fParseError> {
  let parts: Vec<&str> = label.split(':').collect();
  if parts.len() < 4 {
  return Err(P0fParseError::InvalidLabel(format!(
- "tagpartialcount不足: 期望4，actual{}",
+ "tagpartialcountinsufficient: expected4，actual{}",
  parts.len()
  )));
  }
@@ -326,14 +326,14 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  let mut options_order = Vec::new();
 
  // optionsformat: mss*20,10:mss,sok,ts,nop,ws
- // 第一partial is MSS pattern，第二partial is optionsorder
+ // firstpartial is MSS pattern，secondpartial is optionsorder
 
  let parts: Vec<&str> = options_str.split(':').collect();
  if parts.is_empty() {
  return Ok((mss_pattern, options_order));
  }
 
- // Parse MSS pattern（第一partial）
+ // Parse MSS pattern（firstpartial）
  // formatmay is: mss*20,10 or mss,1460
  let mss_part = parts[0];
  if mss_part.contains("mss") {
@@ -343,9 +343,9 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  // Parseoptionsorder
  // formatmay is: mss*20,10:mss,sok,ts,nop,ws
  // or 者: mss,1460:mss,sok,ts,nop,ws
- // 第二partial is optionsorder
+ // secondpartial is optionsorder
  if parts.len() > 1 {
- // 第二partialincludingoptionsorder
+ // secondpartialincludingoptionsorder
  for opt_str in parts[1].split(',') {
  let opt = match opt_str.trim() {
  "mss" => TcpOptionType::Mss,
@@ -366,7 +366,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  options_order.push(opt);
  }
  } else {
- // Ifno第二partial, mayoptionsorder就 in 第一partial（ in MSS patternafter）
+ // Ifnosecondpartial, mayoptionsorder就 in firstpartial（ in MSS patternafter）
  // format: mss*20,10 or mss,1460
  // 这种situationdown，optionsordermay不 exists， or 者need from other地方Extract
  // 暂 when 不process这种situation
@@ -458,7 +458,7 @@ impl From<P0fTcpSignature> for TcpSignature {
  // from windowvaluepatternExtractfixedvalue（ if may）
  let window_size = match &p0f_sig.window_value {
  WindowSizePattern::Value(v) => *v,
- _ => 0, // 通配符 or otherpattern
+ _ => 0, // wildcard or otherpattern
  };
 
  TcpSignature {

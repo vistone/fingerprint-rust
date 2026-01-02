@@ -1,6 +1,6 @@
 //! ClientHelloSpec Builder module
 //!
-//! provide Builder pattern来Build ClientHelloSpec，使代码更清晰、typesecurity
+//! provide Builder pattern来Build ClientHelloSpec，使code更清晰、typesecurity
 
 use crate::tls_config::spec::{
  ClientHelloSpec, CERT_COMPRESSION_BROTLI, POINT_FORMAT_UNCOMPRESSED, PSK_MODE_DHE,
@@ -25,7 +25,7 @@ use fingerprint_core::dicttls::{
 };
 
 /// ClientHelloSpec Builder
-/// use Builder patternBuild ClientHelloSpec，使代码更清晰
+/// use Builder patternBuild ClientHelloSpec，使code更清晰
 #[derive(Debug, Default)]
 pub struct ClientHelloSpecBuilder {
  cipher_suites: Vec<u16>,
@@ -91,7 +91,7 @@ impl ClientHelloSpecBuilder {
  }
 
  /// Chrome 136 defaultcipher suite
- /// in 136 version in ，Chrome 进一步优化了encryptionsuiteweight，completelypriority考虑现代 AEAD suite
+ /// in 136 version in ，Chrome 进一步optimize了encryptionsuiteweight，completelypriorityconsidermodern AEAD suite
  pub fn chrome_136_cipher_suites() -> Vec<u16> {
  vec![
  GREASE_CS,
@@ -104,7 +104,7 @@ impl ClientHelloSpecBuilder {
  cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
  cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
  cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
- // 136 version in 大多countplatformupalready几乎不再首选这些旧suite
+ // 136 version in 大多countplatformupalreadyalmost不再首选these旧suite
  cs::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
  cs::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
  cs::TLS_RSA_WITH_AES_128_GCM_SHA256,

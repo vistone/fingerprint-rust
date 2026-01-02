@@ -6,18 +6,18 @@ use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
 use std::sync::Arc;
 
-/// capture引擎
+/// captureengine
 pub struct CaptureEngine {
  analyzer: Arc<PassiveAnalyzer>,
 }
 
 impl CaptureEngine {
- /// Create a newcapture引擎
+ /// Create a newcaptureengine
  pub fn new(analyzer: Arc<PassiveAnalyzer>) -> Self {
  Self { analyzer }
  }
 
- /// from specified网卡start实 when capture
+ /// from specifiednetwork interfacestart实 when capture
  pub async fn start_live(&self, device_name: &str) -> Result<(), String> {
  // findspecifiednetworkinterface
  let interface = datalink::interfaces()
@@ -29,7 +29,7 @@ impl CaptureEngine {
 
  let analyzer = self.analyzer.clone();
 
- // use spawn_blocking because pnet receive is 阻塞的
+ // use spawn_blocking because pnet receive is blocking的
  tokio::task::spawn_blocking(move || {
  Self::capture_from_interface(interface, analyzer)
  });
@@ -37,16 +37,16 @@ impl CaptureEngine {
  Ok(())
  }
 
- /// from networkinterfacecapturecountpacket（阻塞式）
+ /// from networkinterfacecapturecountpacket（blocking式）
  fn capture_from_interface(
  interface: NetworkInterface,
  analyzer: Arc<PassiveAnalyzer>,
  ) -> Result<(), String> {
- // Createcountdata链路通道
+ // Createcountdata链路channel
  let (_tx, mut rx) = match datalink::channel(&interface, Default::default()) {
  Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
- Ok(_) => return Err("不support通道type".to_string()),
- Err(e) => return Err(format!("Create通道failure: {}", e)),
+ Ok(_) => return Err("不supportchanneltype".to_string()),
+ Err(e) => return Err(format!("Createchannelfailure: {}", e)),
  };
 
  // loopreceivecountpacket

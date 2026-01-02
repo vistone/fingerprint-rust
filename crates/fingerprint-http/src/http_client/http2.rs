@@ -25,7 +25,7 @@ pub fn send_http2_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // Fix: useglobalsingleton Runtime，avoid每次request都Create a newrun when 
+ // Fix: useglobalsingleton Runtime，avoideach timerequest都Create a newrun when 
  RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
@@ -136,7 +136,7 @@ async fn send_http2_request_async(
  }
 
  // Add headers
- // Note: 不要manualAdd host header，h2 willautomatic from URI Extract
+ // Note: do notmanualAdd host header，h2 willautomatic from URI Extract
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
@@ -187,9 +187,9 @@ async fn send_http2_request_async(
  let status_code = response.status().as_u16();
  let headers = response.headers().clone();
 
- // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹attack
- // h2 crate 0.4 default MAX_HEADER_LIST_SIZE usually较大，weAdd额outsideCheck
- const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议minimumvalue)
+ // securityFix: Check HTTP/2 responseheadersize，prevent Header compressionbombattack
+ // h2 crate 0.4 default MAX_HEADER_LIST_SIZE usuallylarger，weAdd额outsideCheck
+ const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 suggestminimumvalue)
  let total_header_size: usize = headers
 .iter()
 .map(|(k, v)| k.as_str().len() + v.len())

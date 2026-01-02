@@ -144,8 +144,8 @@ impl TcpAnalyzer {
 
  /// loaddefaultsignature
  fn load_default_signatures(&mut self) -> Result<(), String> {
- // Addsome基础signatureasExamples
- // 这些 is commonoperating systemsignature
+ // AddsomebasicsignatureasExamples
+ // these is commonoperating systemsignature
 
  // Linux Examplessignature
  let linux_sig = TcpSignature {

@@ -101,7 +101,7 @@ impl HttpRequest {
  /// Build HTTP/1.1 requeststring
  ///
  /// Note: 该methodwill把 body when作 UTF-8 text拼接 to string in ，**不适 for 二进制 body**。
- /// 如需send二进制countdata，请use `build_http1_request_bytes`。
+ /// if neededsend二进制countdata，请use `build_http1_request_bytes`。
  pub fn build_http1_request(&self, host: &str, path: &str) -> String {
  // security清洗：prevent CRLF 注入
  let safe_method = self.method.as_str().replace(['\r', '\n'], "");
@@ -148,7 +148,7 @@ impl HttpRequest {
  request
  }
 
- /// Build HTTP/1.1 requestbytes（推荐）
+ /// Build HTTP/1.1 requestbytes（recommend）
  pub fn build_http1_request_bytes(
  &self,
  host: &str,

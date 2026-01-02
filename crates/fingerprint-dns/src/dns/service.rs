@@ -19,7 +19,7 @@ use tokio::time::sleep;
 /// DNS Service（Corresponds to Go version's Service）
 pub struct Service {
  config: Arc<DNSConfig>,
- resolver: Arc<RwLock<DNSResolver>>, // use RwLock 以便 in start when Update
+ resolver: Arc<RwLock<DNSResolver>>, // use RwLock so that in start when Update
  ipinfo_client: Arc<IPInfoClient>,
  running: Arc<RwLock<bool>>,
  stop_tx: Arc<RwLock<Option<oneshot::Sender<()>>>>,
@@ -85,7 +85,7 @@ impl Service {
  }
 
  /// startservice（ in back台threadrun，non-blockingmainthread）
- /// automaticmaintain DNS serverpool（dnsservernames.json），无需manual干预
+ /// automaticmaintain DNS serverpool（dnsservernames.json），no needmanual干pre
  pub async fn start(&self) -> Result<(), DNSError> {
  // Checkwhetheralready in run
  {
@@ -124,29 +124,29 @@ impl Service {
  *resolver_guard = new_resolver;
  }
 
- // Createstop通道
+ // Createstopchannel
  let (tx, mut rx) = oneshot::channel();
  {
  let mut stop_tx = self.stop_tx.write().await;
  *stop_tx = Some(tx);
  }
 
- // startbackbackground task：regular淘汰慢DNSserver（non-blockingmainthread）
- // reference Go 项destinationimplement： in Parse过程 in recordperformance，back台regularcleanup慢node
+ // startbackbackground task：regularslow eliminationDNSserver（non-blockingmainthread）
+ // reference Go 项destinationimplement： in Parseprocess in recordperformance，back台regularcleanup慢node
  let resolver_for_cleanup = self.resolver.clone();
  let server_pool_for_cleanup = server_pool_arc.clone();
  let dns_timeout_for_cleanup = dns_timeout;
  tokio::spawn(async move {
- let cleanup_interval = Duration::from_secs(300); // 每5分钟cleanuponce（pair应 Go 项destinationregularcleanup）
- let max_avg_response_time_ms = 2000.0; // averageresponse when between超过2seconds淘汰
- let max_failure_rate = 0.5; // failure率超过50%淘汰
+ let cleanup_interval = Duration::from_secs(300); // 每5minutescleanuponce（pair应 Go 项destinationregularcleanup）
+ let max_avg_response_time_ms = 2000.0; // averageresponse when betweenexceed2seconds淘汰
+ let max_failure_rate = 0.5; // failure率exceed50%淘汰
 
  loop {
  tokio::time::sleep(cleanup_interval).await;
 
- // 淘汰慢server（pair应 Go item RemoveSlowServers）
+ // slow eliminationserver（pair应 Go item RemoveSlowServers）
  let old_count = server_pool_for_cleanup.len();
- let min_active_servers = 5; // 生产environmentdown建议至少preserve 5serveras保bottom
+ let min_active_servers = 5; // productionenvironmentdownsuggestat leastpreserve 5serveras保bottom
  let optimized_pool = server_pool_for_cleanup.remove_slow_servers(
  max_avg_response_time_ms,
  max_failure_rate,
@@ -188,7 +188,7 @@ impl Service {
 
  eprintln!("[DNS Service] servicealreadystart，will in back台run（non-blockingmainthread）");
  eprintln!(
- "[DNS Service] configuration: domainlist {} ，Checkinterval: {}，countdata目录: {}",
+ "[DNS Service] configuration: domainlist {} ，Checkinterval: {}，countdatadirectory: {}",
  config.domain_list.len(),
  config.interval,
  config.domain_ips_dir
@@ -203,9 +203,9 @@ impl Service {
  let mut last_has_new_ips = false;
 
  loop {
- // Checkstop信号
+ // Checkstopsignal
  if rx.try_recv().is_ok() {
- eprintln!("[DNS Service] 收 to stop信号，正 in stopservice...");
+ eprintln!("[DNS Service] 收 to stopsignal，正 in stopservice...");
  break;
  }
 
@@ -220,7 +220,7 @@ impl Service {
  resolve_duration.as_secs_f64()
  );
 
- // 智能intervaladjust：discovernew IP when high频detect，otherwise指count退避
+ // 智能intervaladjust：discovernew IP when high频detect，otherwise指countbackoff
  if has_new_ips {
  current_interval = base_interval;
  last_has_new_ips = true;
@@ -234,7 +234,7 @@ impl Service {
  current_interval = base_interval;
  last_has_new_ips = false;
  } else {
- // 指count退避，but不超过 10 倍基础interval
+ // 指countbackoff，but不exceed 10 倍basicinterval
  current_interval = (current_interval * 2).min(base_interval * 10);
  }
  eprintln!(
@@ -250,14 +250,14 @@ impl Service {
  resolve_duration.as_secs_f64(),
  e
  );
- // 出错 when use基础interval
+ // 出错 when usebasicinterval
  current_interval = base_interval;
  }
  }
 
- // Checkstop信号（ in waitintervalfront）
+ // Checkstopsignal（ in waitintervalfront）
  if rx.try_recv().is_ok() {
- eprintln!("[DNS Service] 收 to stop信号，正 in stopservice...");
+ eprintln!("[DNS Service] 收 to stopsignal，正 in stopservice...");
  break;
  }
 
@@ -278,7 +278,7 @@ impl Service {
  eprintln!("[DNS Service] servicealreadystop");
  });
 
- eprintln!("[DNS Service] servicealready in back台start，mainthread不will被阻塞");
+ eprintln!("[DNS Service] servicealready in back台start，mainthread不will被blocking");
  Ok(())
  }
 
@@ -296,7 +296,7 @@ impl Service {
  *self.running.read().await
  }
 
- /// settings基础executeinterval
+ /// settingsbasicexecuteinterval
  pub fn set_interval(&self, _interval: Duration) {
  // Note: dynamicadjustpatterndown，actualintervalwillBased onwhetherdiscover新IP而change
  // thisfunctionmain for staticpattern，目front暂不support
@@ -356,7 +356,7 @@ async fn resolve_and_save_all_internal(
 .map(|e| e.ipv6.iter().map(|ip| ip.ip.clone()).collect())
 .unwrap_or_default();
 
- // 找出新discover IP（只query这些）
+ // 找出新discover IP（只querythese）
  let new_ipv4: Vec<String> = all_ipv4.difference(&existing_ipv4).cloned().collect();
  let new_ipv6: Vec<String> = all_ipv6.difference(&existing_ipv6).cloned().collect();
 

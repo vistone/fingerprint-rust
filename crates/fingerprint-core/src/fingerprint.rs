@@ -1,6 +1,6 @@
 //! fingerprintcoreabstract
 //!
-//! define统一fingerprintabstract，support TLS、HTTP、TCP etc.多种fingerprinttype。
+//! defineunifiedfingerprintabstract，support TLS、HTTP、TCP etc.多种fingerprinttype。
 
 use crate::metadata::FingerprintMetadata;
 
@@ -39,7 +39,7 @@ pub trait Fingerprint: Send + Sync {
  /// Getfingerprinttype
  fn fingerprint_type(&self) -> FingerprintType;
 
- /// Getfingerprint唯一identifier符（usually is hashvalue）
+ /// Getfingerprintuniqueidentifier符（usually is hashvalue）
  fn id(&self) -> String;
 
  /// Getfingerprintmetadata
@@ -125,11 +125,11 @@ impl FingerprintComparator {
  let h1 = f1.hash();
  let h2 = f2.hash();
 
- // simplesimilar度Calculate（based onhashvalue汉明距离）
+ // simplesimilar度Calculate（based onhashvalue汉明distance）
  let similarity = if h1 == h2 {
  1.0
  } else {
- // Calculatehashvalue差异
+ // Calculatehashvaluedifference
  let diff = (h1 ^ h2).count_ones() as f64;
  let max_diff = 64.0; // u64 maximumbit count
  1.0 - (diff / max_diff)

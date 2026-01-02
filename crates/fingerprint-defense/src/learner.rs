@@ -1,6 +1,6 @@
-//! fingerprint自学习module
+//! fingerprint自learnmodule
 //!
-//! automatic from observe to traffic in 学习 and Updatefingerprintsignature。
+//! automatic from observe to traffic in learn and Updatefingerprintsignature。
 
 use crate::database::FingerprintDatabase;
 use crate::passive::PassiveAnalysisResult;
@@ -9,18 +9,18 @@ use std::sync::Arc;
 
 use fingerprint_core::fingerprint::Fingerprint;
 
-/// 自学习analysiser
+/// 自learnanalysiser
 pub struct SelfLearningAnalyzer {
- #[allow(dead_code)] // will来will for store学习 to fingerprint
+ #[allow(dead_code)] // will来will for storelearn to fingerprint
  db: Arc<FingerprintDatabase>,
  /// not知fingerprintobservecounter (fp_id -> count)
  observations: DashMap<String, u64>,
- /// 学习阈value（observe多少次back转入database）
+ /// learning thresholdvalue（observe多少次back转入database）
  learning_threshold: u64,
 }
 
 impl SelfLearningAnalyzer {
- /// Create a new学习analysiser
+ /// Create a newlearnanalysiser
  pub fn new(db: Arc<FingerprintDatabase>) -> Self {
  Self {
  db,
@@ -29,7 +29,7 @@ impl SelfLearningAnalyzer {
  }
  }
 
- /// processanalysisresult并学习
+ /// processanalysisresult并learn
  pub fn process_result(&self, result: &PassiveAnalysisResult) {
  // respectivelyprocesseachlayerlevelfingerprint
  if let Some(tls) = &result.tls {
@@ -75,7 +75,7 @@ impl SelfLearningAnalyzer {
  }
  }
 
- /// settings学习阈value
+ /// settingslearning thresholdvalue
  pub fn set_threshold(&mut self, threshold: u64) {
  self.learning_threshold = threshold;
  }

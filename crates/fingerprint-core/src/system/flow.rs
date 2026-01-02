@@ -85,7 +85,7 @@ impl Default for FlowCharacteristics {
 /// ## Core Concept
 ///
 /// systemlevelprotectionneed from **networktraffic**角度performanalysis and protection，而is notonlyonlyfocussingleservice：
-/// - completesystemupdown文（source/target、protocol、方向 etc.）
+/// - completesystemupdown文（source/target、protocol、direction etc.）
 /// - detect to fingerprintinfo（TLS、HTTP、TCP etc.）
 /// - trafficstatisticstrait and behaviorpattern
 ///
@@ -157,7 +157,7 @@ impl NetworkFlow {
  self.characteristics.update(packet_size);
  }
 
- /// Gettraffic唯一identifier符
+ /// Gettrafficuniqueidentifier符
  pub fn flow_id(&self) -> String {
  self.context.flow_id()
  }

@@ -1,7 +1,7 @@
 //! HTTP/2 sessionpool
 //!
-//! pool化 h2::client::SendRequest handle，implement真正 HTTP/2 多路reuse
-//! avoid每次request都reperform TLS and HTTP/2 handshake
+//! pool化 h2::client::SendRequest handle，implementtrue HTTP/2 multiplereuse
+//! avoideach timerequest都reperform TLS and HTTP/2 handshake
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::Result;
@@ -20,7 +20,7 @@ use tokio::sync::Mutex as TokioMutex;
 use h2::client::SendRequest;
 
 /// HTTP/2 sessionpoolmanageer
-/// Fix: pool化 SendRequest handle，implement真正多路reuse
+/// Fix: pool化 SendRequest handle，implementtrue multiplexreuse
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub struct H2SessionPool {
  /// sessionpool（按 host:port group）
@@ -28,7 +28,7 @@ pub struct H2SessionPool {
  sessions: Arc<Mutex<HashMap<String, Arc<H2Session>>>>,
  /// 正 in Createinsession（avoidsame key concurrentCreate竞争）
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
- /// sessiontimeout duration（default 5 分钟）
+ /// sessiontimeout duration（default 5 minutes）
  session_timeout: Duration,
 }
 
@@ -37,8 +37,8 @@ pub struct H2SessionPool {
 struct H2Session {
  /// SendRequest handle（ for sendrequest）
  send_request: Arc<TokioMutex<SendRequest<bytes::Bytes>>>,
- /// backbackground taskhandle（ for manage h2_conn 生命cycle）
- /// whenconnection失效 when ，任务willend，wecandetect to 并removesession
+ /// backbackground taskhandle（ for manage h2_conn lifecycle）
+ /// whenconnectioninvalid when ，taskwillend，wecandetect to 并removesession
  _background_task: tokio::task::JoinHandle<()>,
  /// finallywhen used between
  last_used: Arc<Mutex<Instant>>,
@@ -80,11 +80,11 @@ impl H2SessionPool {
  self.sessions.lock().expect("unable toGetsessionpoollock")
  });
 
- // cleanupexpire and 失效session
+ // cleanupexpire and invalidsession
  self.cleanup_expired_sessions(&mut sessions);
 
  // Checkwhether有availablesession
- // 先Checksessionwhether exists且valid，avoid in holdlock when perform复杂operation
+ // 先Checksessionwhether exists且valid，avoid in holdlock when performcomplexoperation
  let session_valid = sessions.get(key).and_then(|session| {
  let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
@@ -105,7 +105,7 @@ impl H2SessionPool {
  return Ok(send_request);
  }
 
- // Ifsession existsbutalready失效, remove它
+ // Ifsession existsbutalreadyinvalid, remove它
  if sessions.contains_key(key) {
  sessions.remove(key);
  }
@@ -130,11 +130,11 @@ impl H2SessionPool {
  };
 
  if let Some(mut rx) = rx {
- // waitoriginalCreate任务complete
+ // waitoriginalCreatetaskcomplete
  let _ = rx.changed().await;
- // Createcompleteback递归call以Get新Createsession
- // Note: due to Fut limit，herecannotdirectly递归，weactualupshould in outsidelayerloop
- // butin order to代码简洁，weheredirectlyjump to reChecklogic
+ // Createcompletebackrecursivecall以Get新Createsession
+ // Note: due to Fut limit，herecannotdirectlyrecursive，weactualupshould in outsidelayerloop
+ // butin order tocode简洁，weheredirectlyjump to reChecklogic
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 
@@ -151,7 +151,7 @@ impl H2SessionPool {
  let key_clone = key.to_string();
  let sessions_clone = self.sessions.clone();
 
- // startbackbackground taskmanageconnection生命cycle
+ // startbackbackground taskmanageconnectionlifecycle
  let background_task = tokio::spawn(async move {
  // run h2_conn 直 to connectionclose
  if let Err(e) = h2_conn.await {
@@ -161,7 +161,7 @@ impl H2SessionPool {
  if let Ok(mut valid) = is_valid_clone.lock() {
  *valid = false;
  }
- // from pool in remove失效session
+ // from pool in removeinvalidsession
  if let Ok(mut sessions) = sessions_clone.lock() {
  sessions.remove(&key_clone);
  }
@@ -188,11 +188,11 @@ impl H2SessionPool {
  Ok(send_request)
  }
 
- /// cleanupexpire and 失效session
+ /// cleanupexpire and invalidsession
  fn cleanup_expired_sessions(&self, sessions: &mut HashMap<String, Arc<H2Session>>) {
  let now = Instant::now();
  sessions.retain(|_key, session| {
- // Checksessionwhether仍然valid
+ // Checksessionwhetherstillvalid
  let is_valid = session.is_valid.lock().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
 
@@ -204,7 +204,7 @@ impl H2SessionPool {
  true // Iflockfailure, preservesession
  }
  } else {
- false // remove失效 or completedsession
+ false // removeinvalid or completedsession
  }
  });
  }
@@ -227,6 +227,6 @@ impl H2SessionPool {
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 impl Default for H2SessionPool {
  fn default() -> Self {
- Self::new(Duration::from_secs(300)) // default 5 分钟timeout
+ Self::new(Duration::from_secs(300)) // default 5 minutestimeout
  }
 }

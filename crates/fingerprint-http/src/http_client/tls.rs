@@ -1,8 +1,8 @@
 //! TLS connectionsupport
 //!
-//! use官方 rustls asbottomlayer TLS implement
+//! useofficial rustls asbottomlayer TLS implement
 //! through ClientHelloCustomizer applicationbrowserfingerprint（Chrome、Firefox、Safari etc.）
-//! simulate市场成熟browser TLS fingerprint，不custom自己fingerprint
+//! simulate市场成熟browser TLS fingerprint，不customselffingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -12,9 +12,9 @@ use std::sync::Arc;
 
 /// TLS connectioner
 ///
-/// use官方 rustls，through ClientHelloCustomizer applicationbrowserfingerprint
+/// useofficial rustls，through ClientHelloCustomizer applicationbrowserfingerprint
 pub struct TlsConnector {
- // rustls configurationthrough HttpClientConfig 传递
+ // rustls configurationthrough HttpClientConfig pass
 }
 
 impl TlsConnector {
@@ -31,7 +31,7 @@ impl Default for TlsConnector {
 
 /// send HTTPS request
 ///
-/// use官方 rustls asbottomlayer TLS implement
+/// useofficial rustls asbottomlayer TLS implement
 /// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
 /// simulate市场成熟browser TLS fingerprint（Chrome、Firefox、Safari etc.）
 pub fn send_https_request(
@@ -56,7 +56,7 @@ pub fn send_https_request(
 .set_write_timeout(Some(config.write_timeout))
 .map_err(HttpClientError::Io)?;
 
- // use官方 rustls，through ClientHelloCustomizer applicationbrowserfingerprint
+ // useofficial rustls，through ClientHelloCustomizer applicationbrowserfingerprint
 
  #[cfg(feature = "rustls-tls")]
  {
@@ -143,7 +143,7 @@ pub fn send_https_request_with_pool(
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
- // keep conn 生命cycle覆盖整request；同 when 用 clone 得 to available std::net::TcpStream
+ // keep conn lifecyclecover整request；同 when 用 clone 得 to available std::net::TcpStream
  let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
  tcp_stream

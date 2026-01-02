@@ -88,7 +88,7 @@ impl PassiveAnalyzer {
  context.timestamp = chrono::Utc::now();
  context.packet_size = packet.payload.len();
 
- // 智能方向identify： if is privateaddress发往公网，usually is Outbound；反之 is Inbound
+ // 智能directionidentify： if is privateaddress发往公网，usually is Outbound；反之 is Inbound
  // herelogiccanBased on部署environment（gateway vs final端）进一步微调
  let src_is_local = match packet.src_ip {
  std::net::IpAddr::V4(ip) => ip.is_loopback() || ip.is_private(),

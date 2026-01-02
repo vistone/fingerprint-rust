@@ -1,7 +1,7 @@
 //! JA4 fingerprintGeneratemodule
 //!
 //! implementcomplete JA4 TLS clientfingerprintGenerate
-//! reference：Huginn Net JA4 implement and 官方 FoxIO 规范
+//! reference：Huginn Net JA4 implement and official FoxIO specification
 
 use crate::tls_config::grease::filter_grease_values;
 use crate::tls_config::version::TlsVersion;
@@ -27,7 +27,7 @@ impl fmt::Display for Ja4Fingerprint {
 }
 
 impl Ja4Fingerprint {
- /// Get变体name（"ja4" or "ja4_o"）
+ /// Getvariantname（"ja4" or "ja4_o"）
  pub fn variant_name(&self) -> &'static str {
  match self {
  Ja4Fingerprint::Sorted(_) => "ja4",
@@ -63,7 +63,7 @@ impl fmt::Display for Ja4RawFingerprint {
 }
 
 impl Ja4RawFingerprint {
- /// Get变体name（"ja4_r" or "ja4_ro"）
+ /// Getvariantname（"ja4_r" or "ja4_ro"）
  pub fn variant_name(&self) -> &'static str {
  match self {
  Ja4RawFingerprint::Sorted(_) => "ja4_r",
@@ -81,7 +81,7 @@ impl Ja4RawFingerprint {
 }
 
 /// JA4 载荷struct
-/// follow官方 FoxIO 规范
+/// followofficial FoxIO specification
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ja4Payload {
  /// JA4_a: TLS version + SNI + cipher suitecount + extensioncount + ALPN
@@ -216,14 +216,14 @@ impl Ja4Signature {
 .collect::<Vec<String>>()
 .join(",");
 
- // signaturealgorithm不sort（Based on规范），butfilter GREASE
+ // signaturealgorithm不sort（Based onspecification），butfilter GREASE
  let sig_algs_str = filtered_sig_algs
 .iter()
 .map(|s| format!("{s:04x}"))
 .collect::<Vec<String>>()
 .join(",");
 
- // Based on规范， if nosignaturealgorithm，string不below划线ending
+ // Based onspecification， if nosignaturealgorithm，string不below划线ending
  let ja4_c_raw = if sig_algs_str.is_empty() {
  extensions_str
  } else if extensions_str.is_empty() {
@@ -242,7 +242,7 @@ impl Ja4Signature {
  // JA4 原beginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
  let ja4_raw_full = format!("{ja4_a}_{ja4_b_raw}_{ja4_c_raw}");
 
- // Based onorderCreate相应enum变体
+ // Based onorderCreate相应enumvariant
  let ja4_fingerprint = if original_order {
  Ja4Fingerprint::Unsorted(ja4_hashed)
  } else {

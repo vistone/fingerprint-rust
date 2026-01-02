@@ -4,17 +4,17 @@
 //!
 //! explain：
 //! - rustls 并不一定willsend spec 里列出allextension；herewill以 rustls actual `used` as 准，
-//! onlypair交set做重排，并把not覆盖's extensions按 rustls defaultorder追加，ensure仍 is anvalid排列。
-//! - spec 里mayappearmultiple GREASE extension（ in realbrowser in 它们usually is different GREASE value）。
+//! onlypair交set做重排，并把notcover's extensions按 rustls defaultorder追加，ensure仍 is anvalid排列。
+//! - spec 里mayappearmultiple GREASE extension（ in realbrowser in themusually is different GREASE value）。
 //! as avoid"duplicateextensiontype"cause rustls refuse，wewill把each GREASE 占bit符map成different GREASE value。
 //!
 //! Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork，standard rustls 不support。
-//! currentstandard rustls versionexcluding ClientHelloCustomizer API，therefore此module代码被暂 when disabled。
-//! 如需use此Features，needusesupport ClientHelloCustomizer rustls fork（如 vistone-rustls）。
+//! currentstandard rustls versionexcluding ClientHelloCustomizer API，therefore此modulecode被暂 when disabled。
+//! if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork（如 vistone-rustls）。
 
 // 暂 when disabled整module，becausestandard rustls 不support ClientHelloCustomizer API
-// 如需enabled，needusesupport该 API rustls fork
-// whenusesupport ClientHelloCustomizer rustls fork when ，canceldown面comment并enabled相close代码
+// if neededenabled，needusesupport该 API rustls fork
+// whenusesupport ClientHelloCustomizer rustls fork when ，canceldown面comment并enabled相closecode
 #![cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 
 #[cfg(feature = "rustls-client-hello-customizer")]
@@ -30,7 +30,7 @@ use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer};
 use rustls::internal::msgs::enums::ExtensionType;
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// from `ClientHelloSpec` Calculate"期望's extensionsorder"（以 u16 represent）。
+/// from `ClientHelloSpec` Calculate"expected's extensionsorder"（以 u16 represent）。
 ///
 /// - deduplicate：同一extensiontype只preserve第onceappear
 /// - GREASE：把duplicate GREASE 占bit符map成different GREASE value
@@ -64,7 +64,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
 #[cfg(feature = "rustls-client-hello-customizer")]
 /// will rustls current `used` 's extensionsorder，按 `desired`（from spec）重排。
 ///
-/// 规则：
+/// rule：
 /// - 只pair `used` 里appear's extensions做重排（交set）
 /// - `desired` 里duplicate/不 in `used` will被ignore
 /// - `used` 里notappear in `desired` 's extensionskeep原相pairorder并追加 to end尾

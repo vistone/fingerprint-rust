@@ -5,7 +5,7 @@
 use fingerprint_core::types::BrowserType;
 use fingerprint_core::utils::{extract_chrome_version, extract_platform, random_choice_string};
 
-/// 全球languagelist（按usefrequencysort）
+/// globallanguagelist（按usefrequencysort）
 pub static LANGUAGES: &[&str] = &[
  "en-US,en;q=0.9", // 英语（美国）
  "zh-CN,zh;q=0.9,en;q=0.8", // in 文（简体）
@@ -44,7 +44,7 @@ pub static LANGUAGES: &[&str] = &[
 pub struct HTTPHeaders {
  /// Accept header
  pub accept: String,
- /// Accept-Language header（support全球language）
+ /// Accept-Language header（supportgloballanguage）
  pub accept_language: String,
  /// Accept-Encoding header
  pub accept_encoding: String,
@@ -92,7 +92,7 @@ impl HTTPHeaders {
 
  /// clone HTTPHeaders pair象，returnannew副本
  ///
- /// Note: 此methodname and standard库的 `Clone::clone` different，以avoid命名冲突
+ /// Note: 此methodname and standard库的 `Clone::clone` different，以avoid命名conflict
  #[allow(clippy::should_implement_trait)]
  pub fn clone(&self) -> Self {
  Self {
@@ -113,7 +113,7 @@ impl HTTPHeaders {
  }
 
  /// settingsusercustom header（systemwillautomaticmerge to to_map() in ）
- /// this is推荐method，settingsbackcall to_map() 即可automaticincludingcustom headers
+ /// this isrecommendmethod，settingsbackcall to_map() 即可automaticincludingcustom headers
  /// Examples：result.headers.set("Cookie", "session_id=abc123")
  pub fn set(&mut self, key: &str, value: &str) {
  if value.is_empty() {
@@ -139,7 +139,7 @@ impl HTTPHeaders {
 
  /// will HTTPHeaders convert to HashMap，并mergeusercustom headers
  /// custom_headers: usercustom headers（如 session、cookie、apikey etc.）
- /// usercustom headers priority更high，will覆盖systemGenerate headers
+ /// usercustom headers priority更high，willcoversystemGenerate headers
  pub fn to_map_with_custom(
  &self,
  custom_headers: &[(&str, &str)],
@@ -200,7 +200,7 @@ impl HTTPHeaders {
  }
  }
 
- // merge传入 custom_headers（priority最high，will覆盖allalready有 headers）
+ // merge传入 custom_headers（priority最high，willcoverallalready有 headers）
  for (key, value) in custom_headers {
  if !value.is_empty() {
  headers.insert((*key).to_string(), (*value).to_string());
@@ -315,7 +315,7 @@ pub fn generate_headers(
  }
  }
  BrowserType::Opera => {
- // Opera use Chrome inside核，headers 类似 Chrome
+ // Opera use Chrome inside核，headers similar Chrome
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
  headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
  headers.sec_fetch_site = "none".to_string();

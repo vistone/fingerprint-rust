@@ -1,7 +1,7 @@
 //! TLS ClientHello Signature module
 //!
 //! provide TLS ClientHello signatureExtract and compareFeatures
-//! reference：Huginn Net Signature struct设计
+//! reference：Huginn Net Signature structdesign
 
 use crate::tls_config::grease::{filter_grease_values, is_grease_value};
 use crate::tls_config::version::TlsVersion;

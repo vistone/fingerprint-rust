@@ -132,9 +132,9 @@ impl ServerPool {
  Ok(())
  }
 
- /// 淘汰慢server（averageresponse when between超过阈value or failure率过high）
+ /// slow eliminationserver（averageresponse when betweenexceed阈value or failure率过high）
  /// returnnewserverpool，non-blockingmainthread
- /// Fix: increase min_active_servers parameter，ensure至少preservespecifiedcountserver（按performancesort）
+ /// Fix: increase min_active_servers parameter，ensureat leastpreservespecifiedcountserver（按performancesort）
  pub fn remove_slow_servers(
  &self,
  max_avg_response_time_ms: f64,
@@ -146,7 +146,7 @@ impl ServerPool {
  Ok(guard) => guard,
  Err(e) => {
  eprintln!("Warning: Lock poisoned in remove_slow_servers: {}", e);
- // Iflock in 毒, returnallserver（不淘汰任何server）
+ // Iflock in 毒, returnallserver（不淘汰anyserver）
  return Self::new(self.servers.iter().cloned().collect());
  }
  };
@@ -178,7 +178,7 @@ impl ServerPool {
 
  // 容错保障： if filterback剩downserver太少，按performancesort强行preserve top N
  if filtered.len() < min_active_servers && !scored_servers.is_empty() {
- // 按 failure率 (第一closekey字) and response when between (第二closekey字) 升序sort
+ // 按 failure率 (firstclosekey字) and response when between (secondclosekey字) 升序sort
  scored_servers.sort_by(|a, b| {
  a.2.partial_cmp(&b.2)
 .unwrap_or(std::cmp::Ordering::Equal)
@@ -192,7 +192,7 @@ impl ServerPool {
 .collect();
 
  eprintln!(
- "[DNS ServerPool] 满足条件server不足 (only {} )，强行preserveperformancefront {} 名",
+ "[DNS ServerPool] 满足条件serverinsufficient (only {} )，强行preserveperformancefront {} 名",
  filtered.len(),
  min_active_servers
  );
@@ -261,14 +261,14 @@ impl ServerPool {
  serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
  // securityFix: 原child性write，useunique temporaryfile名prevent竞态条件
- // use进程 ID ensuretemporaryfile名唯一，avoid多进程同 when write when 竞态条件
+ // use进程 ID ensuretemporaryfile名unique，avoid多进程同 when write when 竞态条件
  let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
  fs::write(&temp_path, json_content)
 .map_err(|e| crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e)))?;
  fs::rename(&temp_path, path).map_err(|e| {
- // If重命名failure, cleanuptemporaryfile
+ // Ifrenamefailure, cleanuptemporaryfile
  let _ = std::fs::remove_file(&temp_path);
- crate::dns::types::DNSError::Config(format!("unable to重命名file: {}", e))
+ crate::dns::types::DNSError::Config(format!("unable torenamefile: {}", e))
  })?;
 
  Ok(())
@@ -458,7 +458,7 @@ impl ServerPool {
  })
 .buffer_unordered(max_concurrency);
 
- // stream式processalltest任务
+ // stream式processalltesttask
  while let Some(_result) = test_tasks.next().await {
  let mut count = match processed_count_for_progress.lock() {
  Ok(guard) => guard,
@@ -477,7 +477,7 @@ impl ServerPool {
  }
  };
 
- // 每process1000就outputonce进度
+ // 每process1000就outputonceprogress
  if current_processed.is_multiple_of(1000) {
  eprintln!(
  "alreadytest {}/{} server，discover {} available",
