@@ -53,6 +53,13 @@ impl CaptureEngine {
         loop {
             match rx.next() {
                 Ok(packet) => {
+                    // 安全检查：限制最大数据包大小以防止 DoS 攻击（65535 字节 = 最大 IP 包）
+                    const MAX_PACKET_SIZE: usize = 65535;
+                    if packet.len() > MAX_PACKET_SIZE {
+                        eprintln!("[Capture] 数据包过大，已忽略: {} 字节", packet.len());
+                        continue;
+                    }
+                    
                     // 跳过以太网帧头（14 字节）
                     if packet.len() > 14 {
                         let ip_packet = &packet[14..];
@@ -80,11 +87,28 @@ impl CaptureEngine {
             PcapReader::new(file).map_err(|e| format!("解析 pcap 文件失败: {}", e))?;
 
         // 读取所有数据包
+        let mut packet_count = 0;
+        const MAX_PACKETS: usize = 1_000_000; // 限制最大数据包数量以防止内存耗尽
+        
         while let Some(packet) = pcap_reader.next_packet() {
+            // 安全检查：限制处理的数据包数量
+            packet_count += 1;
+            if packet_count > MAX_PACKETS {
+                eprintln!("[Capture] 已达到最大数据包处理限制: {}", MAX_PACKETS);
+                break;
+            }
+            
             match packet {
                 Ok(pkt) => {
-                    // pcap 文件中的数据通常包含以太网帧头
+                    // 安全检查：限制单个数据包大小
+                    const MAX_PACKET_SIZE: usize = 65535;
                     let data = pkt.data;
+                    if data.len() > MAX_PACKET_SIZE {
+                        eprintln!("[Capture] 数据包过大，已忽略: {} 字节", data.len());
+                        continue;
+                    }
+                    
+                    // pcap 文件中的数据通常包含以太网帧头
                     if data.len() > 14 {
                         // 跳过以太网帧头（14 字节）
                         let ip_packet = &data[14..];
@@ -100,6 +124,7 @@ impl CaptureEngine {
             }
         }
 
+        println!("[Capture] 已处理 {} 个数据包", packet_count);
         Ok(())
     }
 }
