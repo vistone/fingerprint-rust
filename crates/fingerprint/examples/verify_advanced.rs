@@ -20,8 +20,8 @@ async fn main() {
     let analyzer = Arc::new(PassiveAnalyzer::new().expect("Failed to create analyzer"));
     let learner = SelfLearningAnalyzer::new(db.clone());
 
-    // 1. 模拟an HTTP/2 connectionfront奏 and SETTINGS frame
-    println!("1️⃣  模拟 HTTP/2 handshaketrait:");
+    // 1. simulatean HTTP/2 connectionfront奏 and SETTINGS frame
+    println!("1️⃣  simulate HTTP/2 handshaketrait:");
     let h2_preface = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
     let h2_settings = vec![
         0x00, 0x00, 0x0c, // Length 12
@@ -62,15 +62,15 @@ async fn main() {
         }
     }
 
-    // 2. 模拟自学习过程
+    // 2. simulate自学习过程
     println!("\n2️⃣  自学习机制Validate:");
     for i in 1..=12 {
         learner.process_result(&result);
         if i == 5 {
-            println!("   ... 观察not知fingerprint 5 次");
+            println!("   ... observenot知fingerprint 5 次");
         }
         if i == 10 {
-            println!("   ... 观察not知fingerprint 10 次 (触发学习阈value)");
+            println!("   ... observenot知fingerprint 10 次 (trigger学习阈value)");
         }
     }
 

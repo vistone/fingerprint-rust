@@ -1,20 +1,20 @@
-//! IO 辅助：read HTTP/1.x response bytes
+//! IO auxiliary：read HTTP/1.x response bytes
 //!
-//! destination：避免only靠 `read_to_end()`（依赖connectionclose）导致的阻塞/wait问题。
+//! destination：避免only靠 `read_to_end()`（dependconnectionclose）导致的阻塞/wait问题。
 //! currentimplementwill：
 //! - 先读 to  `\r\n\r\n` Getresponseheader
 //! - 若有 `Content-Length`：read to complete body backreturn
-//! - 若为 `Transfer-Encoding: chunked`：read to  `0\r\n\r\n`（无 trailer 的常见场景）backreturn
+//! - 若为 `Transfer-Encoding: chunked`：read to  `0\r\n\r\n`（无 trailer 的常见scenario）backreturn
 //! - otherwise：读 to  EOF（等价于connectionclose）
 //!
-//! 同 when providemaximumresponsesize保护，防止inside存被打爆。
+//! 同 when providemaximumresponsesize保护，preventinside存被打爆。
 
 use std::io;
 use std::io::Read;
 
 pub const DEFAULT_MAX_RESPONSE_BYTES: usize = 16 * 1024 * 1024; // 16MiB
-/// maximum允许 Content-Length value（100MB）
-/// 防止恶意serversend超大 Content-Length 导致inside存耗尽
+/// maximumallow Content-Length value（100MB）
+/// prevent恶意serversend超大 Content-Length 导致inside存耗尽
 pub const MAX_CONTENT_LENGTH: usize = 100 * 1024 * 1024; // 100MB
 
 fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
@@ -87,7 +87,7 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
                 let (cl, chunked) = parse_headers_for_length_and_chunked(&buf[..end]);
                 is_chunked = chunked;
                 if let Some(cl) = cl {
-                    // securityCheck：防止恶意serversend超大 Content-Length
+                    // securityCheck：prevent恶意serversend超大 Content-Length
                     if cl > MAX_CONTENT_LENGTH {
                         return Err(io::Error::other(format!(
                             "Content-Length 过大: {} bytes (maximum: {} bytes)",
@@ -99,13 +99,13 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
             }
         }
 
-        // chunked：常见无 trailer 的end标记
+        // chunked：常见无 trailer 的endmarker
         if is_chunked {
             if let Some(end) = headers_end {
                 let body = &buf[end..];
                 if find_subsequence(body, b"0\r\n\r\n").is_some() {
-                    // 这里不try精确定bitendbit置（trailer 情况较复杂），
-                    // 只要读 to end标志即可return，交给back续Parseprocess。
+                    // 这里不try精determinebitendbit置（trailer situation较复杂），
+                    // 只要读 to endflag即可return，交给back续Parseprocess。
                     break;
                 }
             }

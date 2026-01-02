@@ -1,30 +1,30 @@
 //! systemlevelstatisticsinfo
 //!
-//! 定义systemlevel防护的statisticsinfo。
+//! definesystemlevelprotection的statisticsinfo。
 
 use std::time::Instant;
 
-/// systemlevel防护statisticsinfo
+/// systemlevelprotectionstatisticsinfo
 ///
-/// recordsystemlevel防护system的runstatisticsinfo。
+/// recordsystemlevelprotectionsystem的runstatisticsinfo。
 #[derive(Debug, Clone)]
 pub struct SystemProtectionStats {
-    /// total据包count
+    /// totalpacketcount
     pub total_packets: u64,
 
-    /// alreadyanalysiscount据包count
+    /// alreadyanalysiscountpacketcount
     pub analyzed_packets: u64,
 
-    /// already阻止count据包count
+    /// alreadyblockcountpacketcount
     pub blocked_packets: u64,
 
-    /// 限速count据包count
+    /// 限速countpacketcount
     pub rate_limited_packets: u64,
 
-    /// 允许throughcount据包count
+    /// allowthroughcountpacketcount
     pub allowed_packets: u64,
 
-    /// 检测 to 的威胁count
+    /// detect to 的威胁count
     pub threat_detected: u64,
 
     /// start when 间
@@ -50,37 +50,37 @@ impl SystemProtectionStats {
         }
     }
 
-    /// 增加total据包count
+    /// increasetotalpacketcount
     pub fn increment_total(&mut self) {
         self.total_packets += 1;
         self.last_update_time = Instant::now();
     }
 
-    /// 增加alreadyanalysiscount据包count
+    /// increasealreadyanalysiscountpacketcount
     pub fn increment_analyzed(&mut self) {
         self.analyzed_packets += 1;
         self.last_update_time = Instant::now();
     }
 
-    /// 增加already阻止count据包count
+    /// increasealreadyblockcountpacketcount
     pub fn increment_blocked(&mut self) {
         self.blocked_packets += 1;
         self.last_update_time = Instant::now();
     }
 
-    /// 增加限速count据包count
+    /// increase限速countpacketcount
     pub fn increment_rate_limited(&mut self) {
         self.rate_limited_packets += 1;
         self.last_update_time = Instant::now();
     }
 
-    /// 增加允许throughcount据包count
+    /// increaseallowthroughcountpacketcount
     pub fn increment_allowed(&mut self) {
         self.allowed_packets += 1;
         self.last_update_time = Instant::now();
     }
 
-    /// 增加威胁检测count
+    /// increase威胁detectcount
     pub fn increment_threat(&mut self) {
         self.threat_detected += 1;
         self.last_update_time = Instant::now();
@@ -91,7 +91,7 @@ impl SystemProtectionStats {
         self.start_time.elapsed().as_secs()
     }
 
-    /// Getcount据包process速率（包/秒）
+    /// Getcountpacketprocess速率（包/秒）
     pub fn packets_per_second(&self) -> f64 {
         let uptime = self.uptime_seconds() as f64;
         if uptime > 0.0 {
@@ -110,7 +110,7 @@ impl SystemProtectionStats {
         }
     }
 
-    /// Get阻止率（already阻止/total）
+    /// Getblock率（alreadyblock/total）
     pub fn block_rate(&self) -> f64 {
         if self.total_packets > 0 {
             self.blocked_packets as f64 / self.total_packets as f64

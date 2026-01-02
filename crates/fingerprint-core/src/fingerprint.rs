@@ -1,6 +1,6 @@
-//! fingerprint核心抽象
+//! fingerprintcore抽象
 //!
-//! 定义统一的fingerprint抽象，support TLS、HTTP、TCP 等多种fingerprinttype。
+//! define统一的fingerprint抽象，support TLS、HTTP、TCP 等多种fingerprinttype。
 
 use crate::metadata::FingerprintMetadata;
 
@@ -39,13 +39,13 @@ pub trait Fingerprint: Send + Sync {
     /// Getfingerprinttype
     fn fingerprint_type(&self) -> FingerprintType;
 
-    /// Getfingerprint的唯一标识符（通常是hashvalue）
+    /// Getfingerprint的唯一identifier符（通常是hashvalue）
     fn id(&self) -> String;
 
     /// Getfingerprint的metadata
     fn metadata(&self) -> &FingerprintMetadata;
 
-    /// Getfingerprint的metadata（可变引用）
+    /// Getfingerprint的metadata（可变reference）
     fn metadata_mut(&mut self) -> &mut FingerprintMetadata;
 
     /// Calculatefingerprint的hashvalue（ for 快速比较）
@@ -54,7 +54,7 @@ pub trait Fingerprint: Send + Sync {
     /// 比较两个fingerprintwhether相似
     fn similar_to(&self, other: &dyn Fingerprint) -> bool;
 
-    /// Getfingerprint的string表示（ for debug and 日志）
+    /// Getfingerprint的stringrepresent（ for debug and 日志）
     fn to_string(&self) -> String;
 }
 
@@ -112,7 +112,7 @@ pub struct FingerprintComparator;
 impl FingerprintComparator {
     /// 比较两个fingerprint
     pub fn compare(f1: &dyn Fingerprint, f2: &dyn Fingerprint) -> FingerprintComparison {
-        // typemust相同
+        // typemustsame
         if f1.fingerprint_type() != f2.fingerprint_type() {
             return FingerprintComparison::no_match();
         }
@@ -121,11 +121,11 @@ impl FingerprintComparator {
         if f1.similar_to(f2) {
             FingerprintComparison::perfect_match()
         } else {
-            // Calculate相似度（基于hashvalue）
+            // Calculate相似度（based onhashvalue）
             let h1 = f1.hash();
             let h2 = f2.hash();
 
-            // 简单的相似度Calculate（基于hashvalue的汉明距离）
+            // 简单的相似度Calculate（based onhashvalue的汉明距离）
             let similarity = if h1 == h2 {
                 1.0
             } else {

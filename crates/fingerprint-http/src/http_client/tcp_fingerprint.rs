@@ -1,6 +1,6 @@
 //! TCP fingerprintapplicationmodule
 //!
-//!  in Create TCP connection when application TCP Profile，确保 TCP fingerprint and browserfingerprint一致
+//!  in Create TCP connection when application TCP Profile，ensure TCP fingerprint and browserfingerprint一致
 
 use fingerprint_core::tcp::TcpProfile;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -13,7 +13,7 @@ use tokio::net::TcpStream;
 /// settings TTL、Window Size、MSS、Window Scale 等parameter
 ///
 /// # Parameters
-/// - `socket`: socket2::Socket 实例
+/// - `socket`: socket2::Socket instance
 /// - `tcp_profile`: TCP Profile configuration
 ///
 /// # Returns
@@ -23,7 +23,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
     socket.set_ttl(tcp_profile.ttl as u32)?;
 
     // 2. settings TCP options
-    // Note: socket2 不直接supportsettings Window Size、MSS、Window Scale
+    // Note: socket2 不directlysupportsettings Window Size、MSS、Window Scale
     // 这些parameterneed in TCP handshake when through TCP optionssettings
     // but我们canthroughsettings socket options来影响这些parameter
 
@@ -32,7 +32,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
 
     // 3. settingsreceivebuffersize（影响 Window Size）
     // Window Size 通常 and receivebuffersize相关
-    // Note: 实际 Window Size 是 in TCP handshake when 协商的，这里只是settingsbuffer
+    // Note: actual Window Size 是 in TCP handshake when 协商的，这里只是settingsbuffer
     let recv_buffer_size = tcp_profile.window_size as usize;
     socket.set_recv_buffer_size(recv_buffer_size)?;
 
@@ -64,7 +64,7 @@ pub fn create_tcp_socket_with_profile(
 
     // application TCP Profile（ if provide）
     // Note: TTL must in connectionbeforesettings
-    //  in Linux up， for client socket，TTL can in connectionfrontsettings，不need绑定
+    //  in Linux up， for client socket，TTL can in connectionfrontsettings，不needbind
     if let Some(profile) = tcp_profile {
         apply_tcp_profile(&socket, profile)?;
     }
@@ -173,7 +173,7 @@ mod tests {
         assert_eq!(ttl, 128);
     }
 
-    /// 实际 TCP connectiontest：Createserver and client，Validate TCP Profile whether真正application
+    /// actual TCP connectiontest：Createserver and client，Validate TCP Profile whether真正application
     #[test]
     fn test_tcp_profile_real_connection() {
         use std::io::{Read, Write};
@@ -184,7 +184,7 @@ mod tests {
         use std::time::Duration;
 
         println!("\n╔════════════════════════════════════════════════════════════════╗");
-        println!("║        TCP Profile 实际applicationtest - 服务端Validate                  ║");
+        println!("║        TCP Profile actualapplicationtest - service端Validate                  ║");
         println!("╚════════════════════════════════════════════════════════════════╝\n");
 
         let port = 9876;
@@ -202,17 +202,17 @@ mod tests {
                     Ok((mut stream, addr)) => {
                         println!("\n📥 收 to clientconnection: {}", addr);
 
-                        //  in Linux up检测 TCP parameter
+                        //  in Linux updetect TCP parameter
                         #[cfg(target_os = "linux")]
                         {
                             use std::os::unix::io::AsRawFd;
                             let _fd = stream.as_raw_fd();
 
                             // tryGetreceivebuffersize（影响 Window Size）
-                            // Note: 这need libc crate，but为了简化，我们暂 when 注释掉
-                            // 实际Validateshoulduse tcpdump  or  wireshark 抓包analysis
-                            println!("  🔍 server端 TCP parameter检测：");
-                            println!("    ⚠️  Note: TTL  in 服务端unable to直接检测（传输过程中will递减）");
+                            // Note: 这need libc crate，but为了简化，我们暂 when comment掉
+                            // actualValidateshoulduse tcpdump  or  wireshark 抓包analysis
+                            println!("  🔍 server端 TCP parameterdetect：");
+                            println!("    ⚠️  Note: TTL  in service端unable todirectlydetect（transfer过程中will递减）");
                             println!("    💡 建议：use tcpdump  or  wireshark 抓包Validate TTL");
                             println!("    💡 命令：sudo tcpdump -i lo -n 'tcp port 9876' -v");
                         }
@@ -292,7 +292,7 @@ mod tests {
         thread::sleep(Duration::from_millis(100));
 
         println!("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        println!("✅ TCP Profile 实际applicationtestcomplete！");
+        println!("✅ TCP Profile actualapplicationtestcomplete！");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     }
 }

@@ -1,14 +1,14 @@
 //! HTTP/3 implement
 //!
 //! use quinn + h3 implementcomplete HTTP/3 support
-//! HTTP/3 基于 QUIC protocol
+//! HTTP/3 based on QUIC protocol
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 
 #[cfg(feature = "http3")]
 use quinn::{ClientConfig, Endpoint, TransportConfig};
 
-// Fix: use全局单例 Runtime 避免频繁Create
+// Fix: useglobal单例 Runtime 避免频繁Create
 #[cfg(feature = "http3")]
 use once_cell::sync::Lazy;
 
@@ -25,7 +25,7 @@ pub fn send_http3_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // Fix: use全局单例 Runtime，避免每次request都Create a newrun when 
+    // Fix: useglobal单例 Runtime，避免每次request都Create a newrun when 
     RUNTIME.block_on(async { send_http3_request_async(host, port, path, request, config).await })
 }
 
@@ -52,28 +52,28 @@ async fn send_http3_request_async(
 
     let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
-    // 优化传输configuration以提升性能 and connection迁移能力
+    // 优化transferconfiguration以提升性能 and connectionmigrate能力
     let mut transport = TransportConfig::default();
 
-    // connection迁移 (Connection Migration) 优化
-    // QUIC 允许 in IP 切换 when 保持connection，这pairmobile模拟至关重要
+    // connectionmigrate (Connection Migration) 优化
+    // QUIC allow in IP toggle when keepconnection，这pairmobilesimulate至关重要
     transport.initial_rtt(Duration::from_millis(100));
     transport.max_idle_timeout(Some(
         Duration::from_secs(60)
             .try_into()
             .map_err(|e| HttpClientError::ConnectionFailed(format!("configurationtimeoutfailure: {}", e)))?,
     ));
-    // 增加保活频率以辅助connection迁移识别
+    // increase保活频率以auxiliaryconnectionmigrateidentify
     transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
-    // 允许pair端迁移（defaultalready开启，此处显式说明其重要性）
+    // allowpair端migrate（defaultalready开启，此处显式explain其重要性）
     // transport.allow_peer_migration(true);
 
-    // 模拟 Chrome 的stream控制window (Chrome 通常use较大的window以提升吞吐)
+    // simulate Chrome 的streamcontrolwindow (Chrome 通常use较大的window以提升吞吐)
     transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome 风格)
     transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome 风格)
 
-    // 允许更多并发stream
+    // allow更多concurrentstream
     transport.max_concurrent_bidi_streams(100u32.into());
     transport.max_concurrent_uni_streams(100u32.into());
 
@@ -94,7 +94,7 @@ async fn send_http3_request_async(
     let mut connection_result = Err(HttpClientError::ConnectionFailed("无availableaddress".to_string()));
 
     for remote_addr in addrs {
-        // Create QUIC endpoint（按 remote 的address族select绑定）
+        // Create QUIC endpoint（按 remote 的address族selectbind）
         let bind_addr = match remote_addr.ip() {
             IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
             IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
@@ -112,7 +112,7 @@ async fn send_http3_request_async(
             Ok(connecting) => {
                 match connecting.await {
                     Ok(conn) => {
-                        // 5. 建立 HTTP/3 connection
+                        // 5. establish HTTP/3 connection
                         match h3::client::new(h3_quinn::Connection::new(conn)).await {
                             Ok((driver, send_request)) => {
                                 connection_result = Ok((driver, send_request));
@@ -215,7 +215,7 @@ async fn send_http3_request_async(
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
-    // securityFix: Check HTTP/3 responseheadersize，防止 QPACK compression炸弹攻击
+    // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹攻击
     // h3 crate 0.0.4 的defaultlimit通常较大，我们Add额outside的Check
     const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的minimumvalue)
     let total_header_size: usize = headers
@@ -233,7 +233,7 @@ async fn send_http3_request_async(
     use bytes::Buf;
     let mut body_data = Vec::new();
 
-    // securitylimit：防止 HTTP/3 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/3 response体过大导致inside存耗尽
     const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(mut chunk) = stream
@@ -244,7 +244,7 @@ async fn send_http3_request_async(
         // use Buf trait readcount据
         let chunk_len = chunk.remaining();
 
-        // securityCheck：防止response体过大
+        // securityCheck：preventresponse体过大
         if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
                 "HTTP/3 response体过大（>{} bytes）",

@@ -1,4 +1,4 @@
-//! IPInfo.io 集成module
+//! IPInfo.io set成module
 //!
 //!  from  IPInfo.io API Get IP address的详细info（地理bit置、ISP 等）
 
@@ -24,7 +24,7 @@ impl IPInfoClient {
         // 这样can避免 token 泄露 to 日志、errormessage、proxyserver等
         let url = format!("https://ipinfo.io/{}", ip);
 
-        // use项目inside部 HttpClient
+        // useiteminside部 HttpClient
         let config = HttpClientConfig {
             connect_timeout: self.timeout,
             read_timeout: self.timeout,
@@ -72,8 +72,8 @@ impl IPInfoClient {
         })
     }
 
-    /// 批量Get IP addressinfo（并发）
-    /// automatic去重，确保each IP 只query一次
+    /// bulkGet IP addressinfo（concurrent）
+    /// automaticdeduplicate，ensureeach IP 只query一次
     pub async fn get_ip_infos(
         &self,
         ips: Vec<String>,
@@ -82,7 +82,7 @@ impl IPInfoClient {
         use futures::stream::{self, StreamExt};
         use std::collections::HashSet;
 
-        // pair IP list去重，确保each IP 只query一次
+        // pair IP listdeduplicate，ensureeach IP 只query一次
         let unique_ips: Vec<String> = ips
             .into_iter()
             .collect::<HashSet<String>>()

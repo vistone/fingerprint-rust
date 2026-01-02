@@ -1,13 +1,13 @@
-//! TCP fingerprint核心type
+//! TCP fingerprintcoretype
 //!
-//! 定义 TCP fingerprint的核心count据struct。
+//! define TCP fingerprint的corecount据struct。
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
 use std::hash::{Hash, Hasher};
 
-/// TCP configuration描述file
-///  for 主动configuration出口connection TCP parameter
+/// TCP configurationdescribefile
+///  for main动configuration出口connection TCP parameter
 #[derive(Debug, Clone, Copy)]
 pub struct TcpProfile {
     /// initialbeginning TTL
@@ -37,7 +37,7 @@ impl Default for TcpProfile {
 impl TcpProfile {
     /// Based onoperating systemtypeGenerates corresponding TCP Profile
     ///
-    /// 确保 TCP fingerprint and browserfingerprint（User-Agent）一致
+    /// ensure TCP fingerprint and browserfingerprint（User-Agent）一致
     pub fn for_os(os: crate::types::OperatingSystem) -> Self {
         match os {
             crate::types::OperatingSystem::Windows10 | crate::types::OperatingSystem::Windows11 => {
@@ -74,16 +74,16 @@ impl TcpProfile {
         }
     }
 
-    ///  from  User-Agent string推断operating system并Generates corresponding TCP Profile
+    ///  from  User-Agent stringinferoperating system并Generates corresponding TCP Profile
     ///
-    /// 这是统一fingerprintGenerate的核心function，确保browserfingerprint and TCP fingerprintsync
+    /// 这是统一fingerprintGenerate的corefunction，ensurebrowserfingerprint and TCP fingerprintsync
     pub fn from_user_agent(user_agent: &str) -> Self {
         use crate::types::OperatingSystem;
 
-        //  from  User-Agent 推断operating system
-        // Note: iPhone/iPad  User-Agent including "Mac OS X"，need先Check移动设备
+        //  from  User-Agent inferoperating system
+        // Note: iPhone/iPad  User-Agent including "Mac OS X"，need先Checkmove设备
         let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
-            // iOS 设备：use macOS  TCP fingerprint（iOS 基于 macOS）
+            // iOS 设备：use macOS  TCP fingerprint（iOS based on macOS）
             OperatingSystem::MacOS14
         } else if user_agent.contains("Windows NT 10.0") {
             OperatingSystem::Windows10
@@ -104,7 +104,7 @@ impl TcpProfile {
         } else if user_agent.contains("Linux") || user_agent.contains("Android") {
             OperatingSystem::Linux
         } else {
-            // defaultuse Windows（最常见的browser环境）
+            // defaultuse Windows（最常见的browserenvironment）
             OperatingSystem::Windows10
         };
 
@@ -129,7 +129,7 @@ impl TcpProfile {
 /// TCP fingerprint
 #[derive(Debug, Clone)]
 pub struct TcpFingerprint {
-    /// fingerprint ID（基于 TCP trait的hash）
+    /// fingerprint ID（based on TCP trait的hash）
     pub id: String,
 
     /// TTL
@@ -205,9 +205,9 @@ impl TcpFingerprint {
         format!("{:x}", hasher.finalize())
     }
 
-    /// 推断initialbeginning TTL
+    /// inferinitialbeginning TTL
     pub fn infer_initial_ttl(&self) -> u8 {
-        // Based on TTL 推断initialbeginning TTL
+        // Based on TTL inferinitialbeginning TTL
         // 常见的initialbeginning TTL value：64 (Linux), 128 (Windows), 255 (Unix)
         if self.ttl <= 64 {
             64
@@ -251,8 +251,8 @@ impl Fingerprint for TcpFingerprint {
             return false;
         }
 
-        // TCP fingerprint的相似度判断：允许一定的容差
-        // 这里简化process，实际should考虑 TTL 的推断value、Window Size 的倍count关系等
+        // TCP fingerprint的相似度judge：allow一定的容差
+        // 这里简化process，actualshould考虑 TTL 的infervalue、Window Size 的倍count关系等
         self.hash() == other.hash()
     }
 

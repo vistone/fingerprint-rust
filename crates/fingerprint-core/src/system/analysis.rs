@@ -1,19 +1,19 @@
 //! systemlevelanalysisinterface
 //!
-//! 定义systemlevelanalysis的interface and resulttype。
+//! definesystemlevelanalysis的interface and resulttype。
 
 use super::flow::NetworkFlow;
 use crate::fingerprint::Fingerprint;
 
 /// 威胁type
 ///
-/// 表示检测 to 的威胁type。
+/// representdetect to 的威胁type。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ThreatType {
     /// not知fingerprint
     UnknownFingerprint,
 
-    /// 可疑行为
+    /// 可疑behavior
     SuspiciousBehavior,
 
     /// already知攻击
@@ -28,7 +28,7 @@ pub enum ThreatType {
     /// DDoS 攻击
     DDoS,
 
-    /// port扫描
+    /// portscan
     PortScan,
 
     /// 暴力破解
@@ -40,12 +40,12 @@ impl ThreatType {
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::UnknownFingerprint => "not知fingerprint",
-            Self::SuspiciousBehavior => "可疑行为",
+            Self::SuspiciousBehavior => "可疑behavior",
             Self::KnownAttack => "already知攻击",
             Self::AbnormalTrafficPattern => "异常trafficpattern",
             Self::MaliciousIP => "恶意IP",
             Self::DDoS => "DDoS攻击",
-            Self::PortScan => "port扫描",
+            Self::PortScan => "portscan",
             Self::BruteForce => "暴力破解",
         }
     }
@@ -76,13 +76,13 @@ impl std::fmt::Display for ThreatType {
 /// includinganalysis的详细info and 证据。
 #[derive(Debug, Clone, Default)]
 pub struct AnalysisDetails {
-    /// 检测 to 的fingerprinttype
+    /// detect to 的fingerprinttype
     pub fingerprint_types: Vec<crate::fingerprint::FingerprintType>,
 
     /// match的规则 or pattern
     pub matched_rules: Vec<String>,
 
-    /// 行为trait
+    /// behaviortrait
     pub behavior_features: Vec<String>,
 
     /// 异常指标
@@ -103,7 +103,7 @@ impl AnalysisDetails {
         self.matched_rules.push(rule);
     }
 
-    /// Add行为trait
+    /// Addbehaviortrait
     pub fn add_behavior_feature(&mut self, feature: String) {
         self.behavior_features.push(feature);
     }
@@ -118,8 +118,8 @@ impl AnalysisDetails {
 ///
 /// includinganalysisresult、威胁type、风险评分等info。
 pub struct SystemAnalysisResult {
-    /// 检测 to 的fingerprintlist
-    /// Note: 由于 trait object 的limit，这里不能直接 Clone
+    /// detect to 的fingerprintlist
+    /// Note: 由于 trait object 的limit，这里不能directly Clone
     fingerprints: Vec<Box<dyn Fingerprint>>,
 
     /// 风险评分 (0.0 - 1.0)
@@ -167,7 +167,7 @@ impl SystemAnalysisResult {
         self.fingerprints.push(fingerprint);
     }
 
-    /// Getallfingerprint的引用
+    /// Getallfingerprint的reference
     pub fn fingerprints(&self) -> &[Box<dyn Fingerprint>] {
         &self.fingerprints
     }
@@ -181,12 +181,12 @@ impl SystemAnalysisResult {
         }
     }
 
-    /// Update风险评分（基于威胁type）
+    /// Update风险评分（based on威胁type）
     fn update_risk_score(&mut self) {
         if self.threat_types.is_empty() {
             self.risk_score = 0.0;
         } else {
-            // use最高严重程度作为风险评分
+            // use最高严重程度as风险评分
             self.risk_score = self
                 .threat_types
                 .iter()
@@ -195,12 +195,12 @@ impl SystemAnalysisResult {
         }
     }
 
-    /// 判断whether exists威胁
+    /// judgewhether exists威胁
     pub fn has_threats(&self) -> bool {
         !self.threat_types.is_empty() && self.risk_score > 0.0
     }
 
-    /// 判断whether为高风险
+    /// judgewhether为高风险
     pub fn is_high_risk(&self) -> bool {
         self.risk_score >= 0.7
     }
@@ -228,7 +228,7 @@ impl std::fmt::Debug for SystemAnalysisResult {
 // Manual implementation Clone，because Box<dyn Fingerprint> 不能automatic Clone
 impl Clone for SystemAnalysisResult {
     fn clone(&self) -> Self {
-        // Note: fingerprints 不能 Clone，so新实例 from emptyliststart
+        // Note: fingerprints 不能 Clone，so新instance from emptyliststart
         Self {
             fingerprints: Vec::new(), // 不能 Clone trait object
             risk_score: self.risk_score,
@@ -247,8 +247,8 @@ impl Clone for SystemAnalysisResult {
 ///
 /// systemlevelanalysis from **system角度**analysisnetworktraffic：
 /// - not onlyonly是singleprotocol的Parse，而是综合analysis
-/// - 考虑system整体的行为pattern
-/// - 检测systemlevel的威胁（DDoS、扫描、异常traffic等）
+/// - 考虑systemwhole的behaviorpattern
+/// - detectsystemlevel的威胁（DDoS、scan、异常traffic等）
 ///
 /// ## Implementation Example
 ///
@@ -280,7 +280,7 @@ pub trait SystemAnalyzer: Send + Sync {
     /// systemlevelanalysisresult，includingfingerprint、威胁type、风险评分等info
     fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult;
 
-    /// 批量analysismultipletraffic
+    /// bulkanalysismultipletraffic
     ///
     /// # Parameters
     ///

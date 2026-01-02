@@ -1,8 +1,8 @@
 //! TLS connectionsupport
 //!
-//! use官方 rustls 作为bottomlayer TLS implement
+//! use官方 rustls asbottomlayer TLS implement
 //! through ClientHelloCustomizer applicationbrowserfingerprint（Chrome、Firefox、Safari 等）
-//! 模拟市场成熟browser TLS fingerprint，不custom自己的fingerprint
+//! simulate市场成熟browser TLS fingerprint，不custom自己的fingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -31,9 +31,9 @@ impl Default for TlsConnector {
 
 /// send HTTPS request
 ///
-/// use官方 rustls 作为bottomlayer TLS implement
+/// use官方 rustls asbottomlayer TLS implement
 /// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
-/// 模拟市场成熟browser TLS fingerprint（Chrome、Firefox、Safari 等）
+/// simulate市场成熟browser TLS fingerprint（Chrome、Firefox、Safari 等）
 pub fn send_https_request(
     host: &str,
     port: u16,
@@ -43,7 +43,7 @@ pub fn send_https_request(
 ) -> Result<HttpResponse> {
     // use rustls， if configuration了 profile，willautomaticthrough ClientHelloCustomizer applicationbrowserfingerprint
 
-    // 建立 TCP connection
+    // establish TCP connection
     let addr = format!("{}:{}", host, port);
     let tcp_stream = TcpStream::connect(&addr)
         .map_err(|e| HttpClientError::ConnectionFailed(format!("Connection failed {}: {}", addr, e)))?;
@@ -119,7 +119,7 @@ pub fn send_https_request(
 
 /// useconnection poolsend HTTPS（HTTP/1.1 over TLS）request
 ///
-/// 说明：
+/// explain：
 /// - 这是“connection pool + TLS”的syncimplement（面向 `kh.google.com` 这类 https 站点）
 /// - 目front只 for 回归test and `HttpClient`  https+pool path
 #[cfg(feature = "connection-pool")]
@@ -138,12 +138,12 @@ pub fn send_https_request_with_pool(
         .get_tcp()
         .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
-    // PooledConnection implement了 Deref<Target = Connection>，can直接use Connection 的method
+    // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection 的method
     let tcp_stream = conn
         .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // 保持 conn 生命周期覆盖整个request；同 when 用 clone 得 to available std::net::TcpStream
+    // keep conn 生命周期覆盖整个request；同 when 用 clone 得 to available std::net::TcpStream
     let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     tcp_stream
@@ -153,7 +153,7 @@ pub fn send_https_request_with_pool(
         .set_write_timeout(Some(config.write_timeout))
         .map_err(HttpClientError::Io)?;
 
-    // rustls path and send_https_request 保持一致
+    // rustls path and send_https_request keep一致
     #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
@@ -222,7 +222,7 @@ mod tests {
         let config = HttpClientConfig::default();
         let response = send_https_request("httpbin.org", 443, "/get", &request, &config).unwrap();
 
-        // outside部服务maywill短暂return 429/503 等；这里主要Validate“能建立 TLS + 能Parseresponse”。
+        // outside部servicemaywill短暂return 429/503 等；这里mainValidate“能establish TLS + 能Parseresponse”。
         assert!(response.status_code > 0);
     }
 }

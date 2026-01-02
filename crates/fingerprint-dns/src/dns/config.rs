@@ -1,4 +1,4 @@
-//! DNS configuration管理module
+//! DNS configurationmanagemodule
 //!
 //! support from  JSON、YAML、TOML format的configurationfileload DNS configuration
 
@@ -7,7 +7,7 @@ use std::fs;
 use std::path::Path;
 
 ///  from configurationfileload DNS configuration
-/// automatic识别configurationfileformat（JSON、YAML、TOML）
+/// automaticidentifyconfigurationfileformat（JSON、YAML、TOML）
 pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
     let path = path.as_ref();
     let content = fs::read_to_string(path)?;
@@ -16,7 +16,7 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
     let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
         Some("json") => serde_json::from_str(&content).map_err(DNSError::Json)?,
         Some("yaml") | Some("yml") => {
-            // use serde_yaml 直接反序列化
+            // use serde_yaml directly反序列化
             serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?
         }
         Some("toml") => toml::from_str(&content)?,

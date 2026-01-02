@@ -1,6 +1,6 @@
-//! HTTP fingerprint核心type
+//! HTTP fingerprintcoretype
 //!
-//! 定义 HTTP fingerprint的核心count据struct。
+//! define HTTP fingerprint的corecount据struct。
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
@@ -10,7 +10,7 @@ use std::hash::{Hash, Hasher};
 /// HTTP fingerprint
 #[derive(Debug, Clone)]
 pub struct HttpFingerprint {
-    /// fingerprint ID（基于 User-Agent  and Headers 的hash）
+    /// fingerprint ID（based on User-Agent  and Headers 的hash）
     pub id: String,
 
     /// User-Agent
@@ -67,7 +67,7 @@ impl HttpFingerprint {
         let mut hasher = Sha256::new();
         hasher.update(user_agent.as_bytes());
 
-        // pair headers 进行排序backhash
+        // pair headers 进行sortbackhash
         let mut header_vec: Vec<_> = headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
@@ -81,7 +81,7 @@ impl HttpFingerprint {
     /// settings HTTP/2 settings
     pub fn with_http2_settings(mut self, settings: Http2Settings) -> Self {
         self.http2_settings = Some(settings);
-        // 重新Calculate ID (including HTTP/2 settings)
+        // reCalculate ID (including HTTP/2 settings)
         self.id = Self::calculate_id(&self.user_agent, &self.headers);
         self
     }
@@ -109,7 +109,7 @@ impl Fingerprint for HttpFingerprint {
         let mut hasher = DefaultHasher::new();
         self.user_agent.hash(&mut hasher);
 
-        // pair headers 进行排序backhash
+        // pair headers 进行sortbackhash
         let mut header_vec: Vec<_> = self.headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
@@ -167,7 +167,7 @@ mod tests {
         headers2.insert("Accept".to_string(), "text/html".to_string());
         let fp2 = HttpFingerprint::new("Mozilla/5.0".to_string(), headers2);
 
-        // 相同的inputshould产生相同的hash
+        // same的inputshouldproducesame的hash
         assert_eq!(fp1.hash(), fp2.hash());
     }
 }

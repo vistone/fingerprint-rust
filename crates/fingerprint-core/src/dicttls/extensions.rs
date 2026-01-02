@@ -24,7 +24,7 @@ pub mod extension_types {
     pub const EXT_TYPE_COMPRESS_CERTIFICATE: u16 = 27;
     pub const EXT_TYPE_ECH: u16 = 0xfe0d;
 
-    // 非 IANA 分配's extensions
+    // 非 IANA allocate's extensions
     pub const EXT_TYPE_APPLICATION_SETTINGS: u16 = 17513;
     pub const EXT_TYPE_APPLICATION_SETTINGS_NEW: u16 = 17613;
 }
@@ -67,7 +67,7 @@ pub mod cert_compression {
 
 pub use cert_compression::*;
 
-/// 重新协商constant
+/// re协商constant
 pub mod renegotiation {
     pub const RENEGOTIATE_ONCE_AS_CLIENT: u8 = 1;
 }

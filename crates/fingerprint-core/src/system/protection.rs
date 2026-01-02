@@ -1,35 +1,35 @@
-//! systemlevel防护interface
+//! systemlevelprotectioninterface
 //!
-//! 定义systemlevel防护的interface and 决策type。
+//! definesystemlevelprotection的interface and 决策type。
 
 use super::flow::NetworkFlow;
 use super::stats::SystemProtectionStats;
 use std::time::Duration;
 
-/// systemlevel防护决策
+/// systemlevelprotection决策
 ///
-/// 表示systemlevel防护systempairnetworktraffic做出的决策。
+/// representsystemlevelprotectionsystempairnetworktraffic做出的决策。
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemProtectionDecision {
-    /// 允许through
+    /// allowthrough
     Allow,
 
-    /// 阻止traffic
+    /// blocktraffic
     Deny {
-        /// 阻止原因
+        /// block原因
         reason: String,
     },
 
     /// 限速
     RateLimit {
-        /// 每秒maximumcount据包count
+        /// 每秒maximumcountpacketcount
         max_packets_per_second: u64,
 
         /// 限速持续 when 间
         duration: Duration,
     },
 
-    /// recordbut不阻止
+    /// recordbut不block
     Log {
         /// record原因
         reason: String,
@@ -40,26 +40,26 @@ pub enum SystemProtectionDecision {
 }
 
 impl SystemProtectionDecision {
-    /// 判断whether为允许
+    /// judgewhether为allow
     pub fn is_allow(&self) -> bool {
         matches!(self, Self::Allow)
     }
 
-    /// 判断whether为阻止
+    /// judgewhether为block
     pub fn is_deny(&self) -> bool {
         matches!(self, Self::Deny { .. })
     }
 
-    /// 判断whether为限速
+    /// judgewhether为限速
     pub fn is_rate_limit(&self) -> bool {
         matches!(self, Self::RateLimit { .. })
     }
 
-    /// Get决策的描述
+    /// Get决策的describe
     pub fn description(&self) -> String {
         match self {
-            Self::Allow => "允许through".to_string(),
-            Self::Deny { reason } => format!("阻止: {}", reason),
+            Self::Allow => "allowthrough".to_string(),
+            Self::Deny { reason } => format!("block: {}", reason),
             Self::RateLimit {
                 max_packets_per_second,
                 duration,
@@ -75,12 +75,12 @@ impl SystemProtectionDecision {
     }
 }
 
-/// systemlevel防护result
+/// systemlevelprotectionresult
 ///
-/// including防护决策 and 相关的metadata。
+/// includingprotection决策 and 相关的metadata。
 #[derive(Debug, Clone)]
 pub struct SystemProtectionResult {
-    /// 防护决策
+    /// protection决策
     pub decision: SystemProtectionDecision,
 
     /// 风险评分 (0.0 - 1.0)
@@ -96,12 +96,12 @@ pub struct SystemProtectionResult {
     /// 决策原因
     pub reason: String,
 
-    /// 建议的back续动作
+    /// 建议的back续action
     pub suggested_actions: Vec<String>,
 }
 
 impl SystemProtectionResult {
-    /// Create a new防护result
+    /// Create a newprotectionresult
     pub fn new(decision: SystemProtectionDecision) -> Self {
         Self {
             decision,
@@ -112,7 +112,7 @@ impl SystemProtectionResult {
         }
     }
 
-    /// Create允许决策
+    /// Createallow决策
     pub fn allow() -> Self {
         Self {
             decision: SystemProtectionDecision::Allow,
@@ -123,7 +123,7 @@ impl SystemProtectionResult {
         }
     }
 
-    /// Create阻止决策
+    /// Createblock决策
     pub fn deny(reason: String, risk_score: f64) -> Self {
         Self {
             decision: SystemProtectionDecision::Deny {
@@ -146,21 +146,21 @@ impl SystemProtectionResult {
             risk_score,
             confidence: 0.8,
             reason: "traffic异常，need限速".to_string(),
-            suggested_actions: vec!["监控traffic".to_string()],
+            suggested_actions: vec!["monitortraffic".to_string()],
         }
     }
 }
 
-/// systemlevel防护interface
+/// systemlevelprotectioninterface
 ///
-/// allsystemlevel防护器都shouldimplement这个 trait。
+/// allsystemlevelprotection器都shouldimplement这个 trait。
 ///
 /// ## Core Concept
 ///
-/// systemlevel防护 from **system角度**做出防护决策：
-/// - not onlyonly是single服务的防护，而是整个system的防护
+/// systemlevelprotection from **system角度**做出protection决策：
+/// - not onlyonly是singleservice的protection，而是整个system的protection
 /// - can实施systemlevel的措施（黑名单、限速、防火墙规则等）
-/// - need考虑system整体的securitystatus
+/// - need考虑systemwhole的securitystatus
 ///
 /// ## Implementation Example
 ///
@@ -171,7 +171,7 @@ impl SystemProtectionResult {
 ///
 /// impl SystemProtector for MySystemProtector {
 ///     fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult {
-///         // implement防护逻辑
+///         // implementprotection逻辑
 ///         SystemProtectionResult::allow()
 ///     }
 ///
@@ -186,7 +186,7 @@ impl SystemProtectionResult {
 /// }
 /// ```
 pub trait SystemProtector: Send {
-    /// analysisnetworktraffic并做出防护决策
+    /// analysisnetworktraffic并做出protection决策
     ///
     /// # Parameters
     ///
@@ -194,24 +194,24 @@ pub trait SystemProtector: Send {
     ///
     /// # Returns
     ///
-    /// systemlevel防护result，including决策、风险评分、置信度等info
+    /// systemlevelprotectionresult，including决策、风险评分、置信度等info
     fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult;
 
     /// Updatesystemstatus
     ///
-    ///  in 做出防护决策back，canBased onresultUpdatesystemstatus（如Update黑名单、statisticsinfo等）。
+    ///  in 做出protection决策back，canBased onresultUpdatesystemstatus（如Update黑名单、statisticsinfo等）。
     ///
     /// # Parameters
     ///
     /// - `flow`: networktraffic
-    /// - `result`: 防护决策result
+    /// - `result`: protection决策result
     fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult);
 
     /// Getsystemstatisticsinfo
     ///
     /// # Returns
     ///
-    /// systemlevel防护statisticsinfo
+    /// systemlevelprotectionstatisticsinfo
     fn get_stats(&self) -> SystemProtectionStats;
 }
 

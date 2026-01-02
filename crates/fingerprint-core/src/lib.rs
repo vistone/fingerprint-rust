@@ -1,24 +1,24 @@
 //! # fingerprint-core
 //!
-//! **systemlevel防护的核心抽象layer**
+//! **systemlevelprotection的core抽象layer**
 //!
-//!  from **单一服务防护**提升 to **systemlevel防护**，providesystemlevel的核心抽象 and interface。
+//!  from **单一serviceprotection**提升 to **systemlevelprotection**，providesystemlevel的core抽象 and interface。
 //!
-//! ## 核心定bit
+//! ## core定bit
 //!
-//! `fingerprint-core` 是systemlevel防护的核心，alloutside部组件都围绕这个核心展开：
+//! `fingerprint-core` 是systemlevelprotection的core，alloutside部component都围绕这个core展开：
 //!
-//! - **systemlevel抽象**: systemupdown文、networktraffic、防护决策等
-//! - **攻防统一interface**: fingerprint抽象、analysisinterface、防护interface等
-//! - **核心type and 工具**: type定义、metadata、工具function等
+//! - **systemlevel抽象**: systemupdown文、networktraffic、protection决策等
+//! - **攻防统一interface**: fingerprint抽象、analysisinterface、protectioninterface等
+//! - **coretype and 工具**: typedefine、metadata、工具function等
 //!
-//! ## 核心Features
+//! ## coreFeatures
 //!
 //! ### systemlevel抽象
 //!
-//! - **systemupdown文** (`SystemContext`): network实体的completeinfo（IP、port、protocol、方向等）
+//! - **systemupdown文** (`SystemContext`): networkentity的completeinfo（IP、port、protocol、方向等）
 //! - **networktraffic** (`NetworkFlow`): systemlevel的networktraffic，includingupdown文 and fingerprintinfo
-//! - **system防护interface** (`SystemProtector`): systemlevel防护的统一interface
+//! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotection的统一interface
 //! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysis的统一interface
 //!
 //! ### 攻防统一抽象
@@ -29,9 +29,9 @@
 //! - **HTTP fingerprint** (`HttpFingerprint`): HTTP requestfingerprint
 //! - **TCP fingerprint** (`TcpFingerprint`): TCP connectionfingerprint
 //!
-//! ### 核心type and 工具
+//! ### coretype and 工具
 //!
-//! - **typesystem**: `BrowserType`、`OperatingSystem` 等核心type
+//! - **typesystem**: `BrowserType`、`OperatingSystem` 等coretype
 //! - **工具function**: GREASE process、randomly select等工具function
 
 pub mod database;
@@ -104,7 +104,7 @@ pub use system::{
     SystemProtectionResult,
     // systemstatistics
     SystemProtectionStats,
-    // system防护
+    // systemprotection
     SystemProtector,
     ThreatType,
     TrafficDirection,

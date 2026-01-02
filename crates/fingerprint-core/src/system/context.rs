@@ -1,6 +1,6 @@
 //! systemupdown文
 //!
-//! 定义systemlevel防护的updown文info，包括network实体、 when 间、protocol等。
+//! definesystemlevelprotection的updown文info，includenetworkentity、 when 间、protocol等。
 
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
@@ -8,10 +8,10 @@ use std::net::IpAddr;
 /// traffic方向
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TrafficDirection {
-    /// inputtraffic（进入system）
+    /// inputtraffic（entersystem）
     Inbound,
 
-    /// outputtraffic（离开system）
+    /// outputtraffic（leavesystem）
     Outbound,
 
     /// inside部traffic（systeminside部）
@@ -53,7 +53,7 @@ pub enum ProtocolType {
     /// HTTPS protocol（TLS over TCP）
     Https,
 
-    /// 其他protocol
+    /// otherprotocol
     Other(u8),
 }
 
@@ -104,15 +104,15 @@ impl std::fmt::Display for ProtocolType {
 
 /// systemupdown文
 ///
-/// 表示systemlevel防护的updown文info，includingnetworktraffic的completemetadata。
+/// representsystemlevelprotection的updown文info，includingnetworktraffic的completemetadata。
 ///
 /// ## Core Concept
 ///
-/// systemlevel防护need考虑complete的systemupdown文，而not onlyonly是single服务 or port：
-/// - network实体的completeinfo（source/target IP、port）
+/// systemlevelprotectionneed考虑complete的systemupdown文，而not onlyonly是singleservice or port：
+/// - networkentity的completeinfo（source/target IP、port）
 /// - protocoltype and 方向
 /// -  when 间戳 and 网卡interface
-/// - count据包level的info
+/// - countpacketlevel的info
 ///
 /// ## Examples
 ///
@@ -156,7 +156,7 @@ pub struct SystemContext {
     /// 网卡interfacename
     pub interface: Option<String>,
 
-    /// count据包size（bytes）
+    /// countpacketsize（bytes）
     pub packet_size: usize,
 
     /// traffic方向（input/output）
@@ -200,12 +200,12 @@ impl SystemContext {
         }
     }
 
-    /// 判断whether为localtraffic（source or target为localaddress）
+    /// judgewhether为localtraffic（source or target为localaddress）
     pub fn is_local(&self) -> bool {
         self.is_source_local() || self.is_target_local()
     }
 
-    /// 判断sourceaddresswhether为localaddress
+    /// judgesourceaddresswhether为localaddress
     pub fn is_source_local(&self) -> bool {
         match self.source_ip {
             IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
@@ -213,7 +213,7 @@ impl SystemContext {
         }
     }
 
-    /// 判断targetaddresswhether为localaddress
+    /// judgetargetaddresswhether为localaddress
     pub fn is_target_local(&self) -> bool {
         match self.target_ip {
             IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
@@ -221,7 +221,7 @@ impl SystemContext {
         }
     }
 
-    /// Gettraffic的唯一标识符（ for 追踪）
+    /// Gettraffic的唯一identifier符（ for 追踪）
     pub fn flow_id(&self) -> String {
         format!(
             "{}:{}->{}:{}:{}",

@@ -96,7 +96,7 @@ impl TLSHandshake {
 
         if data.len() < 4 + length {
             return Err(format!(
-                "count据不complete，need {} bytes，实际只有 {} bytes",
+                "count据不complete，need {} bytes，actual只有 {} bytes",
                 4 + length,
                 data.len()
             ));

@@ -1,6 +1,6 @@
 //! fingerprint自学习module
 //!
-//! automatic from 观察 to 的traffic中学习 and Updatefingerprintsignature。
+//! automatic from observe to 的traffic中学习 and Updatefingerprintsignature。
 
 use crate::database::FingerprintDatabase;
 use crate::passive::PassiveAnalysisResult;
@@ -11,11 +11,11 @@ use fingerprint_core::fingerprint::Fingerprint;
 
 /// 自学习analysis器
 pub struct SelfLearningAnalyzer {
-    #[allow(dead_code)] // will来will for 存储学习 to 的fingerprint
+    #[allow(dead_code)] // will来will for store学习 to 的fingerprint
     db: Arc<FingerprintDatabase>,
-    /// not知fingerprint的观察count器 (fp_id -> count)
+    /// not知fingerprint的observecount器 (fp_id -> count)
     observations: DashMap<String, u64>,
-    /// 学习阈value（观察多少次back转入database）
+    /// 学习阈value（observe多少次back转入database）
     learning_threshold: u64,
 }
 
@@ -33,7 +33,7 @@ impl SelfLearningAnalyzer {
     pub fn process_result(&self, result: &PassiveAnalysisResult) {
         // 分别process各个layerlevel的fingerprint
         if let Some(tls) = &result.tls {
-            // TLS 目front直接观察 ID (JA4)
+            // TLS 目frontdirectlyobserve ID (JA4)
             self.observe(tls.id(), "tls");
         }
 
@@ -50,7 +50,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    /// 观察 to anfingerprint
+    /// observe to anfingerprint
     fn observe(&self, fp_id: String, fp_type: &str) {
         if fp_id == "unknown" || fp_id.is_empty() {
             return;
@@ -58,10 +58,10 @@ impl SelfLearningAnalyzer {
 
         let key = format!("{}:{}", fp_type, fp_id);
 
-        // 防护点：limit观察list的size，防止inside存撑爆 (DoS 防护)
+        // protection点：limitobservelist的size，preventinside存撑爆 (DoS protection)
         const MAX_OBSERVATIONS: usize = 10000;
         if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
-            // If达 to up限且是new key, 则忽略
+            // If达 to up限且是new key, 则ignore
             return;
         }
 
@@ -69,8 +69,8 @@ impl SelfLearningAnalyzer {
         *count += 1;
 
         if *count >= self.learning_threshold {
-            // 达 to 阈value，can in database中建立initial步条目
-            // TODO: Extracttrait并存储为待核准的signature
+            // 达 to 阈value，can in database中establishinitial步entry
+            // TODO: Extracttrait并store为待核准的signature
             println!("[Learner] Detected stable unknown fingerprint: {}", key);
         }
     }

@@ -17,7 +17,7 @@ use fingerprint_profiles::profiles::ClientProfile;
 #[cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
 
-/// Build rustls rootcertificate存储（Mozilla roots）
+/// Build rustls rootcertificatestore（Mozilla roots）
 pub fn build_root_store() -> rustls::RootCertStore {
     let mut root_store = rustls::RootCertStore::empty();
     root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
@@ -30,7 +30,7 @@ pub fn build_root_store() -> rustls::RootCertStore {
     root_store
 }
 
-/// 若 verify_tls=false，则安装"接受allcertificate" verifier（危险Features，only for debug）
+/// 若 verify_tls=false，则安装"acceptallcertificate" verifier（危险Features，only for debug）
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     if verify_tls {
@@ -38,7 +38,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     }
 
     // Note: rustls 0.21  API may不同
-    // If verify_tls=false, use dangerous configuration接受allcertificate
+    // If verify_tls=false, use dangerous configurationacceptallcertificate
     // 这need rustls  dangerous_configuration feature
     #[cfg(feature = "dangerous_configuration")]
     {
@@ -87,9 +87,9 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 
     #[cfg(not(feature = "dangerous_configuration"))]
     {
-        // If没有 dangerous_configuration feature, 忽略 verify_tls=false 的settings
+        // Ifno dangerous_configuration feature, ignore verify_tls=false 的settings
         // beginningfinalValidatecertificate（更security）
-        eprintln!("warning: verify_tls=false need dangerous_configuration feature，already忽略");
+        eprintln!("warning: verify_tls=false need dangerous_configuration feature，alreadyignore");
     }
 }
 
@@ -101,7 +101,7 @@ pub fn build_client_config(
 ) -> rustls::ClientConfig {
     let root_store = build_root_store();
 
-    // defaultconfiguration（ if unable toBased on profile match，则回退 to securitydefaultvalue）
+    // defaultconfiguration（ if unable toBased on profile match，则back to securitydefaultvalue）
     let builder = rustls::ClientConfig::builder()
         .with_safe_defaults()
         .with_root_certificates(root_store)
@@ -125,7 +125,7 @@ pub fn build_client_config(
             }
 
             if !suites.is_empty() {
-                // 重新Buildconfiguration以application特定suite
+                // reBuildconfiguration以application特定suite
                 let mut versions = Vec::new();
                 if spec.tls_vers_max >= 0x0304 { // TLS 1.3
                     versions.push(&rustls::version::TLS13);
@@ -134,7 +134,7 @@ pub fn build_client_config(
                     versions.push(&rustls::version::TLS12);
                 }
 
-                // Note: rustls 0.21 needthrough builder 重新settings
+                // Note: rustls 0.21 needthrough builder resettings
                 let new_builder = if !versions.is_empty() {
                     rustls::ClientConfig::builder()
                         .with_cipher_suites(&suites)
@@ -160,7 +160,7 @@ pub fn build_client_config(
     cfg.alpn_protocols = alpn_protocols;
     apply_verify_tls(&mut cfg, verify_tls);
 
-    // optional： in send ClientHello before按fingerprint spec 重排extensionencoding顺序（need配套 rustls fork）。
+    // optional： in send ClientHello before按fingerprint spec 重排extensionencodingorder（need配套 rustls fork）。
     // Note: 此Featuresneedsupport ClientHelloCustomizer  rustls fork，standard rustls 不support。
     // current被disabled，becausestandard rustls excluding ClientHelloCustomizer API。
     // 如需use此Features，needusesupport ClientHelloCustomizer  rustls fork 并enabled相应 feature。

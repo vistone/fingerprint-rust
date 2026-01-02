@@ -1,6 +1,6 @@
-//! HTTP 被动fingerprint识别
+//! HTTP 被动fingerprintidentify
 //!
-//! implement HTTP request/response的被动fingerprint识别。
+//! implement HTTP request/response的被动fingerprintidentify。
 
 use crate::passive::packet::Packet;
 use std::collections::HashMap;
@@ -26,7 +26,7 @@ pub struct HttpFingerprint {
     /// User-Agent
     pub user_agent: Option<String>,
 
-    /// 检测 to 的browser
+    /// detect to 的browser
     pub browser: Option<String>,
 
     /// HTTP/2 特有trait
@@ -104,7 +104,7 @@ impl HttpAnalyzer {
         })
     }
 
-    /// analysis HTTP count据包
+    /// analysis HTTP countpacket
     pub fn analyze(&self, packet: &Packet) -> Option<HttpFingerprint> {
         // tryParse HTTP request
         if let Some(request) = self.parse_http_request(&packet.payload) {
@@ -147,7 +147,7 @@ impl HttpAnalyzer {
 
     /// Parse HTTP request
     fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
-        // limitParse的count据量，防止超大包导致inside存耗尽
+        // limitParse的count据量，prevent超大包导致inside存耗尽
         let limit = 8192; // 8KB 足够常规request
         let parse_data = if data.len() > limit {
             &data[..limit]
@@ -301,7 +301,7 @@ impl HttpAnalyzer {
         })
     }
 
-    /// 检测browser
+    /// detectbrowser
     fn detect_browser(&self, user_agent: &str) -> Option<String> {
         let ua_lower = user_agent.to_lowercase();
 

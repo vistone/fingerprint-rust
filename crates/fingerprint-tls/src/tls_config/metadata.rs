@@ -1,4 +1,4 @@
-//! TLS metadata存储module
+//! TLS metadatastoremodule
 //!
 //!  in Build ClientHelloSpec  when saveextension的metadata（SNI、ALPN 等）
 //! 这样can in Extractsignature when Getcompleteinfo
@@ -6,16 +6,16 @@
 use std::collections::HashMap;
 
 /// TLS extensionmetadata
-/// 存储extension的inside部count据， for back续Extract
+/// storeextension的inside部count据， for back续Extract
 #[derive(Debug, Clone, Default)]
 pub struct ExtensionMetadata {
     /// SNI value（ if  exists）
     pub sni: Option<String>,
     /// ALPN protocollist（ if  exists）
     pub alpn: Option<Vec<String>>,
-    /// 椭圆曲线list（ if  exists）
+    /// elliptic curvelist（ if  exists）
     pub elliptic_curves: Option<Vec<u16>>,
-    /// 椭圆曲线点format（ if  exists）
+    /// elliptic curve点format（ if  exists）
     pub elliptic_curve_point_formats: Option<Vec<u8>>,
     /// signaturealgorithmlist（ if  exists）
     pub signature_algorithms: Option<Vec<u16>>,
@@ -24,7 +24,7 @@ pub struct ExtensionMetadata {
 }
 
 /// ClientHelloSpec 的metadata
-///  for 存储extension的inside部count据
+///  for storeextension的inside部count据
 #[derive(Debug, Clone, Default)]
 pub struct SpecMetadata {
     /// extensionmetadatamap（extension ID -> metadata）
@@ -55,7 +55,7 @@ impl SpecMetadata {
         metadata.alpn = Some(alpn);
     }
 
-    /// settings椭圆曲线
+    /// settingselliptic curve
     pub fn set_elliptic_curves(&mut self, curves: Vec<u16>) {
         let metadata = self
             .extension_metadata
@@ -64,7 +64,7 @@ impl SpecMetadata {
         metadata.elliptic_curves = Some(curves);
     }
 
-    /// settings椭圆曲线点format
+    /// settingselliptic curve点format
     pub fn set_elliptic_curve_point_formats(&mut self, formats: Vec<u8>) {
         let metadata = self
             .extension_metadata

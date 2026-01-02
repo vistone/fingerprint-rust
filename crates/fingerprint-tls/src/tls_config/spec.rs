@@ -35,7 +35,7 @@ pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0x00;
 /// PSK patternconstant
 pub const PSK_MODE_DHE: u8 = 0x01;
 
-/// 重新协商constant
+/// re协商constant
 pub const RENEGOTIATE_ONCE_AS_CLIENT: u8 = 1;
 
 /// certificatecompressionalgorithmconstant
@@ -47,7 +47,7 @@ pub type CipherSuiteID = u16;
 /// TLS Client Hello configuration
 /// Corresponds to Go version's tls.ClientHelloSpec
 ///
-/// Note: 由于extension是 trait pair象，Clone implementwillCreate a newextension实例
+/// Note: 由于extension是 trait pair象，Clone implementwillCreate a newextensioninstance
 #[derive(Debug)]
 pub struct ClientHelloSpec {
     /// cipher suitelist
@@ -65,8 +65,8 @@ pub struct ClientHelloSpec {
     /// TLS versionmaximumvalue
     /// Corresponds to Go version's TLSVersMax uint16
     pub tls_vers_max: u16,
-    /// extensionmetadata（ for 存储 SNI、ALPN 等count据）
-    /// 参考：Huginn Net Profiler 的设计
+    /// extensionmetadata（ for store SNI、ALPN 等count据）
+    /// reference：Huginn Net Profiler 的设计
     pub metadata: Option<crate::tls_config::metadata::SpecMetadata>,
 }
 
@@ -122,7 +122,7 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// Create Chrome 133 fingerprint ClientHelloSpec（旧implement，保留 for 兼容）
+    /// Create Chrome 133 fingerprint ClientHelloSpec（旧implement，preserve for 兼容）
     #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
     pub fn chrome_133_old() -> Self {
         let mut spec = Self::new();
@@ -150,7 +150,7 @@ impl ClientHelloSpec {
         // compressionmethod
         spec.compression_methods = vec![COMPRESSION_NONE];
 
-        // Chrome 133 's extensions顺序（Corresponds to Go version's ShuffleChromeTLSExtensions）
+        // Chrome 133 's extensionsorder（Corresponds to Go version's ShuffleChromeTLSExtensions）
         spec.extensions = vec![
             Box::new(UtlsGREASEExtension::new()),
             Box::new(SNIExtension::new(String::new())),
@@ -190,11 +190,11 @@ impl ClientHelloSpec {
                 },
                 KeyShare {
                     group: X25519_MLKEM768,
-                    data: vec![], // 实际needGeneratekey
+                    data: vec![], // actualneedGeneratekey
                 },
                 KeyShare {
                     group: X25519,
-                    data: vec![], // 实际needGeneratekey
+                    data: vec![], // actualneedGeneratekey
                 },
             ])),
             Box::new(PSKKeyExchangeModesExtension::new(vec![PSK_MODE_DHE])),
@@ -301,7 +301,7 @@ impl ClientHelloSpec {
                 },
                 KeyShare {
                     group: X25519,
-                    data: vec![], // 实际needGeneratekey
+                    data: vec![], // actualneedGeneratekey
                 },
             ])),
             Box::new(PSKKeyExchangeModesExtension::new(vec![PSK_MODE_DHE])),
@@ -342,7 +342,7 @@ impl ClientHelloSpec {
         // compressionmethod
         spec.compression_methods = vec![COMPRESSION_NONE];
 
-        // Firefox 133 's extensions（simplified version，实际need查看 Go version的completeimplement）
+        // Firefox 133 's extensions（simplified version，actualneedview Go version的completeimplement）
         spec.extensions = vec![
             Box::new(SupportedCurvesExtension::new(vec![
                 CURVE_P256, CURVE_P384, SECP521R1, X25519,

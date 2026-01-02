@@ -14,7 +14,7 @@ pub struct ValidationReport {
     pub summary: ReportSummary,
 }
 
-/// 报告章节
+/// 报告section
 #[derive(Debug, Clone)]
 pub struct ReportSection {
     pub title: String,
@@ -55,7 +55,7 @@ impl ValidationReport {
         }
     }
 
-    /// Add章节
+    /// Addsection
     pub fn add_section(&mut self, section: ReportSection) {
         self.sections.push(section);
     }
@@ -94,7 +94,7 @@ impl ValidationReport {
         ));
         md.push_str("---\n\n");
 
-        // 各个章节
+        // 各个section
         for section in &self.sections {
             md.push_str(&section.to_markdown(2));
         }
@@ -121,7 +121,7 @@ impl ValidationReport {
         text.push_str(&"=".repeat(70));
         text.push_str("\n\n");
 
-        // 各个章节
+        // 各个section
         for section in &self.sections {
             text.push_str(&section.to_text(0));
         }
@@ -144,7 +144,7 @@ impl ValidationReport {
 }
 
 impl ReportSection {
-    /// Create新章节
+    /// Create新section
     pub fn new(title: String) -> Self {
         Self {
             title,
@@ -158,7 +158,7 @@ impl ReportSection {
         self.content.push(line);
     }
 
-    /// Addchild章节
+    /// Addchildsection
     pub fn add_subsection(&mut self, subsection: ReportSection) {
         self.subsections.push(subsection);
     }
@@ -167,7 +167,7 @@ impl ReportSection {
     fn to_markdown(&self, level: usize) -> String {
         let mut md = String::new();
 
-        // 章节标题
+        // section标题
         md.push_str(&"#".repeat(level));
         md.push_str(&format!(" {}\n\n", self.title));
 
@@ -180,7 +180,7 @@ impl ReportSection {
             md.push('\n');
         }
 
-        // child章节
+        // childsection
         for subsection in &self.subsections {
             md.push_str(&subsection.to_markdown(level + 1));
         }
@@ -193,7 +193,7 @@ impl ReportSection {
         let mut text = String::new();
         let indent_str = "  ".repeat(indent);
 
-        // 章节标题
+        // section标题
         text.push_str(&format!("{}{}\n", indent_str, self.title));
         text.push_str(&format!("{}{}\n", indent_str, "-".repeat(self.title.len())));
 
@@ -205,7 +205,7 @@ impl ReportSection {
             text.push('\n');
         }
 
-        // child章节
+        // childsection
         for subsection in &self.subsections {
             text.push_str(&subsection.to_text(indent + 1));
         }

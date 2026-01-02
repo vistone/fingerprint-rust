@@ -1,7 +1,7 @@
 //! JA4+ fingerprint系列implement
 //!
 //! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) 等algorithm的抽象 and Calculate逻辑。
-//! 参考自 FoxIO  JA4+ 规范。
+//! reference自 FoxIO  JA4+ 规范。
 
 use serde::{Deserialize, Serialize};
 
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 /// format: t_p_c_e_s_k (例如: t13d1516h2_8daaf6152771_000a)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4 {
-    /// 传输protocol (t=tcp, q=quic)
+    /// transferprotocol (t=tcp, q=quic)
     pub transport: char,
     /// TLS version
     pub version: String,
@@ -49,7 +49,7 @@ impl JA4 {
         };
         let d = if has_sni { 'd' } else { 'i' };
 
-        // 过滤并排序cipher suite (GREASE removed)
+        // filter并sortcipher suite (GREASE removed)
         let mut filtered_ciphers: Vec<u16> = ciphers
             .iter()
             .filter(|&&c| !crate::grease::is_grease_value(c))
@@ -59,7 +59,7 @@ impl JA4 {
 
         let c_count = filtered_ciphers.len().min(99);
 
-        // 过滤并排序extension (GREASE removed)
+        // filter并sortextension (GREASE removed)
         let mut filtered_extensions: Vec<u16> = extensions
             .iter()
             .filter(|&&e| !crate::grease::is_grease_value(e))
@@ -245,7 +245,7 @@ impl std::fmt::Display for JA4T {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4S {
-    /// 传输protocol (t=tcp, q=quic)
+    /// transferprotocol (t=tcp, q=quic)
     pub transport: char,
     /// TLS version
     pub version: String,
@@ -265,7 +265,7 @@ impl JA4S {
     /// Generate JA4S serverfingerprint
     ///
     /// # Parameters
-    /// - `transport`: 传输protocol ('t' for TCP, 'q' for QUIC)
+    /// - `transport`: transferprotocol ('t' for TCP, 'q' for QUIC)
     /// - `version`: TLS version ("1.0", "1.1", "1.2", "1.3")
     /// - `cipher`: serverselect's cipher suites
     /// - `extensions`: serverreturn's extensionslist
@@ -285,7 +285,7 @@ impl JA4S {
             _ => "00",
         };
 
-        // 过滤 GREASE value
+        // filter GREASE value
         let filtered_extensions: Vec<u16> = extensions
             .iter()
             .filter(|&&e| !crate::grease::is_grease_value(e))
@@ -414,10 +414,10 @@ mod ja4s_tests {
 
     #[test]
     fn test_ja4s_with_grease() {
-        // testincluding GREASE value的情况
+        // testincluding GREASE value的situation
         let ja4s = JA4S::generate('t', "1.3", 0x1302, &[0x0a0a, 0, 10], Some("http/1.1"));
         
-        // GREASE value 0x0a0a should被过滤
+        // GREASE value 0x0a0a should被filter
         assert!(ja4s.extension_count < 3);
     }
 
@@ -451,20 +451,20 @@ mod ja4s_tests {
 
     #[test]
     fn test_ja4s_extension_sorting() {
-        // testextension排序（pairhash的影响）
+        // testextensionsort（pairhash的影响）
         let ja4s1 = JA4S::generate('t', "1.3", 0x1301, &[0, 10, 11], None);
         let ja4s2 = JA4S::generate('t', "1.3", 0x1301, &[11, 10, 0], None);
         
-        // 排序backshould产生相同的hash
+        // sortbackshouldproducesame的hash
         assert_eq!(ja4s1.extension_hash, ja4s2.extension_hash);
     }
 }
 
 /// JA4L - 轻量levelfingerprint（Light Version）
 ///
-/// 简化版 JA4，适 for 资source受限环境
+/// 简化版 JA4，适 for 资source受限environment
 /// - use更快的hashalgorithm
-/// - 减少Calculate复杂度
+/// - decreaseCalculate复杂度
 /// - 更小的inside存占用
 ///
 /// format: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
@@ -484,7 +484,7 @@ mod ja4s_tests {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4L {
-    /// 传输protocol (t=tcp, q=quic)
+    /// transferprotocol (t=tcp, q=quic)
     pub transport: char,
     
     /// TLS version
@@ -510,7 +510,7 @@ impl JA4L {
     /// Generate JA4L 轻量levelfingerprint
     ///
     /// # Parameters
-    /// - `transport`: 传输protocol ('t' for TCP, 'q' for QUIC)
+    /// - `transport`: transferprotocol ('t' for TCP, 'q' for QUIC)
     /// - `version`: TLS version ("1.0", "1.1", "1.2", "1.3")
     /// - `has_sni`: whetherincluding SNI extension
     /// - `ciphers`: cipher suitelist
@@ -532,7 +532,7 @@ impl JA4L {
         
         let d = if has_sni { 'd' } else { 'i' };
 
-        // 过滤 GREASE value
+        // filter GREASE value
         let filtered_ciphers: Vec<u16> = ciphers
             .iter()
             .filter(|&&c| !crate::grease::is_grease_value(c))

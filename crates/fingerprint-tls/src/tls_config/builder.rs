@@ -137,7 +137,7 @@ impl ClientHelloSpecBuilder {
     }
 
     /// Chrome 的defaultsignaturealgorithm
-    /// return静态引用，避免不必要的inside存分配
+    /// return静态reference，避免不必要的inside存allocate
     pub fn chrome_signature_algorithms() -> &'static [u16] {
         &[
             ECDSA_WITH_P256_AND_SHA256,
@@ -167,7 +167,7 @@ impl ClientHelloSpecBuilder {
         // settings ALPN
         metadata.set_alpn(vec!["h2".to_string(), "http/1.1".to_string()]);
 
-        // settings椭圆曲线
+        // settingselliptic curve
         metadata.set_elliptic_curves(vec![
             GREASE_SG,
             X25519_MLKEM768,
@@ -176,7 +176,7 @@ impl ClientHelloSpecBuilder {
             CURVE_P384,
         ]);
 
-        // settings椭圆曲线点format
+        // settingselliptic curve点format
         metadata.set_elliptic_curve_point_formats(vec![POINT_FORMAT_UNCOMPRESSED]);
 
         // settingssignaturealgorithm
@@ -252,11 +252,11 @@ impl ClientHelloSpecBuilder {
     ) {
         let (mut extensions, mut metadata) = Self::chrome_133_extensions();
 
-        // 针pair 136 的微调：确保 ALPN including h3 并置于首bit（Chrome 136 强化了pair h3 的support）
+        // 针pair 136 的微调：ensure ALPN including h3 并置于首bit（Chrome 136 强化了pair h3 的support）
         let alpn_protocols = vec!["h3".to_string(), "h2".to_string(), "http/1.1".to_string()];
         metadata.set_alpn(alpn_protocols.clone());
 
-        // 调整extensionlist中 ALPN
+        // adjustextensionlist中 ALPN
         for ext in extensions.iter_mut() {
             if ext.extension_id() == fingerprint_core::dicttls::extensions::EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION {
                 *ext = Box::new(ALPNExtension::new(alpn_protocols.clone()));
@@ -277,10 +277,10 @@ impl ClientHelloSpecBuilder {
         // settings ALPN
         metadata.set_alpn(vec!["h2".to_string(), "http/1.1".to_string()]);
 
-        // settings椭圆曲线 (excluding X25519MLKEM768)
+        // settingselliptic curve (excluding X25519MLKEM768)
         metadata.set_elliptic_curves(vec![GREASE_SG, X25519, CURVE_P256, CURVE_P384]);
 
-        // settings椭圆曲线点format
+        // settingselliptic curve点format
         metadata.set_elliptic_curve_point_formats(vec![POINT_FORMAT_UNCOMPRESSED]);
 
         // settingssignaturealgorithm

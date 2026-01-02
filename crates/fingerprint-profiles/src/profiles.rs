@@ -37,7 +37,7 @@ impl ClientHelloID {
         }
     }
 
-    /// convert tostring表示（Corresponds to Go version's Str()）
+    /// convert tostringrepresent（Corresponds to Go version's Str()）
     pub fn str(&self) -> String {
         format!("{}-{}", self.client, self.version)
     }
@@ -72,7 +72,7 @@ pub struct ClientProfile {
     pub client_hello_id: ClientHelloID,
     /// HTTP/2 Settings（Corresponds to Go version's map[http2.SettingID]uint32）
     pub settings: HTTP2Settings,
-    /// Settings 顺序（Corresponds to Go version's []http2.SettingID）
+    /// Settings order（Corresponds to Go version's []http2.SettingID）
     pub settings_order: Vec<u16>,
     /// Pseudo Header order（Corresponds to Go version's []string）
     pub pseudo_header_order: Vec<String>,
@@ -91,7 +91,7 @@ pub struct ClientProfile {
 impl ClientProfile {
     /// Create a new ClientProfile
     /// Corresponds to Go version's NewClientProfile function
-    #[allow(clippy::too_many_arguments)] // 构造functionneedall必要的parameter
+    #[allow(clippy::too_many_arguments)] // constructfunctionneedall必要的parameter
     pub fn new(
         client_hello_id: ClientHelloID,
         settings: HTTP2Settings,
@@ -123,10 +123,10 @@ impl ClientProfile {
 
     /// Based on User-Agent automaticGeneratematch TCP Profile
     ///
-    /// 这是统一fingerprintGenerate的核心method，确保browserfingerprint and TCP fingerprintsync
+    /// 这是统一fingerprintGenerate的coremethod，ensurebrowserfingerprint and TCP fingerprintsync
     ///
     /// # Parameters
-    /// - `user_agent`: User-Agent string， for 推断operating system
+    /// - `user_agent`: User-Agent string， for inferoperating system
     ///
     /// # Returns
     /// returnannew ClientProfile，其中 tcp_profile alreadyBased on User-Agent settings
@@ -157,14 +157,14 @@ impl ClientProfile {
 
     /// Get or Generate TCP Profile
     ///
-    /// If tcp_profile already exists, 直接return
+    /// If tcp_profile already exists, directlyreturn
     /// If不 exists, Based on User-Agent Generate
     ///
     /// # Parameters
-    /// - `user_agent`: User-Agent string， for 推断operating system（ if  tcp_profile 不 exists）
+    /// - `user_agent`: User-Agent string， for inferoperating system（ if  tcp_profile 不 exists）
     ///
     /// # Returns
-    /// TCP Profile 的引用
+    /// TCP Profile 的reference
     pub fn get_or_generate_tcp_profile(&mut self, user_agent: &str) -> &TcpProfile {
         use fingerprint_core::tcp::TcpProfile;
         if self.tcp_profile.is_none() {
@@ -204,7 +204,7 @@ impl ClientProfile {
     }
 
     /// Get ClientHelloSpec（Corresponds to Go version's GetClientHelloSpec()）
-    /// 这是真正 TLS fingerprintconfiguration，can for 实际 TLS handshake
+    /// 这是真正 TLS fingerprintconfiguration，can for actual TLS handshake
     pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
         self.client_hello_id.to_spec()
     }
@@ -245,7 +245,7 @@ pub fn chrome_103() -> ClientProfile {
 /// Chrome 133 fingerprintconfiguration
 pub fn chrome_133() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
-    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // defaultuse Windows  TCP Profile（最常见的browserenvironment）
     // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
@@ -270,7 +270,7 @@ pub fn chrome_133() -> ClientProfile {
 /// Firefox 133 fingerprintconfiguration
 pub fn firefox_133() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
-    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // defaultuse Windows  TCP Profile（最常见的browserenvironment）
     // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
@@ -318,7 +318,7 @@ pub fn chrome_136() -> ClientProfile {
 /// Chrome 135 fingerprintconfiguration（default）
 pub fn chrome_135() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
-    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // defaultuse Windows  TCP Profile（最常见的browserenvironment）
     // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
@@ -343,7 +343,7 @@ pub fn chrome_135() -> ClientProfile {
 /// Firefox 135 fingerprintconfiguration
 pub fn firefox_135() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
-    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // defaultuse Windows  TCP Profile（最常见的browserenvironment）
     // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
@@ -389,7 +389,7 @@ pub fn safari_16_0() -> ClientProfile {
 /// Opera 91 fingerprintconfiguration
 /// Corresponds to Go version's Opera_91
 pub fn opera_91() -> ClientProfile {
-    // Opera use Chrome inside核，configuration and Chrome 相同
+    // Opera use Chrome inside核，configuration and Chrome same
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("Opera", "91", fingerprint_tls::tls_config::chrome_133_spec), // Opera use Chrome  TLS configuration
@@ -405,9 +405,9 @@ pub fn opera_91() -> ClientProfile {
 }
 
 /// Edge 120 fingerprintconfiguration
-/// Edge use Chromium inside核，TLS fingerprint and Chrome 相同
+/// Edge use Chromium inside核，TLS fingerprint and Chrome same
 pub fn edge_120() -> ClientProfile {
-    // Edge use Chrome inside核，configuration and Chrome 相同
+    // Edge use Chrome inside核，configuration and Chrome same
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge use Chrome  TLS configuration
@@ -423,7 +423,7 @@ pub fn edge_120() -> ClientProfile {
 }
 
 /// Edge 124 fingerprintconfiguration
-/// Edge use Chromium inside核，TLS fingerprint and Chrome 相同
+/// Edge use Chromium inside核，TLS fingerprint and Chrome same
 pub fn edge_124() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
@@ -440,7 +440,7 @@ pub fn edge_124() -> ClientProfile {
 }
 
 /// Edge 133 fingerprintconfiguration
-/// Edge use Chromium inside核，TLS fingerprint and Chrome 相同
+/// Edge use Chromium inside核，TLS fingerprint and Chrome same
 pub fn edge_133() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
@@ -461,8 +461,8 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     let mut map = HashMap::new();
 
     // Chrome 系列
-    // Note: 这里简化process，实际should为eachversionCreate独立的configuration
-    // 为了match Go version，我们use chrome_133 作为defaultconfiguration
+    // Note: 这里简化process，actualshould为eachversionCreateindependent的configuration
+    // 为了match Go version，我们use chrome_133 asdefaultconfiguration
     map.insert("chrome_103".to_string(), chrome_133()); // 简化：use chrome_133
     map.insert("chrome_104".to_string(), chrome_133());
     map.insert("chrome_105".to_string(), chrome_133());
@@ -518,7 +518,7 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("opera_90".to_string(), opera_91());
     map.insert("opera_91".to_string(), opera_91());
 
-    // Edge 系列（use Chromium inside核，TLS fingerprint and Chrome 相同）
+    // Edge 系列（use Chromium inside核，TLS fingerprint and Chrome same）
     map.insert("edge_120".to_string(), edge_120());
     map.insert("edge_124".to_string(), edge_124());
     map.insert("edge_133".to_string(), edge_133());
@@ -550,7 +550,7 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map
 }
 
-/// 全局fingerprintconfigurationmap表（线程security）
+/// globalfingerprintconfigurationmap表（线程security）
 static MAPPED_TLS_CLIENTS: OnceLock<HashMap<String, ClientProfile>> = OnceLock::new();
 
 /// Getfingerprintconfigurationmap表

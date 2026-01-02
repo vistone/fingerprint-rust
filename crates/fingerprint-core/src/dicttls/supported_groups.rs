@@ -1,13 +1,13 @@
-//! TLS support的组（椭圆曲线）constant
+//! TLS support的group（elliptic curve）constant
 //!
 //! 来source：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
 //! finallyUpdate：March 2023
 
-/// TLS support的组constant
+/// TLS support的groupconstant
 /// Corresponds to Go version's tls.CurveID constant
 #[allow(clippy::module_inception)]
 pub mod supported_groups {
-    // 椭圆曲线
+    // elliptic curve
     pub const SECP256R1: u16 = 0x0017; // 23
     pub const SECP384R1: u16 = 0x0018; // 24
     pub const SECP521R1: u16 = 0x0019; // 25
@@ -24,7 +24,7 @@ pub use supported_groups::*;
 /// Corresponds to Go version's tls.CurveID
 pub type CurveID = u16;
 
-/// 为了 and Go version保持一致，provide别名
+/// 为了 and Go versionkeep一致，provide别名
 /// Corresponds to Go version's tls.CurveP256
 pub const CURVE_P256: u16 = supported_groups::SECP256R1;
 /// Corresponds to Go version's tls.CurveP384

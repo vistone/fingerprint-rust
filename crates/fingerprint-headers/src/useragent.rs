@@ -273,7 +273,7 @@ impl UserAgentGenerator {
         }
 
         if let Some(template) = self.templates.get(profile_name) {
-            // Ifdoes not need OS information, 直接return templates
+            // Ifdoes not need OS information, directlyreturn templates
             if !template.os_required {
                 return Ok(template.template.clone());
             }
@@ -365,7 +365,7 @@ impl Default for UserAgentGenerator {
     }
 }
 
-/// 全局defaultGenerator（线程security）
+/// globaldefaultGenerator（线程security）
 static DEFAULT_GENERATOR: OnceLock<UserAgentGenerator> = OnceLock::new();
 
 fn get_default_generator() -> &'static UserAgentGenerator {

@@ -15,8 +15,8 @@ fn main() {
     let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
     let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
-    // 1. 模拟an正常 Chrome request (Windows)
-    println!("1️⃣  模拟正常 Chrome request (Windows):");
+    // 1. simulatean正常 Chrome request (Windows)
+    println!("1️⃣  simulate正常 Chrome request (Windows):");
     let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\nAccept: text/html\r\n\r\n";
 
     let packet = Packet {
@@ -65,22 +65,22 @@ fn main() {
     }
 
     if let Some(t_fp) = tcp_analyzer.analyze(&packet) {
-        println!("   ✅ TCP 识别: {}", Fingerprint::id(&t_fp));
+        println!("   ✅ TCP identify: {}", Fingerprint::id(&t_fp));
         flow.add_fingerprint(Box::new(t_fp));
     }
 
     let report = analyzer.analyze_flow(&flow);
     println!("   ✅ 一致性score: {}", report.score);
     if report.discrepancies.is_empty() {
-        println!("   ✅ not发现异常，判定为合法traffic");
+        println!("   ✅ not发现异常，determine为合法traffic");
     } else {
         for d in &report.discrepancies {
             println!("   ❌ 发现偏差: {}", d);
         }
     }
 
-    // 2. 模拟an伪造fingerprint的机器人 (UA 为 Windows, but TCP trait为 Linux)
-    println!("\n2️⃣  模拟fingerprint错bit攻击 (User-Agent: Windows, TCP: Linux):");
+    // 2. simulatean伪造fingerprint的机器人 (UA 为 Windows, but TCP trait为 Linux)
+    println!("\n2️⃣  simulatefingerprint错bit攻击 (User-Agent: Windows, TCP: Linux):");
     let packet_bot = Packet {
         timestamp: 0,
         src_ip: "192.168.1.101".parse().unwrap(),
@@ -126,7 +126,7 @@ fn main() {
     }
 
     if let Some(t_fp) = tcp_analyzer.analyze(&packet_bot) {
-        println!("   ✅ TCP 识别 (机器人): {}", Fingerprint::id(&t_fp));
+        println!("   ✅ TCP identify (机器人): {}", Fingerprint::id(&t_fp));
         flow_bot.add_fingerprint(Box::new(t_fp));
     }
 
@@ -136,7 +136,7 @@ fn main() {
         println!("   ❌ 发现严重偏差: {}", d);
     }
     if report_bot.bot_detected {
-        println!("   🚨 warning: 检测 to 机器人/fingerprint模拟器行为！");
+        println!("   🚨 warning: detect to 机器人/fingerprintsimulate器behavior！");
     }
 
     println!("\n✨ Validatecomplete！");

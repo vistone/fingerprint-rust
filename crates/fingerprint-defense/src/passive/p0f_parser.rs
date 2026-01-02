@@ -11,7 +11,7 @@ pub struct P0fTcpSignature {
     /// signature ID
     pub id: String,
 
-    /// 标签info
+    /// taginfo
     pub label: SignatureLabel,
 
     /// systemtypelimit（optional）
@@ -32,17 +32,17 @@ pub struct P0fTcpSignature {
     /// MSS pattern
     pub mss_pattern: MssPattern,
 
-    /// TCP options顺序
+    /// TCP optionsorder
     pub options_order: Vec<TcpOptionType>,
 
-    /// IP 标志
+    /// IP flag
     pub ip_flags: IpFlags,
 
-    /// 其他field
+    /// otherfield
     pub other: String,
 }
 
-/// signature标签
+/// signaturetag
 #[derive(Debug, Clone, PartialEq)]
 pub struct SignatureLabel {
     /// matchtype：s (specific)  or  g (generic)
@@ -128,10 +128,10 @@ pub enum TcpOptionType {
     Timestamp,   // ts
     Nop,         // nop
     End,         // eol
-    Other(u8),   // 其他
+    Other(u8),   // other
 }
 
-/// IP 标志
+/// IP flag
 #[derive(Debug, Clone, PartialEq)]
 pub struct IpFlags {
     /// Don't Fragment
@@ -145,7 +145,7 @@ pub struct IpFlags {
 /// p0f Parseerror
 #[derive(Debug, Error)]
 pub enum P0fParseError {
-    #[error("invalid的标签format: {0}")]
+    #[error("invalid的tagformat: {0}")]
     InvalidLabel(String),
 
     #[error("invalid的signatureformat: {0}")]
@@ -157,14 +157,14 @@ pub enum P0fParseError {
 
 /// Parse p0f TCP signature
 pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0fParseError> {
-    // Parse标签
+    // Parsetag
     let label_info = parse_label(label)?;
 
-    // Parsesignature：format为 [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[TCPoptions]:[IP标志]:[其他]
+    // Parsesignature：format为 [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[TCPoptions]:[IPflag]:[other]
     let parts: Vec<&str> = sig.split(':').collect();
     if parts.len() < 7 {
         return Err(P0fParseError::InvalidSignature(format!(
-            "signaturepartialcount不足: 期望7个，实际{}个",
+            "signaturepartialcount不足: 期望7个，actual{}个",
             parts.len()
         )));
     }
@@ -202,12 +202,12 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
     let window_value = parse_window_size_pattern(parts[3])?;
 
     // Parse MSS pattern and TCP options
-    // p0f format: [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[MSSpattern]:[options顺序]:[IP标志]:[其他]
-    // so parts[4] 是 MSS pattern，parts[5] 是options顺序
+    // p0f format: [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[MSSpattern]:[optionsorder]:[IPflag]:[other]
+    // so parts[4] 是 MSS pattern，parts[5] 是optionsorder
     let mss_str = parts[4];
     let options_str = if parts.len() > 5 { parts[5] } else { "" };
 
-    // 合并 MSS pattern and options顺序进行Parse
+    // merge MSS pattern and optionsorder进行Parse
     let full_options_str = if !options_str.is_empty() {
         format!("{}:{}", mss_str, options_str)
     } else {
@@ -216,7 +216,7 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
 
     let (mss_pattern, options_order) = parse_tcp_options(&full_options_str)?;
 
-    // Parse IP 标志
+    // Parse IP flag
     let ip_flags = if parts.len() > 6 {
         parse_ip_flags(parts[6])?
     } else {
@@ -227,7 +227,7 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
         }
     };
 
-    // 其他field
+    // otherfield
     let other = if parts.len() > 7 {
         parts[7].to_string()
     } else {
@@ -249,13 +249,13 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
     })
 }
 
-/// Parse标签
+/// Parsetag
 fn parse_label(label: &str) -> Result<SignatureLabel, P0fParseError> {
     // format: s:unix:Linux:3.11 and newer
     let parts: Vec<&str> = label.split(':').collect();
     if parts.len() < 4 {
         return Err(P0fParseError::InvalidLabel(format!(
-            "标签partialcount不足: 期望4个，实际{}个",
+            "tagpartialcount不足: 期望4个，actual{}个",
             parts.len()
         )));
     }
@@ -326,7 +326,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
     let mut options_order = Vec::new();
 
     // optionsformat: mss*20,10:mss,sok,ts,nop,ws
-    // 第一partial是 MSS pattern，第二partial是options顺序
+    // 第一partial是 MSS pattern，第二partial是optionsorder
 
     let parts: Vec<&str> = options_str.split(':').collect();
     if parts.is_empty() {
@@ -340,12 +340,12 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
         mss_pattern = parse_mss_pattern(mss_part)?;
     }
 
-    // Parseoptions顺序
+    // Parseoptionsorder
     // formatmay是: mss*20,10:mss,sok,ts,nop,ws
     //  or 者: mss,1460:mss,sok,ts,nop,ws
-    // 第二partial是options顺序
+    // 第二partial是optionsorder
     if parts.len() > 1 {
-        // 第二partialincludingoptions顺序
+        // 第二partialincludingoptionsorder
         for opt_str in parts[1].split(',') {
             let opt = match opt_str.trim() {
                 "mss" => TcpOptionType::Mss,
@@ -366,10 +366,10 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
             options_order.push(opt);
         }
     } else {
-        // If没有第二partial, mayoptions顺序就 in 第一partial（ in MSS patternafter）
+        // Ifno第二partial, mayoptionsorder就 in 第一partial（ in MSS patternafter）
         // format: mss*20,10  or  mss,1460
-        // 这种情况down，options顺序may不 exists， or 者need from 其他地方Extract
-        // 暂 when 不process这种情况
+        // 这种situationdown，optionsordermay不 exists， or 者need from other地方Extract
+        // 暂 when 不process这种situation
     }
 
     Ok((mss_pattern, options_order))
@@ -394,7 +394,7 @@ fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
     }
 
     // fixedvaluepattern: mss,1460
-    // 查找first逗号back的count字
+    // findfirst逗号back的count字
     if let Some(pos) = mss_str.find(',') {
         let value_str = &mss_str[pos + 1..];
         // maystill有更多逗号，只取firstcount字partial
@@ -407,7 +407,7 @@ fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
     Ok(MssPattern::None)
 }
 
-/// Parse IP 标志
+/// Parse IP flag
 fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0fParseError> {
     let mut df = false;
     let mut id_plus = false;
@@ -420,7 +420,7 @@ fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0fParseError> {
             "id-" => id_minus = true,
             "" => continue,
             _ => {
-                // 忽略not知标志
+                // ignorenot知flag
             }
         }
     }
@@ -439,7 +439,7 @@ impl From<P0fTcpSignature> for TcpSignature {
         let mss = match &p0f_sig.mss_pattern {
             MssPattern::Fixed(v) => Some(*v),
             MssPattern::Multiple { multiplier, offset } => {
-                // usefirstmay MSS value作为Examples
+                // usefirstmay MSS valueasExamples
                 let m = (*multiplier as u32)
                     .saturating_mul(10)
                     .saturating_add(*offset as u32);
@@ -448,9 +448,9 @@ impl From<P0fTcpSignature> for TcpSignature {
             MssPattern::None => None,
         };
 
-        //  from options顺序中Extract Window Scale（ if  exists）
+        //  from optionsorder中Extract Window Scale（ if  exists）
         let window_scale = if p0f_sig.options_order.contains(&TcpOptionType::WindowScale) {
-            Some(7) // defaultvalue，实际should from count据包中Extract
+            Some(7) // defaultvalue，actualshould from countpacket中Extract
         } else {
             None
         };
@@ -458,7 +458,7 @@ impl From<P0fTcpSignature> for TcpSignature {
         //  from windowvaluepatternExtractfixedvalue（ if may）
         let window_size = match &p0f_sig.window_value {
             WindowSizePattern::Value(v) => *v,
-            _ => 0, // 通配符 or 其他pattern
+            _ => 0, // 通配符 or otherpattern
         };
 
         TcpSignature {

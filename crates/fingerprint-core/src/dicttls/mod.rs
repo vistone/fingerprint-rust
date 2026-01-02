@@ -1,6 +1,6 @@
 //! TLS dictionarymodule
 //!
-//! provide TLS 相关的constant定义，Corresponds to Go version's dicttls 包
+//! provide TLS 相关的constantdefine，Corresponds to Go version's dicttls 包
 //! count据来source：IANA TLS Parameters
 
 pub mod cipher_suites;

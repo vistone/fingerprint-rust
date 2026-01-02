@@ -1,4 +1,4 @@
-//! TLS 被动fingerprint识别
+//! TLS 被动fingerprintidentify
 //!
 //! implement TLS ClientHello 的被动analysis and JA4 fingerprintGenerate。
 
@@ -78,9 +78,9 @@ impl TlsAnalyzer {
         Ok(Self)
     }
 
-    /// analysis TLS count据包
+    /// analysis TLS countpacket
     pub fn analyze(&self, packet: &Packet) -> Option<TlsFingerprint> {
-        // 查找 TLS ClientHello
+        // find TLS ClientHello
         if let Some(client_hello) = self.find_client_hello(&packet.payload) {
             return Some(self.analyze_client_hello(&client_hello));
         }
@@ -88,9 +88,9 @@ impl TlsAnalyzer {
         None
     }
 
-    /// 查找 ClientHello
+    /// find ClientHello
     fn find_client_hello(&self, data: &[u8]) -> Option<Vec<u8>> {
-        // 查找 TLS handshakemessage
+        // find TLS handshakemessage
         // TLS recordformat: [ContentType(1)][Version(2)][Length(2)][Data]
         // Handshake format: [Type(1)][Length(3)][Version(2)][Random(32)][SessionID][CipherSuites][Compression][Extensions]
 
@@ -98,7 +98,7 @@ impl TlsAnalyzer {
             return None;
         }
 
-        // 查找 ContentType = 22 (Handshake)
+        // find ContentType = 22 (Handshake)
         for i in 0..data.len().saturating_sub(5) {
             if data[i] == 0x16 {
                 // Handshake
@@ -282,7 +282,7 @@ impl TlsAnalyzer {
         };
 
         let ja4 = fingerprint_core::ja4::JA4::generate(
-            't', // 假设是 TCP，实际应 from  packet 判断
+            't', // 假设是 TCP，actual应 from  packet judge
             tls_ver_str,
             has_sni,
             &cipher_suites,

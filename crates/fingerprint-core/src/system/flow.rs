@@ -1,6 +1,6 @@
 //! networktraffic抽象
 //!
-//! 定义systemlevel的networktraffic，includingcomplete的updown文 and fingerprintinfo。
+//! definesystemlevel的networktraffic，includingcomplete的updown文 and fingerprintinfo。
 
 use super::context::SystemContext;
 use crate::fingerprint::Fingerprint;
@@ -8,10 +8,10 @@ use std::time::Duration;
 
 /// traffictrait
 ///
-/// 描述networktraffic的statisticstrait and 行为pattern。
+/// describenetworktraffic的statisticstrait and behaviorpattern。
 #[derive(Debug, Clone, PartialEq)]
 pub struct FlowCharacteristics {
-    /// count据包count
+    /// countpacketcount
     pub packet_count: u64,
 
     /// 总bytescount
@@ -23,10 +23,10 @@ pub struct FlowCharacteristics {
     /// whetherencryption
     pub encrypted: bool,
 
-    /// averagecount据包size
+    /// averagecountpacketsize
     pub avg_packet_size: f64,
 
-    /// count据包速率（包/秒）
+    /// countpacket速率（包/秒）
     pub packet_rate: f64,
 
     /// bytes速率（bytes/秒）
@@ -80,14 +80,14 @@ impl Default for FlowCharacteristics {
 
 /// networktraffic
 ///
-/// 表示systemlevel的networktraffic，includingcomplete的updown文、fingerprintinfo and trait。
+/// representsystemlevel的networktraffic，includingcomplete的updown文、fingerprintinfo and trait。
 ///
 /// ## Core Concept
 ///
-/// systemlevel防护need from **networktraffic**的角度进行analysis and 防护，而is notonlyonly关注single服务：
+/// systemlevelprotectionneed from **networktraffic**的角度进行analysis and protection，而is notonlyonlyfocussingleservice：
 /// - complete的systemupdown文（source/target、protocol、方向等）
-/// - 检测 to 的fingerprintinfo（TLS、HTTP、TCP等）
-/// - traffic的statisticstrait and 行为pattern
+/// - detect to 的fingerprintinfo（TLS、HTTP、TCP等）
+/// - traffic的statisticstrait and behaviorpattern
 ///
 /// ## Examples
 ///
@@ -106,8 +106,8 @@ pub struct NetworkFlow {
     /// systemupdown文
     pub context: SystemContext,
 
-    /// 检测 to 的fingerprintlist（ if 有）
-    /// Note: 由于 trait object 的limit，这里不能直接 Clone，needmanualprocess
+    /// detect to 的fingerprintlist（ if 有）
+    /// Note: 由于 trait object 的limit，这里不能directly Clone，needmanualprocess
     #[cfg_attr(test, allow(dead_code))]
     fingerprints: Vec<Box<dyn Fingerprint>>,
 
@@ -135,7 +135,7 @@ impl NetworkFlow {
         !self.fingerprints.is_empty()
     }
 
-    /// Getallfingerprint的引用
+    /// Getallfingerprint的reference
     pub fn fingerprints(&self) -> &[Box<dyn Fingerprint>] {
         &self.fingerprints
     }
@@ -157,7 +157,7 @@ impl NetworkFlow {
         self.characteristics.update(packet_size);
     }
 
-    /// Gettraffic的唯一标识符
+    /// Gettraffic的唯一identifier符
     pub fn flow_id(&self) -> String {
         self.context.flow_id()
     }
@@ -177,8 +177,8 @@ impl std::fmt::Debug for NetworkFlow {
 // Manual implementation Clone，because Box<dyn Fingerprint> 不能automatic Clone
 impl Clone for NetworkFlow {
     fn clone(&self) -> Self {
-        // Note: fingerprints 不能 Clone，so新实例 from emptyliststart
-        // 这是合理的，becausefingerprint通常不should被复制，而是through引用共享
+        // Note: fingerprints 不能 Clone，so新instance from emptyliststart
+        // 这是合理的，becausefingerprint通常不should被copy，而是throughreference共享
         Self {
             context: self.context.clone(),
             fingerprints: Vec::new(), // 不能 Clone trait object

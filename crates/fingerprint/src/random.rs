@@ -19,7 +19,7 @@ pub struct FingerprintResult {
     pub profile: ClientProfile,
     /// pair应 User-Agent
     pub user_agent: String,
-    /// Client Hello ID（ and tls-client 保持一致）
+    /// Client Hello ID（ and tls-client keep一致）
     pub hello_client_id: String,
     /// standard HTTP requestheader（including全球语言support）
     pub headers: fingerprint_headers::headers::HTTPHeaders,
@@ -82,7 +82,7 @@ pub fn get_random_fingerprint_with_os(
     };
 
     // 🔥 关keyFix: Based on User-Agent sync TCP Profile
-    // 确保browserfingerprint and TCP fingerprint完全一致
+    // ensurebrowserfingerprint and TCP fingerprint完全一致
     profile = profile.with_synced_tcp_profile(&ua);
 
     // Generatestandard HTTP Headers
@@ -124,7 +124,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
     let browser_type_lower = browser_type.to_lowercase();
 
-    // 筛选出specifiedbrowsertype的fingerprint
+    // filter出specifiedbrowsertype的fingerprint
     let candidates: Vec<String> = clients
         .keys()
         .filter(|name| {
@@ -161,7 +161,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
     };
 
     // 🔥 关keyFix: Based on User-Agent sync TCP Profile
-    // 确保browserfingerprint and TCP fingerprint完全一致
+    // ensurebrowserfingerprint and TCP fingerprint完全一致
     profile = profile.with_synced_tcp_profile(&ua);
 
     // Generatestandard HTTP Headers
@@ -236,7 +236,7 @@ mod tests {
 
             println!("  browserfingerprint: {}", result.hello_client_id);
             println!("  User-Agent: {}", user_agent);
-            println!("  推断的operating system: {}", inferred_os);
+            println!("  infer的operating system: {}", inferred_os);
 
             if let Some(tcp_profile) = &profile.tcp_profile {
                 println!("  TCP Profile:");

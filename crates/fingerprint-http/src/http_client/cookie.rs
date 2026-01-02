@@ -1,6 +1,6 @@
-//! Cookie 管理器
+//! Cookie manage器
 //!
-//!  for 管理 HTTP Cookie 的存储、send and receive
+//!  for manage HTTP Cookie 的store、send and receive
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -20,7 +20,7 @@ pub struct Cookie {
     pub same_site: Option<SameSite>,
 }
 
-/// SameSite 属性
+/// SameSite property
 #[derive(Debug, Clone, PartialEq)]
 pub enum SameSite {
     Strict,
@@ -44,7 +44,7 @@ impl Cookie {
         }
     }
 
-    /// Check Cookie whether过期
+    /// Check Cookie whetherexpire
     pub fn is_expired(&self) -> bool {
         if let Some(expires) = self.expires {
             return SystemTime::now() > expires;
@@ -76,7 +76,7 @@ impl Cookie {
             domain,
         );
 
-        // Parse其他属性
+        // Parseotherproperty
         for part in &parts[1..] {
             let part = part.trim();
             if part.to_lowercase().starts_with("domain=") {
@@ -108,15 +108,15 @@ impl Cookie {
     }
 }
 
-/// Cookie 存储
+/// Cookie store
 #[derive(Debug, Clone)]
 pub struct CookieStore {
-    /// 按domain存储 Cookie
+    /// 按domainstore Cookie
     cookies: Arc<Mutex<HashMap<String, Vec<Cookie>>>>,
 }
 
 impl CookieStore {
-    /// Create a new Cookie 存储
+    /// Create a new Cookie store
     pub fn new() -> Self {
         Self {
             cookies: Arc::new(Mutex::new(HashMap::new())),
@@ -135,7 +135,7 @@ impl CookieStore {
                 domain_cookies.push(cookie);
             }
         } else {
-            eprintln!("warning: Cookie 存储锁failure，unable toAdd Cookie");
+            eprintln!("warning: Cookie store锁failure，unable toAdd Cookie");
         }
     }
 
@@ -149,13 +149,13 @@ impl CookieStore {
     /// Getspecifieddomain的allvalid Cookie
     ///
     /// Based on RFC 6265 规范进行domainmatch：
-    /// - Cookie  domain 属性（如 `.example.com`）shouldmatch `example.com` 及其allchilddomain
+    /// - Cookie  domain property（如 `.example.com`）shouldmatch `example.com` 及其allchilddomain
     /// - `example.com`  Cookie shouldmatch `example.com`  and `*.example.com`
     pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
         let cookies = match self.cookies.lock() {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("warning: Cookie 存储锁failure: {}", e);
+                eprintln!("warning: Cookie store锁failure: {}", e);
                 return Vec::new();
             }
         };
@@ -209,7 +209,7 @@ impl CookieStore {
             return None;
         }
 
-        // 过滤pathmatch Cookie，并Check Secure 属性
+        // filterpathmatch Cookie，并Check Secure property
         let matching_cookies: Vec<String> = cookies
             .iter()
             .filter(|c| {
@@ -247,7 +247,7 @@ impl CookieStore {
         }
     }
 
-    /// clear过期 Cookie
+    /// clearexpire Cookie
     pub fn cleanup_expired(&self) {
         if let Ok(mut cookies) = self.cookies.lock() {
             for domain_cookies in cookies.values_mut() {

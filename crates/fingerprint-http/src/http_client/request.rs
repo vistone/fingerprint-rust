@@ -38,7 +38,7 @@ pub struct HttpRequest {
     pub body: Option<Vec<u8>>,
 }
 
-/// 辅助function：为requestAdd Cookie（ if  exists）
+/// auxiliaryfunction：为requestAdd Cookie（ if  exists）
 pub fn add_cookies_to_request(
     request: &mut HttpRequest,
     cookie_store: &super::cookie::CookieStore,
@@ -75,7 +75,7 @@ impl HttpRequest {
         self
     }
 
-    /// 批量Add headers
+    /// bulkAdd headers
     pub fn with_headers(mut self, headers: &HTTPHeaders) -> Self {
         let headers_map = headers.to_map();
         for (key, value) in headers_map {
@@ -103,7 +103,7 @@ impl HttpRequest {
     /// Note: 该methodwill把 body when作 UTF-8 文本拼接 to string中，**不适 for 二进制 body**。
     /// 如需send二进制count据，请use `build_http1_request_bytes`。
     pub fn build_http1_request(&self, host: &str, path: &str) -> String {
-        // security清洗：防止 CRLF 注入
+        // security清洗：prevent CRLF 注入
         let safe_method = self.method.as_str().replace(['\r', '\n'], "");
         let safe_path = path.replace(['\r', '\n'], "");
         let safe_host = host.replace(['\r', '\n'], "");
@@ -113,7 +113,7 @@ impl HttpRequest {
         // Host header (required)
         request.push_str(&format!("Host: {}\r\n", safe_host));
 
-        // Add其他 headers
+        // Addother headers
         for (key, value) in &self.headers {
             if key.to_lowercase() != "host" {
                 // security清理 Key  and Value
@@ -184,7 +184,7 @@ impl HttpRequest {
             head.push_str(&format!("Host: {}\r\n", safe_host));
         }
 
-        // Add其他 headers
+        // Addother headers
         for (key, value) in ordered_headers {
             let safe_key = key.replace(['\r', '\n'], "");
             let safe_value = value.replace(['\r', '\n'], "");
@@ -216,7 +216,7 @@ impl HttpRequest {
         out
     }
 
-    /// random化 Header 的size写（模拟某些特定fingerprint or 避免 WAF trait）
+    /// random化 Header 的size写（simulate某些特定fingerprint or 避免 WAF trait）
     pub fn with_randomized_header_case(&mut self) {
         let mut new_headers = HashMap::new();
         for (key, value) in self.headers.drain() {

@@ -55,7 +55,7 @@ impl P0fDatabase {
         for line in content.lines() {
             let line = line.trim();
 
-            // skipempty行 and 注释
+            // skipempty行 and comment
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
@@ -200,7 +200,7 @@ mod tests {
     #[test]
     fn test_print_all_p0f_data() {
         println!("\n╔════════════════════════════════════════════════════════════════╗");
-        println!("║              打印 p0f allcount据                                ║");
+        println!("║              print p0f allcount据                                ║");
         println!("╚════════════════════════════════════════════════════════════════╝\n");
 
         // try from 常见bit置load p0f database
@@ -232,14 +232,14 @@ mod tests {
 
         if db.is_none() {
             println!("⚠️  not找 to  p0f databasefile");
-            println!("   请确保 p0f.fp file exists于belowbit置之一：");
+            println!("   请ensure p0f.fp file exists于belowbit置之一：");
             for path in &p0f_paths {
                 println!("     - {}", path);
             }
             println!("\n    or 者CreateanExamplesdatabase进行test");
 
-            // CreateanExamplesdatabase for 演示
-            println!("\n【CreateExamplesdatabase for 演示】\n");
+            // CreateanExamplesdatabase for demo
+            println!("\n【CreateExamplesdatabase for demo】\n");
             let example_content = r#"
 [tcp:request]
 label = s:unix:Linux:3.x
@@ -264,7 +264,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
 
         let db = db.unwrap();
 
-        // 打印statisticsinfo
+        // printstatisticsinfo
         let stats = db.stats();
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         println!("【p0f databasestatistics】");
@@ -275,7 +275,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
         println!("  HTTP responsesignature: {} 个", stats.http_response_count);
         println!();
 
-        // 打印all TCP requestsignature
+        // printall TCP requestsignature
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         println!("【TCP requestsignature】");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -296,7 +296,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
             println!();
         }
 
-        // 打印all TCP responsesignature
+        // printall TCP responsesignature
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         println!("【TCP responsesignature】");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -317,7 +317,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
             println!();
         }
 
-        // 打印all HTTP requestsignature
+        // printall HTTP requestsignature
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         println!("【HTTP requestsignature】");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -328,13 +328,13 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
         for (i, sig) in http_requests.iter().enumerate() {
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             println!("signature #{}: {}", i + 1, sig.id);
-            println!("  标签: {}", sig.label);
+            println!("  tag: {}", sig.label);
             println!("  User-Agent pattern: {:?}", sig.user_agent_pattern);
             println!("  Headers: {:?}", sig.headers);
             println!();
         }
 
-        // 打印all HTTP responsesignature
+        // printall HTTP responsesignature
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         println!("【HTTP responsesignature】");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
@@ -345,14 +345,14 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
         for (i, sig) in http_responses.iter().enumerate() {
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
             println!("signature #{}: {}", i + 1, sig.id);
-            println!("  标签: {}", sig.label);
+            println!("  tag: {}", sig.label);
             println!("  User-Agent pattern: {:?}", sig.user_agent_pattern);
             println!("  Headers: {:?}", sig.headers);
             println!();
         }
 
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        println!("✅ all p0f count据打印complete！");
+        println!("✅ all p0f count据printcomplete！");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     }
 }

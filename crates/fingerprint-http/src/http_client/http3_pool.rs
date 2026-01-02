@@ -1,11 +1,11 @@
 //! HTTP/3 with Connection Pool
 //!
-//! 架构说明：
-//! - HTTP/3 采用sessionpool（H3SessionPool）implement QUIC session复用
-//! - pool化pair象：h3::client::SendRequest 句柄（alreadyhandshakecomplete QUIC session）
-//! - 复用方式：并发多路复用（an QUIC connection可同 when processmultiple Stream）
-//! - QUIC Features：protocol本身includingconnection迁移 and status管理，无需 netconnpool
-//! - session建立back，connection生命周期由 H3Session 的back台任务（Driver）管理
+//! 架构explain：
+//! - HTTP/3 adoptsessionpool（H3SessionPool）implement QUIC session复用
+//! - pool化pair象：h3::client::SendRequest handle（alreadyhandshakecomplete QUIC session）
+//! - 复用方式：concurrent多路复用（an QUIC connection可同 when processmultiple Stream）
+//! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，无需 netconnpool
+//! - sessionestablishback，connection生命周期由 H3Session 的back台任务（Driver）manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -60,7 +60,7 @@ pub async fn send_http3_request_with_pool(
 
             let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
-            // 优化传输configuration以提升性能
+            // 优化transferconfiguration以提升性能
             let mut transport_config = quinn::TransportConfig::default();
             transport_config.initial_rtt(Duration::from_millis(100));
             transport_config.max_idle_timeout(Some(
@@ -73,7 +73,7 @@ pub async fn send_http3_request_with_pool(
             transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
             transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
-            // 允许更多并发stream
+            // allow更多concurrentstream
             transport_config.max_concurrent_bidi_streams(100u32.into());
             transport_config.max_concurrent_uni_streams(100u32.into());
 
@@ -95,9 +95,9 @@ pub async fn send_http3_request_with_pool(
 
             let connection = connecting
                 .await
-                .map_err(|e| HttpClientError::Http3Error(format!("建立Connection failed: {}", e)))?;
+                .map_err(|e| HttpClientError::Http3Error(format!("establishConnection failed: {}", e)))?;
 
-            // 建立 HTTP/3 connection
+            // establish HTTP/3 connection
             let quinn_conn = h3_quinn::Connection::new(connection);
 
             let (driver, send_request) = h3::client::new(quinn_conn)
@@ -185,7 +185,7 @@ pub async fn send_http3_request_with_pool(
     // readresponse体
     let mut body_data = Vec::new();
 
-    // securitylimit：防止 HTTP/3 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/3 response体过大导致inside存耗尽
     const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(mut chunk) = stream
@@ -196,7 +196,7 @@ pub async fn send_http3_request_with_pool(
         // use Buf trait readcount据
         let chunk_len = chunk.remaining();
 
-        // securityCheck：防止response体过大
+        // securityCheck：preventresponse体过大
         if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
                 "HTTP/3 response体过大（>{} bytes）",
@@ -212,7 +212,7 @@ pub async fn send_http3_request_with_pool(
     // Parseresponse
     let status_code = response.status().as_u16();
 
-    // securityFix: Check HTTP/3 responseheadersize，防止 QPACK compression炸弹攻击
+    // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compression炸弹攻击
     const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的minimumvalue)
     let total_header_size: usize = response
         .headers()

@@ -1,6 +1,6 @@
-//! count据包捕获module
+//! countpacket捕获module
 //!
-//! use纯 Rust implement from networkinterface or file实 when 捕获count据包（无system依赖）。
+//! use纯 Rust implement from networkinterface or file实 when 捕获countpacket（无systemdepend）。
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
@@ -19,7 +19,7 @@ impl CaptureEngine {
 
     ///  from specified网卡start实 when 捕获
     pub async fn start_live(&self, device_name: &str) -> Result<(), String> {
-        // 查找specified的networkinterface
+        // findspecified的networkinterface
         let interface = datalink::interfaces()
             .into_iter()
             .find(|iface| iface.name == device_name)
@@ -37,7 +37,7 @@ impl CaptureEngine {
         Ok(())
     }
 
-    ///  from networkinterface捕获count据包（阻塞式）
+    ///  from networkinterface捕获countpacket（阻塞式）
     fn capture_from_interface(
         interface: NetworkInterface,
         analyzer: Arc<PassiveAnalyzer>,
@@ -49,14 +49,14 @@ impl CaptureEngine {
             Err(e) => return Err(format!("Create通道failure: {}", e)),
         };
 
-        // 循环receivecount据包
+        // 循环receivecountpacket
         loop {
             match rx.next() {
                 Ok(packet) => {
-                    // securityCheck：limitmaximumcount据包size以防止 DoS 攻击（65535 bytes = maximum IP 包）
+                    // securityCheck：limitmaximumcountpacketsize以prevent DoS 攻击（65535 bytes = maximum IP 包）
                     const MAX_PACKET_SIZE: usize = 65535;
                     if packet.len() > MAX_PACKET_SIZE {
-                        eprintln!("[Capture] count据包过大，already忽略: {} bytes", packet.len());
+                        eprintln!("[Capture] countpacket过大，alreadyignore: {} bytes", packet.len());
                         continue;
                     }
                     
@@ -69,7 +69,7 @@ impl CaptureEngine {
                     }
                 }
                 Err(e) => {
-                    eprintln!("[Capture] receivecount据包error: {}", e);
+                    eprintln!("[Capture] receivecountpacketerror: {}", e);
                     // continuereceive，不中断
                 }
             }
@@ -86,25 +86,25 @@ impl CaptureEngine {
         let mut pcap_reader =
             PcapReader::new(file).map_err(|e| format!("Parse pcap filefailure: {}", e))?;
 
-        // readallcount据包
+        // readallcountpacket
         let mut packet_count = 0;
-        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcount据包count以防止inside存耗尽
+        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcountpacketcount以preventinside存耗尽
         
         while let Some(packet) = pcap_reader.next_packet() {
-            // securityCheck：limitprocess的count据包count
+            // securityCheck：limitprocess的countpacketcount
             packet_count += 1;
             if packet_count > MAX_PACKETS {
-                eprintln!("[Capture] already达 to maximumcount据包processlimit: {}", MAX_PACKETS);
+                eprintln!("[Capture] already达 to maximumcountpacketprocesslimit: {}", MAX_PACKETS);
                 break;
             }
             
             match packet {
                 Ok(pkt) => {
-                    // securityCheck：limitsinglecount据包size
+                    // securityCheck：limitsinglecountpacketsize
                     const MAX_PACKET_SIZE: usize = 65535;
                     let data = pkt.data;
                     if data.len() > MAX_PACKET_SIZE {
-                        eprintln!("[Capture] count据包过大，already忽略: {} bytes", data.len());
+                        eprintln!("[Capture] countpacket过大，alreadyignore: {} bytes", data.len());
                         continue;
                     }
                     
@@ -118,13 +118,13 @@ impl CaptureEngine {
                     }
                 }
                 Err(e) => {
-                    eprintln!("[Capture] readcount据包error: {}", e);
+                    eprintln!("[Capture] readcountpacketerror: {}", e);
                     // continueprocessnext包
                 }
             }
         }
 
-        println!("[Capture] alreadyprocess {} 个count据包", packet_count);
+        println!("[Capture] alreadyprocess {} 个countpacket", packet_count);
         Ok(())
     }
 }

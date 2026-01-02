@@ -1,7 +1,7 @@
 //! GREASE valueprocessmodule
 //!
-//! 参考：https://datatracker.ietf.org/doc/html/draft-davidben-tls-grease-01
-//! 参考：Huginn Net  GREASE processimplement
+//! reference：https://datatracker.ietf.org/doc/html/draft-davidben-tls-grease-01
+//! reference：Huginn Net  GREASE processimplement
 
 /// TLS GREASE valueconstant
 /// Based on RFC 8701，GREASE value的pattern是：0x1a1a, 0x2a2a, 0x3a3a, ..., 0xfafa
@@ -30,13 +30,13 @@ pub fn is_grease_value(value: u16) -> bool {
     TLS_GREASE_VALUES.contains(&value)
 }
 
-///  from  u16 list中过滤掉 GREASE value
+///  from  u16 list中filter掉 GREASE value
 ///
 /// # Parameters
-/// * `values` - 要过滤 u16 valuelist
+/// * `values` - 要filter u16 valuelist
 ///
 /// # Returns
-/// * 过滤back Vec<u16>，excluding GREASE value
+/// * filterback Vec<u16>，excluding GREASE value
 ///
 /// # Examples
 /// ```
@@ -53,10 +53,10 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
         .collect()
 }
 
-///  from  u16 list中remove GREASE value（原地修改）
+///  from  u16 list中remove GREASE value（原地modify）
 ///
 /// # Parameters
-/// * `values` - 要修改 u16 valuelist（可变引用）
+/// * `values` - 要modify u16 valuelist（可变reference）
 ///
 /// # Examples
 /// ```

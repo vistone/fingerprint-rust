@@ -2,7 +2,7 @@
 //!
 //!  from  ClientHelloSpec 中Extractsignatureinfo， for fingerprint比较 and match
 //!
-//! 参考：Huginn Net  Signature Extractimplement
+//! reference：Huginn Net  Signature Extractimplement
 
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
@@ -54,7 +54,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
             signature.alpn = Some(alpn);
         }
 
-        // Extract椭圆曲线
+        // Extractelliptic curve
         if let Some(ext_meta) = metadata
             .extension_metadata
             .get(&fingerprint_core::dicttls::extensions::EXT_TYPE_SUPPORTED_GROUPS)
@@ -64,7 +64,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
             }
         }
 
-        // Extract椭圆曲线点format
+        // Extractelliptic curve点format
         if let Some(ext_meta) = metadata
             .extension_metadata
             .get(&fingerprint_core::dicttls::extensions::EXT_TYPE_EC_POINT_FORMATS)

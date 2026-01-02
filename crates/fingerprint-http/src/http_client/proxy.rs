@@ -187,7 +187,7 @@ fn connect_socks5_proxy(
     let mut connect_request = vec![
         0x05, // version
         0x01, // CONNECT 命令
-        0x00, // 保留
+        0x00, // preserve
         0x03, // domaintype
     ];
     connect_request.push(target_host.len() as u8);

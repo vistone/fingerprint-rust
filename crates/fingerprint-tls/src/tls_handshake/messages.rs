@@ -39,10 +39,10 @@ impl ClientHelloMessage {
     ///
     /// # Errors
     ///
-    /// Ifunable toGetencryptionsecurity的randomcount（ in 没有 `crypto` feature  when ）, willreturnerror。
-    /// 建议 in 生产环境中enabled `crypto` feature 以确保security性。
+    /// Ifunable toGetencryptionsecurity的randomcount（ in no `crypto` feature  when ）, willreturnerror。
+    /// 建议 in 生产environment中enabled `crypto` feature 以ensuresecurity性。
     pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
-        // use TLS 1.2 作为clientversion（为了兼容性）
+        // use TLS 1.2 asclientversion（为了兼容性）
         let client_version = spec.tls_vers_max.max(0x0303);
 
         // Generaterandomcount (32 bytes)
@@ -50,10 +50,10 @@ impl ClientHelloMessage {
 
         // front 4 bytes: Unix  when 间戳
         // usecurrent when 间， if Getfailure则use 0（虽然不太mayfailure）
-        // 修复 2038 年溢出问题：明确截断高bit，确保 u32 rangeinside
+        // fix 2038 年溢出问题：明确truncate高bit，ensure u32 rangeinside
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
-            .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // 明确截断高bit，防止 2038 年溢出
+            .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // 明确truncate高bit，prevent 2038 年溢出
             .unwrap_or(0);
         random.extend_from_slice(&timestamp.to_be_bytes());
 
@@ -68,15 +68,15 @@ impl ClientHelloMessage {
         }
         #[cfg(not(feature = "crypto"))]
         {
-            // If没有 crypto feature, try from systemrandomcountsourceGetencryptionsecurity的randomcount
-            // Ifunable toGet, 直接returnerror，不允许use不security的降level方案
+            // Ifno crypto feature, try from systemrandomcountsourceGetencryptionsecurity的randomcount
+            // Ifunable toGet, directlyreturnerror，不allowuse不security的降level方案
             use std::io::Read;
             let mut random_bytes = [0u8; 28];
 
             // try from  /dev/urandom (Unix) Getrandomcount
             let mut rng = std::fs::File::open("/dev/urandom")
                 .map_err(|e| format!(
-                    "unable to访问systemrandomcountsource /dev/urandom: {}. 建议enabled 'crypto' feature 以useencryptionsecurity的randomcountGenerator",
+                    "unable toaccesssystemrandomcountsource /dev/urandom: {}. 建议enabled 'crypto' feature 以useencryptionsecurity的randomcountGenerator",
                     e
                 ))?;
 
@@ -141,7 +141,7 @@ impl ClientHelloMessage {
                 continue;
             }
 
-            // 其他extension：正常序列化
+            // otherextension：正常序列化
             let ext_len = ext.len();
             if ext_len == 0 {
                 // emptyextensionalsoneedwrite ID  and length
@@ -157,7 +157,7 @@ impl ClientHelloMessage {
             }
         }
 
-        // If没有 SNI extension, Addan
+        // Ifno SNI extension, Addan
         if !has_sni && !server_name.is_empty() {
             let sni_data = Self::build_sni_extension(server_name);
             ext_bytes.extend_from_slice(&0u16.to_be_bytes()); // SNI extension ID
@@ -220,7 +220,7 @@ impl ClientHelloMessage {
         bytes
     }
 
-    /// 打印debuginfo
+    /// printdebuginfo
     pub fn debug_info(&self) -> String {
         format!(
             "ClientHello:\n\

@@ -4,8 +4,8 @@
 
 use rand::Rng;
 
-///  from 切片中randomly selectan元素（线程security）
-/// use thread_rng() 确保线程security
+///  from slice中randomly selectanelement（线程security）
+/// use thread_rng() ensure线程security
 pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     if items.is_empty() {
         return None;
@@ -15,14 +15,14 @@ pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     Some(items[index].clone())
 }
 
-///  from string切片中randomly selectan元素（线程security）
+///  from stringslice中randomly selectanelement（线程security）
 pub fn random_choice_string(items: &[&str]) -> Option<String> {
     random_choice(items).map(|s| s.to_string())
 }
 
 ///  from  User-Agent 中Extract Chrome version号
 pub fn extract_chrome_version(user_agent: &str) -> String {
-    // 查找 "Chrome/" back面的version号
+    // find "Chrome/" back面的version号
     if let Some(start) = user_agent.find("Chrome/") {
         let version_start = start + 7; // "Chrome/".len()
         if let Some(end) =
@@ -59,13 +59,13 @@ pub fn extract_platform(user_agent: &str) -> String {
 
 ///  from  User-Agent 中Extractoperating systemtype
 ///
-///  for 统一fingerprintGenerate，确保browserfingerprint and TCP fingerprintsync
+///  for 统一fingerprintGenerate，ensurebrowserfingerprint and TCP fingerprintsync
 pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
     use crate::types::OperatingSystem;
 
-    // Note: iPhone/iPad  User-Agent including "Mac OS X"，need先Check移动设备
+    // Note: iPhone/iPad  User-Agent including "Mac OS X"，need先Checkmove设备
     if user_agent.contains("iPhone") || user_agent.contains("iPad") {
-        // iOS 设备：use macOS  TCP fingerprint（iOS 基于 macOS）
+        // iOS 设备：use macOS  TCP fingerprint（iOS based on macOS）
         OperatingSystem::MacOS14
     } else if user_agent.contains("Windows NT 10.0") {
         OperatingSystem::Windows10
@@ -86,12 +86,12 @@ pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSy
     } else if user_agent.contains("Linux") || user_agent.contains("Android") {
         OperatingSystem::Linux
     } else {
-        // defaultuse Windows（最常见的browser环境）
+        // defaultuse Windows（最常见的browserenvironment）
         OperatingSystem::Windows10
     }
 }
 
-///  from  profile name推断browsertype
+///  from  profile nameinferbrowsertype
 pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     let name_lower = profile_name.to_lowercase();
     if name_lower.starts_with("chrome_") {
@@ -120,7 +120,7 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     }
 }
 
-/// 判断whether为mobile profile
+/// judgewhether为mobile profile
 pub fn is_mobile_profile(profile_name: &str) -> bool {
     let name = profile_name.to_lowercase();
     name.contains("ios")

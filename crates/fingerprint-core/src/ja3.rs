@@ -1,9 +1,9 @@
 //! JA3/JA3S TLS fingerprintimplement
 //!
-//! JA3 是 Salesforce 开发 TLS clientfingerprint识别method，already成为行业standard。
+//! JA3 是 Salesforce 开发 TLS clientfingerprintidentifymethod，alreadybecome行业standard。
 //! JA3S 是pair应的server端fingerprint。
 //!
-//! ## 参考
+//! ## reference
 //! - 论文: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
 //! - GitHub: https://github.com/salesforce/ja3
 
@@ -37,10 +37,10 @@ pub struct JA3 {
     /// extensionlist（逗号分隔的十进制）
     pub extensions: String,
     
-    /// 椭圆曲线list（逗号分隔的十进制）
+    /// elliptic curvelist（逗号分隔的十进制）
     pub elliptic_curves: String,
     
-    /// 椭圆曲线点formatlist（逗号分隔的十进制）
+    /// elliptic curve点formatlist（逗号分隔的十进制）
     pub ec_point_formats: String,
     
     /// complete JA3 string（ for Calculatehash）
@@ -57,8 +57,8 @@ impl JA3 {
     /// - `ssl_version`: TLS version（例如：771 = TLS 1.2, 772 = TLS 1.3）
     /// - `ciphers`: cipher suitelist（十六进制value）
     /// - `extensions`: extensionlist（十六进制value）
-    /// - `elliptic_curves`: 椭圆曲线list（十六进制value）
-    /// - `ec_point_formats`: 椭圆曲线点formatlist（十六进制value）
+    /// - `elliptic_curves`: elliptic curvelist（十六进制value）
+    /// - `ec_point_formats`: elliptic curve点formatlist（十六进制value）
     ///
     /// # Returns
     /// JA3 fingerprintstruct
@@ -69,7 +69,7 @@ impl JA3 {
         elliptic_curves: &[u16],
         ec_point_formats: &[u8],
     ) -> Self {
-        // 过滤 GREASE value（ if need）
+        // filter GREASE value（ if need）
         let filtered_ciphers: Vec<u16> = ciphers
             .iter()
             .filter(|&&c| !crate::grease::is_grease_value(c))
@@ -145,7 +145,7 @@ impl JA3 {
     ///
     /// 这是an便捷method， for  from complete ClientHello message中Extract并Generate JA3
     pub fn from_client_hello(client_hello: &crate::signature::ClientHelloSignature) -> Self {
-        // Convert椭圆曲线 CurveID 为 u16
+        // Convertelliptic curve CurveID 为 u16
         let curves: Vec<u16> = client_hello
             .elliptic_curves
             .iter()
@@ -205,7 +205,7 @@ impl JA3S {
     /// - `cipher`: serverselect's cipher suites
     /// - `extensions`: serverreturn's extensionslist
     pub fn generate(ssl_version: u16, cipher: u16, extensions: &[u16]) -> Self {
-        // 过滤 GREASE value
+        // filter GREASE value
         let filtered_extensions: Vec<u16> = extensions
             .iter()
             .filter(|&&e| !crate::grease::is_grease_value(e))
@@ -271,7 +271,7 @@ mod tests {
 
     #[test]
     fn test_ja3_with_grease() {
-        // testincluding GREASE value的情况
+        // testincluding GREASE value的situation
         let ja3 = JA3::generate(
             771,
             &[0x0a0a, 0x1301, 0x1a1a], // including GREASE
@@ -280,7 +280,7 @@ mod tests {
             &[0],
         );
 
-        // GREASE valueshould被过滤掉
+        // GREASE valueshould被filter掉
         assert!(!ja3.ciphers.contains("2570")); // 0x0a0a = 2570
         assert!(!ja3.extensions.contains("2570"));
     }

@@ -1,11 +1,11 @@
 //! HTTP/1.1 with Connection Pool
 //!
-//! 架构说明：
-//! - HTTP/1.1 采用 netconnpool 管理 TCP connection pool
+//! 架构explain：
+//! - HTTP/1.1 adopt netconnpool manage TCP connection pool
 //! - pool化pair象：TcpStream（裸 TCP connection）
 //! - 复用方式：串行复用（anconnection同一 when 间只能processanrequest）
-//! - protocollimit：HTTP/1.1 unable to多路复用，need大量connectionsupport并发
-//! - netconnpool 负责：connectionCreate、保持活跃、故障检测 and 回收
+//! - protocollimit：HTTP/1.1 unable to多路复用，need大量connectionsupportconcurrent
+//! - netconnpool 负责：connectionCreate、keep活跃、故障detect and 回收
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;
@@ -34,12 +34,12 @@ pub fn send_http1_request_with_pool(
         .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
     //  from  Connection 中Extract TcpStream
-    // PooledConnection implement了 Deref<Target = Connection>，can直接use Connection 的method
+    // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection 的method
     let tcp_stream = conn
         .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // 克隆 TcpStream 以便我们canuse它
+    // clone TcpStream 以便我们canuse它
     let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     // Fix: Add Cookie  to request（ if  exists）
@@ -62,7 +62,7 @@ pub fn send_http1_request_with_pool(
         .write_all(http_request.as_bytes())
         .map_err(HttpClientError::Io)?;
 
-    // Fix: usecomplete的responseread逻辑（包括 body）
+    // Fix: usecomplete的responseread逻辑（include body）
     // connectionwillautomatic归still to connection pool（through Drop）
     let buffer =
         super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)

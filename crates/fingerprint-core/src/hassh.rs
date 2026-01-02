@@ -1,9 +1,9 @@
 //! HASSH SSH fingerprintimplement
 //!
-//! HASSH 是 Salesforce 开发 SSH client/serverfingerprint识别method。
-//! 类似于 JA3 for TLS，HASSH  for 识别 SSH client and server。
+//! HASSH 是 Salesforce 开发 SSH client/serverfingerprintidentifymethod。
+//! 类似于 JA3 for TLS，HASSH  for identify SSH client and server。
 //!
-//! ## 参考
+//! ## reference
 //! - 论文: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
 //! - GitHub: https://github.com/salesforce/hassh
 //!
@@ -30,7 +30,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSH {
-    /// key交换algorithmlist（分号分隔）
+    /// keyswapalgorithmlist（分号分隔）
     pub kex_algorithms: String,
     
     /// encryptionalgorithmlist（分号分隔）
@@ -48,7 +48,7 @@ pub struct HASSH {
     /// HASSH fingerprint（MD5 hash）
     pub fingerprint: String,
     
-    /// SSH clienttype（推断）
+    /// SSH clienttype（infer）
     pub client_type: Option<String>,
 }
 
@@ -56,7 +56,7 @@ impl HASSH {
     /// Generate HASSH fingerprint
     ///
     /// # Parameters
-    /// - `kex_algorithms`: key交换algorithmlist
+    /// - `kex_algorithms`: keyswapalgorithmlist
     /// - `encryption_algorithms`: encryptionalgorithmlist
     /// - `mac_algorithms`: MAC algorithmlist
     /// - `compression_algorithms`: compressionalgorithmlist
@@ -81,7 +81,7 @@ impl HASSH {
         // Calculate MD5 hash
         let fingerprint = Self::md5_hash(&hassh_string);
 
-        // 推断clienttype
+        // inferclienttype
         let client_type = Self::infer_client_type(kex_algorithms, encryption_algorithms);
 
         Self {
@@ -101,12 +101,12 @@ impl HASSH {
         format!("{:x}", digest)
     }
 
-    /// 推断 SSH clienttype
+    /// infer SSH clienttype
     fn infer_client_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
     ) -> Option<String> {
-        // 基于algorithmtrait推断clienttype
+        // based onalgorithmtraitinferclienttype
         
         // OpenSSH trait
         if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256")) {
@@ -200,7 +200,7 @@ impl std::fmt::Display for HASSH {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSHServer {
-    /// key交换algorithmlist（分号分隔）
+    /// keyswapalgorithmlist（分号分隔）
     pub kex_algorithms: String,
     
     /// encryptionalgorithmlist（分号分隔）
@@ -218,7 +218,7 @@ pub struct HASSHServer {
     /// HASSH Server fingerprint（MD5 hash）
     pub fingerprint: String,
     
-    /// SSH servertype（推断）
+    /// SSH servertype（infer）
     pub server_type: Option<String>,
 }
 
@@ -258,7 +258,7 @@ impl HASSHServer {
         format!("{:x}", digest)
     }
 
-    /// 推断 SSH servertype
+    /// infer SSH servertype
     fn infer_server_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
@@ -327,10 +327,10 @@ impl std::fmt::Display for HASSHServer {
 
 /// SSH KEX_INIT messagestruct
 ///
-/// including SSH key交换Initializemessage的allalgorithmlist
+/// including SSH keyswapInitializemessage的allalgorithmlist
 #[derive(Debug, Clone, Default)]
 pub struct SSHKexInit {
-    /// key交换algorithm
+    /// keyswapalgorithm
     pub kex_algorithms: Vec<String>,
     
     /// serverhostkeyalgorithm
@@ -361,15 +361,15 @@ impl SSHKexInit {
         Self::default()
     }
 
-    ///  from 原beginning SSH count据包Parse (simplified version)
+    ///  from 原beginning SSH countpacketParse (simplified version)
     ///
     /// Note: 这是anSimplified implementation，complete SSH protocolParseneed更复杂的status机
     pub fn parse(data: &[u8]) -> Result<Self, String> {
         // SSH protocolformat复杂，这里provide基本框架
-        // 实际application中应use专门 SSH protocolParse库
+        // actualapplication中应use专门 SSH protocolParse库
         
         if data.len() < 16 {
-            return Err("count据包太短".to_string());
+            return Err("countpacket太短".to_string());
         }
 
         // SSH KEX_INIT messagetype为 20 (SSH_MSG_KEXINIT)
@@ -490,7 +490,7 @@ mod tests {
 
 /// JA4SSH - SSH fingerprint（JA4 风格）
 ///
-/// 类似于 HASSH，butuse SHA256 而非 MD5，并采用 JA4 系列的format风格
+/// 类似于 HASSH，butuse SHA256 而非 MD5，并adopt JA4 系列的format风格
 /// 
 /// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
 ///
@@ -511,7 +511,7 @@ pub struct JA4SSH {
     /// 'c' for client, 's' for server
     pub direction: char,
     
-    /// key交换algorithmcount
+    /// keyswapalgorithmcount
     pub kex_count: usize,
     
     /// encryptionalgorithmcount
@@ -535,7 +535,7 @@ pub struct JA4SSH {
     /// compressionalgorithmhash（SHA256 front 6-bit）
     pub compression_hash: String,
     
-    /// clienttype（推断）
+    /// clienttype（infer）
     pub client_type: Option<String>,
 }
 
@@ -543,7 +543,7 @@ impl JA4SSH {
     /// Generate JA4SSH clientfingerprint
     ///
     /// # Parameters
-    /// - `kex_algorithms`: key交换algorithmlist
+    /// - `kex_algorithms`: keyswapalgorithmlist
     /// - `encryption_algorithms`: encryptionalgorithmlist
     /// - `mac_algorithms`: MAC algorithmlist
     /// - `compression_algorithms`: compressionalgorithmlist
@@ -559,7 +559,7 @@ impl JA4SSH {
         let mac_hash = Self::compute_hash(mac_algorithms);
         let comp_hash = Self::compute_hash(compression_algorithms);
 
-        // 推断clienttype
+        // inferclienttype
         let client_type = Self::infer_client_type(kex_algorithms, encryption_algorithms);
 
         Self {
@@ -610,7 +610,7 @@ impl JA4SSH {
         hex[0..6].to_string()
     }
 
-    /// 推断 SSH clienttype
+    /// infer SSH clienttype
     fn infer_client_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
@@ -646,7 +646,7 @@ impl JA4SSH {
         None
     }
 
-    /// 推断 SSH servertype
+    /// infer SSH servertype
     fn infer_server_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
@@ -819,7 +819,7 @@ mod ja4ssh_tests {
 
     #[test]
     fn test_ja4ssh_hash_consistency() {
-        // 同样的algorithmshould产生相同的hash
+        // 同样的algorithmshouldproducesame的hash
         let ja4ssh1 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
         let ja4ssh2 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
         

@@ -1,11 +1,11 @@
 //! HTTP Headers module
 //!
-//! providestandard HTTP requestheader的Generate and 管理Features
+//! providestandard HTTP requestheader的Generate and manageFeatures
 
 use fingerprint_core::types::BrowserType;
 use fingerprint_core::utils::{extract_chrome_version, extract_platform, random_choice_string};
 
-/// 全球语言list（按use频率排序）
+/// 全球语言list（按use频率sort）
 pub static LANGUAGES: &[&str] = &[
     "en-US,en;q=0.9",          // 英语（美国）
     "zh-CN,zh;q=0.9,en;q=0.8", // 中文（简体）
@@ -90,7 +90,7 @@ impl HTTPHeaders {
         }
     }
 
-    /// 克隆 HTTPHeaders pair象，returnannew副本
+    /// clone HTTPHeaders pair象，returnannew副本
     ///
     /// Note: 此methodname and standard库的 `Clone::clone` 不同，以避免命名冲突
     #[allow(clippy::should_implement_trait)]
@@ -112,7 +112,7 @@ impl HTTPHeaders {
         }
     }
 
-    /// settings用户custom header（systemwillautomatic合并 to  to_map() 中）
+    /// settings用户custom header（systemwillautomaticmerge to  to_map() 中）
     /// 这是推荐的方式，settingsbackcall to_map() 即可automaticincludingcustom headers
     /// Examples：result.headers.set("Cookie", "session_id=abc123")
     pub fn set(&mut self, key: &str, value: &str) {
@@ -123,7 +123,7 @@ impl HTTPHeaders {
         }
     }
 
-    /// 批量settings用户custom headers（systemwillautomatic合并 to  to_map() 中）
+    /// bulksettings用户custom headers（systemwillautomaticmerge to  to_map() 中）
     /// Examples：result.headers.set_headers(&[("Cookie", "session_id=abc123"), ("X-API-Key", "key")])
     pub fn set_headers(&mut self, custom_headers: &[(&str, &str)]) {
         for (key, value) in custom_headers {
@@ -132,12 +132,12 @@ impl HTTPHeaders {
     }
 
     /// will HTTPHeaders convert to HashMap
-    /// systemwillautomatic合并 Custom 中的用户custom headers（如 Cookie、Authorization、X-API-Key 等）
+    /// systemwillautomaticmerge Custom 中的用户custom headers（如 Cookie、Authorization、X-API-Key 等）
     pub fn to_map(&self) -> std::collections::HashMap<String, String> {
         self.to_map_with_custom(&[])
     }
 
-    /// will HTTPHeaders convert to HashMap，并合并用户custom headers
+    /// will HTTPHeaders convert to HashMap，并merge用户custom headers
     /// custom_headers: 用户custom headers（如 session、cookie、apikey 等）
     /// 用户custom headers priority更高，will覆盖systemGenerate headers
     pub fn to_map_with_custom(
@@ -193,14 +193,14 @@ impl HTTPHeaders {
             );
         }
 
-        // 合并 HTTPHeaders 中 Custom headers
+        // merge HTTPHeaders 中 Custom headers
         for (key, value) in &self.custom {
             if !value.is_empty() {
                 headers.insert(key.clone(), value.clone());
             }
         }
 
-        // 合并传入 custom_headers（priority最高，will覆盖allalready有 headers）
+        // merge传入 custom_headers（priority最高，will覆盖allalready有 headers）
         for (key, value) in custom_headers {
             if !value.is_empty() {
                 headers.insert((*key).to_string(), (*value).to_string());
@@ -216,9 +216,9 @@ impl HTTPHeaders {
         let mut result = Vec::with_capacity(map.len());
         let mut used = std::collections::HashSet::new();
 
-        // 1. 先按specified order 顺序Add
+        // 1. 先按specified order orderAdd
         for key in order {
-            // 查找 map is否 existsmatch key (忽略size写进行match，but保留 order 中的size写)
+            // find map is否 existsmatch key (ignoresize写进行match，butpreserve order 中的size写)
             for (m_key, m_val) in &map {
                 if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
                     result.push((key.clone(), m_val.clone()));

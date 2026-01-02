@@ -1,4 +1,4 @@
-//! DNS moduletype定义
+//! DNS moduletypedefine
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -24,7 +24,7 @@ pub struct IPInfo {
     /// 地理坐标（optional）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub loc: Option<String>,
-    /// 组织/ISP（optional）
+    /// group织/ISP（optional）
     #[serde(skip_serializing_if = "Option::is_none")]
     pub org: Option<String>,
     ///  when 区（optional）
@@ -83,12 +83,12 @@ impl DomainIPs {
     /// Checkwhether有new IP address（ and 另an DomainIPs 比较）
     ///
     /// `self` 是新Parse IP set，`other` 是beforesave IP set
-    /// If `self` 中有 `other` 没有 IP, return true（发现new IP）
+    /// If `self` 中有 `other` no IP, return true（发现new IP）
     pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
         let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
         let other_ips: HashSet<String> = other.all_ips().into_iter().collect();
 
-        // Check self is否有 other 没有 IP
+        // Check self is否有 other no IP
         self_ips.difference(&other_ips).next().is_some()
     }
 }
@@ -117,7 +117,7 @@ pub enum DNSError {
     Resolver(String),
     #[error("IPInfo error: {0}")]
     IPInfo(String),
-    #[error("存储error: {0}")]
+    #[error("storeerror: {0}")]
     Storage(String),
     #[error("IO error: {0}")]
     IO(#[from] std::io::Error),
@@ -143,13 +143,13 @@ pub struct DNSConfig {
     pub ipinfo_token: String,
     /// domainlist（必填）
     pub domain_list: Vec<String>,
-    /// 存储目录（optional，defaultcurrent目录）
+    /// store目录（optional，defaultcurrent目录）
     #[serde(default = "default_domain_ips_dir")]
     pub domain_ips_dir: String,
     /// Check间隔（optional，default "2m"）
     #[serde(default = "default_interval")]
     pub interval: String,
-    /// DNS querymaximum并发count（optional，default 500）
+    /// DNS querymaximumconcurrentcount（optional，default 500）
     #[serde(default = "default_max_concurrency")]
     pub max_concurrency: usize,
     /// DNS querytimeout（optional，default "4s"）
@@ -158,7 +158,7 @@ pub struct DNSConfig {
     /// HTTP Request timeout（optional，default "20s"）
     #[serde(default = "default_http_timeout")]
     pub http_timeout: String,
-    /// IP infoGetmaximum并发count（optional，default 50）
+    /// IP infoGetmaximumconcurrentcount（optional，default 50）
     #[serde(default = "default_max_ip_fetch_conc")]
     pub max_ip_fetch_conc: usize,
 }
@@ -188,7 +188,7 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
-    /// Create a new DNS configuration（便利method，can直接usestring字面量）
+    /// Create a new DNS configuration（便利method，candirectlyusestring字面量）
     ///
     /// # Examples
     /// ```
@@ -196,7 +196,7 @@ impl DNSConfig {
     ///
     /// let config = DNSConfig::new(
     ///     "your-token",
-    ///     &["google.com", "github.com"],  // can直接use &str
+    ///     &["google.com", "github.com"],  // candirectlyuse &str
     /// );
     /// ```
     pub fn new<S: AsRef<str>>(ipinfo_token: &str, domain_list: &[S]) -> Self {
@@ -239,12 +239,12 @@ mod tests {
         new_ips.ipv4.push(IPInfo::new("8.8.4.4".to_string()));
         new_ips.ipv4.push(IPInfo::new("1.1.1.1".to_string())); // new IP
 
-        assert!(new_ips.has_new_ips(&old_ips), "should检测 to new IP 1.1.1.1");
+        assert!(new_ips.has_new_ips(&old_ips), "shoulddetect to new IP 1.1.1.1");
 
         let mut same_ips = DomainIPs::new();
         same_ips.ipv4.push(IPInfo::new("8.8.8.8".to_string()));
         same_ips.ipv4.push(IPInfo::new("8.8.4.4".to_string()));
 
-        assert!(!same_ips.has_new_ips(&old_ips), "相同 IP shouldreturn false");
+        assert!(!same_ips.has_new_ips(&old_ips), "same IP shouldreturn false");
     }
 }

@@ -1,6 +1,6 @@
 //! fingerprintmetadata
 //!
-//! 定义fingerprint的metadata，包括browsertype、operating system、置信度等info.
+//! definefingerprint的metadata，includebrowsertype、operating system、置信度等info.
 
 use crate::types::{BrowserType, OperatingSystem};
 use chrono::{DateTime, Utc};
@@ -29,7 +29,7 @@ pub struct FingerprintMetadata {
     /// finally发现 when 间
     pub last_seen: DateTime<Utc>,
 
-    /// 标签
+    /// tag
     pub tags: Vec<String>,
 
     /// 备注
@@ -63,7 +63,7 @@ impl FingerprintMetadata {
         metadata
     }
 
-    /// Update样本（增加样本count，Updatefinally发现 when 间）
+    /// Update样本（increase样本count，Updatefinally发现 when 间）
     pub fn update_sample(&mut self) {
         self.sample_count += 1;
         self.last_seen = Utc::now();
@@ -74,24 +74,24 @@ impl FingerprintMetadata {
         self.confidence = confidence.clamp(0.0, 1.0);
     }
 
-    /// Add标签
+    /// Addtag
     pub fn add_tag(&mut self, tag: String) {
         if !self.tags.contains(&tag) {
             self.tags.push(tag);
         }
     }
 
-    /// remove标签
+    /// removetag
     pub fn remove_tag(&mut self, tag: &str) {
         self.tags.retain(|t| t != tag);
     }
 
-    /// Checkwhetherincluding标签
+    /// Checkwhetherincludingtag
     pub fn has_tag(&self, tag: &str) -> bool {
         self.tags.contains(&tag.to_string())
     }
 
-    /// settingscustom属性（through tags 存储，format为 "key:value"）
+    /// settingscustomproperty（through tags store，format为 "key:value"）
     pub fn set(&mut self, key: &str, value: &str) {
         let tag = format!("{}:{}", key, value);
         // 先remove旧的同名 key
@@ -99,7 +99,7 @@ impl FingerprintMetadata {
         self.add_tag(tag);
     }
 
-    /// Getcustom属性（ from  tags 中查找，format为 "key:value"）
+    /// Getcustomproperty（ from  tags 中find，format为 "key:value"）
     pub fn get(&self, key: &str) -> Option<String> {
         let prefix = format!("{}:", key);
         self.tags

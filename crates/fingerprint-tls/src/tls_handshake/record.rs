@@ -91,7 +91,7 @@ impl TLSRecord {
 
         if data.len() < 5 + length {
             return Err(format!(
-                "count据不complete，need {} bytes，实际只有 {} bytes",
+                "count据不complete，need {} bytes，actual只有 {} bytes",
                 5 + length,
                 data.len()
             ));

@@ -47,8 +47,8 @@ use fingerprint_profiles::profiles::ClientProfile;
 use std::io as std_io;
 use std::time::Duration;
 
-// Fix: use全局单例 Runtime 避免频繁Create（ for  HTTP/2  and HTTP/3 connection pool场景）
-// Note: 只 in connection-pool enabled when 才need，because只有connection pool场景才needsync包装async代码
+// Fix: useglobal单例 Runtime 避免频繁Create（ for  HTTP/2  and HTTP/3 connection poolscenario）
+// Note: 只 in connection-pool enabled when 才need，because只有connection poolscenario才needsyncwrapasync代码
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -123,7 +123,7 @@ pub struct HttpClientConfig {
     pub prefer_http2: bool,
     /// 优先use HTTP/3
     pub prefer_http3: bool,
-    /// Cookie 存储（optional）
+    /// Cookie store（optional）
     pub cookie_store: Option<Arc<CookieStore>>,
 }
 
@@ -147,10 +147,10 @@ impl Default for HttpClientConfig {
 
 /// HTTP client
 ///
-/// use netconnpool 管理connection，application fingerprint-rust 的configuration
+/// use netconnpool manageconnection，application fingerprint-rust 的configuration
 pub struct HttpClient {
     config: HttpClientConfig,
-    /// connection pool管理器（optional）
+    /// connection poolmanage器（optional）
     pool_manager: Option<Arc<ConnectionPoolManager>>,
 }
 
@@ -231,7 +231,7 @@ impl HttpClient {
         )
     }
 
-    /// inside部redirectprocess（带循环检测）
+    /// inside部redirectprocess（带循环detect）
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,
@@ -249,7 +249,7 @@ impl HttpClient {
         // Checkredirect循环
         if visited_urls.contains(&request.url) {
             return Err(HttpClientError::InvalidResponse(format!(
-                "检测 to redirect循环: {}",
+                "detect to redirect循环: {}",
                 request.url
             )));
         }
@@ -289,7 +289,7 @@ impl HttpClient {
                         } else {
                             path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
                         };
-                        // 确保 base_path 以 / 结尾，location 不以 / 开header
+                        // ensure base_path 以 / 结尾，location 不以 / 开header
                         let location = location.trim_start_matches('/');
                         if base_path == "/" {
                             format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -305,11 +305,11 @@ impl HttpClient {
                         HttpMethod::Get
                     }
                     307 | 308 => {
-                        // 307, 308: 保持original HTTP method（POST 仍然是 POST）
+                        // 307, 308: keeporiginal HTTP method（POST 仍然是 POST）
                         request.method
                     }
                     _ => {
-                        // 其他 3xx status code保持原method
+                        // other 3xx status codekeep原method
                         request.method
                     }
                 };
@@ -326,19 +326,19 @@ impl HttpClient {
                     }
                 }
 
-                // Parsenew URL 的domain and path（ for  Cookie 域过滤）
+                // Parsenew URL 的domain and path（ for  Cookie fieldfilter）
                 let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
 
-                // Fix: 重新Buildrequest，只including适 for 新domain Cookie
+                // Fix: reBuildrequest，只including适 for 新domain Cookie
                 let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
 
-                // 复制非 Cookie  headers，并Add Referer
+                // copy非 Cookie  headers，并Add Referer
                 for (key, value) in &request.headers {
                     if key.to_lowercase() != "cookie" {
                         final_redirect_request = final_redirect_request.with_header(key, value);
                     }
                 }
-                // Fix: Add Referer header（模拟browser行为）
+                // Fix: Add Referer header（simulatebrowserbehavior）
                 final_redirect_request =
                     final_redirect_request.with_header("Referer", &request.url);
 
@@ -354,14 +354,14 @@ impl HttpClient {
                     }
                 }
 
-                // If保持 POST/PUT/PATCH, 保留request体； if 改为 GET，removerequest体（RFC 7231 要求）
+                // Ifkeep POST/PUT/PATCH, preserverequest体； if 改为 GET，removerequest体（RFC 7231 要求）
                 if redirect_method != HttpMethod::Get {
                     if let Some(body) = &request.body {
                         final_redirect_request = final_redirect_request.with_body(body.clone());
                     }
                 }
 
-                // 递归processredirect（传递 visited_urls 以检测循环）
+                // 递归processredirect（传递 visited_urls 以detect循环）
                 return self.send_request_with_redirects_internal(
                     &final_redirect_request,
                     redirect_count + 1,
@@ -401,8 +401,8 @@ impl HttpClient {
             (rest, "/")
         };
 
-        // Extract path（remove query parameter，but保留 in path 中send）
-        // Note: query parametershould保留 in path 中，becauseserverneed它们
+        // Extract path（remove query parameter，butpreserve in path 中send）
+        // Note: query parametershouldpreserve in path 中，becauseserverneed它们
         let path = path_with_query.to_string();
 
         // Parse host  and port
@@ -478,10 +478,10 @@ impl HttpClient {
         // If有connection pool, 优先useconnection pool（HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1）
         #[cfg(feature = "connection-pool")]
         if let Some(pool_manager) = &self.pool_manager {
-            // HTTP/3 with pool（async -> sync包装）
+            // HTTP/3 with pool（async -> syncwrap）
             #[cfg(feature = "http3")]
             if self.config.prefer_http3 {
-                // Fix: use全局单例 Runtime
+                // Fix: useglobal单例 Runtime
                 return SHARED_RUNTIME.block_on(async {
                     http3_pool::send_http3_request_with_pool(
                         host,
@@ -495,11 +495,11 @@ impl HttpClient {
                 });
             }
 
-            // HTTP/2 with pool（async -> sync包装）
+            // HTTP/2 with pool（async -> syncwrap）
             #[cfg(feature = "http2")]
             if self.config.prefer_http2 {
-                // Fix: use全局单例 Runtime
-                // Note: 这里不做"automatic降level"，because pool 场景我们更希望按用户偏好走specifiedprotocol
+                // Fix: useglobal单例 Runtime
+                // Note: 这里不做"automatic降level"，because pool scenario我们更希望按用户偏好走specifiedprotocol
                 //（test里alsowill严格Validateversion）
                 return SHARED_RUNTIME.block_on(async {
                     http2_pool::send_http2_request_with_pool(
@@ -532,10 +532,10 @@ impl HttpClient {
         {
             if self.config.prefer_http3 {
                 // If开启了 HTTP/3, 我们try它。
-                // Iffailure, 我们may希望降level，but HTTP/3  to  TCP 是不同的传输layer，
+                // Iffailure, 我们may希望降level，but HTTP/3  to  TCP 是不同的transferlayer，
                 // 通常 if 用户明确要求 HTTP/3，failure就should报错。
                 // but这里为了稳健性， if 是becauseprotocolerror，我们can降level。
-                // 暂 when 保持简单：直接return。
+                // 暂 when keep简单：directlyreturn。
                 match http3::send_http3_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(e) => {
@@ -555,14 +555,14 @@ impl HttpClient {
                     Ok(resp) => return Ok(resp),
                     Err(_e) => {
                         // recorderrorbutcontinuetry HTTP/1.1
-                        //  in 实际生产中shoulduse日志system
-                        // eprintln!("HTTP/2 tryfailure: {}，回退 to  HTTP/1.1", e);
+                        //  in actual生产中shoulduse日志system
+                        // eprintln!("HTTP/2 tryfailure: {}，back to  HTTP/1.1", e);
                     }
                 }
             }
         }
 
-        // 回退 to  HTTP/1.1 + TLS
+        // back to  HTTP/1.1 + TLS
         tls::send_https_request(host, port, path, request, &self.config)
     }
 }

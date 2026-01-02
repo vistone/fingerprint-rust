@@ -1,6 +1,6 @@
 //! configurationexportmodule
 //!
-//! will ClientHelloSpec export为 JSON format，以便供其他语言（如 Go uTLS）use。
+//! will ClientHelloSpec export为 JSON format，以便供other语言（如 Go uTLS）use。
 
 #[cfg(feature = "export")]
 use fingerprint_tls::tls_config::ClientHelloSpec;
@@ -33,7 +33,7 @@ pub struct ExportKeyShare {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum ExportExtension {
-    SNI, // 只有type，没有count据（由clientrun when 决定）
+    SNI, // 只有type，nocount据（由clientrun when decide）
     StatusRequest,
     SupportedCurves(Vec<u16>),
     SupportedPoints(Vec<u8>),
@@ -137,7 +137,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                                     }
                                     #[cfg(not(feature = "hex"))]
                                     {
-                                        // If没有 hex feature, use十六进制formatmanualencoding
+                                        // Ifno hex feature, use十六进制formatmanualencoding
                                         ks.data
                                             .iter()
                                             .map(|b| format!("{:02x}", b))

@@ -1,7 +1,7 @@
 //! TLS fingerprint比较module
 //!
 //! providefingerprint比较 and matchFeatures
-//! 参考：Huginn Net 的fingerprint比较implement
+//! reference：Huginn Net 的fingerprint比较implement
 
 use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
@@ -10,9 +10,9 @@ use crate::tls_config::spec::ClientHelloSpec;
 /// fingerprintmatchresult
 #[derive(Debug, Clone, PartialEq)]
 pub enum FingerprintMatch {
-    /// 完全match（包括 GREASE value）
+    /// 完全match（include GREASE value）
     Exact,
-    /// 相似match（忽略 GREASE valueback相同）
+    /// 相似match（ignore GREASE valuebacksame）
     Similar,
     /// does not match
     None,
@@ -58,7 +58,7 @@ pub fn compare_signatures(
         return FingerprintMatch::Exact;
     }
 
-    // 相似match（忽略 GREASE）
+    // 相似match（ignore GREASE）
     if sig1.similar_to(sig2) {
         return FingerprintMatch::Similar;
     }
@@ -66,14 +66,14 @@ pub fn compare_signatures(
     FingerprintMatch::None
 }
 
-/// 查找 and 给定signature最相似的fingerprintconfiguration
+/// find and 给定signature最相似的fingerprintconfiguration
 ///
 /// # Parameters
 /// * `signature` - 要match的signature
 /// * `specs` - 候选 ClientHelloSpec list
 ///
 /// # Returns
-/// * `Option<usize>` - 最相似configuration的index， if 没有找 to 则return None
+/// * `Option<usize>` - 最相似configuration的index， if no找 to 则return None
 pub fn find_best_match(
     signature: &ClientHelloSignature,
     specs: &[ClientHelloSpec],
@@ -109,8 +109,8 @@ mod tests {
         let spec1 = ClientHelloSpec::chrome_133();
         let spec2 = ClientHelloSpec::chrome_133();
         let result = compare_specs(&spec1, &spec2);
-        // 由于集成了random GREASE，两次Generate spec  in GREASE valueupmay不同，
-        // thereforeresultshould是 Similar（忽略 GREASE back相同）
+        // 由于set成了random GREASE，两次Generate spec  in GREASE valueupmay不同，
+        // thereforeresultshould是 Similar（ignore GREASE backsame）
         assert!(matches!(
             result,
             FingerprintMatch::Exact | FingerprintMatch::Similar

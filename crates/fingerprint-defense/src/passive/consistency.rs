@@ -1,6 +1,6 @@
 //! fingerprint一致性Check器
 //!
-//! 交叉Validate TCP、TLS  and HTTP layer的count据，检测欺骗行为 and 异常机器人。
+//! 交叉Validate TCP、TLS  and HTTP layer的count据，detect欺骗behavior and 异常机器人。
 
 use fingerprint_core::fingerprint::FingerprintType;
 use fingerprint_core::ja4::ConsistencyReport;
@@ -37,7 +37,7 @@ impl ConsistencyAnalyzer {
 
             if ua.contains("windows") && !tcp_os.contains("windows") && tcp_os.contains("linux") {
                 report.add_discrepancy(
-                    "TCP stack识别为 Linux，but HTTP User-Agent 声称是 Windows".to_string(),
+                    "TCP stackidentify为 Linux，but HTTP User-Agent 声称是 Windows".to_string(),
                     50,
                 );
             }
@@ -72,7 +72,7 @@ impl ConsistencyAnalyzer {
                     && !tls_info.contains("version: some(0x0304)")
                 {
                     report.add_discrepancy(
-                        "现代 Chrome (120+) mustuse TLS 1.3，检测 to protocol降level".to_string(),
+                        "现代 Chrome (120+) mustuse TLS 1.3，detect to protocol降level".to_string(),
                         50,
                     );
                 }
@@ -92,7 +92,7 @@ impl ConsistencyAnalyzer {
             && (flow.context.target_port == Some(443))
         {
             report.add_discrepancy(
-                " in 443 port检测 to 明文 HTTP traffic (may是强制protocol降level攻击)".to_string(),
+                " in 443 portdetect to 明文 HTTP traffic (may是强制protocol降level攻击)".to_string(),
                 50,
             );
         }
@@ -102,20 +102,20 @@ impl ConsistencyAnalyzer {
             if let (Some(ja4), Some(ja4h)) =
                 (tls.metadata().get("ja4"), http.metadata().get("ja4h"))
             {
-                //  if  JA4 显示是现代 Chrome (t13d...), but JA4H 显示是 HTTP/1.1 (..11..) 且没有 Cookie (..n..)
+                //  if  JA4 display是现代 Chrome (t13d...), but JA4H display是 HTTP/1.1 (..11..) 且no Cookie (..n..)
                 // 这是an常见的爬虫trait
                 if ja4.starts_with("t13") && ja4h.contains("11n") {
                     report.add_discrepancy(
-                        format!("检测 to 现代 TLS trait (JA4: {})，but HTTP 行为表现为传统无 Cookie request (JA4H: {})", ja4, ja4h),
+                        format!("detect to 现代 TLS trait (JA4: {})，but HTTP behavior表现为传统无 Cookie request (JA4H: {})", ja4, ja4h),
                         20,
                     );
                 }
 
                 // Check ALPN 一致性
                 if ja4.contains("h2") && ja4h.contains("11") {
-                    // TLS 协商了 h2，but实际send了 HTTP/1.1
+                    // TLS 协商了 h2，butactualsend了 HTTP/1.1
                     report.add_discrepancy(
-                        "TLS handshake协商了 h2，but实际requestuse了 HTTP/1.1".to_string(),
+                        "TLS handshake协商了 h2，butactualrequestuse了 HTTP/1.1".to_string(),
                         30,
                     );
                 }

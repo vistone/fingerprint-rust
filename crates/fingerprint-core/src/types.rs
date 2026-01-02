@@ -1,6 +1,6 @@
-//! type定义module
+//! typedefinemodule
 //!
-//! 定义了browsertype、operating systemtype等核心type
+//! define了browsertype、operating systemtype等coretype
 
 /// browsertype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -60,7 +60,7 @@ pub enum OperatingSystem {
 }
 
 impl OperatingSystem {
-    /// Getoperating system的string表示
+    /// Getoperating system的stringrepresent
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Windows10 => "Windows NT 10.0; Win64; x64",
@@ -93,7 +93,7 @@ pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
     OperatingSystem::LinuxDebian,
 ];
 
-/// 为了保持 and Go version的兼容性，provide别名
+/// 为了keep and Go version的兼容性，provide别名
 pub type OperatingSystems = [OperatingSystem; 8];
 
 /// User-Agent  templates

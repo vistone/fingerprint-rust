@@ -1,19 +1,19 @@
-//! TLS 可观察性module
+//! TLS 可observe性module
 //!
-//! provide TLS ClientHello 的可观察性count据Extract
-//! 参考：Huginn Net Profiler  TlsClientObserved 设计
+//! provide TLS ClientHello 的可observe性count据Extract
+//! reference：Huginn Net Profiler  TlsClientObserved 设计
 
 use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
-/// TLS ClientHello 可观察count据
-/// includingallcan from  ClientHello 中观察 to 的info
-/// 参考：Huginn Net Profiler  TlsClientObserved
+/// TLS ClientHello 可observecount据
+/// includingallcan from  ClientHello 中observe to 的info
+/// reference：Huginn Net Profiler  TlsClientObserved
 #[derive(Debug, Clone, PartialEq)]
 pub struct TlsClientObserved {
-    /// TLS version（string表示，如 "13", "12"）
+    /// TLS version（stringrepresent，如 "13", "12"）
     pub version: String,
     /// Server Name Indication
     pub sni: Option<String>,
@@ -25,18 +25,18 @@ pub struct TlsClientObserved {
     pub extensions: Vec<u16>,
     /// signaturealgorithmlist
     pub signature_algorithms: Vec<u16>,
-    /// 椭圆曲线list
+    /// elliptic curvelist
     pub elliptic_curves: Vec<CurveID>,
 }
 
 impl TlsClientObserved {
-    ///  from  ClientHelloSpec Create可观察count据
+    ///  from  ClientHelloSpec Create可observecount据
     pub fn from_spec(spec: &ClientHelloSpec) -> Self {
         let signature = extract_signature(spec);
         Self::from_signature(&signature)
     }
 
-    ///  from  ClientHelloSignature Create可观察count据
+    ///  from  ClientHelloSignature Create可observecount据
     pub fn from_signature(signature: &ClientHelloSignature) -> Self {
         Self {
             version: format!("{}", signature.version),

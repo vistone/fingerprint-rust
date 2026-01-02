@@ -1,19 +1,19 @@
-//! systemlevel防护核心抽象
+//! systemlevelprotectioncore抽象
 //!
-//! providesystemlevel防护的核心抽象 and interface，包括systemupdown文、networktraffic、防护决策等。
+//! providesystemlevelprotection的core抽象 and interface，includesystemupdown文、networktraffic、protection决策等。
 //!
 //! ## Core Concept
 //!
-//!  from **单一服务防护**提升 to **systemlevel防护**：
-//! -  from 网卡level拦截、analysis and 防护allnetworktraffic
-//! - not onlyonly是 HTTP，still包括 TCP、UDP、ICMP 等allprotocol
-//! - systemlevel决策，can实施防火墙规则、traffic限速等systemlevel防护措施
+//!  from **单一serviceprotection**提升 to **systemlevelprotection**：
+//! -  from 网卡level拦截、analysis and protectionallnetworktraffic
+//! - not onlyonly是 HTTP，stillinclude TCP、UDP、ICMP 等allprotocol
+//! - systemlevel决策，can实施防火墙规则、traffic限速等systemlevelprotection措施
 //!
 //! ## modulestruct
 //!
-//! - `context`: systemupdown文，includingnetwork实体的completeinfo
-//! - `flow`: networktraffic抽象，表示systemlevel的networktraffic
-//! - `protection`: systemlevel防护interface and 决策
+//! - `context`: systemupdown文，includingnetworkentity的completeinfo
+//! - `flow`: networktraffic抽象，representsystemlevel的networktraffic
+//! - `protection`: systemlevelprotectioninterface and 决策
 //! - `analysis`: systemlevelanalysisinterface and result
 //! - `stats`: systemlevelstatisticsinfo
 
@@ -23,7 +23,7 @@ pub mod flow;
 pub mod protection;
 pub mod stats;
 
-// Re-export 主要type and interface
+// Re-export maintype and interface
 pub use context::{ProtocolType, SystemContext, TrafficDirection};
 pub use flow::{FlowCharacteristics, NetworkFlow};
 pub use protection::{SystemProtectionDecision, SystemProtectionResult, SystemProtector};

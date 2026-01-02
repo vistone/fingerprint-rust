@@ -1,11 +1,11 @@
-//! count据包Parsemodule
+//! countpacketParsemodule
 //!
-//! providebottomlayercount据包ParseFeatures。
+//! providebottomlayercountpacketParseFeatures。
 
 use bytes::Bytes;
 use std::net::IpAddr;
 
-/// count据包
+/// countpacket
 #[derive(Debug, Clone)]
 pub struct Packet {
     ///  when 间戳
@@ -29,10 +29,10 @@ pub struct Packet {
     /// TTL
     pub ttl: u8,
 
-    /// IP 标志
+    /// IP flag
     pub ip_flags: u8,
 
-    /// count据包负载
+    /// countpacket负载
     pub payload: Bytes,
 
     /// TCP headerinfo（ if 有）
@@ -45,13 +45,13 @@ pub struct TcpHeader {
     /// 序列号
     pub seq: u32,
 
-    /// 确认号
+    /// confirm号
     pub ack: Option<u32>,
 
     /// windowsize
     pub window: u16,
 
-    /// TCP 标志
+    /// TCP flag
     pub flags: u8,
 
     /// TCP options
@@ -65,11 +65,11 @@ pub struct TcpOption {
     pub data: Vec<u8>,
 }
 
-/// count据包Parse器
+/// countpacketParse器
 pub struct PacketParser;
 
 impl PacketParser {
-    ///  from 原beginningcount据包Parse
+    ///  from 原beginningcountpacketParse
     pub fn parse(raw_packet: &[u8]) -> Result<Packet, PacketError> {
         // Parse IP header
         if raw_packet.len() < 20 {
@@ -85,7 +85,7 @@ impl PacketParser {
         }
     }
 
-    /// Parse IPv4 count据包
+    /// Parse IPv4 countpacket
     fn parse_ipv4(raw_packet: &[u8]) -> Result<Packet, PacketError> {
         if raw_packet.len() < 20 {
             return Err(PacketError::TooShort);
@@ -100,7 +100,7 @@ impl PacketParser {
         
         let header_len = ihl * 4;
         
-        // securityCheck：确保count据包足够长
+        // securityCheck：ensurecountpacket足够长
         if raw_packet.len() < header_len {
             return Err(PacketError::TooShort);
         }
@@ -141,7 +141,7 @@ impl PacketParser {
                 Self::parse_icmp(&payload)?
             }
             _ => {
-                // 其他protocol
+                // otherprotocol
                 (0, 0, None)
             }
         };
@@ -160,14 +160,14 @@ impl PacketParser {
         })
     }
 
-    /// Parse IPv6 count据包
+    /// Parse IPv6 countpacket
     fn parse_ipv6(raw_packet: &[u8]) -> Result<Packet, PacketError> {
         if raw_packet.len() < 40 {
             return Err(PacketError::TooShort);
         }
 
         // IPv6 headerfixed 40 bytes
-        // version(4bit) + traffic类别(8bit) + stream标签(20bit) = front 4 bytes
+        // version(4bit) + traffic类别(8bit) + streamtag(20bit) = front 4 bytes
         let version = (raw_packet[0] >> 4) & 0x0F;
         if version != 6 {
             return Err(PacketError::InvalidVersion);
@@ -242,7 +242,7 @@ impl PacketParser {
                 Self::parse_icmp(&payload)?
             }
             _ => {
-                // 其他protocol
+                // otherprotocol
                 (0, 0, None)
             }
         };
@@ -272,13 +272,13 @@ impl PacketParser {
         let _length = u16::from_be_bytes([data[4], data[5]]);
         let _checksum = u16::from_be_bytes([data[6], data[7]]);
 
-        // UDP 没有 TCP headerstruct，return None
+        // UDP no TCP headerstruct，return None
         Ok((src_port, dst_port, None))
     }
 
     /// Parse ICMP header
     fn parse_icmp(_data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
-        // ICMP 没有port概念，return 0
+        // ICMP noport概念，return 0
         // ICMP type and 代码 in data[0]  and data[1]
         Ok((0, 0, None))
     }
@@ -311,7 +311,7 @@ impl PacketParser {
         let mut options = Vec::new();
         let header_len = data_offset * 4;
         
-        // securityCheck：确保不will越界访问
+        // securityCheck：ensure不will越界access
         if header_len > data.len() {
             return Err(PacketError::TooShort);
         }
@@ -362,10 +362,10 @@ impl PacketParser {
     }
 }
 
-/// count据包Parseerror
+/// countpacketParseerror
 #[derive(Debug, thiserror::Error)]
 pub enum PacketError {
-    #[error("count据包太短")]
+    #[error("countpacket太短")]
     TooShort,
 
     #[error("invalid IP version")]
@@ -374,7 +374,7 @@ pub enum PacketError {
     #[error("notimplement: {0}")]
     NotImplemented(&'static str),
 
-    #[error("其他error: {0}")]
+    #[error("othererror: {0}")]
     Other(String),
 }
 
@@ -397,7 +397,7 @@ mod security_tests {
         packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "should拒绝 IHL = 0 的count据包");
+        assert!(result.is_err(), "shouldrefuse IHL = 0 的countpacket");
     }
 
     #[test]
@@ -409,7 +409,7 @@ mod security_tests {
         packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "should拒绝 IHL < 5 的count据包");
+        assert!(result.is_err(), "shouldrefuse IHL < 5 的countpacket");
     }
 
     #[test]
@@ -421,7 +421,7 @@ mod security_tests {
         packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "should拒绝 header_len 超过 packet length的count据包");
+        assert!(result.is_err(), "shouldrefuse header_len 超过 packet length的countpacket");
     }
 
     #[test]
@@ -435,7 +435,7 @@ mod security_tests {
         packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_ok(), "valid的minimum IPv4 count据包shouldParsesuccess");
+        assert!(result.is_ok(), "valid的minimum IPv4 countpacketshouldParsesuccess");
     }
 
     #[test]
@@ -455,7 +455,7 @@ mod security_tests {
         packet[32] = 0x00; // Data offset = 0 (invalid)
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "should拒绝 data_offset = 0  TCP count据包");
+        assert!(result.is_err(), "shouldrefuse data_offset = 0  TCP countpacket");
     }
 
     #[test]
@@ -471,7 +471,7 @@ mod security_tests {
         packet[32] = 0x40; // Data offset = 4
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "should拒绝 data_offset < 5  TCP count据包");
+        assert!(result.is_err(), "shouldrefuse data_offset < 5  TCP countpacket");
     }
 
     #[test]
@@ -490,7 +490,7 @@ mod security_tests {
         packet[33] = 0x02; // SYN flag
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_ok(), "valid TCP count据包shouldParsesuccess");
+        assert!(result.is_ok(), "valid TCP countpacketshouldParsesuccess");
         
         let p = result.unwrap();
         assert_eq!(p.src_port, 80);
@@ -504,7 +504,7 @@ mod security_tests {
         let packet = vec![0x45; 10];
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "太短的count据包should被拒绝");
+        assert!(result.is_err(), "太短的countpacketshould被refuse");
     }
 
     #[test]
@@ -514,6 +514,6 @@ mod security_tests {
         packet[0] = 0x35; // Version 3, IHL 5
         
         let result = PacketParser::parse(&packet);
-        assert!(result.is_err(), "invalid IP versionshould被拒绝");
+        assert!(result.is_err(), "invalid IP versionshould被refuse");
     }
 }

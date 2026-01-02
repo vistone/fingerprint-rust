@@ -71,22 +71,22 @@ impl HttpResponse {
         })
     }
 
-    /// 查找 headers endbit置（\r\n\r\n）
+    /// find headers endbit置（\r\n\r\n）
     fn find_headers_end(data: &[u8]) -> Result<(usize, usize), String> {
-        // securityCheck：确保count据length至少为 4 bytes
+        // securityCheck：ensurecount据length至少为 4 bytes
         if data.len() < 4 {
-            return Err("count据太短，unable toincluding headers end标记".to_string());
+            return Err("count据太短，unable toincluding headers endmarker".to_string());
         }
 
-        // use saturating_sub 防止down溢，butneed额outsideCheckedge界
+        // use saturating_sub preventdown溢，butneed额outsideCheckedge界
         let max_i = data.len().saturating_sub(3);
         for i in 0..max_i {
-            // securityCheck：确保不will越界访问
+            // securityCheck：ensure不will越界access
             if i + 4 <= data.len() && &data[i..i + 4] == b"\r\n\r\n" {
                 return Ok((i, i + 4));
             }
         }
-        Err("not找 to  headers end标记".to_string())
+        Err("not找 to  headers endmarker".to_string())
     }
 
     /// Parsestatus行
@@ -119,7 +119,7 @@ impl HttpResponse {
             }
 
             if let Some(pos) = line.find(':') {
-                let key = line[..pos].trim().to_lowercase(); // 转小写便于查找
+                let key = line[..pos].trim().to_lowercase(); // 转小写便于find
                 let value = line[pos + 1..].trim().to_string();
                 headers.insert(key, value);
             }
@@ -152,15 +152,15 @@ impl HttpResponse {
 
     /// Parse chunked encoding
     fn parse_chunked(data: &[u8]) -> Result<Vec<u8>, String> {
-        /// maximum允许的single chunk size（10MB）
-        /// 防止恶意serversend超大 chunk 导致inside存耗尽
+        /// maximumallow的single chunk size（10MB）
+        /// prevent恶意serversend超大 chunk 导致inside存耗尽
         const MAX_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB
 
         let mut result = Vec::new();
         let mut pos = 0;
 
         loop {
-            // 查找 chunk size 行的end（\r\n）
+            // find chunk size 行的end（\r\n）
             let size_line_end = data[pos..]
                 .windows(2)
                 .position(|w| w == b"\r\n")
@@ -176,7 +176,7 @@ impl HttpResponse {
             let size = usize::from_str_radix(size_str, 16)
                 .map_err(|e| format!("Invalid chunk size '{}': {}", size_str, e))?;
 
-            // securityCheck：防止恶意serversend超大 chunk
+            // securityCheck：prevent恶意serversend超大 chunk
             if size > MAX_CHUNK_SIZE {
                 return Err(format!(
                     "Chunk size {} exceeds maximum allowed size {} bytes",
@@ -184,7 +184,7 @@ impl HttpResponse {
                 ));
             }
 
-            // size = 0 表示last chunk
+            // size = 0 representlast chunk
             if size == 0 {
                 break;
             }
@@ -338,7 +338,7 @@ mod tests {
 
         assert_eq!(response.status_code, 200);
         assert_eq!(response.status_text, "OK");
-        // headers 存储 when willconvert to小写
+        // headers store when willconvert to小写
         assert_eq!(
             response.get_header("content-type"),
             Some(&"text/html".to_string())
@@ -410,7 +410,7 @@ mod tests {
         encoder.write_all(data.as_bytes()).unwrap();
         let compressed = encoder.finish().unwrap();
 
-        // willcompressioncount据分块
+        // willcompressioncount据分block
         let chunk1 = &compressed[0..10];
         let chunk2 = &compressed[10..];
 

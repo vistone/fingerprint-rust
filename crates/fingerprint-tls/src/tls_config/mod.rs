@@ -4,7 +4,7 @@
 //!
 //! ## Usage Example
 //!
-//! ### use预定义的fingerprint
+//! ### use预define的fingerprint
 //! ```rust,no_run
 //! use fingerprint_tls::tls_config::ClientHelloSpec;
 //! let spec = ClientHelloSpec::chrome_133();

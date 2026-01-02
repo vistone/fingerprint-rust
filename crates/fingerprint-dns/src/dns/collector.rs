@@ -1,12 +1,12 @@
-//! DNS server收集器module
+//! DNS servercollect器module
 //!
-//! 收集available DNS server，包括 from  public-dns.info Get公共 DNS serverlist
+//! collectavailable DNS server，include from  public-dns.info Get公共 DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::DNSError;
 use std::time::Duration;
 
-/// DNS server收集器
+/// DNS servercollect器
 pub struct ServerCollector;
 
 impl ServerCollector {
@@ -16,7 +16,7 @@ impl ServerCollector {
         let timeout = timeout.unwrap_or(Duration::from_secs(30));
         let url = "https://public-dns.info/nameservers.txt";
 
-        // use项目inside部 HttpClient
+        // useiteminside部 HttpClient
         let config = fingerprint_http::http_client::HttpClientConfig {
             connect_timeout: timeout,
             read_timeout: timeout,
@@ -46,14 +46,14 @@ impl ServerCollector {
         for line in text.lines() {
             let line = line.trim();
 
-            // skipempty行 and 注释
+            // skipempty行 and comment
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
 
             // Validatewhether为valid IP address
             if is_valid_ip_address(line) {
-                // If没有port, Adddefaultport 53
+                // Ifnoport, Adddefaultport 53
                 let server = if line.contains(':') {
                     line.to_string()
                 } else {
@@ -72,14 +72,14 @@ impl ServerCollector {
         Ok(ServerPool::new(servers))
     }
 
-    /// 收集system DNS server
+    /// collectsystem DNS server
     pub fn collect_system_dns() -> ServerPool {
         // 目frontreturndefault的公共 DNS server
         // not来canextension为 from systemconfigurationread
         ServerPool::default()
     }
 
-    ///  from configurationfile收集 DNS server
+    ///  from configurationfilecollect DNS server
     pub fn collect_from_config(_servers: Vec<String>) -> ServerPool {
         // Ifconfiguration了customserver, use它们
         // otherwiseusedefaultserver
@@ -87,12 +87,12 @@ impl ServerCollector {
     }
 
     /// Validate并Update现有file中 DNS server
-    ///  from fileloadallserver，进行健康Check，只保留available的server并save回file
+    ///  from fileloadallserver，进行健康Check，只preserveavailable的server并save回file
     ///
     /// # Parameters
     /// - `test_domain`:  for test的domain，default为 "google.com"
     /// - `test_timeout`: eachserver的testtimeout duration，default为 3 秒
-    /// - `max_concurrency`: maximum并发testcount，default为 100
+    /// - `max_concurrency`: maximumconcurrenttestcount，default为 100
     pub async fn validate_and_update_file(
         test_domain: Option<&str>,
         test_timeout: Option<Duration>,
@@ -119,7 +119,7 @@ impl ServerCollector {
         let total_count = pool.len();
 
         if total_count == 0 {
-            return Err(DNSError::Config("file中没有 DNS server".to_string()));
+            return Err(DNSError::Config("file中no DNS server".to_string()));
         }
 
         eprintln!(" from fileload了 {} 个 DNS server", total_count);
@@ -154,54 +154,54 @@ impl ServerCollector {
             }
         );
 
-        // saveValidateback的server（先备份原file）
+        // saveValidateback的server（先backup原file）
         if valid_count > 0 {
             let backup_path = format!("{}.backup", DEFAULT_SERVER_FILE);
             if let Err(e) = std::fs::copy(file_path, &backup_path) {
-                eprintln!("Warning: unable toCreate备份file: {}", e);
+                eprintln!("Warning: unable toCreatebackupfile: {}", e);
             } else {
-                eprintln!("alreadyCreate备份: {}", backup_path);
+                eprintln!("alreadyCreatebackup: {}", backup_path);
             }
 
             validated_pool.save_default()?;
             eprintln!("alreadysave {} 个availableserver to file", valid_count);
         } else {
-            return Err(DNSError::Config("没有available DNS server".to_string()));
+            return Err(DNSError::Config("noavailable DNS server".to_string()));
         }
 
         Ok((total_count, valid_count))
     }
 
-    /// 收集allavailable DNS server（pair应 Go  BootstrapPoolInternal）
-    ///  from multiplesource收集，并 in savefront进行健康Check，只保留available的server
+    /// collectallavailable DNS server（pair应 Go  BootstrapPoolInternal）
+    ///  from multiplesourcecollect，并 in savefront进行健康Check，只preserveavailable的server
     pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
         // 先try from localfileload（pair应 Go  loadDefault）
         let pool = ServerPool::load_default();
 
         if !pool.is_empty() {
             eprintln!(
-                " from localfileload了 {} 个 DNS server（alreadythroughValidate，直接use）",
+                " from localfileload了 {} 个 DNS server（alreadythroughValidate，directlyuse）",
                 pool.len()
             );
-            // file中的serveralreadythroughValidate，直接use，不进行全面Check
-            // 只 in back台async检测 and 淘汰慢node，不阻塞主线程
+            // file中的serveralreadythroughValidate，directlyuse，不进行全面Check
+            // 只 in back台asyncdetect and 淘汰慢node，不阻塞main线程
             return pool;
         }
 
-        // Iffile不 exists or 为empty,  from network收集（pair应 Go  BootstrapPoolInternal）
-        eprintln!("localfile不 exists or 为empty， from network收集 DNS server...");
+        // Iffile不 exists or 为empty,  from networkcollect（pair应 Go  BootstrapPoolInternal）
+        eprintln!("localfile不 exists or 为empty， from networkcollect DNS server...");
 
         match Self::collect_public_dns(timeout).await {
             Ok(new_pool) => {
                 let new_count = new_pool.len();
-                eprintln!(" from network收集了 {} 个 DNS server", new_count);
+                eprintln!(" from networkcollect了 {} 个 DNS server", new_count);
 
-                //  in savefront进行健康Check，只保留available的server
-                // use高并发检测，每检测 to 一批就立即save，快速complete不长 when 间阻塞
-                eprintln!("正 in 高并发test DNS serveravailable性（test哪些servercanreturn IP address）...");
-                let test_timeout = Duration::from_secs(2); // 减少timeout duration，加快检测
-                let max_concurrency = 500; // 大幅增加并发count，加快检测速度
-                let save_batch_size = 100; // 每检测 to 100个availableserver就save一次
+                //  in savefront进行健康Check，只preserveavailable的server
+                // use高concurrentdetect，每detect to 一batch就立即save，快速complete不长 when 间阻塞
+                eprintln!("正 in 高concurrenttest DNS serveravailable性（test哪些servercanreturn IP address）...");
+                let test_timeout = Duration::from_secs(2); // decreasetimeout duration，加快detect
+                let max_concurrency = 500; // 大幅increaseconcurrentcount，加快detect速度
+                let save_batch_size = 100; // 每detect to 100个availableserver就save一次
 
                 let validated_pool = new_pool
                     .health_check_and_save_incremental(
@@ -235,11 +235,11 @@ impl ServerCollector {
                     }
                 );
 
-                // filealready in 增量save过程中Update了，直接return
+                // filealready in 增量save过程中Update了，directlyreturn
                 if valid_count > 0 {
                     validated_pool
                 } else {
-                    eprintln!("Warning: 没有available DNS server，usedefaultserver");
+                    eprintln!("Warning: noavailable DNS server，usedefaultserver");
                     ServerPool::default()
                 }
             }

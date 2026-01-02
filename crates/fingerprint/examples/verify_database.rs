@@ -3,7 +3,7 @@ fn main() {
     use bytes::Bytes;
     use chrono::Utc;
     use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
-    // use fingerprint_core::Fingerprint; // notuse，already注释
+    // use fingerprint_core::Fingerprint; // notuse，alreadycomment
     use fingerprint_defense::passive::consistency::ConsistencyAnalyzer;
     use fingerprint_defense::passive::http::HttpAnalyzer;
     use fingerprint_defense::passive::packet::{Packet, TcpHeader, TcpOption};
@@ -21,8 +21,8 @@ fn main() {
     let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
     let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
-    // 1. 模拟并存储正常 Chrome traffic
-    println!("1️⃣  存储正常的traffic:");
+    // 1. simulate并store正常 Chrome traffic
+    println!("1️⃣  store正常的traffic:");
     let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\n\r\n";
     let packet = Packet {
         timestamp: 0,
@@ -70,8 +70,8 @@ fn main() {
         .expect("Failed to store flow");
     println!("   ✅ trafficalready存入 SQLite");
 
-    // 2. 模拟并存储机器人traffic
-    println!("\n2️⃣  存储机器人traffic:");
+    // 2. simulate并store机器人traffic
+    println!("\n2️⃣  store机器人traffic:");
     let packet_bot = Packet {
         src_ip: "192.168.1.101".parse().unwrap(),
         ttl: 64, // Bot TTL

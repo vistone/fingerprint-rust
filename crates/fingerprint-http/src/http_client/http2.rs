@@ -8,7 +8,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http2")]
 use h2::client;
 
-// Fix: use全局单例 Runtime 避免频繁Create
+// Fix: useglobal单例 Runtime 避免频繁Create
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
@@ -25,7 +25,7 @@ pub fn send_http2_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // Fix: use全局单例 Runtime，避免每次request都Create a newrun when 
+    // Fix: useglobal单例 Runtime，避免每次request都Create a newrun when 
     RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
@@ -43,7 +43,7 @@ async fn send_http2_request_async(
 
     let start = Instant::now();
 
-    // 1. 建立 TCP connection（application TCP Profile）
+    // 1. establish TCP connection（application TCP Profile）
     let addr = format!("{}:{}", host, port);
     let socket_addrs = addr
         .to_socket_addrs()
@@ -162,7 +162,7 @@ async fn send_http2_request_async(
     // Fix: through SendStream sendrequest体（ if  exists）
     if let Some(body) = &request_with_cookies.body {
         if !body.is_empty() {
-            // send body count据，end_of_stream = true 表示这是finally的count据
+            // send body count据，end_of_stream = true represent这是finally的count据
             send_stream
                 .send_data(bytes::Bytes::from(body.clone()), true)
                 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
@@ -173,7 +173,7 @@ async fn send_http2_request_async(
                 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
         }
     } else if !has_body {
-        // 没有 body，sendemptycount据并endstream
+        // no body，sendemptycount据并endstream
         send_stream
             .send_data(bytes::Bytes::new(), true)
             .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
@@ -187,7 +187,7 @@ async fn send_http2_request_async(
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
-    // securityFix: Check HTTP/2 responseheadersize，防止 Header compression炸弹攻击
+    // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹攻击
     // h2 crate 0.4 的default MAX_HEADER_LIST_SIZE 通常较大，我们Add额outside的Check
     const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的minimumvalue)
     let total_header_size: usize = headers
@@ -205,7 +205,7 @@ async fn send_http2_request_async(
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
 
-    // securitylimit：防止 HTTP/2 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/2 response体过大导致inside存耗尽
     const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(chunk) = body_stream.data().await {
@@ -213,7 +213,7 @@ async fn send_http2_request_async(
             HttpClientError::Io(std::io::Error::other(format!("read body failure: {}", e)))
         })?;
 
-        // securityCheck：防止response体过大
+        // securityCheck：preventresponse体过大
         if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
                 "HTTP/2 response体过大（>{} bytes）",
@@ -223,7 +223,7 @@ async fn send_http2_request_async(
 
         body_data.extend_from_slice(&chunk);
 
-        // 释放stream控制window
+        // releasestreamcontrolwindow
         let _ = body_stream.flow_control().release_capacity(chunk.len());
     }
 

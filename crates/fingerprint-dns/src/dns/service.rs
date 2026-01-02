@@ -1,6 +1,6 @@
 //! DNS Service module
 //!
-//! provide DNS Parse服务 Start/Stop interface
+//! provide DNS Parseservice Start/Stop interface
 
 use crate::dns::collector::ServerCollector;
 use crate::dns::config::load_config;
@@ -26,7 +26,7 @@ pub struct Service {
 }
 
 impl Service {
-    /// Create a new Service 实例
+    /// Create a new Service instance
     pub fn new(config: DNSConfig) -> Result<Self, DNSError> {
         config.validate()?;
 
@@ -36,7 +36,7 @@ impl Service {
         // HTTP timeout duration
         let http_timeout = parse_duration(&config.http_timeout).unwrap_or(Duration::from_secs(20));
 
-        // usedefault DNS serverCreate resolver（will in start  when 替换为收集 to 的server）
+        // usedefault DNS serverCreate resolver（will in start  when replace为collect to 的server）
         let resolver = Arc::new(RwLock::new(DNSResolver::new(dns_timeout)));
         let ipinfo_client = Arc::new(IPInfoClient::new(config.ipinfo_token.clone(), http_timeout));
 
@@ -49,7 +49,7 @@ impl Service {
         })
     }
 
-    /// Create a new Service 实例，并usespecified DNS serverpool
+    /// Create a new Service instance，并usespecified DNS serverpool
     pub async fn with_server_pool(
         config: DNSConfig,
         server_pool: Arc<ServerPool>,
@@ -84,8 +84,8 @@ impl Service {
         Self::new(config)
     }
 
-    /// start服务（ in back台线程run，不阻塞主线程）
-    /// automatic维护 DNS serverpool（dnsservernames.json），无需人工干预
+    /// startservice（ in back台线程run，不阻塞main线程）
+    /// automatic维护 DNS serverpool（dnsservernames.json），无需manual干预
     pub async fn start(&self) -> Result<(), DNSError> {
         // Checkwhetheralready in run
         {
@@ -96,29 +96,29 @@ impl Service {
             *running = true;
         }
 
-        // load/收集 DNS serverpool（pair应 Go  NewServerPool）
-        // 优先 from localfileload， if 不 exists or 为empty，才 from network收集
+        // load/collect DNS serverpool（pair应 Go  NewServerPool）
+        // 优先 from localfileload， if 不 exists or 为empty，才 from networkcollect
         // collect_all alreadyprocess了：
-        //   -  if file exists且is notempty：直接use，不进行Check
-        //   -  if file不 exists or 为empty： from network收集并进行健康Checkbacksave
+        //   -  if file exists且is notempty：directlyuse，不进行Check
+        //   -  if file不 exists or 为empty： from networkcollect并进行健康Checkbacksave
         let mut server_pool = ServerCollector::collect_all(Some(Duration::from_secs(30))).await;
         eprintln!("currentserverpool有 {} 个 DNS server", server_pool.len());
 
         // Ifserverpool为empty, usedefaultserver
         if server_pool.is_empty() {
-            eprintln!("Warning: 没有available DNS server，usedefaultserver");
+            eprintln!("Warning: noavailable DNS server，usedefaultserver");
             server_pool = ServerPool::default();
             eprintln!("usedefault DNS server: {} 个", server_pool.len());
         }
 
         // usethrough健康Check的serverpoolUpdate resolver
-        // Parse when useallthrough健康Check的server并发query
+        // Parse when useallthrough健康Check的serverconcurrentquery
         let dns_timeout =
             parse_duration(&self.config.dns_timeout).unwrap_or(Duration::from_secs(4));
         let server_pool_arc = Arc::new(server_pool);
         let new_resolver = DNSResolver::with_server_pool(dns_timeout, server_pool_arc.clone());
 
-        // 替换 resolver
+        // replace resolver
         {
             let mut resolver_guard = self.resolver.write().await;
             *resolver_guard = new_resolver;
@@ -131,8 +131,8 @@ impl Service {
             *stop_tx = Some(tx);
         }
 
-        // startback台任务：定期淘汰慢的DNSserver（不阻塞主线程）
-        // 参考 Go 项destinationimplement： in Parse过程中record性能，back台定期清理慢node
+        // startback台任务：定期淘汰慢的DNSserver（不阻塞main线程）
+        // reference Go 项destinationimplement： in Parse过程中record性能，back台定期清理慢node
         let resolver_for_cleanup = self.resolver.clone();
         let server_pool_for_cleanup = server_pool_arc.clone();
         let dns_timeout_for_cleanup = dns_timeout;
@@ -144,9 +144,9 @@ impl Service {
             loop {
                 tokio::time::sleep(cleanup_interval).await;
 
-                // 淘汰慢的server（pair应 Go 项目 RemoveSlowServers）
+                // 淘汰慢的server（pair应 Go item RemoveSlowServers）
                 let old_count = server_pool_for_cleanup.len();
-                let min_active_servers = 5; // 生产环境down建议至少保留 5server作为保bottom
+                let min_active_servers = 5; // 生产environmentdown建议至少preserve 5serveras保bottom
                 let optimized_pool = server_pool_for_cleanup.remove_slow_servers(
                     max_avg_response_time_ms,
                     max_failure_rate,
@@ -174,8 +174,8 @@ impl Service {
             }
         });
 
-        //  in back台线程start服务主循环（不阻塞主线程）
-        // use Arc 包装的field，can直接 in 闭包中use
+        //  in back台线程startservicemain循环（不阻塞main线程）
+        // use Arc wrap的field，candirectly in 闭包中use
         let config = self.config.clone();
         let resolver = self.resolver.clone();
         let ipinfo_client = self.ipinfo_client.clone();
@@ -186,7 +186,7 @@ impl Service {
             let base_interval =
                 parse_duration(&config.interval).unwrap_or(Duration::from_secs(120));
 
-            eprintln!("[DNS Service] 服务alreadystart，will in back台run（不阻塞主线程）");
+            eprintln!("[DNS Service] servicealreadystart，will in back台run（不阻塞main线程）");
             eprintln!(
                 "[DNS Service] configuration: domainlist {} 个，Check间隔: {}，count据目录: {}",
                 config.domain_list.len(),
@@ -194,22 +194,22 @@ impl Service {
                 config.domain_ips_dir
             );
 
-            // Createtemporary Service 实例 for call resolve_and_save_all
-            // Note: resolve_and_save_all need &self，so我们needCreatean辅助function
-            //  or 者直接 in 这里implementParse逻辑
+            // Createtemporary Service instance for call resolve_and_save_all
+            // Note: resolve_and_save_all need &self，so我们needCreateanauxiliaryfunction
+            //  or 者directly in 这里implementParse逻辑
 
-            // 动态间隔调整
+            // 动态间隔adjust
             let mut current_interval = base_interval;
             let mut last_has_new_ips = false;
 
             loop {
                 // Checkstop信号
                 if rx.try_recv().is_ok() {
-                    eprintln!("[DNS Service] 收 to stop信号，正 in stop服务...");
+                    eprintln!("[DNS Service] 收 to stop信号，正 in stopservice...");
                     break;
                 }
 
-                // executeParse（use辅助function）- waitParsecompleteback再wait间隔
+                // executeParse（useauxiliaryfunction）- waitParsecompleteback再wait间隔
                 eprintln!("[DNS Service] startexecute DNS Parse...");
                 let resolve_start = std::time::Instant::now();
                 match resolve_and_save_all_internal(&resolver, &ipinfo_client, &config).await {
@@ -220,7 +220,7 @@ impl Service {
                             resolve_duration.as_secs_f64()
                         );
 
-                        // 智能间隔调整：发现new IP  when 高频检测，otherwise指count退避
+                        // 智能间隔adjust：发现new IP  when 高频detect，otherwise指count退避
                         if has_new_ips {
                             current_interval = base_interval;
                             last_has_new_ips = true;
@@ -230,7 +230,7 @@ impl Service {
                             );
                         } else {
                             if last_has_new_ips {
-                                // before有new IP，现 in 没有了，逐步增加间隔
+                                // before有new IP，现 in no了，逐步increase间隔
                                 current_interval = base_interval;
                                 last_has_new_ips = false;
                             } else {
@@ -257,7 +257,7 @@ impl Service {
 
                 // Checkstop信号（ in wait间隔front）
                 if rx.try_recv().is_ok() {
-                    eprintln!("[DNS Service] 收 to stop信号，正 in stop服务...");
+                    eprintln!("[DNS Service] 收 to stop信号，正 in stopservice...");
                     break;
                 }
 
@@ -269,20 +269,20 @@ impl Service {
                 sleep(current_interval).await;
             }
 
-            // stop服务
+            // stopservice
             {
                 let mut running = running.write().await;
                 *running = false;
             }
 
-            eprintln!("[DNS Service] 服务alreadystop");
+            eprintln!("[DNS Service] servicealreadystop");
         });
 
-        eprintln!("[DNS Service] 服务already in back台start，主线程不will被阻塞");
+        eprintln!("[DNS Service] servicealready in back台start，main线程不will被阻塞");
         Ok(())
     }
 
-    /// stop服务
+    /// stopservice
     pub async fn stop(&self) -> Result<(), DNSError> {
         let mut stop_tx = self.stop_tx.write().await;
         if let Some(tx) = stop_tx.take() {
@@ -291,26 +291,26 @@ impl Service {
         Ok(())
     }
 
-    /// Check服务whether in run
+    /// Checkservicewhether in run
     pub async fn is_running(&self) -> bool {
         *self.running.read().await
     }
 
     /// settings基础execute间隔
     pub fn set_interval(&self, _interval: Duration) {
-        // Note: 动态调整patterndown，实际间隔willBased onwhether发现新IP而变化
-        // 这个function主要 for 静态pattern，目front暂不support
+        // Note: 动态adjustpatterndown，actual间隔willBased onwhether发现新IP而变化
+        // 这个functionmain for 静态pattern，目front暂不support
     }
 
     /// Parse并savealldomain IP info
-    /// Note: 此method目frontnot直接use，实际use的是 resolve_and_save_all_internal
+    /// Note: 此method目frontnotdirectlyuse，actualuse的是 resolve_and_save_all_internal
     #[allow(dead_code)]
     async fn resolve_and_save_all(&self) -> Result<bool, DNSError> {
         resolve_and_save_all_internal(&self.resolver, &self.ipinfo_client, &self.config).await
     }
 }
 
-/// 辅助function：Parse并savealldomain IP info（can in 闭包中use）
+/// auxiliaryfunction：Parse并savealldomain IP info（can in 闭包中use）
 async fn resolve_and_save_all_internal(
     resolver: &Arc<RwLock<DNSResolver>>,
     ipinfo_client: &Arc<IPInfoClient>,
@@ -318,7 +318,7 @@ async fn resolve_and_save_all_internal(
 ) -> Result<bool, DNSError> {
     let mut has_new_ips = false;
 
-    // 并发Parsealldomain（use收集 to  DNS server）
+    // concurrentParsealldomain（usecollect to  DNS server）
     let resolver_guard = resolver.read().await;
     let results = resolver_guard
         .resolve_many(config.domain_list.clone(), config.max_concurrency)
@@ -332,7 +332,7 @@ async fn resolve_and_save_all_internal(
                 // Get现有count据
                 let existing = load_domain_ips(&domain, &config.domain_ips_dir)?;
 
-                // ExtractallParse to  IP（already去重）
+                // ExtractallParse to  IP（alreadydeduplicate）
                 let all_ipv4: HashSet<String> = result
                     .ips
                     .ipv4
@@ -360,10 +360,10 @@ async fn resolve_and_save_all_internal(
                 let new_ipv4: Vec<String> = all_ipv4.difference(&existing_ipv4).cloned().collect();
                 let new_ipv6: Vec<String> = all_ipv6.difference(&existing_ipv6).cloned().collect();
 
-                // Build最final domain_ips，先复制already exists的count据
+                // Build最final domain_ips，先copyalready exists的count据
                 let mut domain_ips = DomainIPs::new();
 
-                // 复制already exists IPv4 info
+                // copyalready exists IPv4 info
                 if let Some(existing) = &existing {
                     for existing_ip in &existing.ipv4 {
                         if all_ipv4.contains(&existing_ip.ip) {
@@ -372,7 +372,7 @@ async fn resolve_and_save_all_internal(
                     }
                 }
 
-                // 复制already exists IPv6 info
+                // copyalready exists IPv6 info
                 if let Some(existing) = &existing {
                     for existing_ip in &existing.ipv6 {
                         if all_ipv6.contains(&existing_ip.ip) {
@@ -394,7 +394,7 @@ async fn resolve_and_save_all_internal(
                     for (ip, ip_result) in ipv4_results {
                         match ip_result {
                             Ok(mut ip_info) => {
-                                // 保留原beginning IP（because IPInfo mayreturn不同的format）
+                                // preserve原beginning IP（because IPInfo mayreturn不同的format）
                                 ip_info.ip = ip.clone();
                                 domain_ips.ipv4.push(ip_info);
                             }
@@ -482,7 +482,7 @@ fn parse_duration(s: &str) -> Option<Duration> {
     } else if let Some(stripped) = s.strip_suffix('h') {
         (stripped.parse::<u64>().ok()?, "h")
     } else {
-        // try作为秒countParse
+        // tryas秒countParse
         (s.parse::<u64>().ok()?, "s")
     };
 

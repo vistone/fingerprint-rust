@@ -1,11 +1,11 @@
 //! HTTP/2 with Connection Pool
 //!
-//! 架构说明：
-//! - HTTP/2 采用sessionpool（H2SessionPool）implement真正的多路复用
-//! - pool化pair象：h2::client::SendRequest 句柄（alreadyhandshakecomplete的session）
-//! - 复用方式：并发多路复用（ansession可同 when processmultiplerequest）
-//! - netconnpool 角色：only in Create新session when 作为bottomlayer TCP connectionsource（加速connection建立）
-//! - session建立back，connection生命周期由 H2Session 的back台任务（Driver）管理
+//! 架构explain：
+//! - HTTP/2 adoptsessionpool（H2SessionPool）implement真正的多路复用
+//! - pool化pair象：h2::client::SendRequest handle（alreadyhandshakecomplete的session）
+//! - 复用方式：concurrent多路复用（ansession可同 when processmultiplerequest）
+//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource（加速connectionestablish）
+//! - sessionestablishback，connection生命周期由 H2Session 的back台任务（Driver）manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -27,8 +27,8 @@ pub async fn send_http2_request_with_pool(
     use http::{Request as HttpRequest2, Version};
     use tokio_rustls::TlsConnector;
 
-    // Note: connection pool中的connection in Create when may没有application TCP Profile
-    // 为了确保 TCP fingerprint一致性，我们建议 in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
+    // Note: connection pool中的connection in Create when maynoapplication TCP Profile
+    // 为了ensure TCP fingerprint一致性，我们建议 in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
     // 这里我们仍然 from connection poolGetconnection，but新Create的connectionwillapplication TCP Profile（ if configuration了）
 
     //  from connection poolGetconnection
@@ -40,12 +40,12 @@ pub async fn send_http2_request_with_pool(
         .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
     //  from  Connection 中Extract TcpStream
-    // PooledConnection implement了 Deref<Target = Connection>，can直接use Connection 的method
+    // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection 的method
     let tcp_stream = conn
         .tcp_conn()
         .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // 克隆 TcpStream 以便我们canuse它
+    // clone TcpStream 以便我们canuse它
     let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     // convert to tokio TcpStream
@@ -70,7 +70,7 @@ pub async fn send_http2_request_with_pool(
         .map_err(|e| HttpClientError::TlsError(format!("TLS handshakefailure: {}", e)))?;
 
     // Fix: use HTTP/2 sessionpoolimplement真正的多路复用
-    // 避免每次request都重新进行 TLS  and HTTP/2 handshake
+    // 避免每次request都re进行 TLS  and HTTP/2 handshake
     let session_key = format!("{}:{}", host, port);
     let h2_session_pool = pool_manager.h2_session_pool();
 
@@ -88,7 +88,7 @@ pub async fn send_http2_request_with_pool(
     }
     // #endregion
 
-    //  from sessionpoolGet or Create SendRequest 句柄
+    //  from sessionpoolGet or Create SendRequest handle
     let send_request = h2_session_pool
         .get_or_create_session::<_, tokio_rustls::client::TlsStream<tokio::net::TcpStream>>(&session_key, async {
             // #region agent log
@@ -100,7 +100,7 @@ pub async fn send_http2_request_with_pool(
                     log_msg, session_key);
             }
             // #endregion
-            // 建立 HTTP/2 connection
+            // establish HTTP/2 connection
             let mut builder = client::Builder::new();
 
             // applicationfingerprintconfiguration中 HTTP/2 Settings
@@ -128,7 +128,7 @@ pub async fn send_http2_request_with_pool(
                 .await
                 .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 handshakefailure: {}", e)))?;
 
-            // return SendRequest  and Connection（sessionpoolwill管理 Connection 的生命周期）
+            // return SendRequest  and Connection（sessionpoolwillmanage Connection 的生命周期）
             Ok((client, h2_conn))
         })
         .await?;
@@ -188,13 +188,13 @@ pub async fn send_http2_request_with_pool(
         .send_request(http2_request, false) // Fix: 改为 false，只有 in send完 body back才endstream
         .map_err(|e| HttpClientError::Http2Error(format!("sendrequestfailure: {}", e)))?;
 
-    // 释放锁，允许其他request复用同ansession
+    // release锁，allowotherrequest复用同ansession
     drop(client);
 
     // Fix: through SendStream sendrequest体（ if  exists）
     if let Some(body) = &request.body {
         if !body.is_empty() {
-            // send body count据，end_of_stream = true 表示这是finally的count据
+            // send body count据，end_of_stream = true represent这是finally的count据
             send_stream
                 .send_data(::bytes::Bytes::from(body.clone()), true)
                 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
@@ -205,7 +205,7 @@ pub async fn send_http2_request_with_pool(
                 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
         }
     } else if !has_body {
-        // 没有 body，sendemptycount据并endstream
+        // no body，sendemptycount据并endstream
         send_stream
             .send_data(::bytes::Bytes::new(), true)
             .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
@@ -219,7 +219,7 @@ pub async fn send_http2_request_with_pool(
     // 先Extract status  and headers
     let status_code = response.status().as_u16();
 
-    // securityFix: Check HTTP/2 responseheadersize，防止 Header compression炸弹攻击
+    // securityFix: Check HTTP/2 responseheadersize，prevent Header compression炸弹攻击
     const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的minimumvalue)
     let total_header_size: usize = response
         .headers()
@@ -248,7 +248,7 @@ pub async fn send_http2_request_with_pool(
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
 
-    // securitylimit：防止 HTTP/2 response体过大导致inside存耗尽
+    // securitylimit：prevent HTTP/2 response体过大导致inside存耗尽
     const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(chunk) = body_stream.data().await {
@@ -256,7 +256,7 @@ pub async fn send_http2_request_with_pool(
             HttpClientError::Io(std::io::Error::other(format!("read body failure: {}", e)))
         })?;
 
-        // securityCheck：防止response体过大
+        // securityCheck：preventresponse体过大
         if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
                 "HTTP/2 response体过大（>{} bytes）",
@@ -266,7 +266,7 @@ pub async fn send_http2_request_with_pool(
 
         body_data.extend_from_slice(&chunk);
 
-        // 释放stream控制window
+        // releasestreamcontrolwindow
         let _ = body_stream.flow_control().release_capacity(chunk.len());
     }
 
@@ -325,7 +325,7 @@ mod tests {
             return;
         }
 
-        // wait一小段 when 间，确保sessionalready建立
+        // wait一小segment when 间，ensuresessionalreadyestablish
         tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
         println!("\n📡 send第二个 HTTP/2 request（should复用session）...");

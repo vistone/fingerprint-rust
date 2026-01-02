@@ -1,6 +1,6 @@
-//! TCP 被动fingerprint识别
+//! TCP 被动fingerprintidentify
 //!
-//! implement p0f 风格 TCP fingerprint识别。
+//! implement p0f 风格 TCP fingerprintidentify。
 
 use crate::passive::packet::{Packet, TcpHeader};
 use std::collections::HashMap;
@@ -35,7 +35,7 @@ pub struct TcpFingerprint {
     /// 相似度
     pub similarity: f64,
 
-    /// 检测 to 的operating system
+    /// detect to 的operating system
     pub os: Option<String>,
 
     /// 原beginningtrait
@@ -95,7 +95,7 @@ pub struct TcpFeatures {
     /// TTL
     pub ttl: u8,
 
-    /// initialbeginning TTL（推断）
+    /// initialbeginning TTL（infer）
     pub initial_ttl: u8,
 
     /// windowsize
@@ -110,7 +110,7 @@ pub struct TcpFeatures {
     /// TCP optionsstring
     pub options_str: String,
 
-    /// IP 标志
+    /// IP flag
     pub ip_flags: u8,
 }
 
@@ -144,7 +144,7 @@ impl TcpAnalyzer {
 
     /// loaddefaultsignature
     fn load_default_signatures(&mut self) -> Result<(), String> {
-        // Addsome基础signature作为Examples
+        // Addsome基础signatureasExamples
         // 这些是常见的operating systemsignature
 
         // Linux Examplessignature
@@ -189,7 +189,7 @@ impl TcpAnalyzer {
         Ok(())
     }
 
-    /// analysis TCP count据包
+    /// analysis TCP countpacket
     pub fn analyze(&self, packet: &Packet) -> Option<TcpFingerprint> {
         let tcp_header = packet.tcp_header.as_ref()?;
 
@@ -221,7 +221,7 @@ impl TcpAnalyzer {
 
     /// Extract TCP trait
     fn extract_features(&self, packet: &Packet, tcp_header: &TcpHeader) -> TcpFeatures {
-        // 推断initialbeginning TTL
+        // inferinitialbeginning TTL
         let initial_ttl = self.infer_initial_ttl(packet.ttl);
 
         // Extract MSS
@@ -244,9 +244,9 @@ impl TcpAnalyzer {
         }
     }
 
-    /// 推断initialbeginning TTL
+    /// inferinitialbeginning TTL
     fn infer_initial_ttl(&self, ttl: u8) -> u8 {
-        // Based on观察 to  TTL 推断initialbeginning TTL
+        // Based onobserve to  TTL inferinitialbeginning TTL
         // 常见的initialbeginning TTL value：32, 64, 128, 255
         if ttl <= 32 {
             32

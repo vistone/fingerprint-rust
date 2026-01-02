@@ -53,11 +53,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 简单Check ALPN whether in bytesstream中 (h3, h2, http/1.1)
     if client_hello.windows(2).any(|w| w == b"h3") && client_hello.windows(2).any(|w| w == b"h2") {
-        println!("   ✅ bytesstream中including h3  and h2 标识");
+        println!("   ✅ bytesstream中including h3  and h2 identifier");
     }
 
     // 4. JA4 fingerprintValidate
-    println!("\n4️⃣  JA4 fingerprint主动Generate:");
+    println!("\n4️⃣  JA4 fingerprintmain动Generate:");
     let ja4 = chrome_136.get_ja4_string()?;
     println!("   ✅ JA4: {}", ja4);
 

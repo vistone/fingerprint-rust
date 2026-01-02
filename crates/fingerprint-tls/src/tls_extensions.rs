@@ -2,7 +2,7 @@
 //!
 //! implement各种 TLS extension，Corresponds to Go version's tls.TLSExtension
 //!
-//! 参考：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
+//! reference：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
 
 use fingerprint_core::dicttls::extensions::*;
 use fingerprint_core::dicttls::signature_schemes::SignatureScheme;
@@ -27,7 +27,7 @@ pub struct KeyShare {
 /// TLS extension trait
 /// Corresponds to Go version's tls.TLSExtension interface
 pub trait TLSExtension: std::fmt::Debug + Any {
-    /// Getextension的length（包括header）
+    /// Getextension的length（includeheader）
     /// Corresponds to Go version's Len() int
     fn len(&self) -> usize;
 
@@ -178,7 +178,7 @@ impl TLSExtension for SNIExtension {
 
 impl TLSExtensionWriter for SNIExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // SNI Write 是 no-op，because SNI 不should被fingerprint化，是用户控制的
+        // SNI Write 是 no-op，because SNI 不should被fingerprint化，是用户control的
         Ok(buf.len())
     }
 }
@@ -1181,7 +1181,7 @@ impl Clone for UtlsPaddingExtension {
         Self {
             padding_len: self.padding_len,
             will_pad: self.will_pad,
-            get_padding_len: None, // 不克隆function指针
+            get_padding_len: None, // 不clonefunctionpointer
         }
     }
 }
@@ -1271,7 +1271,7 @@ impl Default for UtlsPaddingExtension {
     }
 }
 
-///  from extension ID Createextension实例
+///  from extension ID Createextensioninstance
 /// Corresponds to Go version's ExtensionFromID function
 pub fn extension_from_id(id: ExtensionID) -> Option<Box<dyn TLSExtension>> {
     match id {

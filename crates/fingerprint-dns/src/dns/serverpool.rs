@@ -1,6 +1,6 @@
 //! DNS serverpoolmodule
 //!
-//! 管理 DNS serverlist，包括 from localfileload/save and 健康CheckFeatures
+//! manage DNS serverlist，include from localfileload/save and 健康CheckFeatures
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -9,10 +9,10 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-/// defaultserverpoolfile名（pair应 Go 项目 dnsservernames.json）
+/// defaultserverpoolfile名（pair应 Go item dnsservernames.json）
 const DEFAULT_SERVER_FILE: &str = "dnsservernames.json";
 
-/// DNS serverlist JSON struct（pair应 Go 项目 DNSServerList）
+/// DNS serverlist JSON struct（pair应 Go item DNSServerList）
 #[derive(Debug, Serialize, Deserialize)]
 struct DNSServerList {
     servers: std::collections::HashMap<String, String>,
@@ -133,15 +133,15 @@ impl ServerPool {
     }
 
     /// 淘汰慢的server（averageresponse when 间超过阈value or failure率过高）
-    /// returnnewserverpool，不阻塞主线程
-    /// Fix: 增加 min_active_servers parameter，确保至少保留specifiedcount的server（按性能排序）
+    /// returnnewserverpool，不阻塞main线程
+    /// Fix: increase min_active_servers parameter，ensure至少preservespecifiedcount的server（按性能sort）
     pub fn remove_slow_servers(
         &self,
         max_avg_response_time_ms: f64,
         max_failure_rate: f64,
         min_active_servers: usize,
     ) -> Self {
-        // securityFix: process锁中毒情况
+        // securityFix: process锁中毒situation
         let stats_guard = match self.stats.read() {
             Ok(guard) => guard,
             Err(e) => {
@@ -151,7 +151,7 @@ impl ServerPool {
             }
         };
 
-        // 收集allserver的分count
+        // collectallserver的分count
         let mut scored_servers: Vec<(String, f64, f64)> = self
             .servers
             .iter()
@@ -163,22 +163,22 @@ impl ServerPool {
                         stat.failure_rate(),
                     )
                 } else {
-                    // 没有statisticscount据的server（新server）认为性能最好
+                    // nostatisticscount据的server（新server）consider性能最好
                     (server.clone(), 0.0, 0.0)
                 }
             })
             .collect();
 
-        // initial步过滤符合条件的server
+        // initial步filter符合条件的server
         let mut filtered: Vec<String> = scored_servers
             .iter()
             .filter(|(_, avg, fail)| *avg <= max_avg_response_time_ms && *fail <= max_failure_rate)
             .map(|(s, _, _)| s.clone())
             .collect();
 
-        // 容错保障： if 过滤back剩down的server太少，按性能排序强行保留 top N
+        // 容错保障： if filterback剩down的server太少，按性能sort强行preserve top N
         if filtered.len() < min_active_servers && !scored_servers.is_empty() {
-            // 按 failure率 (第一关key字)  and response when 间 (第二关key字) 升序排序
+            // 按 failure率 (第一关key字)  and response when 间 (第二关key字) 升序sort
             scored_servers.sort_by(|a, b| {
                 a.2.partial_cmp(&b.2)
                     .unwrap_or(std::cmp::Ordering::Equal)
@@ -192,7 +192,7 @@ impl ServerPool {
                 .collect();
 
             eprintln!(
-                "[DNS ServerPool] 满足条件的server不足 (only {} 个)，强行保留性能front {} 名",
+                "[DNS ServerPool] 满足条件的server不足 (only {} 个)，强行preserve性能front {} 名",
                 filtered.len(),
                 min_active_servers
             );
@@ -216,12 +216,12 @@ impl ServerPool {
         let list: DNSServerList =
             serde_json::from_str(&content).map_err(crate::dns::types::DNSError::Json)?;
 
-        // Extractall IP address（Go 项目use GetAllServers returnall IP）
+        // Extractall IP address（Go itemuse GetAllServers returnall IP）
         let servers: Vec<String> = list
             .servers
             .values()
             .map(|ip| {
-                // If没有port, Adddefaultport 53
+                // Ifnoport, Adddefaultport 53
                 if ip.contains(':') {
                     ip.clone()
                 } else {
@@ -238,7 +238,7 @@ impl ServerPool {
         let path = path.as_ref();
 
         // Buildservermap（name -> IP）
-        // Go 项目use "Auto-IP" 作为name
+        // Go itemuse "Auto-IP" asname
         let mut servers_map = std::collections::HashMap::new();
         for server in self.servers.iter() {
             // Extract IP address（去掉port）
@@ -260,8 +260,8 @@ impl ServerPool {
         let json_content =
             serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
-        // securityFix: 原child性write，use唯一的temporaryfile名防止竞态条件
-        // use进程 ID 确保temporaryfile名唯一，避免多进程同 when write when 的竞态条件
+        // securityFix: 原child性write，use唯一的temporaryfile名prevent竞态条件
+        // use进程 ID ensuretemporaryfile名唯一，避免多进程同 when write when 的竞态条件
         let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
         fs::write(&temp_path, json_content)
             .map_err(|e| crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e)))?;
@@ -340,8 +340,8 @@ impl ServerPool {
         self.servers.is_empty()
     }
 
-    /// 健康Check并增量save：高并发test DNS server，每检测 to 一批availableserver就立即save
-    ///  in back台任务中run，不阻塞主线程
+    /// 健康Check并增量save：高concurrenttest DNS server，每detect to 一batchavailableserver就立即save
+    ///  in back台任务中run，不阻塞main线程
     pub async fn health_check_and_save_incremental(
         &self,
         test_domain: &str,
@@ -387,17 +387,17 @@ impl ServerPool {
         opts.timeout = timeout;
         opts.attempts = 1;
 
-        //  for 收集availableserver的共享status
+        //  for collectavailableserver的共享status
         let available_servers: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         let processed_count: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
         let total_count = servers_to_test.len();
 
-        // 克隆 for 闭包inside部 and outside部use
+        // clone for 闭包inside部 and outside部use
         let available_servers_for_closure = available_servers.clone();
         let available_servers_for_progress = available_servers.clone();
         let processed_count_for_progress = processed_count.clone();
 
-        // 并发testserver，stream式process
+        // concurrenttestserver，stream式process
         let mut test_tasks = stream::iter(servers_to_test)
             .map(move |(server_str, socket_addr)| {
                 let test_domain = test_domain.clone();
@@ -405,7 +405,7 @@ impl ServerPool {
                 let available_servers = available_servers_for_closure.clone();
 
                 async move {
-                    // 为eachserverCreate独立 resolver
+                    // 为eachserverCreateindependent resolver
                     let mut config = ResolverConfig::new();
                     let name_server = NameServerConfig {
                         socket_addr,
@@ -436,7 +436,7 @@ impl ServerPool {
                                 servers.push(server_str.clone());
                                 let current_count = servers.len();
 
-                                // 每达 to 批次size就save一次
+                                // 每达 to batch次size就save一次
                                 if current_count.is_multiple_of(save_batch_size) {
                                     let pool = Self::new(servers.clone());
                                     if let Err(e) = pool.save_default() {
@@ -448,7 +448,7 @@ impl ServerPool {
 
                                 Some(server_str)
                             } else {
-                                // querysuccessbut没有returnIPaddress，serverunavailable
+                                // querysuccessbutnoreturnIPaddress，serverunavailable
                                 None
                             }
                         }
@@ -473,7 +473,7 @@ impl ServerPool {
                 Ok(guard) => guard.len(),
                 Err(e) => {
                     eprintln!("Warning: Lock poisoned in progress tracking: {}", e);
-                    0 // If锁中毒, use 0 作为defaultvalue
+                    0 // If锁中毒, use 0 asdefaultvalue
                 }
             };
 
@@ -551,14 +551,14 @@ impl ServerPool {
         opts.timeout = timeout;
         opts.attempts = 1;
 
-        // 并发testserver
+        // concurrenttestserver
         let test_tasks = stream::iter(servers_to_test)
             .map(move |(server_str, socket_addr)| {
                 let test_domain = test_domain.clone();
                 let opts = opts.clone();
 
                 async move {
-                    // 为eachserverCreate独立 resolver
+                    // 为eachserverCreateindependent resolver
                     let mut config = ResolverConfig::new();
                     let name_server = NameServerConfig {
                         socket_addr,
@@ -579,7 +579,7 @@ impl ServerPool {
                             if ip_count > 0 {
                                 Some(server_str) // querysuccess且return了IPaddress，serveravailable
                             } else {
-                                None // querysuccessbut没有returnIPaddress，serverunavailable
+                                None // querysuccessbutnoreturnIPaddress，serverunavailable
                             }
                         }
                         Err(_) => None, // queryfailure，serverunavailable
@@ -588,7 +588,7 @@ impl ServerPool {
             })
             .buffer_unordered(max_concurrency);
 
-        // 收集available的server
+        // collectavailable的server
         let available_servers: Vec<String> = test_tasks
             .filter_map(|result| async move { result })
             .collect()

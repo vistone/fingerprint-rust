@@ -1,16 +1,16 @@
 //! DNS 预Parse库
 //!
-//! provide DNS Parse服务，定期Parsedomainlist，并集成 IPInfo.io Get IP 地理info。
+//! provide DNS Parseservice，定期Parsedomainlist，并set成 IPInfo.io Get IP 地理info。
 //!
 //! ## Features
 //!
-//! - ✅ **并发 DNS Parse**：support高并发 DNS query
+//! - ✅ **concurrent DNS Parse**：support高concurrent DNS query
 //! - ✅ **多formatconfiguration**：support JSON、YAML、TOML 三种configurationformat
-//! - ✅ **IP 地理info**：集成 IPInfo.io Get详细的地理bit置 and ISP info
-//! - ✅ **智能间隔调整**：发现new IP  when 高频检测，otherwise指count退避
+//! - ✅ **IP 地理info**：set成 IPInfo.io Get详细的地理bit置 and ISP info
+//! - ✅ **智能间隔adjust**：发现new IP  when 高频detect，otherwise指count退避
 //! - ✅ **多formatoutput**：support JSON、YAML、TOML 三种outputformat
-//! - ✅ **原child性write**：usetemporaryfile确保count据security
-//! - ✅ **易于集成**：provide简单 Start/Stop interface，support作为库use
+//! - ✅ **原child性write**：usetemporaryfileensurecount据security
+//! - ✅ **易于set成**：provide简单 Start/Stop interface，supportas库use
 
 mod collector;
 mod config;

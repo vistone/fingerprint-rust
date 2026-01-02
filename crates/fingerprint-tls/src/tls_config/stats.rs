@@ -1,7 +1,7 @@
 //! TLS fingerprintstatisticsmodule
 //!
 //! providefingerprintstatistics and analysisFeatures
-//! 参考：Huginn Net Profiler 的statisticsFeatures
+//! reference：Huginn Net Profiler 的statisticsFeatures
 
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
@@ -92,7 +92,7 @@ impl FingerprintStats {
 
     ///  from multiplesignatureCalculatestatisticsinfo
     pub fn from_signatures(signatures: &[ClientHelloSignature]) -> Self {
-        // 直接 from signatureCalculatestatisticsinfo
+        // directly from signatureCalculatestatisticsinfo
         let mut stats = Self {
             total_fingerprints: signatures.len(),
             fingerprints_with_grease: 0,

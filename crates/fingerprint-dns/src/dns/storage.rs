@@ -1,4 +1,4 @@
-//! DNS 存储管理module
+//! DNS storemanagemodule
 //!
 //! provide原child性filewrite and 多formatoutput（JSON、YAML、TOML）
 
@@ -16,7 +16,7 @@ pub fn save_domain_ips<P: AsRef<Path>>(
 ) -> Result<(), DNSError> {
     let base_dir = base_dir.as_ref();
 
-    // 确保目录 exists
+    // ensure目录 exists
     fs::create_dir_all(base_dir)?;
 
     // save为 JSON
@@ -77,7 +77,7 @@ fn load_from_json(path: &Path) -> Result<DomainIPs, DNSError> {
 
 /// save为 YAML（原child性write）
 fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
-    // use serde_yaml 直接序列化
+    // use serde_yaml directly序列化
     let yaml_string =
         serde_yaml::to_string(domain_ips).map_err(|e| DNSError::Yaml(e.to_string()))?;
     atomic_write(path, yaml_string.as_bytes())?;
@@ -87,7 +87,7 @@ fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
 ///  from  YAML load
 fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
     let content = fs::read_to_string(path)?;
-    // use serde_yaml 直接反序列化
+    // use serde_yaml directly反序列化
     let domain_ips: DomainIPs =
         serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?;
     Ok(domain_ips)
@@ -109,7 +109,7 @@ fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
 }
 
 /// 原child性writefile
-/// 先writetemporaryfile，then重命名，确保count据security
+/// 先writetemporaryfile，then重命名，ensurecount据security
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
     let parent = path.parent().ok_or_else(|| {
         DNSError::IO(std::io::Error::new(

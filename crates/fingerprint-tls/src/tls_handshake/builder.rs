@@ -11,7 +11,7 @@ pub struct TLSHandshakeBuilder;
 impl TLSHandshakeBuilder {
     /// Based on ClientHelloSpec Build TLS ClientHello record
     ///
-    /// returncomplete TLS recordbytesstream，can直接send to server
+    /// returncomplete TLS recordbytesstream，candirectlysend to server
     pub fn build_client_hello(
         spec: &ClientHelloSpec,
         server_name: &str,
@@ -29,14 +29,14 @@ impl TLSHandshakeBuilder {
         let handshake_bytes = handshake.to_bytes();
 
         // 5. Create TLS record
-        // use TLS 1.0 (0x0301) 作为recordversion（为了兼容性）
+        // use TLS 1.0 (0x0301) asrecordversion（为了兼容性）
         let record = TLSRecord::handshake(0x0301, handshake_bytes);
 
         // 6. 序列化 TLS record
         Ok(record.to_bytes())
     }
 
-    /// Build并打印debuginfo
+    /// Build并printdebuginfo
     pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
         // 1. Create ClientHello message
         let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
@@ -53,7 +53,7 @@ impl TLSHandshakeBuilder {
         );
         println!("  - compressionmethod: {:?}", spec.compression_methods);
 
-        // 打印 ClientHello debuginfo
+        // print ClientHello debuginfo
         println!("\n{}", client_hello.debug_info());
 
         let body = client_hello.to_bytes();

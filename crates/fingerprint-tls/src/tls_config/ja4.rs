@@ -1,19 +1,19 @@
 //! JA4 fingerprintGeneratemodule
 //!
 //! implementcomplete JA4 TLS clientfingerprintGenerate
-//! 参考：Huginn Net  JA4 implement and 官方 FoxIO 规范
+//! reference：Huginn Net  JA4 implement and 官方 FoxIO 规范
 
 use crate::tls_config::grease::filter_grease_values;
 use crate::tls_config::version::TlsVersion;
 use sha2::{Digest, Sha256};
 use std::fmt;
 
-/// JA4 fingerprint（排序/not排序）
+/// JA4 fingerprint（sort/notsort）
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ja4Fingerprint {
-    /// 排序version（ja4）
+    /// sortversion（ja4）
     Sorted(String),
-    /// not排序version（ja4_o，原beginning顺序）
+    /// notsortversion（ja4_o，原beginningorder）
     Unsorted(String),
 }
 
@@ -44,12 +44,12 @@ impl Ja4Fingerprint {
     }
 }
 
-/// JA4 原beginningfingerprint（completeversion，排序/not排序）
+/// JA4 原beginningfingerprint（completeversion，sort/notsort）
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ja4RawFingerprint {
-    /// 排序version（ja4_r）
+    /// sortversion（ja4_r）
     Sorted(String),
-    /// not排序version（ja4_ro，原beginning顺序）
+    /// notsortversion（ja4_ro，原beginningorder）
     Unsorted(String),
 }
 
@@ -90,14 +90,14 @@ pub struct Ja4Payload {
     pub ja4_b: String,
     /// JA4_c: extension + signaturealgorithm（原beginningstring）
     pub ja4_c: String,
-    /// JA4 fingerprint（hash，排序/not排序）
+    /// JA4 fingerprint（hash，sort/notsort）
     pub full: Ja4Fingerprint,
-    /// JA4 原beginningfingerprint（complete，排序/not排序）
+    /// JA4 原beginningfingerprint（complete，sort/notsort）
     pub raw: Ja4RawFingerprint,
 }
 
-///  from  ALPN stringExtractfirst and last字符
-/// 非 ASCII 字符替换为 '9'
+///  from  ALPN stringExtractfirst and lastcharacter
+/// 非 ASCII characterreplace为 '9'
 pub fn first_last_alpn(s: &str) -> (char, char) {
     let replace_nonascii_with_9 = |c: char| {
         if c.is_ascii() {
@@ -115,15 +115,15 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
     (first, if s.len() == 1 { '0' } else { last })
 }
 
-/// Generate 12 字符hash（SHA256 的front 12字符）
+/// Generate 12 characterhash（SHA256 的front 12character）
 ///
-/// SHA256 hash总是产生 64十六进制字符，sofront 12字符总是 exists。
+/// SHA256 hash总是produce 64十六进制character，sofront 12character总是 exists。
 /// 此function for  JA4 fingerprintGenerate。
 pub fn hash12(input: &str) -> String {
     let hash = Sha256::digest(input.as_bytes());
     let hash_hex = format!("{:x}", hash);
-    // SHA256 hash总是 64十六进制字符，sofront 12字符总是 exists
-    // use get() methodsecurity地Get切片，避免潜 in  panic
+    // SHA256 hash总是 64十六进制character，sofront 12character总是 exists
+    // use get() methodsecurity地Getslice，避免潜 in  panic
     hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
 }
 
@@ -145,40 +145,40 @@ pub struct Ja4Signature {
 }
 
 impl Ja4Signature {
-    /// Generate JA4 fingerprint（排序version）
+    /// Generate JA4 fingerprint（sortversion）
     pub fn generate_ja4(&self) -> Ja4Payload {
         self.generate_ja4_with_order(false)
     }
 
-    /// Generate JA4 fingerprint（原beginning顺序version）
+    /// Generate JA4 fingerprint（原beginningorderversion）
     pub fn generate_ja4_original(&self) -> Ja4Payload {
         self.generate_ja4_with_order(true)
     }
 
-    /// Generate JA4 fingerprint（specified顺序）
-    /// original_order: true 表示not排序（原beginning顺序），false 表示排序
+    /// Generate JA4 fingerprint（specifiedorder）
+    /// original_order: true representnotsort（原beginningorder），false representsort
     fn generate_ja4_with_order(&self, original_order: bool) -> Ja4Payload {
-        // 过滤 GREASE value
+        // filter GREASE value
         let filtered_ciphers = filter_grease_values(&self.cipher_suites);
         let filtered_extensions = filter_grease_values(&self.extensions);
         let filtered_sig_algs = filter_grease_values(&self.signature_algorithms);
 
-        // protocol标记（TLS 为 't'，QUIC 为 'q'）
+        // protocolmarker（TLS 为 't'，QUIC 为 'q'）
         let protocol = "t";
 
         // TLS version
         let tls_version_str = format!("{}", self.version);
 
-        // SNI 指示器：'d'  if  exists SNI，'i'  if 不 exists
+        // SNI indicate器：'d'  if  exists SNI，'i'  if 不 exists
         let sni_indicator = if self.sni.is_some() { "d" } else { "i" };
 
-        // cipher suitecount（2-bit十进制，maximum 99）- use原beginningcount（过滤front）
+        // cipher suitecount（2-bit十进制，maximum 99）- use原beginningcount（filterfront）
         let cipher_count = format!("{:02}", self.cipher_suites.len().min(99));
 
-        // extensioncount（2-bit十进制，maximum 99）- use原beginningcount（过滤front）
+        // extensioncount（2-bit十进制，maximum 99）- use原beginningcount（filterfront）
         let extension_count = format!("{:02}", self.extensions.len().min(99));
 
-        // ALPN first and last字符
+        // ALPN first and lastcharacter
         let (alpn_first, alpn_last) = match &self.alpn {
             Some(alpn) => first_last_alpn(alpn),
             None => ('0', '0'),
@@ -189,7 +189,7 @@ impl Ja4Signature {
             "{protocol}{tls_version_str}{sni_indicator}{cipher_count}{extension_count}{alpn_first}{alpn_last}"
         );
 
-        // JA4_b: cipher suite（排序 or 原beginning顺序，逗号分隔，4-bit十六进制）- 过滤 GREASE
+        // JA4_b: cipher suite（sort or 原beginningorder，逗号分隔，4-bit十六进制）- filter GREASE
         let mut ciphers_for_b = filtered_ciphers;
         if !original_order {
             ciphers_for_b.sort_unstable();
@@ -200,11 +200,11 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // JA4_c: extension（排序 or 原beginning顺序，逗号分隔，4-bit十六进制）+ "_" + signaturealgorithm
+        // JA4_c: extension（sort or 原beginningorder，逗号分隔，4-bit十六进制）+ "_" + signaturealgorithm
         let mut extensions_for_c = filtered_extensions;
 
-        //  for 排序version：remove SNI (0x0000)  and ALPN (0x0010) 并排序
-        //  for 原beginningversion：保留 SNI/ALPN 并保持原beginning顺序
+        //  for sortversion：remove SNI (0x0000)  and ALPN (0x0010) 并sort
+        //  for 原beginningversion：preserve SNI/ALPN 并keep原beginningorder
         if !original_order {
             extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010);
             extensions_for_c.sort_unstable();
@@ -216,14 +216,14 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // signaturealgorithm不排序（Based on规范），but过滤 GREASE
+        // signaturealgorithm不sort（Based on规范），butfilter GREASE
         let sig_algs_str = filtered_sig_algs
             .iter()
             .map(|s| format!("{s:04x}"))
             .collect::<Vec<String>>()
             .join(",");
 
-        // Based on规范， if 没有signaturealgorithm，string不below划线结尾
+        // Based on规范， if nosignaturealgorithm，string不below划线结尾
         let ja4_c_raw = if sig_algs_str.is_empty() {
             extensions_str
         } else if extensions_str.is_empty() {
@@ -232,7 +232,7 @@ impl Ja4Signature {
             format!("{extensions_str}_{sig_algs_str}")
         };
 
-        // Generate JA4_b  and JA4_c 的hash（SHA256 的front 12字符）
+        // Generate JA4_b  and JA4_c 的hash（SHA256 的front 12character）
         let ja4_b_hash = hash12(&ja4_b_raw);
         let ja4_c_hash = hash12(&ja4_c_raw);
 
@@ -242,7 +242,7 @@ impl Ja4Signature {
         // JA4 原beginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
         let ja4_raw_full = format!("{ja4_a}_{ja4_b_raw}_{ja4_c_raw}");
 
-        // Based on顺序Create相应的enum变体
+        // Based onorderCreate相应的enum变体
         let ja4_fingerprint = if original_order {
             Ja4Fingerprint::Unsorted(ja4_hashed)
         } else {
