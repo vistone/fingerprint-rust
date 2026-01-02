@@ -25,10 +25,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libpcap-dev
     
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -65,10 +61,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libpcap-dev
     
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -106,10 +98,6 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Install system dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y libpcap-dev
     
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable

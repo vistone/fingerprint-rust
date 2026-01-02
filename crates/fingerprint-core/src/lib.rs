@@ -34,11 +34,15 @@
 //! - **类型系统**: `BrowserType`、`OperatingSystem` 等核心类型
 //! - **工具函数**: GREASE 处理、随机选择等工具函数
 
+pub mod database;
 pub mod dicttls;
 pub mod fingerprint;
 pub mod grease;
+pub mod hassh;
 pub mod http;
+pub mod ja3;
 pub mod ja4;
+pub mod jarm;
 pub mod metadata;
 pub mod signature;
 pub mod system;
@@ -61,7 +65,9 @@ pub use grease::{
     filter_grease_values, get_random_grease, is_grease_value, remove_grease_values,
     TLS_GREASE_VALUES,
 };
-pub use ja4::{ConsistencyReport, JA4, JA4H, JA4T};
+pub use hassh::{HASSH, HASSHServer, JA4SSH, SSHKexInit};
+pub use ja3::{JA3, JA3S};
+pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
 

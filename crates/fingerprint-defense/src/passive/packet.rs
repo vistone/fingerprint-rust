@@ -92,6 +92,19 @@ impl PacketParser {
         }
 
         let ihl = (raw_packet[0] & 0x0F) as usize;
+        
+        // 安全检查：IHL 必须至少为 5（20 字节），最多为 15（60 字节）
+        if ihl < 5 || ihl > 15 {
+            return Err(PacketError::Other("无效的 IHL 值".to_string()));
+        }
+        
+        let header_len = ihl * 4;
+        
+        // 安全检查：确保数据包足够长
+        if raw_packet.len() < header_len {
+            return Err(PacketError::TooShort);
+        }
+        
         let _total_length = u16::from_be_bytes([raw_packet[2], raw_packet[3]]) as usize;
         let ttl = raw_packet[8];
         let protocol = raw_packet[9];
@@ -110,11 +123,6 @@ impl PacketParser {
             raw_packet[18],
             raw_packet[19],
         ]);
-
-        let header_len = ihl * 4;
-        if raw_packet.len() < header_len {
-            return Err(PacketError::TooShort);
-        }
 
         let payload = Bytes::copy_from_slice(&raw_packet[header_len..]);
 
@@ -290,13 +298,25 @@ impl PacketParser {
             None
         };
         let data_offset = ((data[12] >> 4) & 0x0F) as usize;
+        
+        // 安全检查：data_offset 必须至少为 5（20 字节），最多为 15（60 字节）
+        if data_offset < 5 || data_offset > 15 {
+            return Err(PacketError::Other("无效的 TCP data offset".to_string()));
+        }
+        
         let flags = data[13];
         let window = u16::from_be_bytes([data[14], data[15]]);
 
         // 解析 TCP 选项
         let mut options = Vec::new();
         let header_len = data_offset * 4;
-        if header_len > 20 && data.len() >= header_len {
+        
+        // 安全检查：确保不会越界访问
+        if header_len > data.len() {
+            return Err(PacketError::TooShort);
+        }
+        
+        if header_len > 20 {
             let mut offset = 20;
             while offset < header_len {
                 if offset >= data.len() {
@@ -315,7 +335,9 @@ impl PacketParser {
                         break;
                     }
                     let length = data[offset + 1] as usize;
-                    if length < 2 || offset + length > data.len() {
+                    
+                    // 安全检查：length 必须至少为 2，且不能导致越界
+                    if length < 2 || offset + length > data.len() || offset + length > header_len {
                         break;
                     }
                     let option_data = data[offset + 2..offset + length].to_vec();
@@ -359,5 +381,139 @@ pub enum PacketError {
 impl From<PacketError> for String {
     fn from(err: PacketError) -> Self {
         err.to_string()
+    }
+}
+
+#[cfg(test)]
+mod security_tests {
+    use super::*;
+
+    #[test]
+    fn test_invalid_ihl_zero() {
+        // IHL = 0 (invalid, must be at least 5)
+        let mut packet = vec![0x00; 20];
+        packet[0] = 0x40; // Version 4, IHL 0
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "应该拒绝 IHL = 0 的数据包");
+    }
+
+    #[test]
+    fn test_invalid_ihl_small() {
+        // IHL = 4 (invalid, must be at least 5)
+        let mut packet = vec![0x00; 20];
+        packet[0] = 0x44; // Version 4, IHL 4
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "应该拒绝 IHL < 5 的数据包");
+    }
+
+    #[test]
+    fn test_ihl_causing_overflow() {
+        // Test case where IHL * 4 would access beyond packet boundary
+        let mut packet = vec![0x00; 20];
+        packet[0] = 0x4F; // Version 4, IHL 15 (would need 60 bytes)
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "应该拒绝 header_len 超过 packet 长度的数据包");
+    }
+
+    #[test]
+    fn test_valid_minimal_ipv4_packet() {
+        // Test that a valid minimal packet still works
+        let mut packet = vec![0x00; 20];
+        packet[0] = 0x45; // Version 4, IHL 5
+        packet[2] = 0x00; // Total length high byte
+        packet[3] = 0x14; // Total length low byte (20 bytes)
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_ok(), "有效的最小 IPv4 数据包应该解析成功");
+    }
+
+    #[test]
+    fn test_invalid_tcp_data_offset_zero() {
+        // Create a valid IPv4 packet with TCP
+        let mut packet = vec![0x00; 40];
+        packet[0] = 0x45; // Version 4, IHL 5
+        packet[2] = 0x00; // Total length high byte
+        packet[3] = 0x28; // Total length low byte (40 bytes)
+        packet[9] = 6; // Protocol: TCP
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        // TCP header - set data offset to 0 (invalid)
+        packet[20..22].copy_from_slice(&[0x00, 0x50]); // src port 80
+        packet[22..24].copy_from_slice(&[0x00, 0x50]); // dst port 80
+        packet[32] = 0x00; // Data offset = 0 (invalid)
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "应该拒绝 data_offset = 0 的 TCP 数据包");
+    }
+
+    #[test]
+    fn test_invalid_tcp_data_offset_small() {
+        // Create a valid IPv4 packet with TCP
+        let mut packet = vec![0x00; 40];
+        packet[0] = 0x45; // Version 4, IHL 5
+        packet[9] = 6; // Protocol: TCP
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        // TCP header - set data offset to 4 (invalid, must be at least 5)
+        packet[32] = 0x40; // Data offset = 4
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "应该拒绝 data_offset < 5 的 TCP 数据包");
+    }
+
+    #[test]
+    fn test_valid_tcp_packet() {
+        // Test a valid IPv4 packet with TCP
+        let mut packet = vec![0x00; 40];
+        packet[0] = 0x45; // Version 4, IHL 5
+        packet[9] = 6; // Protocol: TCP
+        packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
+        packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
+        
+        // TCP header
+        packet[20..22].copy_from_slice(&[0x00, 0x50]); // src port 80
+        packet[22..24].copy_from_slice(&[0x00, 0x50]); // dst port 80
+        packet[32] = 0x50; // Data offset = 5 (20 bytes)
+        packet[33] = 0x02; // SYN flag
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_ok(), "有效的 TCP 数据包应该解析成功");
+        
+        let p = result.unwrap();
+        assert_eq!(p.src_port, 80);
+        assert_eq!(p.dst_port, 80);
+        assert!(p.tcp_header.is_some());
+    }
+
+    #[test]
+    fn test_packet_too_short() {
+        // Packet shorter than minimum IPv4 header
+        let packet = vec![0x45; 10];
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "太短的数据包应该被拒绝");
+    }
+
+    #[test]
+    fn test_invalid_ip_version() {
+        // IP version 3 (invalid, should be 4 or 6)
+        let mut packet = vec![0x00; 20];
+        packet[0] = 0x35; // Version 3, IHL 5
+        
+        let result = PacketParser::parse(&packet);
+        assert!(result.is_err(), "无效的 IP 版本应该被拒绝");
     }
 }

@@ -36,8 +36,9 @@ thiserror.workspace = true
 # 工具
 once_cell = { workspace = true }
 
-# 网络包解析（用于实时抓包和 pcap 文件处理）
-pcap = "1.1"
+# 网络包解析（纯 Rust 实现，无系统依赖）
+pcap-file = "3.0.0-rc1"  # pcap 文件读取（纯 Rust）
+pnet = "0.35.0"          # 实时网络捕获（纯 Rust）
 bytes = { workspace = true }
 
 [dev-dependencies]
