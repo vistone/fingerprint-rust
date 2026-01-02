@@ -311,21 +311,25 @@ crates/
 
 ### 第 1 周: JA3/JA3S 实现
 
-- [ ] 创建 `fingerprint-core/src/ja3.rs`
-- [ ] 实现 JA3 算法
-- [ ] 实现 JA3S 算法
-- [ ] 添加单元测试（100+ 测试用例）
-- [ ] 性能基准测试
-- [ ] 文档编写
+- [x] 创建 `fingerprint-core/src/ja3.rs`
+- [x] 实现 JA3 算法
+- [x] 实现 JA3S 算法
+- [x] 添加单元测试（100+ 测试用例）
+- [x] 性能基准测试
+- [x] 文档编写
+
+**状态**: ✅ 已完成（提交 3b49080）
 
 ### 第 2 周: HASSH 实现
 
-- [ ] 创建 `fingerprint-core/src/hassh.rs`
-- [ ] 实现 SSH 协议解析
-- [ ] 实现 HASSH 客户端指纹
-- [ ] 实现 HASSH 服务器指纹
-- [ ] 添加测试用例
-- [ ] 集成到被动分析器
+- [x] 创建 `fingerprint-core/src/hassh.rs`
+- [x] 实现 SSH 协议解析
+- [x] 实现 HASSH 客户端指纹
+- [x] 实现 HASSH 服务器指纹
+- [x] 添加测试用例
+- [x] 集成到被动分析器
+
+**状态**: ✅ 已完成（本次提交）
 
 ### 第 3 周: 集成与优化
 
