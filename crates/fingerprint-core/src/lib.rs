@@ -34,6 +34,7 @@
 //! - **类型系统**: `BrowserType`、`OperatingSystem` 等核心类型
 //! - **工具函数**: GREASE 处理、随机选择等工具函数
 
+pub mod database;
 pub mod dicttls;
 pub mod fingerprint;
 pub mod grease;
