@@ -1,14 +1,14 @@
-//! HTTP/2 实现
+//! HTTP/2 implement
 //!
-//! 使用 h2 crate 实现完整的 HTTP/2 支持
-//! 应用 fingerprint-rust 的 HTTP/2 Settings
+//! use h2 crate implementcomplete HTTP/2 support
+//! application fingerprint-rust  HTTP/2 Settings
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 
 #[cfg(feature = "http2")]
 use h2::client;
 
-// 修复：使用全局单例 Runtime 避免频繁创建
+// Fix: use全局单例 Runtime 避免频繁Create
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
@@ -16,7 +16,7 @@ use once_cell::sync::Lazy;
 static RUNTIME: Lazy<tokio::runtime::Runtime> =
     Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
 
-/// 发送 HTTP/2 请求
+/// send HTTP/2 request
 #[cfg(feature = "http2")]
 pub fn send_http2_request(
     host: &str,
@@ -25,7 +25,7 @@ pub fn send_http2_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // 修复：使用全局单例 Runtime，避免每次请求都创建新的运行时
+    // Fix: use全局单例 Runtime，避免每次request都Create a newrun when 
     RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
@@ -43,40 +43,40 @@ async fn send_http2_request_async(
 
     let start = Instant::now();
 
-    // 1. 建立 TCP 连接（应用 TCP Profile）
+    // 1. 建立 TCP connection（application TCP Profile）
     let addr = format!("{}:{}", host, port);
     let socket_addrs = addr
         .to_socket_addrs()
-        .map_err(|e| HttpClientError::InvalidUrl(format!("DNS 解析失败: {}", e)))?
+        .map_err(|e| HttpClientError::InvalidUrl(format!("DNS Parsefailure: {}", e)))?
         .next()
-        .ok_or_else(|| HttpClientError::InvalidUrl("无法解析地址".to_string()))?;
+        .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
 
-    // 应用 TCP Profile（如果配置了）
+    // application TCP Profile（ if configuration了）
     let tcp = if let Some(profile) = &config.profile {
         if let Some(ref tcp_profile) = profile.tcp_profile {
             super::tcp_fingerprint::connect_tcp_with_profile(socket_addrs, Some(tcp_profile))
                 .await
-                .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e)))?
         } else {
             TcpStream::connect(socket_addrs)
                 .await
-                .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e)))?
         }
     } else {
         TcpStream::connect(socket_addrs)
             .await
-            .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP 连接失败: {}", e)))?
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e)))?
     };
 
-    // 2. TLS 握手
+    // 2. TLS handshake
     let tls_stream = perform_tls_handshake(tcp, host, config).await?;
 
-    // 3. HTTP/2 握手（应用 Settings 配置）
+    // 3. HTTP/2 handshake（application Settings configuration）
     let mut builder = client::Builder::new();
 
-    // 应用指纹配置中的 HTTP/2 Settings
+    // applicationfingerprintconfiguration中 HTTP/2 Settings
     if let Some(profile) = &config.profile {
-        // 设置初始窗口大小
+        // settingsinitialbeginningwindowsize
         if let Some(&window_size) = profile
             .settings
             .get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16())
@@ -84,7 +84,7 @@ async fn send_http2_request_async(
             builder.initial_window_size(window_size);
         }
 
-        // 设置最大帧大小
+        // settingsmaximumframesize
         if let Some(&max_frame_size) = profile
             .settings
             .get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxFrameSize.as_u16())
@@ -92,7 +92,7 @@ async fn send_http2_request_async(
             builder.max_frame_size(max_frame_size);
         }
 
-        // 设置最大头部列表大小
+        // settingsmaximumheaderlistsize
         if let Some(&max_header_list_size) = profile
             .settings
             .get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxHeaderListSize.as_u16())
@@ -100,30 +100,30 @@ async fn send_http2_request_async(
             builder.max_header_list_size(max_header_list_size);
         }
 
-        // 设置连接级窗口大小（Connection Flow）
+        // settingsconnectionlevelwindowsize（Connection Flow）
         builder.initial_connection_window_size(profile.connection_flow);
     }
 
     let (mut client, h2_conn) = builder
         .handshake(tls_stream)
         .await
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 握手失败: {}", e)))?;
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 handshakefailure: {}", e)))?;
 
-    // 在后台驱动 HTTP/2 连接
+    //  in back台驱动 HTTP/2 connection
     tokio::spawn(async move {
         if let Err(e) = h2_conn.await {
-            eprintln!("警告: HTTP/2 连接错误: {}", e);
+            eprintln!("warning: HTTP/2 connectionerror: {}", e);
         }
     });
 
-    // 4. 构建请求
+    // 4. Buildrequest
     let uri = format!("https://{}{}", host, path);
     let mut http_request = http::Request::builder()
         .method(request.method.as_str())
         .uri(uri)
         .version(http::Version::HTTP_2);
 
-    // 修复：添加 Cookie 到请求（如果存在）
+    // Fix: Add Cookie  to request（ if  exists）
     let mut request_with_cookies = request.clone();
     if let Some(cookie_store) = &config.cookie_store {
         super::request::add_cookies_to_request(
@@ -131,105 +131,105 @@ async fn send_http2_request_async(
             cookie_store,
             host,
             path,
-            true, // HTTPS 是安全连接
+            true, // HTTPS 是securityconnection
         );
     }
 
-    // 添加 headers
-    // 注意：不要手动添加 host header，h2 会自动从 URI 提取
+    // Add headers
+    // Note: 不要manualAdd host header，h2 willautomatic from  URI Extract
     http_request = http_request.header("user-agent", &config.user_agent);
 
     for (key, value) in &request_with_cookies.headers {
-        // 跳过 host header（如果用户传入了）
+        // skip host header（ if 用户传入了）
         if key.to_lowercase() != "host" {
             http_request = http_request.header(key, value);
         }
     }
 
-    // 修复：构建请求（h2 需要 Request<()>，然后通过 SendStream 发送 body）
+    // Fix: Buildrequest（h2 need Request<()>，thenthrough SendStream send body）
     let http_request = http_request
         .body(())
-        .map_err(|e| HttpClientError::InvalidResponse(format!("构建请求失败: {}", e)))?;
+        .map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
 
-    // 6. 发送请求（获取 SendStream 用于发送 body）
-    // 修复：end_of_stream 必须为 false，否则流会立即关闭，无法发送 body
+    // 6. sendrequest（Get SendStream  for send body）
+    // Fix: end_of_stream must为 false，otherwisestreamwill立即close，unable tosend body
     let has_body = request_with_cookies.body.is_some()
         && !request_with_cookies.body.as_ref().unwrap().is_empty();
     let (response_future, mut send_stream) = client
-        .send_request(http_request, false) // 修复：改为 false，只有在发送完 body 后才结束流
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求失败: {}", e)))?;
+        .send_request(http_request, false) // Fix: 改为 false，只有 in send完 body back才endstream
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;
 
-    // 修复：通过 SendStream 发送请求体（如果存在）
+    // Fix: through SendStream sendrequest体（ if  exists）
     if let Some(body) = &request_with_cookies.body {
         if !body.is_empty() {
-            // 发送 body 数据，end_of_stream = true 表示这是最后的数据
+            // send body count据，end_of_stream = true 表示这是finally的count据
             send_stream
                 .send_data(bytes::Bytes::from(body.clone()), true)
-                .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
         } else {
-            // 空 body，发送空数据并结束流
+            // empty body，sendemptycount据并endstream
             send_stream
                 .send_data(bytes::Bytes::new(), true)
-                .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
         }
     } else if !has_body {
-        // 没有 body，发送空数据并结束流
+        // 没有 body，sendemptycount据并endstream
         send_stream
             .send_data(bytes::Bytes::new(), true)
-            .map_err(|e| HttpClientError::ConnectionFailed(format!("发送请求体失败: {}", e)))?;
+            .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
     }
 
-    // 7. 接收响应
+    // 7. receiveresponse
     let response = response_future
         .await
-        .map_err(|e| HttpClientError::InvalidResponse(format!("接收响应失败: {}", e)))?;
+        .map_err(|e| HttpClientError::InvalidResponse(format!("receiveresponsefailure: {}", e)))?;
 
     let status_code = response.status().as_u16();
     let headers = response.headers().clone();
 
-    // 安全修复：检查 HTTP/2 响应头大小，防止 Header 压缩炸弹攻击
-    // h2 crate 0.4 的默认 MAX_HEADER_LIST_SIZE 通常较大，我们添加额外的检查
-    const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的最小值)
+    // securityFix: Check HTTP/2 responseheadersize，防止 Header compression炸弹攻击
+    // h2 crate 0.4 的default MAX_HEADER_LIST_SIZE 通常较大，我们Add额outside的Check
+    const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 建议的minimumvalue)
     let total_header_size: usize = headers
         .iter()
         .map(|(k, v)| k.as_str().len() + v.len())
         .sum();
     if total_header_size > MAX_HTTP2_HEADER_SIZE {
         return Err(HttpClientError::InvalidResponse(format!(
-            "HTTP/2 响应头过大（>{} bytes）",
+            "HTTP/2 responseheader过大（>{} bytes）",
             MAX_HTTP2_HEADER_SIZE
         )));
     }
 
-    // 接收 body
+    // receive body
     let mut body_stream = response.into_body();
     let mut body_data = Vec::new();
 
-    // 安全限制：防止 HTTP/2 响应体过大导致内存耗尽
+    // securitylimit：防止 HTTP/2 response体过大导致inside存耗尽
     const MAX_HTTP2_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(chunk) = body_stream.data().await {
         let chunk = chunk.map_err(|e| {
-            HttpClientError::Io(std::io::Error::other(format!("读取 body 失败: {}", e)))
+            HttpClientError::Io(std::io::Error::other(format!("read body failure: {}", e)))
         })?;
 
-        // 安全检查：防止响应体过大
+        // securityCheck：防止response体过大
         if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
-                "HTTP/2 响应体过大（>{} bytes）",
+                "HTTP/2 response体过大（>{} bytes）",
                 MAX_HTTP2_BODY_SIZE
             )));
         }
 
         body_data.extend_from_slice(&chunk);
 
-        // 释放流控制窗口
+        // 释放stream控制window
         let _ = body_stream.flow_control().release_capacity(chunk.len());
     }
 
     let elapsed = start.elapsed().as_millis() as u64;
 
-    // 8. 构建响应
+    // 8. Buildresponse
     let mut response_headers = std::collections::HashMap::new();
     for (key, value) in headers.iter() {
         if let Ok(value_str) = value.to_str() {
@@ -268,12 +268,12 @@ async fn perform_tls_handshake(
     let connector = TlsConnector::from(Arc::new(tls_config));
 
     let server_name = ServerName::try_from(host)
-        .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
+        .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
     connector
         .connect(server_name, tcp)
         .await
-        .map_err(|e| HttpClientError::TlsError(format!("TLS 握手失败: {}", e)))
+        .map_err(|e| HttpClientError::TlsError(format!("TLS handshakefailure: {}", e)))
 }
 
 #[cfg(not(feature = "http2"))]
@@ -285,7 +285,7 @@ pub fn send_http2_request(
     _config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
     Err(HttpClientError::InvalidResponse(
-        "HTTP/2 支持未启用，请使用 --features http2 编译".to_string(),
+        "HTTP/2 supportnotenabled，请use --features http2 编译".to_string(),
     ))
 }
 
@@ -305,7 +305,7 @@ mod tests {
 
         match send_http2_request("www.google.com", 443, "/", &request, &config) {
             Ok(response) => {
-                // Google 可能会重定向或者返回 200
+                // Google maywillredirect or 者return 200
                 println!("Status: {}", response.status_code);
                 println!("Version: {}", response.http_version);
             }

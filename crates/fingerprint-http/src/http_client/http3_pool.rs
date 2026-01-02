@@ -1,11 +1,11 @@
 //! HTTP/3 with Connection Pool
 //!
 //! 架构说明：
-//! - HTTP/3 采用会话池（H3SessionPool）实现 QUIC 会话复用
-//! - 池化对象：h3::client::SendRequest 句柄（已握手完成的 QUIC 会话）
-//! - 复用方式：并发多路复用（一个 QUIC 连接可同时处理多个 Stream）
-//! - QUIC 特性：协议本身包含连接迁移和状态管理，无需 netconnpool
-//! - 会话建立后，连接生命周期由 H3Session 的后台任务（Driver）管理
+//! - HTTP/3 采用sessionpool（H3SessionPool）implement QUIC session复用
+//! - pool化pair象：h3::client::SendRequest 句柄（alreadyhandshakecomplete QUIC session）
+//! - 复用方式：并发多路复用（an QUIC connection可同 when processmultiple Stream）
+//! - QUIC Features：protocol本身includingconnection迁移 and status管理，无需 netconnpool
+//! - session建立back，connection生命周期由 H3Session 的back台任务（Driver）管理
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -15,7 +15,7 @@ use std::sync::Arc;
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use std::time::Duration;
 
-/// 使用连接池发送 HTTP/3 请求
+/// useconnection poolsend HTTP/3 request
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 pub async fn send_http3_request_with_pool(
     host: &str,
@@ -29,29 +29,29 @@ pub async fn send_http3_request_with_pool(
     use h3_quinn::quinn;
     use http::{Request as HttpRequest2, Version};
 
-    // 修复：使用 H3SessionPool 实现真正的多路复用
+    // Fix: use H3SessionPool implement真正的多路复用
     let session_pool = pool_manager.h3_session_pool();
     let key = format!("{}:{}", host, port);
 
-    // 获取或创建会话
+    // Get or Createsession
     let send_request_mutex = session_pool
         .get_or_create_session(&key, async {
-            // 解析目标地址
+            // Parsetargetaddress
             use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
             let addr = format!("{}:{}", host, port);
             let mut addrs: Vec<SocketAddr> = addr
                 .to_socket_addrs()
-                .map_err(|e| HttpClientError::ConnectionFailed(format!("DNS 解析失败: {}", e)))?
+                .map_err(|e| HttpClientError::ConnectionFailed(format!("DNS Parsefailure: {}", e)))?
                 .collect();
             if addrs.is_empty() {
                 return Err(HttpClientError::ConnectionFailed(
-                    "DNS 解析无结果".to_string(),
+                    "DNS Parse无result".to_string(),
                 ));
             }
             addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 优先
             let remote_addr = addrs[0];
 
-            // 创建 QUIC 客户端配置
+            // Create QUIC clientconfiguration
             let tls_config = super::rustls_utils::build_client_config(
                 config.verify_tls,
                 vec![b"h3".to_vec()],
@@ -60,61 +60,61 @@ pub async fn send_http3_request_with_pool(
 
             let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
-            // 优化传输配置以提升性能
+            // 优化传输configuration以提升性能
             let mut transport_config = quinn::TransportConfig::default();
             transport_config.initial_rtt(Duration::from_millis(100));
             transport_config.max_idle_timeout(Some(
                 quinn::IdleTimeout::try_from(std::time::Duration::from_secs(60))
-                    .map_err(|e| HttpClientError::Http3Error(format!("配置超时失败: {}", e)))?,
+                    .map_err(|e| HttpClientError::Http3Error(format!("configurationtimeoutfailure: {}", e)))?,
             ));
             transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
-            // 增大接收窗口以提升吞吐量
+            // 增大receivewindow以提升吞吐量
             transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
             transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
-            // 允许更多并发流
+            // 允许更多并发stream
             transport_config.max_concurrent_bidi_streams(100u32.into());
             transport_config.max_concurrent_uni_streams(100u32.into());
 
             client_config.transport_config(std::sync::Arc::new(transport_config));
 
-            // 创建 QUIC endpoint
+            // Create QUIC endpoint
             let bind_addr = match remote_addr.ip() {
                 IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
                 IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
             };
             let mut endpoint = quinn::Endpoint::client(bind_addr)
-                .map_err(|e| HttpClientError::Http3Error(format!("创建 endpoint 失败: {}", e)))?;
+                .map_err(|e| HttpClientError::Http3Error(format!("Create endpoint failure: {}", e)))?;
             endpoint.set_default_client_config(client_config);
 
-            // 连接到服务器
+            // connection to server
             let connecting = endpoint
                 .connect(remote_addr, host)
-                .map_err(|e| HttpClientError::Http3Error(format!("连接失败: {}", e)))?;
+                .map_err(|e| HttpClientError::Http3Error(format!("Connection failed: {}", e)))?;
 
             let connection = connecting
                 .await
-                .map_err(|e| HttpClientError::Http3Error(format!("建立连接失败: {}", e)))?;
+                .map_err(|e| HttpClientError::Http3Error(format!("建立Connection failed: {}", e)))?;
 
-            // 建立 HTTP/3 连接
+            // 建立 HTTP/3 connection
             let quinn_conn = h3_quinn::Connection::new(connection);
 
             let (driver, send_request) = h3::client::new(quinn_conn)
                 .await
-                .map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 握手失败: {}", e)))?;
+                .map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 handshakefailure: {}", e)))?;
 
             Ok((driver, send_request))
         })
         .await?;
 
-    // 获取并排他性地使用 SendRequest
+    // Get并排他性地use SendRequest
     let mut send_request = send_request_mutex.lock().await;
 
-    // 构建 HTTP/3 请求
+    // Build HTTP/3 request
     let uri: http::Uri = format!("https://{}:{}{}", host, port, path)
         .parse()
-        .map_err(|e| HttpClientError::InvalidRequest(format!("无效的 URI: {}", e)))?;
+        .map_err(|e| HttpClientError::InvalidRequest(format!("invalid URI: {}", e)))?;
 
     let http3_request = HttpRequest2::builder()
         .method(match request.method {
@@ -128,10 +128,10 @@ pub async fn send_http3_request_with_pool(
         })
         .uri(uri)
         .version(Version::HTTP_3)
-        // 不要手动添加 host header，h3 会自动从 URI 提取
+        // 不要manualAdd host header，h3 willautomatic from  URI Extract
         .header("user-agent", &config.user_agent);
 
-    // 修复：添加 Cookie 到请求（如果存在）
+    // Fix: Add Cookie  to request（ if  exists）
     let mut request_with_cookies = request.clone();
     if let Some(cookie_store) = &config.cookie_store {
         super::request::add_cookies_to_request(
@@ -139,67 +139,67 @@ pub async fn send_http3_request_with_pool(
             cookie_store,
             host,
             path,
-            true, // HTTPS 是安全连接
+            true, // HTTPS 是securityconnection
         );
     }
 
     let http3_request = request_with_cookies
         .headers
         .iter()
-        // 跳过 host header
+        // skip host header
         .filter(|(k, _)| k.to_lowercase() != "host")
         .fold(http3_request, |builder, (k, v)| builder.header(k, v));
 
-    // 修复：构建请求（h3 需要 Request<()>，然后通过 stream 发送 body）
+    // Fix: Buildrequest（h3 need Request<()>，thenthrough stream send body）
     let http3_request = http3_request
         .body(())
-        .map_err(|e| HttpClientError::InvalidRequest(format!("构建请求失败: {}", e)))?;
+        .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
 
-    // 发送请求
+    // sendrequest
     let mut stream = send_request
         .send_request(http3_request)
         .await
-        .map_err(|e| HttpClientError::Http3Error(format!("发送请求失败: {}", e)))?;
+        .map_err(|e| HttpClientError::Http3Error(format!("sendrequestfailure: {}", e)))?;
 
-    // 修复：通过 stream 发送请求体（如果存在）
+    // Fix: through stream sendrequest体（ if  exists）
     if let Some(body) = &request.body {
         if !body.is_empty() {
             stream
                 .send_data(bytes::Bytes::from(body.clone()))
                 .await
-                .map_err(|e| HttpClientError::Http3Error(format!("发送请求体失败: {}", e)))?;
+                .map_err(|e| HttpClientError::Http3Error(format!("Failed to send request body: {}", e)))?;
         }
     }
 
     stream
         .finish()
         .await
-        .map_err(|e| HttpClientError::Http3Error(format!("完成请求失败: {}", e)))?;
+        .map_err(|e| HttpClientError::Http3Error(format!("completerequestfailure: {}", e)))?;
 
-    // 接收响应
+    // receiveresponse
     let response = stream
         .recv_response()
         .await
-        .map_err(|e| HttpClientError::Http3Error(format!("接收响应失败: {}", e)))?;
+        .map_err(|e| HttpClientError::Http3Error(format!("receiveresponsefailure: {}", e)))?;
 
-    // 读取响应体
+    // readresponse体
     let mut body_data = Vec::new();
 
-    // 安全限制：防止 HTTP/3 响应体过大导致内存耗尽
+    // securitylimit：防止 HTTP/3 response体过大导致inside存耗尽
     const MAX_HTTP3_BODY_SIZE: usize = 100 * 1024 * 1024; // 100MB
 
     while let Some(mut chunk) = stream
         .recv_data()
         .await
-        .map_err(|e| HttpClientError::Io(std::io::Error::other(format!("读取 body 失败: {}", e))))?
+        .map_err(|e| HttpClientError::Io(std::io::Error::other(format!("read body failure: {}", e))))?
     {
-        // 使用 Buf trait 读取数据
+        // use Buf trait readcount据
         let chunk_len = chunk.remaining();
 
-        // 安全检查：防止响应体过大
+        // securityCheck：防止response体过大
         if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
             return Err(HttpClientError::InvalidResponse(format!(
-                "HTTP/3 响应体过大（>{} bytes）",
+                "HTTP/3 response体过大（>{} bytes）",
                 MAX_HTTP3_BODY_SIZE
             )));
         }
@@ -209,11 +209,11 @@ pub async fn send_http3_request_with_pool(
         body_data.extend_from_slice(&chunk_bytes);
     }
 
-    // 解析响应
+    // Parseresponse
     let status_code = response.status().as_u16();
 
-    // 安全修复：检查 HTTP/3 响应头大小，防止 QPACK 压缩炸弹攻击
-    const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的最小值)
+    // securityFix: Check HTTP/3 responseheadersize，防止 QPACK compression炸弹攻击
+    const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 建议的minimumvalue)
     let total_header_size: usize = response
         .headers()
         .iter()
@@ -221,7 +221,7 @@ pub async fn send_http3_request_with_pool(
         .sum();
     if total_header_size > MAX_HTTP3_HEADER_SIZE {
         return Err(HttpClientError::InvalidResponse(format!(
-            "HTTP/3 响应头过大（>{} bytes）",
+            "HTTP/3 responseheader过大（>{} bytes）",
             MAX_HTTP3_HEADER_SIZE
         )));
     }
@@ -243,7 +243,7 @@ pub async fn send_http3_request_with_pool(
         status_text,
         headers,
         body: body_data,
-        response_time_ms: 0, // TODO: 添加计时
+        response_time_ms: 0, // TODO: Add计 when 
     })
 }
 
@@ -255,7 +255,7 @@ mod tests {
     use crate::http_client::request::HttpMethod;
 
     #[tokio::test]
-    #[ignore] // 需要网络连接和 HTTP/3 支持
+    #[ignore] // neednetworkconnection and HTTP/3 support
     async fn test_http3_with_pool() {
         let user_agent = "TestClient/1.0".to_string();
         let config = HttpClientConfig {
@@ -278,7 +278,7 @@ mod tests {
         )
         .await;
 
-        // 可能会失败（网络问题或服务器不支持 HTTP/3），但不应该 panic
+        // maywillfailure（network问题 or server不support HTTP/3），but不should panic
         if let Ok(response) = result {
             assert_eq!(response.http_version, "HTTP/3");
         }

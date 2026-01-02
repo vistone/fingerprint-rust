@@ -1,14 +1,14 @@
-//! DNS 存储管理模块
+//! DNS 存储管理module
 //!
-//! 提供原子性文件写入和多格式输出（JSON、YAML、TOML）
+//! provide原child性filewrite and 多formatoutput（JSON、YAML、TOML）
 
 use crate::dns::types::{DNSError, DomainIPs};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-/// 将域名 IP 信息保存到文件（原子性写入）
-/// 支持 JSON、YAML、TOML 三种格式
+/// willdomain IP infosave to file（原child性write）
+/// support JSON、YAML、TOML 三种format
 pub fn save_domain_ips<P: AsRef<Path>>(
     domain: &str,
     domain_ips: &DomainIPs,
@@ -16,33 +16,33 @@ pub fn save_domain_ips<P: AsRef<Path>>(
 ) -> Result<(), DNSError> {
     let base_dir = base_dir.as_ref();
 
-    // 确保目录存在
+    // 确保目录 exists
     fs::create_dir_all(base_dir)?;
 
-    // 保存为 JSON
+    // save为 JSON
     let json_path = base_dir.join(format!("{}.json", domain));
     save_as_json(&json_path, domain_ips)?;
 
-    // 保存为 YAML
+    // save为 YAML
     let yaml_path = base_dir.join(format!("{}.yaml", domain));
     save_as_yaml(&yaml_path, domain_ips)?;
 
-    // 保存为 TOML
+    // save为 TOML
     let toml_path = base_dir.join(format!("{}.toml", domain));
     save_as_toml(&toml_path, domain_ips)?;
 
     Ok(())
 }
 
-/// 从文件加载域名 IP 信息
-/// 自动尝试 JSON、YAML、TOML 格式
+///  from fileloaddomain IP info
+/// automatictry JSON、YAML、TOML format
 pub fn load_domain_ips<P: AsRef<Path>>(
     domain: &str,
     base_dir: P,
 ) -> Result<Option<DomainIPs>, DNSError> {
     let base_dir = base_dir.as_ref();
 
-    // 按优先级尝试：JSON -> YAML -> TOML
+    // 按prioritytry：JSON -> YAML -> TOML
     let json_path = base_dir.join(format!("{}.json", domain));
     if json_path.exists() {
         return Ok(Some(load_from_json(&json_path)?));
@@ -61,39 +61,39 @@ pub fn load_domain_ips<P: AsRef<Path>>(
     Ok(None)
 }
 
-/// 保存为 JSON（原子性写入）
+/// save为 JSON（原child性write）
 fn save_as_json(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
     let json_content = serde_json::to_string_pretty(domain_ips)?;
     atomic_write(path, json_content.as_bytes())?;
     Ok(())
 }
 
-/// 从 JSON 加载
+///  from  JSON load
 fn load_from_json(path: &Path) -> Result<DomainIPs, DNSError> {
     let content = fs::read_to_string(path)?;
     let domain_ips: DomainIPs = serde_json::from_str(&content)?;
     Ok(domain_ips)
 }
 
-/// 保存为 YAML（原子性写入）
+/// save为 YAML（原child性write）
 fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
-    // 使用 serde_yaml 直接序列化
+    // use serde_yaml 直接序列化
     let yaml_string =
         serde_yaml::to_string(domain_ips).map_err(|e| DNSError::Yaml(e.to_string()))?;
     atomic_write(path, yaml_string.as_bytes())?;
     Ok(())
 }
 
-/// 从 YAML 加载
+///  from  YAML load
 fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
     let content = fs::read_to_string(path)?;
-    // 使用 serde_yaml 直接反序列化
+    // use serde_yaml 直接反序列化
     let domain_ips: DomainIPs =
         serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?;
     Ok(domain_ips)
 }
 
-/// 保存为 TOML（原子性写入）
+/// save为 TOML（原child性write）
 fn save_as_toml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
     let toml_content =
         toml::to_string_pretty(domain_ips).map_err(|e| DNSError::TomlSerialize(e.to_string()))?;
@@ -101,15 +101,15 @@ fn save_as_toml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
     Ok(())
 }
 
-/// 从 TOML 加载
+///  from  TOML load
 fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
     let content = fs::read_to_string(path)?;
     let domain_ips: DomainIPs = toml::from_str(&content)?;
     Ok(domain_ips)
 }
 
-/// 原子性写入文件
-/// 先写入临时文件，然后重命名，确保数据安全
+/// 原child性writefile
+/// 先writetemporaryfile，then重命名，确保count据security
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
     let parent = path.parent().ok_or_else(|| {
         DNSError::IO(std::io::Error::new(
@@ -120,14 +120,14 @@ fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
 
     fs::create_dir_all(parent)?;
 
-    // 创建临时文件
+    // Createtemporaryfile
     let temp_path = path.with_extension(".tmp");
     let mut temp_file = fs::File::create(&temp_path)?;
     temp_file.write_all(content)?;
     temp_file.sync_all()?;
     drop(temp_file);
 
-    // 原子性重命名
+    // 原child性重命名
     fs::rename(&temp_path, path)?;
 
     Ok(())

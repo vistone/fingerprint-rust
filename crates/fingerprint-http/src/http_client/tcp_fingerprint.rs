@@ -1,6 +1,6 @@
-//! TCP 指纹应用模块
+//! TCP fingerprintapplicationmodule
 //!
-//! 在创建 TCP 连接时应用 TCP Profile，确保 TCP 指纹与浏览器指纹一致
+//!  in Create TCP connection when application TCP Profile，确保 TCP fingerprint and browserfingerprint一致
 
 use fingerprint_core::tcp::TcpProfile;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -8,53 +8,53 @@ use std::io;
 use std::net::SocketAddr;
 use tokio::net::TcpStream;
 
-/// 应用 TCP Profile 到 socket
+/// application TCP Profile  to  socket
 ///
-/// 设置 TTL、Window Size、MSS、Window Scale 等参数
+/// settings TTL、Window Size、MSS、Window Scale 等parameter
 ///
-/// # 参数
+/// # Parameters
 /// - `socket`: socket2::Socket 实例
-/// - `tcp_profile`: TCP Profile 配置
+/// - `tcp_profile`: TCP Profile configuration
 ///
-/// # 返回
-/// 成功返回 Ok(())，失败返回错误
+/// # Returns
+/// successreturn Ok(())，failurereturnerror
 pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Result<()> {
-    // 1. 设置 TTL（socket2 的 set_ttl 需要 u32）
+    // 1. settings TTL（socket2  set_ttl need u32）
     socket.set_ttl(tcp_profile.ttl as u32)?;
 
-    // 2. 设置 TCP 选项
-    // 注意：socket2 不直接支持设置 Window Size、MSS、Window Scale
-    // 这些参数需要在 TCP 握手时通过 TCP 选项设置
-    // 但我们可以通过设置 socket 选项来影响这些参数
+    // 2. settings TCP options
+    // Note: socket2 不直接supportsettings Window Size、MSS、Window Scale
+    // 这些parameterneed in TCP handshake when through TCP optionssettings
+    // but我们canthroughsettings socket options来影响这些parameter
 
-    // 设置 TCP_NODELAY（禁用 Nagle 算法，提升性能）
+    // settings TCP_NODELAY（disabled Nagle algorithm，提升性能）
     socket.set_nodelay(true)?;
 
-    // 3. 设置接收缓冲区大小（影响 Window Size）
-    // Window Size 通常与接收缓冲区大小相关
-    // 注意：实际的 Window Size 是在 TCP 握手时协商的，这里只是设置缓冲区
+    // 3. settingsreceivebuffersize（影响 Window Size）
+    // Window Size 通常 and receivebuffersize相关
+    // Note: 实际 Window Size 是 in TCP handshake when 协商的，这里只是settingsbuffer
     let recv_buffer_size = tcp_profile.window_size as usize;
     socket.set_recv_buffer_size(recv_buffer_size)?;
 
-    // 4. 设置发送缓冲区大小
+    // 4. settingssendbuffersize
     socket.set_send_buffer_size(recv_buffer_size)?;
 
     Ok(())
 }
 
-/// 创建带有 TCP Profile 的 TCP socket
+/// Create带有 TCP Profile  TCP socket
 ///
-/// # 参数
-/// - `addr`: 目标地址
-/// - `tcp_profile`: TCP Profile 配置（可选）
+/// # Parameters
+/// - `addr`: targetaddress
+/// - `tcp_profile`: TCP Profile configuration（optional）
 ///
-/// # 返回
-/// 返回配置好的 socket2::Socket
+/// # Returns
+/// returnconfiguration好 socket2::Socket
 pub fn create_tcp_socket_with_profile(
     addr: &SocketAddr,
     tcp_profile: Option<&TcpProfile>,
 ) -> io::Result<Socket> {
-    // 根据地址类型创建 socket
+    // Based onaddresstypeCreate socket
     let domain = match addr {
         SocketAddr::V4(_) => Domain::IPV4,
         SocketAddr::V6(_) => Domain::IPV6,
@@ -62,9 +62,9 @@ pub fn create_tcp_socket_with_profile(
 
     let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
 
-    // 应用 TCP Profile（如果提供）
-    // 注意：TTL 必须在连接之前设置
-    // 在 Linux 上，对于客户端 socket，TTL 可以在连接前设置，不需要绑定
+    // application TCP Profile（ if provide）
+    // Note: TTL must in connectionbeforesettings
+    //  in Linux up， for client socket，TTL can in connectionfrontsettings，不need绑定
     if let Some(profile) = tcp_profile {
         apply_tcp_profile(&socket, profile)?;
     }
@@ -72,45 +72,45 @@ pub fn create_tcp_socket_with_profile(
     Ok(socket)
 }
 
-/// 创建带有 TCP Profile 的 TcpStream（异步）
+/// Create带有 TCP Profile  TcpStream（async）
 ///
-/// # 参数
-/// - `addr`: 目标地址
-/// - `tcp_profile`: TCP Profile 配置（可选）
+/// # Parameters
+/// - `addr`: targetaddress
+/// - `tcp_profile`: TCP Profile configuration（optional）
 ///
-/// # 返回
-/// 返回配置好的 tokio::net::TcpStream
+/// # Returns
+/// returnconfiguration好 tokio::net::TcpStream
 pub async fn connect_tcp_with_profile(
     addr: SocketAddr,
     tcp_profile: Option<&TcpProfile>,
 ) -> io::Result<TcpStream> {
-    // 创建 socket
+    // Create socket
     let socket = create_tcp_socket_with_profile(&addr, tcp_profile)?;
 
-    // 设置为非阻塞模式（tokio 需要）
+    // settings为非阻塞pattern（tokio need）
     socket.set_nonblocking(true)?;
 
-    // 连接到目标地址（非阻塞）
+    // connection to targetaddress（非阻塞）
     match socket.connect(&addr.into()) {
         Ok(()) => {
-            // 连接立即成功（本地连接）
+            // connection立即success（localconnection）
             let std_stream: std::net::TcpStream = socket.into();
             TcpStream::from_std(std_stream)
         }
         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-            // 非阻塞连接会返回 WouldBlock，这是正常的
-            // 转换为 tokio::net::TcpStream 并等待连接完成
+            // 非阻塞connectionwillreturn WouldBlock，这是正常的
+            // convert to tokio::net::TcpStream 并waitconnectioncomplete
             let std_stream: std::net::TcpStream = socket.into();
             let stream = TcpStream::from_std(std_stream)?;
 
-            // 等待连接完成
+            // waitconnectioncomplete
             stream.writable().await?;
 
-            // 检查连接是否成功（通过尝试写入空数据）
+            // Checkconnectionwhethersuccess（throughtrywriteemptycount据）
             match stream.try_write(&[]) {
                 Ok(_) => Ok(stream),
                 Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
-                    // 连接还在进行中，再次等待
+                    // connectionstill in 进行中，againwait
                     stream.writable().await?;
                     Ok(stream)
                 }
@@ -121,25 +121,25 @@ pub async fn connect_tcp_with_profile(
     }
 }
 
-/// 创建带有 TCP Profile 的 TcpStream（同步）
+/// Create带有 TCP Profile  TcpStream（sync）
 ///
-/// # 参数
-/// - `addr`: 目标地址
-/// - `tcp_profile`: TCP Profile 配置（可选）
+/// # Parameters
+/// - `addr`: targetaddress
+/// - `tcp_profile`: TCP Profile configuration（optional）
 ///
-/// # 返回
-/// 返回配置好的 std::net::TcpStream
+/// # Returns
+/// returnconfiguration好 std::net::TcpStream
 pub fn connect_tcp_with_profile_sync(
     addr: SocketAddr,
     tcp_profile: Option<&TcpProfile>,
 ) -> io::Result<std::net::TcpStream> {
-    // 创建 socket
+    // Create socket
     let socket = create_tcp_socket_with_profile(&addr, tcp_profile)?;
 
-    // 连接到目标地址
+    // connection to targetaddress
     socket.connect(&addr.into())?;
 
-    // 转换为 std::net::TcpStream
+    // convert to std::net::TcpStream
     Ok(socket.into())
 }
 
@@ -168,12 +168,12 @@ mod tests {
         let result = apply_tcp_profile(&socket, &tcp_profile);
         assert!(result.is_ok());
 
-        // 验证 TTL 已设置
+        // Validate TTL alreadysettings
         let ttl = socket.ttl().unwrap();
         assert_eq!(ttl, 128);
     }
 
-    /// 实际 TCP 连接测试：创建服务器和客户端，验证 TCP Profile 是否真正应用
+    /// 实际 TCP connectiontest：Createserver and client，Validate TCP Profile whether真正application
     #[test]
     fn test_tcp_profile_real_connection() {
         use std::io::{Read, Write};
@@ -184,47 +184,47 @@ mod tests {
         use std::time::Duration;
 
         println!("\n╔════════════════════════════════════════════════════════════════╗");
-        println!("║        TCP Profile 实际应用测试 - 服务端验证                  ║");
+        println!("║        TCP Profile 实际applicationtest - 服务端Validate                  ║");
         println!("╚════════════════════════════════════════════════════════════════╝\n");
 
         let port = 9876;
         let stop_flag = Arc::new(AtomicBool::new(false));
         let stop_flag_clone = stop_flag.clone();
 
-        // 启动服务器
+        // startserver
         let _server = thread::spawn(move || {
             let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).unwrap();
             listener.set_nonblocking(true).unwrap();
-            println!("✅ TCP 服务器启动在端口 {}", port);
+            println!("✅ TCP serverstart in port {}", port);
 
             while !stop_flag_clone.load(Ordering::Relaxed) {
                 match listener.accept() {
                     Ok((mut stream, addr)) => {
-                        println!("\n📥 收到客户端连接: {}", addr);
+                        println!("\n📥 收 to clientconnection: {}", addr);
 
-                        // 在 Linux 上检测 TCP 参数
+                        //  in Linux up检测 TCP parameter
                         #[cfg(target_os = "linux")]
                         {
                             use std::os::unix::io::AsRawFd;
                             let _fd = stream.as_raw_fd();
 
-                            // 尝试获取接收缓冲区大小（影响 Window Size）
-                            // 注意：这需要 libc crate，但为了简化，我们暂时注释掉
-                            // 实际验证应该使用 tcpdump 或 wireshark 抓包分析
-                            println!("  🔍 服务器端 TCP 参数检测：");
-                            println!("    ⚠️  注意：TTL 在服务端无法直接检测（传输过程中会递减）");
-                            println!("    💡 建议：使用 tcpdump 或 wireshark 抓包验证 TTL");
+                            // tryGetreceivebuffersize（影响 Window Size）
+                            // Note: 这need libc crate，but为了简化，我们暂 when 注释掉
+                            // 实际Validateshoulduse tcpdump  or  wireshark 抓包analysis
+                            println!("  🔍 server端 TCP parameter检测：");
+                            println!("    ⚠️  Note: TTL  in 服务端unable to直接检测（传输过程中will递减）");
+                            println!("    💡 建议：use tcpdump  or  wireshark 抓包Validate TTL");
                             println!("    💡 命令：sudo tcpdump -i lo -n 'tcp port 9876' -v");
                         }
 
                         let mut buffer = [0; 1024];
                         if let Ok(size) = stream.read(&mut buffer) {
                             let data = String::from_utf8_lossy(&buffer[..size]);
-                            println!("  收到数据: {}", data.trim());
+                            println!("  收 to count据: {}", data.trim());
 
-                            // 解析客户端发送的 TCP Profile 信息
+                            // Parseclientsend TCP Profile info
                             if data.contains("TCP_PROFILE:") {
-                                println!("  ✅ 客户端 TCP Profile 信息已接收");
+                                println!("  ✅ client TCP Profile infoalreadyreceive");
                             }
                         }
 
@@ -236,7 +236,7 @@ mod tests {
                         continue;
                     }
                     Err(e) => {
-                        eprintln!("连接错误: {}", e);
+                        eprintln!("connectionerror: {}", e);
                         break;
                     }
                 }
@@ -245,7 +245,7 @@ mod tests {
 
         thread::sleep(Duration::from_millis(500));
 
-        // 测试不同的 TCP Profile
+        // test不同 TCP Profile
         let test_cases = vec![
             ("Windows", TcpProfile::for_os(OperatingSystem::Windows10)),
             ("macOS", TcpProfile::for_os(OperatingSystem::MacOS14)),
@@ -254,7 +254,7 @@ mod tests {
 
         for (os_name, tcp_profile) in test_cases {
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            println!("【测试】{} TCP Profile", os_name);
+            println!("【test】{} TCP Profile", os_name);
             println!(
                 "  TTL: {}, Window Size: {}",
                 tcp_profile.ttl, tcp_profile.window_size
@@ -263,7 +263,7 @@ mod tests {
             let addr: SocketAddr = format!("127.0.0.1:{}", port).parse().unwrap();
             match connect_tcp_with_profile_sync(addr, Some(&tcp_profile)) {
                 Ok(mut stream) => {
-                    println!("  ✅ 连接成功！");
+                    println!("  ✅ connectionsuccess！");
 
                     let msg = format!(
                         "TCP_PROFILE: {} TTL={} WindowSize={}\n",
@@ -275,13 +275,13 @@ mod tests {
                     let mut buffer = [0; 1024];
                     if let Ok(size) = stream.read(&mut buffer) {
                         let response = String::from_utf8_lossy(&buffer[..size]);
-                        println!("  📥 服务器响应: {}", response.trim());
+                        println!("  📥 serverresponse: {}", response.trim());
                     }
 
-                    println!("  ✅ {} TCP Profile 测试通过", os_name);
+                    println!("  ✅ {} TCP Profile testthrough", os_name);
                 }
                 Err(e) => {
-                    println!("  ❌ {} TCP Profile 测试失败: {}", os_name, e);
+                    println!("  ❌ {} TCP Profile testfailure: {}", os_name, e);
                 }
             }
 
@@ -292,7 +292,7 @@ mod tests {
         thread::sleep(Duration::from_millis(100));
 
         println!("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        println!("✅ TCP Profile 实际应用测试完成！");
+        println!("✅ TCP Profile 实际applicationtestcomplete！");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     }
 }

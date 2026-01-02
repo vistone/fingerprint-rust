@@ -1,25 +1,25 @@
-//! 系统上下文
+//! systemupdown文
 //!
-//! 定义系统级别防护的上下文信息，包括网络实体、时间、协议等。
+//! 定义systemlevel防护的updown文info，包括network实体、 when 间、protocol等。
 
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
 
-/// 流量方向
+/// traffic方向
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TrafficDirection {
-    /// 输入流量（进入系统）
+    /// inputtraffic（进入system）
     Inbound,
 
-    /// 输出流量（离开系统）
+    /// outputtraffic（离开system）
     Outbound,
 
-    /// 内部流量（系统内部）
+    /// inside部traffic（systeminside部）
     Internal,
 }
 
 impl TrafficDirection {
-    /// 转换为字符串
+    /// convert tostring
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Inbound => "inbound",
@@ -35,30 +35,30 @@ impl std::fmt::Display for TrafficDirection {
     }
 }
 
-/// 协议类型
+/// protocoltype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ProtocolType {
-    /// TCP 协议
+    /// TCP protocol
     Tcp,
 
-    /// UDP 协议
+    /// UDP protocol
     Udp,
 
-    /// ICMP 协议
+    /// ICMP protocol
     Icmp,
 
-    /// HTTP 协议
+    /// HTTP protocol
     Http,
 
-    /// HTTPS 协议（TLS over TCP）
+    /// HTTPS protocol（TLS over TCP）
     Https,
 
-    /// 其他协议
+    /// 其他protocol
     Other(u8),
 }
 
 impl ProtocolType {
-    /// 从 IP 协议号创建
+    ///  from  IP protocol号Create
     pub fn from_ip_protocol(protocol: u8) -> Self {
         match protocol {
             6 => Self::Tcp,
@@ -68,7 +68,7 @@ impl ProtocolType {
         }
     }
 
-    /// 转换为 IP 协议号
+    /// convert to IP protocol号
     pub fn to_ip_protocol(&self) -> u8 {
         match self {
             Self::Tcp => 6,
@@ -80,7 +80,7 @@ impl ProtocolType {
         }
     }
 
-    /// 转换为字符串
+    /// convert tostring
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Tcp => "TCP",
@@ -102,19 +102,19 @@ impl std::fmt::Display for ProtocolType {
     }
 }
 
-/// 系统上下文
+/// systemupdown文
 ///
-/// 表示系统级别防护的上下文信息，包含网络流量的完整元数据。
+/// 表示systemlevel防护的updown文info，includingnetworktraffic的completemetadata。
 ///
-/// ## 核心思想
+/// ## Core Concept
 ///
-/// 系统级别防护需要考虑完整的系统上下文，而不仅仅是单个服务或端口：
-/// - 网络实体的完整信息（源/目标 IP、端口）
-/// - 协议类型和方向
-/// - 时间戳和网卡接口
-/// - 数据包级别的信息
+/// systemlevel防护need考虑complete的systemupdown文，而not onlyonly是single服务 or port：
+/// - network实体的completeinfo（source/target IP、port）
+/// - protocoltype and 方向
+/// -  when 间戳 and 网卡interface
+/// - count据包level的info
 ///
-/// ## 示例
+/// ## Examples
 ///
 /// ```rust
 /// use fingerprint_core::system::{SystemContext, ProtocolType, TrafficDirection};
@@ -135,36 +135,36 @@ impl std::fmt::Display for ProtocolType {
 /// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SystemContext {
-    /// 源 IP 地址
+    /// source IP address
     pub source_ip: IpAddr,
 
-    /// 目标 IP 地址
+    /// target IP address
     pub target_ip: IpAddr,
 
-    /// 源端口（对于 UDP/TCP）
+    /// sourceport（ for  UDP/TCP）
     pub source_port: Option<u16>,
 
-    /// 目标端口（对于 UDP/TCP）
+    /// targetport（ for  UDP/TCP）
     pub target_port: Option<u16>,
 
-    /// 协议类型
+    /// protocoltype
     pub protocol: ProtocolType,
 
-    /// 时间戳
+    ///  when 间戳
     pub timestamp: DateTime<Utc>,
 
-    /// 网卡接口名称
+    /// 网卡interfacename
     pub interface: Option<String>,
 
-    /// 数据包大小（字节）
+    /// count据包size（bytes）
     pub packet_size: usize,
 
-    /// 流量方向（输入/输出）
+    /// traffic方向（input/output）
     pub direction: TrafficDirection,
 }
 
 impl SystemContext {
-    /// 创建新的系统上下文
+    /// Create a newsystemupdown文
     pub fn new(source_ip: IpAddr, target_ip: IpAddr, protocol: ProtocolType) -> Self {
         Self {
             source_ip,
@@ -179,7 +179,7 @@ impl SystemContext {
         }
     }
 
-    /// 创建带端口的系统上下文
+    /// Create带port的systemupdown文
     pub fn with_ports(
         source_ip: IpAddr,
         target_ip: IpAddr,
@@ -200,12 +200,12 @@ impl SystemContext {
         }
     }
 
-    /// 判断是否为本地流量（源或目标为本地地址）
+    /// 判断whether为localtraffic（source or target为localaddress）
     pub fn is_local(&self) -> bool {
         self.is_source_local() || self.is_target_local()
     }
 
-    /// 判断源地址是否为本地地址
+    /// 判断sourceaddresswhether为localaddress
     pub fn is_source_local(&self) -> bool {
         match self.source_ip {
             IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
@@ -213,7 +213,7 @@ impl SystemContext {
         }
     }
 
-    /// 判断目标地址是否为本地地址
+    /// 判断targetaddresswhether为localaddress
     pub fn is_target_local(&self) -> bool {
         match self.target_ip {
             IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
@@ -221,7 +221,7 @@ impl SystemContext {
         }
     }
 
-    /// 获取流量的唯一标识符（用于追踪）
+    /// Gettraffic的唯一标识符（ for 追踪）
     pub fn flow_id(&self) -> String {
         format!(
             "{}:{}->{}:{}:{}",

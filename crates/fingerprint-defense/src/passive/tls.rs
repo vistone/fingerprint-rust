@@ -1,33 +1,33 @@
-//! TLS 被动指纹识别
+//! TLS 被动fingerprint识别
 //!
-//! 实现 TLS ClientHello 的被动分析和 JA4 指纹生成。
+//! implement TLS ClientHello 的被动analysis and JA4 fingerprintGenerate。
 
 use crate::passive::packet::Packet;
 
-/// TLS 分析器
+/// TLS analysis器
 pub struct TlsAnalyzer;
 
 use serde::{Deserialize, Serialize};
 
-/// TLS 指纹
+/// TLS fingerprint
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TlsFingerprint {
-    /// JA4 指纹
+    /// JA4 fingerprint
     pub ja4: Option<String>,
 
-    /// JA4 raw 指纹
+    /// JA4 raw fingerprint
     pub ja4_raw: Option<String>,
 
-    /// TLS 版本
+    /// TLS version
     pub version: Option<u16>,
 
-    /// 密码套件数量
+    /// cipher suitecount
     pub cipher_suites_count: usize,
 
-    /// 扩展数量
+    /// extensioncount
     pub extensions_count: usize,
 
-    /// 指纹元数据
+    /// fingerprintmetadata
     pub metadata: fingerprint_core::metadata::FingerprintMetadata,
 }
 
@@ -73,12 +73,12 @@ impl fingerprint_core::fingerprint::Fingerprint for TlsFingerprint {
 }
 
 impl TlsAnalyzer {
-    /// 创建新的 TLS 分析器
+    /// Create a new TLS analysis器
     pub fn new() -> Result<Self, String> {
         Ok(Self)
     }
 
-    /// 分析 TLS 数据包
+    /// analysis TLS count据包
     pub fn analyze(&self, packet: &Packet) -> Option<TlsFingerprint> {
         // 查找 TLS ClientHello
         if let Some(client_hello) = self.find_client_hello(&packet.payload) {
@@ -90,9 +90,9 @@ impl TlsAnalyzer {
 
     /// 查找 ClientHello
     fn find_client_hello(&self, data: &[u8]) -> Option<Vec<u8>> {
-        // 查找 TLS 握手消息
-        // TLS 记录格式: [ContentType(1)][Version(2)][Length(2)][Data]
-        // Handshake 格式: [Type(1)][Length(3)][Version(2)][Random(32)][SessionID][CipherSuites][Compression][Extensions]
+        // 查找 TLS handshakemessage
+        // TLS recordformat: [ContentType(1)][Version(2)][Length(2)][Data]
+        // Handshake format: [Type(1)][Length(3)][Version(2)][Random(32)][SessionID][CipherSuites][Compression][Extensions]
 
         if data.len() < 5 {
             return None;
@@ -113,7 +113,7 @@ impl TlsAnalyzer {
                     if i + 5 + record_len <= data.len() {
                         let handshake_data = &data[i + 5..i + 5 + record_len];
 
-                        // 检查是否是 ClientHello (Type = 1)
+                        // Checkwhether是 ClientHello (Type = 1)
                         if !handshake_data.is_empty() && handshake_data[0] == 0x01 {
                             return Some(handshake_data.to_vec());
                         }
@@ -125,14 +125,14 @@ impl TlsAnalyzer {
         None
     }
 
-    /// 分析 ClientHello
+    /// analysis ClientHello
     fn analyze_client_hello(&self, client_hello: &[u8]) -> TlsFingerprint {
-        // 解析 ClientHello
+        // Parse ClientHello
         // [Type(1)][Length(3)][Version(2)][Random(32)][SessionID][CipherSuites][Compression][Extensions]
 
         let mut offset = 0;
 
-        // Type (应该是 1 = ClientHello)
+        // Type (should是 1 = ClientHello)
         if client_hello.is_empty() || client_hello[offset] != 0x01 {
             return TlsFingerprint::default();
         }
@@ -272,17 +272,17 @@ impl TlsAnalyzer {
             }
         }
 
-        // 生成 JA4 指纹
+        // Generate JA4 fingerprint
         let tls_ver_str = match version {
             Some(0x0304) => "1.3",
             Some(0x0303) => "1.2",
             Some(0x0302) => "1.1",
             Some(0x0301) => "1.0",
-            _ => "1.2", // 默认
+            _ => "1.2", // default
         };
 
         let ja4 = fingerprint_core::ja4::JA4::generate(
-            't', // 假设是 TCP，实际应从 packet 判断
+            't', // 假设是 TCP，实际应 from  packet 判断
             tls_ver_str,
             has_sni,
             &cipher_suites,

@@ -1,12 +1,12 @@
-//! TLS 版本模块
+//! TLS versionmodule
 //!
-//! 提供 TLS 版本的枚举和转换功能
-//! 参考：Huginn Net 的 TlsVersion 设计
+//! provide TLS version的enum and ConvertFeatures
+//! 参考：Huginn Net  TlsVersion 设计
 
 use std::fmt;
 
-/// TLS 版本枚举
-/// 包括传统 SSL 版本以支持完整的 JA4 规范兼容性
+/// TLS versionenum
+/// 包括传统 SSL version以supportcomplete JA4 规范兼容性
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TlsVersion {
     /// TLS 1.3
@@ -19,14 +19,14 @@ pub enum TlsVersion {
     V1_0,
     /// SSL 3.0
     Ssl3_0,
-    /// SSL 2.0（不支持，但保留枚举值）
+    /// SSL 2.0（不support，but保留enumvalue）
     Ssl2_0,
-    /// 未知版本
+    /// not知version
     Unknown(u16),
 }
 
 impl TlsVersion {
-    /// 从 u16 值创建 TlsVersion
+    ///  from  u16 valueCreate TlsVersion
     pub fn from_u16(value: u16) -> Self {
         match value {
             0x0304 => TlsVersion::V1_3,
@@ -38,7 +38,7 @@ impl TlsVersion {
         }
     }
 
-    /// 转换为 u16 值
+    /// convert to u16 value
     pub fn to_u16(self) -> u16 {
         match self {
             TlsVersion::V1_3 => 0x0304,
@@ -51,12 +51,12 @@ impl TlsVersion {
         }
     }
 
-    /// 检查是否为 TLS 1.3
+    /// Checkwhether为 TLS 1.3
     pub fn is_tls13(self) -> bool {
         matches!(self, TlsVersion::V1_3)
     }
 
-    /// 检查是否为 TLS 1.2 或更高版本
+    /// Checkwhether为 TLS 1.2  or 更高version
     pub fn is_tls12_or_higher(self) -> bool {
         matches!(self, TlsVersion::V1_2 | TlsVersion::V1_3)
     }

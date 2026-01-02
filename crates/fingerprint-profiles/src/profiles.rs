@@ -1,6 +1,6 @@
-//! 指纹配置模块
+//! Fingerprint configuration module
 //!
-//! 定义了各种浏览器的 TLS 指纹配置
+//! Defines TLS fingerprint configurations for various browsers
 
 use fingerprint_core::tcp::TcpProfile;
 use fingerprint_headers::http2_config::{
@@ -12,19 +12,19 @@ use fingerprint_tls::tls_config::ClientHelloSpec;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-/// ClientHelloSpecFactory 类型
-/// 对应 Go 版本的 ClientHelloSpecFactory func() (ClientHelloSpec, error)
+/// ClientHelloSpecFactory type
+/// Corresponds to Go version's ClientHelloSpecFactory func() (ClientHelloSpec, error)
 pub type ClientHelloSpecFactory = fn() -> Result<ClientHelloSpec, String>;
 
 /// Client Hello ID
-/// 对应 Go 版本的 tls.ClientHelloID
+/// Corresponds to Go version's tls.ClientHelloID
 #[derive(Debug, Clone)]
 pub struct ClientHelloID {
-    /// Client 名称（如 "Chrome", "Firefox", "Safari"）
+    /// Client name（如 "Chrome", "Firefox", "Safari"）
     pub client: String,
-    /// Version 版本号（如 "135", "133"）
+    /// Version version号（如 "135", "133"）
     pub version: String,
-    /// SpecFactory 用于生成 ClientHelloSpec
+    /// SpecFactory  for Generate ClientHelloSpec
     pub spec_factory: ClientHelloSpecFactory,
 }
 
@@ -37,12 +37,12 @@ impl ClientHelloID {
         }
     }
 
-    /// 转换为字符串表示（对应 Go 版本的 Str()）
+    /// convert tostring表示（Corresponds to Go version's Str()）
     pub fn str(&self) -> String {
         format!("{}-{}", self.client, self.version)
     }
 
-    /// 转换为 ClientHelloSpec（对应 Go 版本的 ToSpec()）
+    /// convert to ClientHelloSpec（Corresponds to Go version's ToSpec()）
     pub fn to_spec(&self) -> Result<ClientHelloSpec, String> {
         (self.spec_factory)()
     }
@@ -63,24 +63,24 @@ impl std::hash::Hash for ClientHelloID {
     }
 }
 
-/// Client Profile 配置
-/// 包含 TLS 指纹的所有配置信息
-/// 对应 Go 版本的 ClientProfile 结构
+/// Client Profile configuration
+/// including TLS fingerprint的allconfigurationinfo
+/// Corresponds to Go version's ClientProfile struct
 #[derive(Debug, Clone)]
 pub struct ClientProfile {
     /// Client Hello ID
     pub client_hello_id: ClientHelloID,
-    /// HTTP/2 Settings（对应 Go 版本的 map[http2.SettingID]uint32）
+    /// HTTP/2 Settings（Corresponds to Go version's map[http2.SettingID]uint32）
     pub settings: HTTP2Settings,
-    /// Settings 顺序（对应 Go 版本的 []http2.SettingID）
+    /// Settings 顺序（Corresponds to Go version's []http2.SettingID）
     pub settings_order: Vec<u16>,
-    /// Pseudo Header 顺序（对应 Go 版本的 []string）
+    /// Pseudo Header order（Corresponds to Go version's []string）
     pub pseudo_header_order: Vec<String>,
-    /// Connection Flow（对应 Go 版本的 uint32）
+    /// Connection Flow（Corresponds to Go version's uint32）
     pub connection_flow: u32,
-    /// Priorities（对应 Go 版本的 []http2.Priority）
+    /// Priorities（Corresponds to Go version's []http2.Priority）
     pub priorities: Vec<String>,
-    /// Header Priority（对应 Go 版本的 *http2.PriorityParam）
+    /// Header Priority（Corresponds to Go version's *http2.PriorityParam）
     pub header_priority: Option<HTTP2PriorityParam>,
     /// TCP Settings (Active Fingerprinting)
     pub tcp_profile: Option<TcpProfile>,
@@ -89,9 +89,9 @@ pub struct ClientProfile {
 }
 
 impl ClientProfile {
-    /// 创建新的 ClientProfile
-    /// 对应 Go 版本的 NewClientProfile 函数
-    #[allow(clippy::too_many_arguments)] // 构造函数需要所有必要的参数
+    /// Create a new ClientProfile
+    /// Corresponds to Go version's NewClientProfile function
+    #[allow(clippy::too_many_arguments)] // 构造functionneedall必要的parameter
     pub fn new(
         client_hello_id: ClientHelloID,
         settings: HTTP2Settings,
@@ -116,20 +116,20 @@ impl ClientProfile {
         }
     }
 
-    /// 获取 Client Hello ID 字符串（对应 Go 版本的 GetClientHelloStr()）
+    /// Get Client Hello ID string（Corresponds to Go version's GetClientHelloStr()）
     pub fn get_client_hello_str(&self) -> String {
         self.client_hello_id.str()
     }
 
-    /// 根据 User-Agent 自动生成匹配的 TCP Profile
+    /// Based on User-Agent automaticGeneratematch TCP Profile
     ///
-    /// 这是统一指纹生成的核心方法，确保浏览器指纹和 TCP 指纹同步
+    /// 这是统一fingerprintGenerate的核心method，确保browserfingerprint and TCP fingerprintsync
     ///
-    /// # 参数
-    /// - `user_agent`: User-Agent 字符串，用于推断操作系统
+    /// # Parameters
+    /// - `user_agent`: User-Agent string， for 推断operating system
     ///
-    /// # 返回
-    /// 返回一个新的 ClientProfile，其中 tcp_profile 已根据 User-Agent 设置
+    /// # Returns
+    /// returnannew ClientProfile，其中 tcp_profile alreadyBased on User-Agent settings
     pub fn with_synced_tcp_profile(self, user_agent: &str) -> Self {
         use fingerprint_core::tcp::TcpProfile;
         let tcp_profile = TcpProfile::from_user_agent(user_agent);
@@ -139,13 +139,13 @@ impl ClientProfile {
         }
     }
 
-    /// 根据操作系统类型自动生成匹配的 TCP Profile
+    /// Based onoperating systemtypeautomaticGeneratematch TCP Profile
     ///
-    /// # 参数
-    /// - `os`: 操作系统类型
+    /// # Parameters
+    /// - `os`: operating systemtype
     ///
-    /// # 返回
-    /// 返回一个新的 ClientProfile，其中 tcp_profile 已根据操作系统设置
+    /// # Returns
+    /// returnannew ClientProfile，其中 tcp_profile alreadyBased onoperating systemsettings
     pub fn with_tcp_profile_for_os(self, os: fingerprint_core::types::OperatingSystem) -> Self {
         use fingerprint_core::tcp::TcpProfile;
         let tcp_profile = TcpProfile::for_os(os);
@@ -155,15 +155,15 @@ impl ClientProfile {
         }
     }
 
-    /// 获取或生成 TCP Profile
+    /// Get or Generate TCP Profile
     ///
-    /// 如果 tcp_profile 已存在，直接返回
-    /// 如果不存在，根据 User-Agent 生成
+    /// If tcp_profile already exists, 直接return
+    /// If不 exists, Based on User-Agent Generate
     ///
-    /// # 参数
-    /// - `user_agent`: User-Agent 字符串，用于推断操作系统（如果 tcp_profile 不存在）
+    /// # Parameters
+    /// - `user_agent`: User-Agent string， for 推断operating system（ if  tcp_profile 不 exists）
     ///
-    /// # 返回
+    /// # Returns
     /// TCP Profile 的引用
     pub fn get_or_generate_tcp_profile(&mut self, user_agent: &str) -> &TcpProfile {
         use fingerprint_core::tcp::TcpProfile;
@@ -173,56 +173,56 @@ impl ClientProfile {
         self.tcp_profile.as_ref().unwrap()
     }
 
-    /// 获取 Settings（对应 Go 版本的 GetSettings()）
+    /// Get Settings（Corresponds to Go version's GetSettings()）
     pub fn get_settings(&self) -> &HTTP2Settings {
         &self.settings
     }
 
-    /// 获取 Settings Order（对应 Go 版本的 GetSettingsOrder()）
+    /// Get Settings Order（Corresponds to Go version's GetSettingsOrder()）
     pub fn get_settings_order(&self) -> &[u16] {
         &self.settings_order
     }
 
-    /// 获取 Pseudo Header Order
+    /// Get Pseudo Header Order
     pub fn get_pseudo_header_order(&self) -> &[String] {
         &self.pseudo_header_order
     }
 
-    /// 获取 Connection Flow
+    /// Get Connection Flow
     pub fn get_connection_flow(&self) -> u32 {
         self.connection_flow
     }
 
-    /// 获取 Priorities
+    /// Get Priorities
     pub fn get_priorities(&self) -> &[String] {
         &self.priorities
     }
 
-    /// 获取 Header Priority（对应 Go 版本的 GetHeaderPriority()）
+    /// Get Header Priority（Corresponds to Go version's GetHeaderPriority()）
     pub fn get_header_priority(&self) -> Option<&HTTP2PriorityParam> {
         self.header_priority.as_ref()
     }
 
-    /// 获取 ClientHelloSpec（对应 Go 版本的 GetClientHelloSpec()）
-    /// 这是真正的 TLS 指纹配置，可以用于实际的 TLS 握手
+    /// Get ClientHelloSpec（Corresponds to Go version's GetClientHelloSpec()）
+    /// 这是真正 TLS fingerprintconfiguration，can for 实际 TLS handshake
     pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
         self.client_hello_id.to_spec()
     }
 
-    /// 获取 JA4 指纹字符串
+    /// Get JA4 fingerprintstring
     pub fn get_ja4_string(&self) -> Result<String, String> {
         let spec = self.get_client_hello_spec()?;
         Ok(spec.ja4_string())
     }
 }
 
-/// 默认的 Client Profile（Chrome 135）
+/// default Client Profile（Chrome 135）
 pub fn default_client_profile() -> ClientProfile {
     chrome_135()
 }
 
-/// Chrome 103 指纹配置
-/// 对应 Go 版本的 Chrome_103
+/// Chrome 103 fingerprintconfiguration
+/// Corresponds to Go version's Chrome_103
 pub fn chrome_103() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
@@ -242,11 +242,11 @@ pub fn chrome_103() -> ClientProfile {
     )
 }
 
-/// Chrome 133 指纹配置
+/// Chrome 133 fingerprintconfiguration
 pub fn chrome_133() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
-    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
-    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
     ));
@@ -267,11 +267,11 @@ pub fn chrome_133() -> ClientProfile {
     )
 }
 
-/// Firefox 133 指纹配置
+/// Firefox 133 fingerprintconfiguration
 pub fn firefox_133() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
-    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
-    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
     ));
@@ -292,7 +292,7 @@ pub fn firefox_133() -> ClientProfile {
     )
 }
 
-/// Chrome 136 指纹配置
+/// Chrome 136 fingerprintconfiguration
 pub fn chrome_136() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     let default_tcp_profile = Some(TcpProfile::for_os(
@@ -315,11 +315,11 @@ pub fn chrome_136() -> ClientProfile {
     )
 }
 
-/// Chrome 135 指纹配置（默认）
+/// Chrome 135 fingerprintconfiguration（default）
 pub fn chrome_135() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
-    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
-    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
     ));
@@ -327,7 +327,7 @@ pub fn chrome_135() -> ClientProfile {
         ClientHelloID::new(
             "Chrome",
             "135",
-            fingerprint_tls::tls_config::chrome_133_spec, // 使用 133 的 TLS 结构
+            fingerprint_tls::tls_config::chrome_133_spec, // use 133  TLS struct
         ),
         settings,
         settings_order,
@@ -340,11 +340,11 @@ pub fn chrome_135() -> ClientProfile {
     )
 }
 
-/// Firefox 135 指纹配置
+/// Firefox 135 fingerprintconfiguration
 pub fn firefox_135() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
-    // 默认使用 Windows 的 TCP Profile（最常见的浏览器环境）
-    // 用户可以通过 with_synced_tcp_profile() 或 with_tcp_profile_for_os() 来同步
+    // defaultuse Windows  TCP Profile（最常见的browser环境）
+    // 用户canthrough with_synced_tcp_profile()  or  with_tcp_profile_for_os() 来sync
     let default_tcp_profile = Some(TcpProfile::for_os(
         fingerprint_core::types::OperatingSystem::Windows10,
     ));
@@ -365,8 +365,8 @@ pub fn firefox_135() -> ClientProfile {
     )
 }
 
-/// Safari 16.0 指纹配置
-/// 对应 Go 版本的 Safari_16_0
+/// Safari 16.0 fingerprintconfiguration
+/// Corresponds to Go version's Safari_16_0
 pub fn safari_16_0() -> ClientProfile {
     let (settings, settings_order) = safari_http2_settings();
     ClientProfile::new(
@@ -386,13 +386,13 @@ pub fn safari_16_0() -> ClientProfile {
     )
 }
 
-/// Opera 91 指纹配置
-/// 对应 Go 版本的 Opera_91
+/// Opera 91 fingerprintconfiguration
+/// Corresponds to Go version's Opera_91
 pub fn opera_91() -> ClientProfile {
-    // Opera 使用 Chrome 内核，配置与 Chrome 相同
+    // Opera use Chrome inside核，configuration and Chrome 相同
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
-        ClientHelloID::new("Opera", "91", fingerprint_tls::tls_config::chrome_133_spec), // Opera 使用 Chrome 的 TLS 配置
+        ClientHelloID::new("Opera", "91", fingerprint_tls::tls_config::chrome_133_spec), // Opera use Chrome  TLS configuration
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -404,13 +404,13 @@ pub fn opera_91() -> ClientProfile {
     )
 }
 
-/// Edge 120 指纹配置
-/// Edge 使用 Chromium 内核，TLS 指纹与 Chrome 相同
+/// Edge 120 fingerprintconfiguration
+/// Edge use Chromium inside核，TLS fingerprint and Chrome 相同
 pub fn edge_120() -> ClientProfile {
-    // Edge 使用 Chrome 内核，配置与 Chrome 相同
+    // Edge use Chrome inside核，configuration and Chrome 相同
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
-        ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge 使用 Chrome 的 TLS 配置
+        ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge use Chrome  TLS configuration
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -422,8 +422,8 @@ pub fn edge_120() -> ClientProfile {
     )
 }
 
-/// Edge 124 指纹配置
-/// Edge 使用 Chromium 内核，TLS 指纹与 Chrome 相同
+/// Edge 124 fingerprintconfiguration
+/// Edge use Chromium inside核，TLS fingerprint and Chrome 相同
 pub fn edge_124() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
@@ -439,8 +439,8 @@ pub fn edge_124() -> ClientProfile {
     )
 }
 
-/// Edge 133 指纹配置
-/// Edge 使用 Chromium 内核，TLS 指纹与 Chrome 相同
+/// Edge 133 fingerprintconfiguration
+/// Edge use Chromium inside核，TLS fingerprint and Chrome 相同
 pub fn edge_133() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
@@ -456,14 +456,14 @@ pub fn edge_133() -> ClientProfile {
     )
 }
 
-/// 初始化所有指纹配置的映射表
+/// Initializeallfingerprintconfiguration的map表
 fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     let mut map = HashMap::new();
 
     // Chrome 系列
-    // 注意：这里简化处理，实际应该为每个版本创建独立的配置
-    // 为了匹配 Go 版本，我们使用 chrome_133 作为默认配置
-    map.insert("chrome_103".to_string(), chrome_133()); // 简化：使用 chrome_133
+    // Note: 这里简化process，实际should为eachversionCreate独立的configuration
+    // 为了match Go version，我们use chrome_133 作为defaultconfiguration
+    map.insert("chrome_103".to_string(), chrome_133()); // 简化：use chrome_133
     map.insert("chrome_104".to_string(), chrome_133());
     map.insert("chrome_105".to_string(), chrome_133());
     map.insert("chrome_106".to_string(), chrome_133());
@@ -518,12 +518,12 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("opera_90".to_string(), opera_91());
     map.insert("opera_91".to_string(), opera_91());
 
-    // Edge 系列（使用 Chromium 内核，TLS 指纹与 Chrome 相同）
+    // Edge 系列（use Chromium inside核，TLS fingerprint and Chrome 相同）
     map.insert("edge_120".to_string(), edge_120());
     map.insert("edge_124".to_string(), edge_124());
     map.insert("edge_133".to_string(), edge_133());
 
-    // 移动端和自定义指纹
+    // mobile and customfingerprint
     map.insert("zalando_android_mobile".to_string(), chrome_133());
     map.insert("zalando_ios_mobile".to_string(), safari_16_0());
     map.insert("nike_ios_mobile".to_string(), safari_16_0());
@@ -550,21 +550,21 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map
 }
 
-/// 全局指纹配置映射表（线程安全）
+/// 全局fingerprintconfigurationmap表（线程security）
 static MAPPED_TLS_CLIENTS: OnceLock<HashMap<String, ClientProfile>> = OnceLock::new();
 
-/// 获取指纹配置映射表
+/// Getfingerprintconfigurationmap表
 pub fn mapped_tls_clients() -> &'static HashMap<String, ClientProfile> {
     MAPPED_TLS_CLIENTS.get_or_init(init_mapped_tls_clients)
 }
 
-/// 根据 profile 名称获取 ClientProfile
+/// Based on profile nameGet ClientProfile
 ///
-/// # 参数
-/// - `profile_name`: 指纹配置名称（如 "chrome_135", "firefox_133"）
+/// # Parameters
+/// - `profile_name`: fingerprintconfigurationname（如 "chrome_135", "firefox_133"）
 ///
-/// # 返回
-/// 返回对应的 ClientProfile，如果不存在则返回错误
+/// # Returns
+/// returnpair应 ClientProfile， if 不 exists则returnerror
 pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
     let clients = mapped_tls_clients();
     clients
@@ -573,25 +573,25 @@ pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
         .ok_or_else(|| format!("Profile '{}' not found", profile_name))
 }
 
-/// 统一的指纹生成函数
+/// 统一的fingerprintGeneratefunction
 ///
-/// 根据 profile 名称和 User-Agent 生成同步的浏览器指纹和 TCP 指纹
+/// Based on profile name and User-Agent Generatesync的browserfingerprint and TCP fingerprint
 ///
-/// # 参数
-/// - `profile_name`: 指纹配置名称（如 "chrome_135", "firefox_133"）
-/// - `user_agent`: User-Agent 字符串，用于同步 TCP 指纹
+/// # Parameters
+/// - `profile_name`: fingerprintconfigurationname（如 "chrome_135", "firefox_133"）
+/// - `user_agent`: User-Agent string， for sync TCP fingerprint
 ///
-/// # 返回
-/// 返回一个 ClientProfile，其中 tcp_profile 已根据 User-Agent 同步
+/// # Returns
+/// returnan ClientProfile，其中 tcp_profile alreadyBased on User-Agent sync
 ///
-/// # 示例
+/// # Examples
 /// ```rust
 /// use fingerprint_profiles::profiles::generate_unified_fingerprint;
 ///
 /// let user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
 /// let profile = generate_unified_fingerprint("chrome_135", user_agent).unwrap();
 ///
-/// // profile.tcp_profile 现在包含与 User-Agent 匹配的 TCP 指纹
+/// // profile.tcp_profile 现 in including and User-Agent match TCP fingerprint
 /// // Windows -> TTL=128, Window Size=64240
 /// ```
 pub fn generate_unified_fingerprint(
@@ -600,7 +600,7 @@ pub fn generate_unified_fingerprint(
 ) -> Result<ClientProfile, String> {
     let profile = get_client_profile(profile_name)?;
 
-    // 根据 User-Agent 同步 TCP Profile
+    // Based on User-Agent sync TCP Profile
     let synced_profile = profile.with_synced_tcp_profile(user_agent);
 
     Ok(synced_profile)
@@ -626,17 +626,17 @@ mod tests {
 
     #[test]
     fn test_unified_fingerprint_generation() {
-        // 测试 Windows User-Agent
+        // test Windows User-Agent
         let windows_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
         let profile = generate_unified_fingerprint("chrome_135", windows_ua).unwrap();
 
-        // 验证 TCP Profile 已同步
+        // Validate TCP Profile alreadysync
         assert!(profile.tcp_profile.is_some());
         let tcp_profile = profile.tcp_profile.unwrap();
         assert_eq!(tcp_profile.ttl, 128); // Windows TTL
         assert_eq!(tcp_profile.window_size, 64240); // Windows Window Size
 
-        // 测试 Linux User-Agent
+        // test Linux User-Agent
         let linux_ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
         let profile = generate_unified_fingerprint("chrome_135", linux_ua).unwrap();
 
@@ -644,7 +644,7 @@ mod tests {
         assert_eq!(tcp_profile.ttl, 64); // Linux TTL
         assert_eq!(tcp_profile.window_size, 65535); // Linux Window Size
 
-        // 测试 macOS User-Agent
+        // test macOS User-Agent
         let macos_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
         let profile = generate_unified_fingerprint("chrome_135", macos_ua).unwrap();
 

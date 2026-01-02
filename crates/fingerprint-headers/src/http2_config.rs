@@ -24,11 +24,11 @@ impl HTTP2SettingID {
 }
 
 /// HTTP/2 Settings
-/// 对应 Go 版本的 map[http2.SettingID]uint32
+/// Corresponds to Go version's map[http2.SettingID]uint32
 pub type HTTP2Settings = HashMap<u16, u32>;
 
 /// HTTP/2 Priority
-/// 对应 Go 版本的 http2.Priority
+/// Corresponds to Go version's http2.Priority
 #[derive(Debug, Clone)]
 pub struct HTTP2Priority {
     pub stream_id: u32,
@@ -38,7 +38,7 @@ pub struct HTTP2Priority {
 }
 
 /// HTTP/2 Priority Param
-/// 对应 Go 版本的 http2.PriorityParam
+/// Corresponds to Go version's http2.PriorityParam
 #[derive(Debug, Clone)]
 pub struct HTTP2PriorityParam {
     pub weight: u8,
@@ -56,19 +56,19 @@ impl HTTP2PriorityParam {
     }
 }
 
-/// 创建 Chrome 的 HTTP/2 Settings
+/// Create Chrome HTTP/2 Settings
 pub fn chrome_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     let mut settings = HashMap::new();
 
-    // Chrome 的 HTTP/2 Settings
+    // Chrome HTTP/2 Settings
     settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
-    settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0); // 禁用 Server Push
+    settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0); // Disable Server Push
     settings.insert(HTTP2SettingID::MaxConcurrentStreams.as_u16(), 1000);
     settings.insert(HTTP2SettingID::InitialWindowSize.as_u16(), 6291456);
     settings.insert(HTTP2SettingID::MaxFrameSize.as_u16(), 16384);
     settings.insert(HTTP2SettingID::MaxHeaderListSize.as_u16(), 262144);
 
-    // Settings 顺序（Chrome 的顺序）
+    // Settings order (Chrome\'s order)
     let settings_order = vec![
         HTTP2SettingID::HeaderTableSize.as_u16(),
         HTTP2SettingID::EnablePush.as_u16(),
@@ -81,11 +81,11 @@ pub fn chrome_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     (settings, settings_order)
 }
 
-/// 创建 Firefox 的 HTTP/2 Settings
+/// Create Firefox HTTP/2 Settings
 pub fn firefox_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     let mut settings = HashMap::new();
 
-    // Firefox 的 HTTP/2 Settings（与 Chrome 略有不同）
+    // Firefox HTTP/2 Settings（ and Chrome slightly different）
     settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
     settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0);
     settings.insert(HTTP2SettingID::MaxConcurrentStreams.as_u16(), 1000);
@@ -105,11 +105,11 @@ pub fn firefox_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     (settings, settings_order)
 }
 
-/// 创建 Safari 的 HTTP/2 Settings
+/// Create Safari HTTP/2 Settings
 pub fn safari_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     let mut settings = HashMap::new();
 
-    // Safari 的 HTTP/2 Settings
+    // Safari HTTP/2 Settings
     settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
     settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0);
     settings.insert(HTTP2SettingID::MaxConcurrentStreams.as_u16(), 100);
@@ -129,7 +129,7 @@ pub fn safari_http2_settings() -> (HTTP2Settings, Vec<u16>) {
     (settings, settings_order)
 }
 
-/// Chrome 的 Pseudo Header Order
+/// Chrome Pseudo Header Order
 pub fn chrome_pseudo_header_order() -> Vec<String> {
     vec![
         ":method".to_string(),
@@ -139,7 +139,7 @@ pub fn chrome_pseudo_header_order() -> Vec<String> {
     ]
 }
 
-/// Firefox 的 Pseudo Header Order
+/// Firefox Pseudo Header Order
 pub fn firefox_pseudo_header_order() -> Vec<String> {
     vec![
         ":method".to_string(),
@@ -149,7 +149,7 @@ pub fn firefox_pseudo_header_order() -> Vec<String> {
     ]
 }
 
-/// Safari 的 Pseudo Header Order
+/// Safari Pseudo Header Order
 pub fn safari_pseudo_header_order() -> Vec<String> {
     vec![
         ":method".to_string(),
@@ -159,17 +159,17 @@ pub fn safari_pseudo_header_order() -> Vec<String> {
     ]
 }
 
-/// Chrome 的 Connection Flow
+/// Chrome Connection Flow
 pub const CHROME_CONNECTION_FLOW: u32 = 15663105;
 
-/// Chrome 的 Header Priority
-/// weight 在 HTTP/2 中是 1-256，但在 Rust 中我们使用 u8 (0-255)
-/// 实际使用时需要转换为 HTTP/2 的 weight 值（weight = value + 1）
+/// Chrome Header Priority
+/// weight  in HTTP/2 is 1-256， but in Rust we use u8 (0-255)
+/// 实际when used needconvert to HTTP/2  weight value（weight = value + 1）
 pub fn chrome_header_priority() -> HTTP2PriorityParam {
-    HTTP2PriorityParam::new(255, 0, false) // 对应 HTTP/2 weight = 256
+    HTTP2PriorityParam::new(255, 0, false) // Corresponds to HTTP/2 weight = 256
 }
 
-/// Chrome 的标准 Header 顺序 (HTTP/1.1)
+/// Chrome's standard Header order (HTTP/1.1)
 pub fn chrome_header_order() -> Vec<String> {
     vec![
         "Host".to_string(),
@@ -189,7 +189,7 @@ pub fn chrome_header_order() -> Vec<String> {
     ]
 }
 
-/// Firefox 的标准 Header 顺序 (HTTP/1.1)
+/// Firefox's standard Header order (HTTP/1.1)
 pub fn firefox_header_order() -> Vec<String> {
     vec![
         "Host".to_string(),
@@ -207,7 +207,7 @@ pub fn firefox_header_order() -> Vec<String> {
     ]
 }
 
-/// Safari 的标准 Header 顺序 (HTTP/1.1)
+/// Safari's standard Header order (HTTP/1.1)
 pub fn safari_header_order() -> Vec<String> {
     vec![
         "Host".to_string(),

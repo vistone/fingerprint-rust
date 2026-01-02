@@ -1,6 +1,6 @@
-//! DNS 解析器模块
+//! DNS Parse器module
 //!
-//! 提供并发 DNS 解析功能，使用自定义 DNS 服务器列表
+//! provide并发 DNS ParseFeatures，usecustom DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::{DNSError, DNSResult, DomainIPs, IPInfo};
@@ -14,20 +14,20 @@ use hickory_resolver::{
     TokioAsyncResolver,
 };
 
-/// DNS 解析器
+/// DNS Parse器
 pub struct DNSResolver {
-    /// DNS 查询超时时间
+    /// DNS querytimeout duration
     timeout: Duration,
-    /// DNS 服务器池
+    /// DNS serverpool
     server_pool: Arc<ServerPool>,
-    /// 修复：缓存 resolver 实例，避免频繁创建和销毁
-    /// 使用 Arc<Mutex<HashMap>> 存储每个 DNS 服务器的 resolver
+    /// Fix: cache resolver 实例，避免频繁Create and 销毁
+    /// use Arc<Mutex<HashMap>> 存储each DNS server resolver
     resolver_cache:
         Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioAsyncResolver>>>>,
 }
 
 impl DNSResolver {
-    /// 创建新的 DNS 解析器（使用默认 DNS 服务器）
+    /// Create a new DNS Parse器（usedefault DNS server）
     pub fn new(timeout: Duration) -> Self {
         Self {
             timeout,
@@ -36,7 +36,7 @@ impl DNSResolver {
         }
     }
 
-    /// 使用指定的 DNS 服务器池创建解析器
+    /// usespecified DNS serverpoolCreateParse器
     pub fn with_server_pool(timeout: Duration, server_pool: Arc<ServerPool>) -> Self {
         Self {
             timeout,
@@ -45,40 +45,40 @@ impl DNSResolver {
         }
     }
 
-    /// 解析域名的所有 IP 地址（IPv4 和 IPv6）
+    /// Parsedomain的all IP address（IPv4  and IPv6）
     pub async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError> {
         eprintln!(
-            "[DNS Resolver] ========== 开始解析域名: {} ==========",
+            "[DNS Resolver] ========== startParsedomain: {} ==========",
             domain
         );
         let mut domain_ips = DomainIPs::new();
 
-        // 解析 IPv4
-        eprintln!("[DNS Resolver] 开始解析 IPv4 地址...");
+        // Parse IPv4
+        eprintln!("[DNS Resolver] startParse IPv4 address...");
         if let Ok(ipv4_addrs) = self.resolve_aaaa_or_a(domain, false).await {
             eprintln!(
-                "[DNS Resolver] IPv4 解析成功，获得 {} 个地址",
+                "[DNS Resolver] IPv4 Parsesuccess，获得 {} 个address",
                 ipv4_addrs.len()
             );
             domain_ips.ipv4 = ipv4_addrs;
         } else {
-            eprintln!("[DNS Resolver] IPv4 解析失败");
+            eprintln!("[DNS Resolver] IPv4 Parsefailure");
         }
 
-        // 解析 IPv6
-        eprintln!("[DNS Resolver] 开始解析 IPv6 地址...");
+        // Parse IPv6
+        eprintln!("[DNS Resolver] startParse IPv6 address...");
         if let Ok(ipv6_addrs) = self.resolve_aaaa_or_a(domain, true).await {
             eprintln!(
-                "[DNS Resolver] IPv6 解析成功，获得 {} 个地址",
+                "[DNS Resolver] IPv6 Parsesuccess，获得 {} 个address",
                 ipv6_addrs.len()
             );
             domain_ips.ipv6 = ipv6_addrs;
         } else {
-            eprintln!("[DNS Resolver] IPv6 解析失败");
+            eprintln!("[DNS Resolver] IPv6 Parsefailure");
         }
 
         eprintln!(
-            "[DNS Resolver] ========== 域名解析完成: {} (IPv4: {} 个, IPv6: {} 个) ==========",
+            "[DNS Resolver] ========== domainParsecomplete: {} (IPv4: {} 个, IPv6: {} 个) ==========",
             domain,
             domain_ips.ipv4.len(),
             domain_ips.ipv6.len()
@@ -90,13 +90,13 @@ impl DNSResolver {
         })
     }
 
-    /// 解析 IPv4 (A) 或 IPv6 (AAAA) 记录
-    /// 使用收集到的全球 DNS 服务器进行查询
+    /// Parse IPv4 (A)  or  IPv6 (AAAA) record
+    /// use收集 to 的全球 DNS server进行query
     async fn resolve_aaaa_or_a(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
         self.resolve_with_hickory(domain, ipv6).await
     }
 
-    /// 使用 hickory-resolver 进行 DNS 查询，并发查询多个 DNS 服务器以获取所有可能的 IP
+    /// use hickory-resolver 进行 DNS query，并发querymultiple DNS server以Getallmay IP
     async fn resolve_with_hickory(
         &self,
         domain: &str,
@@ -107,20 +107,20 @@ impl DNSResolver {
         use std::net::SocketAddr;
         use std::str::FromStr;
 
-        // 从服务器池中获取 DNS 服务器列表
+        //  from serverpool中Get DNS serverlist
         let servers = self.server_pool.servers();
-        eprintln!("[DNS Resolver] 开始解析域名: {} (IPv6: {})", domain, ipv6);
-        eprintln!("[DNS Resolver] 服务器池总数量: {}", servers.len());
+        eprintln!("[DNS Resolver] startParsedomain: {} (IPv6: {})", domain, ipv6);
+        eprintln!("[DNS Resolver] serverpool总count: {}", servers.len());
 
-        // 使用所有服务器并发查询（不限制数量）
-        // Go 项目的 ResolveDomain 使用 pool.GetAllServers() 获取所有服务器，并发查询
-        // 失败的服务器会被忽略，成功的服务器返回的 IP 会被收集并去重
-        eprintln!("[DNS Resolver] 将查询所有 {} 个服务器", servers.len());
+        // useallserver并发query（不limitcount）
+        // Go 项目 ResolveDomain use pool.GetAllServers() Getallserver，并发query
+        // failure的serverwill被忽略，success的serverreturn IP will被收集并去重
+        eprintln!("[DNS Resolver] willqueryall {} 个server", servers.len());
 
         let servers_with_sockets: Vec<_> = servers
             .iter()
             .filter_map(|server_str| {
-                // 解析服务器地址格式：可以是 "ip:port" 或只有 "ip"（默认端口 53）
+                // Parseserveraddressformat：can是 "ip:port"  or 只有 "ip"（defaultport 53）
                 let (ip_str, port) = if let Some(colon_pos) = server_str.find(':') {
                     let ip = &server_str[..colon_pos];
                     let port = server_str[colon_pos + 1..].parse::<u16>().unwrap_or(53);
@@ -129,7 +129,7 @@ impl DNSResolver {
                     (server_str.to_string(), 53u16)
                 };
 
-                // 解析 IP 地址
+                // Parse IP address
                 if let Ok(ip_addr) = IpAddr::from_str(&ip_str) {
                     Some((server_str.to_string(), SocketAddr::new(ip_addr, port)))
                 } else {
@@ -139,35 +139,35 @@ impl DNSResolver {
             .collect();
 
         let total_servers = servers_with_sockets.len();
-        eprintln!("[DNS Resolver] 解析后的服务器地址数量: {}", total_servers);
+        eprintln!("[DNS Resolver] Parseback的serveraddresscount: {}", total_servers);
 
         if servers_with_sockets.is_empty() {
-            eprintln!("[DNS Resolver] 没有可用的服务器地址，使用系统 DNS");
+            eprintln!("[DNS Resolver] 没有available的serveraddress，usesystem DNS");
             return self.resolve_with_system(domain, ipv6).await;
         }
 
-        // 记录类型
+        // recordtype
         let record_type = if ipv6 {
             RecordType::AAAA
         } else {
             RecordType::A
         };
-        eprintln!("[DNS Resolver] 查询记录类型: {:?}", record_type);
+        eprintln!("[DNS Resolver] queryrecordtype: {:?}", record_type);
 
-        // 配置解析选项
+        // configurationParseoptions
         let mut opts = ResolverOpts::default();
-        opts.timeout = Duration::from_millis(1000); // 单个服务器超时时间 1 秒
-        opts.attempts = 1; // 每个服务器只尝试一次，因为我们并发查询多个
+        opts.timeout = Duration::from_millis(1000); // singleservertimeout duration 1 秒
+        opts.attempts = 1; // eachserver只try一次，because我们并发querymultiple
         eprintln!(
-            "[DNS Resolver] 单个服务器超时: {:?}, 总体超时: {:?}",
+            "[DNS Resolver] singleservertimeout: {:?}, 总体timeout: {:?}",
             opts.timeout, self.timeout
         );
 
-        // 并发查询多个 DNS 服务器
-        // 使用超时包装，避免单个慢服务器阻塞整个查询
+        // 并发querymultiple DNS server
+        // usetimeout包装，避免single慢server阻塞整个query
         let server_pool = self.server_pool.clone();
-        let query_timeout = self.timeout; // 使用 resolver 的总体超时时间
-                                          // 修复：共享 resolver 缓存
+        let query_timeout = self.timeout; // use resolver 的总体timeout duration
+                                          // Fix: 共享 resolver cache
         let resolver_cache = self.resolver_cache.clone();
         let query_tasks = stream::iter(servers_with_sockets)
             .map(move |(server_str, socket_addr)| {
@@ -182,22 +182,22 @@ impl DNSResolver {
                 async move {
                     let start_time = std::time::Instant::now();
 
-                    // 使用超时包装查询，避免单个服务器阻塞
+                    // usetimeout包装query，避免singleserver阻塞
                     let query_result = tokio::time::timeout(query_timeout, async {
-                        // 修复：复用 resolver 实例，避免频繁创建和销毁
-                        // 使用 server_str 作为 key 来缓存 resolver
+                        // Fix: 复用 resolver 实例，避免频繁Create and 销毁
+                        // use server_str 作为 key 来cache resolver
                         let resolver = {
                             let mut cache = resolver_cache.lock().unwrap_or_else(|e| {
-                                eprintln!("警告: resolver 缓存锁失败: {}", e);
-                                // 如果锁失败，创建一个新的空 HashMap 并重新锁定
+                                eprintln!("warning: resolver cache锁failure: {}", e);
+                                // If锁failure, Createannewempty HashMap 并重新锁定
                                 drop(e.into_inner());
-                                resolver_cache.lock().expect("无法获取 resolver 缓存锁")
+                                resolver_cache.lock().expect("unable toGet resolver cache锁")
                             });
 
                             if let Some(cached) = cache.get(&server_str) {
                                 cached.clone()
                             } else {
-                                // 创建新的 resolver 并缓存
+                                // Create a new resolver 并cache
                                 let mut config = ResolverConfig::new();
                                 let name_server = NameServerConfig {
                                     socket_addr,
@@ -217,13 +217,13 @@ impl DNSResolver {
                         resolver.lookup(&domain, record_type).await
                     }).await;
 
-                    // 执行查询
+                    // executequery
                     match query_result {
                         Ok(Ok(lookup)) => {
                             let mut ips = Vec::new();
                             let mut record_count = 0usize;
 
-                            // 遍历所有记录，收集所有 IP 地址
+                            // 遍历allrecord，收集all IP address
                             for record in lookup.record_iter() {
                                 record_count += 1;
                                 if let Some(rdata) = record.data() {
@@ -240,50 +240,50 @@ impl DNSResolver {
                                 }
                             }
 
-                            // 记录成功响应时间
+                            // recordsuccessresponse when 间
                             let response_time = start_time.elapsed();
                             if !ips.is_empty() {
-                                // 打印详细日志，显示返回的所有 IP
-                                eprintln!("[DNS Query] ✅ 服务器 {} 成功，返回 {} 个 IP（共 {} 条记录），耗时: {:?}",
+                                // 打印详细日志，显示return的all IP
+                                eprintln!("[DNS Query] ✅ server {} success，return {} 个 IP（共 {} 条record），耗 when : {:?}",
                                          server_str, ips.len(), record_count, response_time);
                                 if ips.len() > 1 {
-                                    eprintln!("  [DNS Query] 返回的 IP 列表: {}", ips.join(", "));
+                                    eprintln!("  [DNS Query] return IP list: {}", ips.join(", "));
                                 }
                                 if let Err(e) = server_pool.record_success(&server_str, response_time) {
-                                    eprintln!("Warning: 记录服务器成功统计失败: {}", e);
+                                    eprintln!("Warning: recordserversuccessstatisticsfailure: {}", e);
                                 }
                             } else {
-                                eprintln!("[DNS Query] ⚠️  服务器 {} 查询成功但未返回 IP（共 {} 条记录，但类型不匹配），耗时: {:?}",
+                                eprintln!("[DNS Query] ⚠️  server {} querysuccessbutnotreturn IP（共 {} 条record，buttypedoes not match），耗 when : {:?}",
                                          server_str, record_count, response_time);
                                 if let Err(e) = server_pool.record_failure(&server_str) {
-                                    eprintln!("Warning: 记录服务器失败统计失败: {}", e);
+                                    eprintln!("Warning: recordserverfailurestatisticsfailure: {}", e);
                                 }
                             }
                             Ok(ips)
                         }
                         Ok(Err(_)) | Err(_) => {
-                            // 记录失败（查询失败或超时），不打印日志以减少输出
+                            // recordfailure（queryfailure or timeout），不打印日志以减少output
                             let _ = server_pool.record_failure(&server_str);
-                            // 单个服务器失败不影响整体，返回空结果
+                            // singleserverfailure不影响整体，returnemptyresult
                             Ok::<Vec<String>, DNSError>(Vec::new())
                         }
                     }
                 }
             })
-            .buffer_unordered(50); // 修复：降低并发数到 50，避免文件描述符耗尽和资源爆炸
+            .buffer_unordered(50); // Fix: 降低并发count to  50，避免file描述符耗尽 and 资source爆炸
 
-        eprintln!("[DNS Resolver] 开始并发查询，并发数: 50");
+        eprintln!("[DNS Resolver] start并发query，并发count: 50");
 
-        // 流式收集结果，等待所有服务器响应，收集尽可能多的 IP
-        // 对于大量服务器，增加总体超时时间
-        let overall_timeout = Duration::from_secs(30); // 总体超时 30 秒，确保所有服务器都有机会响应
-        let mut all_ips = HashSet::new(); // 使用 HashSet 自动去重，相同的 IP 只会保留一个
+        // stream式收集result，waitallserverresponse，收集尽may多 IP
+        //  for 大量server，增加总体timeout duration
+        let overall_timeout = Duration::from_secs(30); // 总体timeout 30 秒，确保allserver都有机willresponse
+        let mut all_ips = HashSet::new(); // use HashSet automatic去重，相同 IP 只will保留an
         let mut query_tasks = query_tasks;
         let mut success_count = 0usize;
         let mut failure_count = 0usize;
-        let mut total_ips_received = 0usize; // 统计收到的总 IP 数量（去重前）
+        let mut total_ips_received = 0usize; // statistics收 to 的总 IP count（去重front）
 
-        // 使用超时和流式处理，收集尽可能多的结果
+        // usetimeout and stream式process，收集尽may多的result
         let timeout_future = tokio::time::sleep(overall_timeout);
         tokio::pin!(timeout_future);
         let start_time = std::time::Instant::now();
@@ -291,39 +291,39 @@ impl DNSResolver {
         let log_interval = Duration::from_millis(500); // 每500ms打印一次进度
 
         eprintln!(
-            "[DNS Resolver] 开始收集查询结果（总体超时: {:?}，总服务器数: {}）",
+            "[DNS Resolver] start收集queryresult（总体timeout: {:?}，总servercount: {}）",
             overall_timeout, total_servers
         );
 
         loop {
             tokio::select! {
-                // 检查是否有新的查询结果
+                // Checkwhether有newqueryresult
                 result = query_tasks.next() => {
                     match result {
                         Some(Ok(ips)) => {
                             success_count += 1;
-                            let ips_count = ips.len(); // 先保存 IP 数量，避免移动后无法访问
-                            total_ips_received += ips_count; // 统计收到的总 IP 数量（去重前）
+                            let ips_count = ips.len(); // 先save IP count，避免移动backunable to访问
+                            total_ips_received += ips_count; // statistics收 to 的总 IP count（去重front）
 
                             let before_count = all_ips.len();
                             for ip in ips {
-                                all_ips.insert(ip); // HashSet 自动去重，相同的 IP 只会保留一个
+                                all_ips.insert(ip); // HashSet automatic去重，相同 IP 只will保留an
                             }
                             let after_count = all_ips.len();
                             let new_ips_count = after_count - before_count;
 
-                            // 如果这个服务器返回的 IP 中有重复的，会在日志中显示
+                            // If这个serverreturn IP 中有重复的, will in 日志中显示
                             if ips_count > new_ips_count {
-                                eprintln!("[DNS Resolver] 服务器返回 {} 个 IP，其中 {} 个是新 IP，{} 个是重复的（已自动去重）",
+                                eprintln!("[DNS Resolver] serverreturn {} 个 IP，其中 {} 个是new IP，{} 个是重复的（alreadyautomatic去重）",
                                          ips_count, new_ips_count, ips_count - new_ips_count);
                             }
 
-                            // 定期打印进度，显示去重统计
+                            // 定期打印进度，显示去重statistics
                             if last_log_time.elapsed() >= log_interval {
                                 let duplicate_count = total_ips_received - all_ips.len();
-                                eprintln!("[DNS Resolver] 进度: {}/{} 服务器完成，成功 {} 个，失败 {} 个",
+                                eprintln!("[DNS Resolver] 进度: {}/{} servercomplete，success {} 个，failure {} 个",
                                          success_count + failure_count, total_servers, success_count, failure_count);
-                                eprintln!("[DNS Resolver] IP 统计: 收到 {} 个 IP，去重后 {} 个唯一 IP，过滤了 {} 个重复 IP",
+                                eprintln!("[DNS Resolver] IP statistics: 收 to  {} 个 IP，去重back {} 个唯一 IP，过滤了 {} 个重复 IP",
                                          total_ips_received, all_ips.len(), duplicate_count);
                                 last_log_time = std::time::Instant::now();
                             }
@@ -332,29 +332,29 @@ impl DNSResolver {
                             failure_count += 1;
                             // 定期打印进度
                             if last_log_time.elapsed() >= log_interval {
-                                eprintln!("[DNS Resolver] 进度: {}/{} 服务器完成，成功 {} 个，失败 {} 个，已收集 IP: {} 个",
+                                eprintln!("[DNS Resolver] 进度: {}/{} servercomplete，success {} 个，failure {} 个，already收集 IP: {} 个",
                                          success_count + failure_count, total_servers, success_count, failure_count, all_ips.len());
                                 last_log_time = std::time::Instant::now();
                             }
-                            // 单个查询失败，继续
+                            // singlequeryfailure，continue
                         }
                         None => {
-                            // 所有查询完成
+                            // allquerycomplete
                             let duplicate_count = total_ips_received - all_ips.len();
-                            eprintln!("[DNS Resolver] ✅ 所有查询完成: 成功 {} 个，失败 {} 个",
+                            eprintln!("[DNS Resolver] ✅ allquerycomplete: success {} 个，failure {} 个",
                                      success_count, failure_count);
-                            eprintln!("[DNS Resolver] IP 去重统计: 收到 {} 个 IP，去重后 {} 个唯一 IP，过滤了 {} 个重复 IP",
+                            eprintln!("[DNS Resolver] IP 去重statistics: 收 to  {} 个 IP，去重back {} 个唯一 IP，过滤了 {} 个重复 IP",
                                      total_ips_received, all_ips.len(), duplicate_count);
                             break;
                         }
                     }
                 }
-                // 超时
+                // timeout
                 _ = &mut timeout_future => {
                     let duplicate_count = total_ips_received - all_ips.len();
-                    eprintln!("[DNS Resolver] ⏱️  查询总体超时（{}秒），完成 {}/{} 服务器，成功 {} 个，失败 {} 个",
+                    eprintln!("[DNS Resolver] ⏱️  query总体timeout（{}秒），complete {}/{} server，success {} 个，failure {} 个",
                              overall_timeout.as_secs(), success_count + failure_count, total_servers, success_count, failure_count);
-                    eprintln!("[DNS Resolver] IP 去重统计: 收到 {} 个 IP，去重后 {} 个唯一 IP，过滤了 {} 个重复 IP",
+                    eprintln!("[DNS Resolver] IP 去重statistics: 收 to  {} 个 IP，去重back {} 个唯一 IP，过滤了 {} 个重复 IP",
                              total_ips_received, all_ips.len(), duplicate_count);
                     break;
                 }
@@ -363,30 +363,30 @@ impl DNSResolver {
 
         let total_time = start_time.elapsed();
         let duplicate_count = total_ips_received - all_ips.len();
-        eprintln!("[DNS Resolver] 查询完成，总耗时: {:?}", total_time);
-        eprintln!("[DNS Resolver] 最终 IP 去重统计: 收到 {} 个 IP，去重后 {} 个唯一 IP，过滤了 {} 个重复 IP（去重率: {:.2}%）",
+        eprintln!("[DNS Resolver] querycomplete，总耗 when : {:?}", total_time);
+        eprintln!("[DNS Resolver] 最final IP 去重statistics: 收 to  {} 个 IP，去重back {} 个唯一 IP，过滤了 {} 个重复 IP（去重率: {:.2}%）",
                  total_ips_received, all_ips.len(), duplicate_count,
                  if total_ips_received > 0 { (duplicate_count as f64 / total_ips_received as f64) * 100.0 } else { 0.0 });
 
-        // 转换为 IPInfo 列表
-        // 注意：all_ips 是 HashSet，已经自动去重，相同的 IP 只会保留一个
+        // convert to IPInfo list
+        // Note: all_ips 是 HashSet，alreadyautomatic去重，相同 IP 只will保留an
         let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
         eprintln!(
-            "[DNS Resolver] 转换为 IPInfo，最终返回 {} 个唯一 IP 地址（已去重）",
+            "[DNS Resolver] convert to IPInfo，最finalreturn {} 个唯一 IP address（already去重）",
             ip_infos.len()
         );
 
         if ip_infos.is_empty() {
-            // 如果所有查询都失败，回退到系统 DNS
-            eprintln!("[DNS Resolver] ⚠️  所有查询都失败，回退到系统 DNS");
+            // Ifallquery都failure, 回退 to system DNS
+            eprintln!("[DNS Resolver] ⚠️  allquery都failure，回退 to system DNS");
             self.resolve_with_system(domain, ipv6).await
         } else {
             Ok(ip_infos)
         }
     }
 
-    /// 使用系统 DNS 解析（回退方案）
+    /// usesystem DNS Parse（回退方案）
     async fn resolve_with_system(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
         use std::net::ToSocketAddrs;
 
@@ -396,7 +396,7 @@ impl DNSResolver {
         if let Ok(addrs) = addr_str.to_socket_addrs() {
             for addr in addrs {
                 let ip = addr.ip();
-                // 根据 ipv6 参数过滤地址类型
+                // Based on ipv6 parameter过滤addresstype
                 match (ipv6, ip) {
                     (true, IpAddr::V6(_)) => {
                         ip_infos.push(IPInfo::new(ip.to_string()));
@@ -405,7 +405,7 @@ impl DNSResolver {
                         ip_infos.push(IPInfo::new(ip.to_string()));
                     }
                     _ => {
-                        // 不匹配的类型，跳过
+                        // does not match的type，skip
                     }
                 }
             }
@@ -414,7 +414,7 @@ impl DNSResolver {
         Ok(ip_infos)
     }
 
-    /// 批量解析域名（并发）
+    /// 批量Parsedomain（并发）
     pub async fn resolve_many(
         &self,
         domains: Vec<String>,

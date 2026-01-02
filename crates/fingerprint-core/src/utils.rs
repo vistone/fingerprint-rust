@@ -1,11 +1,11 @@
-//! 工具函数模块
+//! 工具functionmodule
 //!
-//! 提供随机选择、字符串处理等工具函数
+//! providerandomly select、stringprocess等工具function
 
 use rand::Rng;
 
-/// 从切片中随机选择一个元素（线程安全）
-/// 使用 thread_rng() 确保线程安全
+///  from 切片中randomly selectan元素（线程security）
+/// use thread_rng() 确保线程security
 pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     if items.is_empty() {
         return None;
@@ -15,14 +15,14 @@ pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     Some(items[index].clone())
 }
 
-/// 从字符串切片中随机选择一个元素（线程安全）
+///  from string切片中randomly selectan元素（线程security）
 pub fn random_choice_string(items: &[&str]) -> Option<String> {
     random_choice(items).map(|s| s.to_string())
 }
 
-/// 从 User-Agent 中提取 Chrome 版本号
+///  from  User-Agent 中Extract Chrome version号
 pub fn extract_chrome_version(user_agent: &str) -> String {
-    // 查找 "Chrome/" 后面的版本号
+    // 查找 "Chrome/" back面的version号
     if let Some(start) = user_agent.find("Chrome/") {
         let version_start = start + 7; // "Chrome/".len()
         if let Some(end) =
@@ -30,19 +30,19 @@ pub fn extract_chrome_version(user_agent: &str) -> String {
         {
             return user_agent[version_start..version_start + end].to_string();
         }
-        // 如果没找到结束位置，返回到字符串末尾
+        // If没找 to endbit置, return to stringend尾
         return user_agent[version_start..]
             .split_whitespace()
             .next()
             .unwrap_or("120")
             .to_string();
     }
-    "120".to_string() // 默认版本
+    "120".to_string() // defaultversion
 }
 
-/// 从 User-Agent 中提取平台信息
+///  from  User-Agent 中Extractplatforminfo
 pub fn extract_platform(user_agent: &str) -> String {
-    // 提取平台信息用于 Sec-CH-UA-Platform
+    // Extractplatforminfo for  Sec-CH-UA-Platform
     if user_agent.contains("Windows") {
         return r#""Windows""#.to_string();
     } else if user_agent.contains("Macintosh") || user_agent.contains("Mac OS X") {
@@ -54,18 +54,18 @@ pub fn extract_platform(user_agent: &str) -> String {
     } else if user_agent.contains("iPhone") || user_agent.contains("iPad") {
         return r#""iOS""#.to_string();
     }
-    r#""Windows""#.to_string() // 默认平台
+    r#""Windows""#.to_string() // defaultplatform
 }
 
-/// 从 User-Agent 中提取操作系统类型
+///  from  User-Agent 中Extractoperating systemtype
 ///
-/// 用于统一指纹生成，确保浏览器指纹和 TCP 指纹同步
+///  for 统一fingerprintGenerate，确保browserfingerprint and TCP fingerprintsync
 pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
     use crate::types::OperatingSystem;
 
-    // 注意：iPhone/iPad 的 User-Agent 包含 "Mac OS X"，需要先检查移动设备
+    // Note: iPhone/iPad  User-Agent including "Mac OS X"，need先Check移动设备
     if user_agent.contains("iPhone") || user_agent.contains("iPad") {
-        // iOS 设备：使用 macOS 的 TCP 指纹（iOS 基于 macOS）
+        // iOS 设备：use macOS  TCP fingerprint（iOS 基于 macOS）
         OperatingSystem::MacOS14
     } else if user_agent.contains("Windows NT 10.0") {
         OperatingSystem::Windows10
@@ -86,12 +86,12 @@ pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSy
     } else if user_agent.contains("Linux") || user_agent.contains("Android") {
         OperatingSystem::Linux
     } else {
-        // 默认使用 Windows（最常见的浏览器环境）
+        // defaultuse Windows（最常见的browser环境）
         OperatingSystem::Windows10
     }
 }
 
-/// 从 profile 名称推断浏览器类型
+///  from  profile name推断browsertype
 pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     let name_lower = profile_name.to_lowercase();
     if name_lower.starts_with("chrome_") {
@@ -109,18 +109,18 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
         || name_lower.contains("android")
         || name_lower.contains("mobile")
     {
-        // 移动端应用指纹
+        // mobileapplicationfingerprint
         if name_lower.contains("ios") {
             ("safari".to_string(), true)
         } else {
             ("chrome".to_string(), true)
         }
     } else {
-        ("chrome".to_string(), false) // 默认
+        ("chrome".to_string(), false) // default
     }
 }
 
-/// 判断是否为移动端 profile
+/// 判断whether为mobile profile
 pub fn is_mobile_profile(profile_name: &str) -> bool {
     let name = profile_name.to_lowercase();
     name.contains("ios")

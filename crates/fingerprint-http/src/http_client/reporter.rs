@@ -1,11 +1,11 @@
-//! 验证报告生成器
+//! Validate报告Generator
 //!
-//! 用于生成详细的验证和测试报告
+//!  for Generate详细的Validate and test报告
 
 use std::fs::File;
 use std::io::Write;
 
-/// 验证报告
+/// Validate报告
 #[derive(Debug, Clone)]
 pub struct ValidationReport {
     pub title: String,
@@ -22,7 +22,7 @@ pub struct ReportSection {
     pub subsections: Vec<ReportSection>,
 }
 
-/// 报告摘要
+/// 报告digest
 #[derive(Debug, Clone)]
 pub struct ReportSummary {
     pub total_tests: usize,
@@ -32,7 +32,7 @@ pub struct ReportSummary {
 }
 
 impl ValidationReport {
-    /// 创建新报告
+    /// Create新报告
     pub fn new(title: String) -> Self {
         #[cfg(feature = "reporter")]
         let generated_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -55,12 +55,12 @@ impl ValidationReport {
         }
     }
 
-    /// 添加章节
+    /// Add章节
     pub fn add_section(&mut self, section: ReportSection) {
         self.sections.push(section);
     }
 
-    /// 设置摘要
+    /// settingsdigest
     pub fn set_summary(&mut self, total: usize, passed: usize, failed: usize) {
         self.summary = ReportSummary {
             total_tests: total,
@@ -74,22 +74,22 @@ impl ValidationReport {
         };
     }
 
-    /// 生成 Markdown 格式报告
+    /// Generate Markdown format报告
     pub fn to_markdown(&self) -> String {
         let mut md = String::new();
 
         // 标题
         md.push_str(&format!("# {}\n\n", self.title));
-        md.push_str(&format!("**生成时间**: {}\n\n", self.generated_at));
+        md.push_str(&format!("**Generate when 间**: {}\n\n", self.generated_at));
         md.push_str("---\n\n");
 
-        // 摘要
-        md.push_str("## 📊 测试摘要\n\n");
-        md.push_str(&format!("- **总测试数**: {}\n", self.summary.total_tests));
-        md.push_str(&format!("- **通过**: {} ✅\n", self.summary.passed));
-        md.push_str(&format!("- **失败**: {} ❌\n", self.summary.failed));
+        // digest
+        md.push_str("## 📊 testdigest\n\n");
+        md.push_str(&format!("- **总testcount**: {}\n", self.summary.total_tests));
+        md.push_str(&format!("- **through**: {} ✅\n", self.summary.passed));
+        md.push_str(&format!("- **failure**: {} ❌\n", self.summary.failed));
         md.push_str(&format!(
-            "- **成功率**: {:.2}%\n\n",
+            "- **success率**: {:.2}%\n\n",
             self.summary.success_rate
         ));
         md.push_str("---\n\n");
@@ -102,22 +102,22 @@ impl ValidationReport {
         md
     }
 
-    /// 生成纯文本报告
+    /// Generate纯文本报告
     pub fn to_text(&self) -> String {
         let mut text = String::new();
 
         // 标题
         text.push_str(&format!("# {}\n\n", self.title));
-        text.push_str(&format!("生成时间: {}\n", self.generated_at));
+        text.push_str(&format!("Generate when 间: {}\n", self.generated_at));
         text.push_str(&"=".repeat(70));
         text.push_str("\n\n");
 
-        // 摘要
-        text.push_str("测试摘要:\n");
-        text.push_str(&format!("  总测试数: {}\n", self.summary.total_tests));
-        text.push_str(&format!("  通过: {}\n", self.summary.passed));
-        text.push_str(&format!("  失败: {}\n", self.summary.failed));
-        text.push_str(&format!("  成功率: {:.2}%\n\n", self.summary.success_rate));
+        // digest
+        text.push_str("testdigest:\n");
+        text.push_str(&format!("  总testcount: {}\n", self.summary.total_tests));
+        text.push_str(&format!("  through: {}\n", self.summary.passed));
+        text.push_str(&format!("  failure: {}\n", self.summary.failed));
+        text.push_str(&format!("  success率: {:.2}%\n\n", self.summary.success_rate));
         text.push_str(&"=".repeat(70));
         text.push_str("\n\n");
 
@@ -129,7 +129,7 @@ impl ValidationReport {
         text
     }
 
-    /// 保存为文件
+    /// save为file
     pub fn save_to_file(&self, filename: &str, format: ReportFormat) -> std::io::Result<()> {
         let content = match format {
             ReportFormat::Markdown => self.to_markdown(),
@@ -144,7 +144,7 @@ impl ValidationReport {
 }
 
 impl ReportSection {
-    /// 创建新章节
+    /// Create新章节
     pub fn new(title: String) -> Self {
         Self {
             title,
@@ -153,17 +153,17 @@ impl ReportSection {
         }
     }
 
-    /// 添加内容行
+    /// Addinside容行
     pub fn add_line(&mut self, line: String) {
         self.content.push(line);
     }
 
-    /// 添加子章节
+    /// Addchild章节
     pub fn add_subsection(&mut self, subsection: ReportSection) {
         self.subsections.push(subsection);
     }
 
-    /// 转换为 Markdown
+    /// convert to Markdown
     fn to_markdown(&self, level: usize) -> String {
         let mut md = String::new();
 
@@ -171,7 +171,7 @@ impl ReportSection {
         md.push_str(&"#".repeat(level));
         md.push_str(&format!(" {}\n\n", self.title));
 
-        // 内容
+        // inside容
         for line in &self.content {
             md.push_str(line);
             md.push('\n');
@@ -180,7 +180,7 @@ impl ReportSection {
             md.push('\n');
         }
 
-        // 子章节
+        // child章节
         for subsection in &self.subsections {
             md.push_str(&subsection.to_markdown(level + 1));
         }
@@ -188,7 +188,7 @@ impl ReportSection {
         md
     }
 
-    /// 转换为纯文本
+    /// convert to纯文本
     fn to_text(&self, indent: usize) -> String {
         let mut text = String::new();
         let indent_str = "  ".repeat(indent);
@@ -197,7 +197,7 @@ impl ReportSection {
         text.push_str(&format!("{}{}\n", indent_str, self.title));
         text.push_str(&format!("{}{}\n", indent_str, "-".repeat(self.title.len())));
 
-        // 内容
+        // inside容
         for line in &self.content {
             text.push_str(&format!("{}  {}\n", indent_str, line));
         }
@@ -205,7 +205,7 @@ impl ReportSection {
             text.push('\n');
         }
 
-        // 子章节
+        // child章节
         for subsection in &self.subsections {
             text.push_str(&subsection.to_text(indent + 1));
         }
@@ -214,7 +214,7 @@ impl ReportSection {
     }
 }
 
-/// 报告格式
+/// 报告format
 #[derive(Debug, Clone, Copy)]
 pub enum ReportFormat {
     Markdown,
@@ -251,8 +251,8 @@ mod tests {
 
         let md = report.to_markdown();
         assert!(md.contains("# Test Report"));
-        // 检查成功率字段存在（不强制要求精确格式）
-        assert!(md.contains("成功率") || md.contains("Success"));
+        // Checksuccess率field exists（不强制要求精确format）
+        assert!(md.contains("success率") || md.contains("Success"));
         assert!(md.contains("90."));
     }
 }

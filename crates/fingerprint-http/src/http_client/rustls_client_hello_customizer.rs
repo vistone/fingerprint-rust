@@ -1,21 +1,21 @@
-//! rustls ClientHello 定制器（可选）
+//! rustls ClientHello 定制器（optional）
 //!
-//! 目前只做一件事：**根据 fingerprint-rust 的 `ClientHelloSpec` 调整"扩展编码顺序"**。
+//! 目front只做一件事：**Based on fingerprint-rust 的 `ClientHelloSpec` 调整"extensionencoding顺序"**。
 //!
 //! 说明：
-//! - rustls 并不一定会发送 spec 里列出的所有扩展；这里会以 rustls 实际 `used` 为准，
-//!   仅对交集做重排，并把未覆盖的扩展按 rustls 默认顺序追加，确保仍是一个有效的排列。
-//! - spec 里可能出现多个 GREASE 扩展（在真实浏览器中它们通常是不同的 GREASE 值）。
-//!   为避免"重复扩展类型"导致 rustls 拒绝，我们会把每个 GREASE 占位符映射成不同的 GREASE 值。
+//! - rustls 并不一定willsend spec 里列出的allextension；这里will以 rustls 实际 `used` 为准，
+//!   onlypair交集做重排，并把not覆盖's extensions按 rustls default顺序追加，确保仍是anvalid的排列。
+//! - spec 里may出现multiple GREASE extension（ in realbrowser中它们通常是不同 GREASE value）。
+//!   为避免"重复extensiontype"导致 rustls 拒绝，我们will把each GREASE 占bit符map成不同 GREASE value。
 //!
-//! 注意：此功能需要支持 ClientHelloCustomizer 的 rustls fork，标准 rustls 不支持。
-//! 当前标准 rustls 版本不包含 ClientHelloCustomizer API，因此此模块的代码被暂时禁用。
-//! 如需使用此功能，需要使用支持 ClientHelloCustomizer 的 rustls fork（如 vistone-rustls）。
+//! Note: 此Featuresneedsupport ClientHelloCustomizer  rustls fork，standard rustls 不support。
+//! currentstandard rustls versionexcluding ClientHelloCustomizer API，therefore此module的代码被暂 when disabled。
+//! 如需use此Features，needusesupport ClientHelloCustomizer  rustls fork（如 vistone-rustls）。
 
-// 暂时禁用整个模块，因为标准 rustls 不支持 ClientHelloCustomizer API
-// 如需启用，需要使用支持该 API 的 rustls fork
-// 当使用支持 ClientHelloCustomizer 的 rustls fork 时，取消下面的注释并启用相关代码
-#![cfg(false)] // 暂时禁用，因为标准 rustls 不支持
+// 暂 when disabled整个module，becausestandard rustls 不support ClientHelloCustomizer API
+// 如需enabled，needusesupport该 API  rustls fork
+// whenusesupport ClientHelloCustomizer  rustls fork  when ，取消down面的注释并enabled相关代码
+#![cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 
 #[cfg(feature = "rustls-client-hello-customizer")]
 use std::sync::Arc;
@@ -30,10 +30,10 @@ use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer};
 use rustls::internal::msgs::enums::ExtensionType;
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// 从 `ClientHelloSpec` 计算"期望的扩展顺序"（以 u16 表示）。
+///  from  `ClientHelloSpec` Calculate"期望's extensions顺序"（以 u16 表示）。
 ///
-/// - 去重：同一扩展类型只保留第一次出现
-/// - GREASE：把重复的 GREASE 占位符映射成不同的 GREASE 值
+/// - 去重：同一extensiontype只保留第一次出现
+/// - GREASE：把重复 GREASE 占bit符map成不同 GREASE value
 fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
     let mut out: Vec<u16> = Vec::with_capacity(spec.extensions.len());
     let mut grease_cursor = 0usize;
@@ -41,7 +41,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
     for ext in &spec.extensions {
         let mut id = ext.extension_id();
 
-        // 处理 GREASE：尽量给每个 GREASE 分配不同的值，以符合"多 GREASE 扩展"的现实形态。
+        // process GREASE：尽量给each GREASE 分配不同的value，以符合"多 GREASE extension"的现实形态。
         if is_grease_value(id) {
             for _ in 0..TLS_GREASE_VALUES.len() {
                 let candidate = TLS_GREASE_VALUES[grease_cursor % TLS_GREASE_VALUES.len()];
@@ -62,12 +62,12 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
 }
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// 将 rustls 当前 `used` 的扩展顺序，按 `desired`（来自 spec）重排。
+/// will rustls current `used` 's extensions顺序，按 `desired`（来自 spec）重排。
 ///
 /// 规则：
-/// - 只对 `used` 里出现的扩展做重排（交集）
-/// - `desired` 里重复/不在 `used` 的会被忽略
-/// - `used` 里未出现在 `desired` 的扩展保持原相对顺序并追加到末尾
+/// - 只pair `used` 里出现's extensions做重排（交集）
+/// - `desired` 里重复/不 in `used` 的will被忽略
+/// - `used` 里not出现 in `desired` 's extensions保持原相pair顺序并追加 to end尾
 fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<ExtensionType> {
     let mut out: Vec<ExtensionType> = Vec::with_capacity(used.len());
 
@@ -88,7 +88,7 @@ fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<Ext
 }
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// 基于 `ClientProfile` 的 ClientHello 扩展顺序定制器。
+/// 基于 `ClientProfile`  ClientHello extension顺序定制器。
 #[derive(Debug)]
 pub struct ProfileClientHelloCustomizer {
     desired_extension_ids: Vec<u16>,

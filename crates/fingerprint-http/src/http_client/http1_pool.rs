@@ -1,11 +1,11 @@
 //! HTTP/1.1 with Connection Pool
 //!
 //! 架构说明：
-//! - HTTP/1.1 采用 netconnpool 管理 TCP 连接池
-//! - 池化对象：TcpStream（裸 TCP 连接）
-//! - 复用方式：串行复用（一个连接同一时间只能处理一个请求）
-//! - 协议限制：HTTP/1.1 无法多路复用，需要大量连接支持并发
-//! - netconnpool 负责：连接创建、保持活跃、故障检测和回收
+//! - HTTP/1.1 采用 netconnpool 管理 TCP connection pool
+//! - pool化pair象：TcpStream（裸 TCP connection）
+//! - 复用方式：串行复用（anconnection同一 when 间只能processanrequest）
+//! - protocollimit：HTTP/1.1 unable to多路复用，need大量connectionsupport并发
+//! - netconnpool 负责：connectionCreate、保持活跃、故障检测 and 回收
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;
@@ -15,7 +15,7 @@ use std::io::Write;
 #[cfg(feature = "connection-pool")]
 use std::sync::Arc;
 
-/// 使用连接池发送 HTTP/1.1 请求
+/// useconnection poolsend HTTP/1.1 request
 #[cfg(feature = "connection-pool")]
 pub fn send_http1_request_with_pool(
     host: &str,
@@ -25,24 +25,24 @@ pub fn send_http1_request_with_pool(
     config: &HttpClientConfig,
     pool_manager: &Arc<ConnectionPoolManager>,
 ) -> Result<HttpResponse> {
-    // 从连接池获取连接
+    //  from connection poolGetconnection
     let pool = pool_manager.get_pool(host, port)?;
 
-    // 获取 TCP 连接
+    // Get TCP connection
     let conn = pool
         .get_tcp()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
-    // 从 Connection 中提取 TcpStream
-    // PooledConnection 实现了 Deref<Target = Connection>，可以直接使用 Connection 的方法
+    //  from  Connection 中Extract TcpStream
+    // PooledConnection implement了 Deref<Target = Connection>，can直接use Connection 的method
     let tcp_stream = conn
         .tcp_conn()
-        .ok_or_else(|| HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string()))?;
+        .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // 克隆 TcpStream 以便我们可以使用它
+    // 克隆 TcpStream 以便我们canuse它
     let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
-    // 修复：添加 Cookie 到请求（如果存在）
+    // Fix: Add Cookie  to request（ if  exists）
     let mut request_with_cookies = request.clone();
     if let Some(cookie_store) = &config.cookie_store {
         super::request::add_cookies_to_request(
@@ -50,25 +50,25 @@ pub fn send_http1_request_with_pool(
             cookie_store,
             host,
             path,
-            false, // HTTP 不是安全连接
+            false, // HTTP is notsecurityconnection
         );
     }
 
-    // 构建 HTTP 请求
+    // Build HTTP request
     let http_request = request_with_cookies.build_http1_request(host, path);
 
-    // 发送请求
+    // sendrequest
     stream
         .write_all(http_request.as_bytes())
         .map_err(HttpClientError::Io)?;
 
-    // 修复：使用完整的响应读取逻辑（包括 body）
-    // 连接会自动归还到连接池（通过 Drop）
+    // Fix: usecomplete的responseread逻辑（包括 body）
+    // connectionwillautomatic归still to connection pool（through Drop）
     let buffer =
         super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
             .map_err(HttpClientError::Io)?;
 
-    // 解析响应
+    // Parseresponse
     HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
 }
 
@@ -82,7 +82,7 @@ pub fn send_http1_request_with_pool(
     _pool_manager: &std::sync::Arc<super::pool::ConnectionPoolManager>,
 ) -> Result<HttpResponse> {
     Err(HttpClientError::ConnectionFailed(
-        "连接池功能未启用，请使用 --features connection-pool 编译".to_string(),
+        "connection poolFeaturesnotenabled，请use --features connection-pool 编译".to_string(),
     ))
 }
 
@@ -94,7 +94,7 @@ mod tests {
     use crate::http_client::request::HttpMethod;
 
     #[test]
-    #[ignore] // 需要网络
+    #[ignore] // neednetwork
     fn test_http1_with_pool() {
         let request = HttpRequest::new(HttpMethod::Get, "http://example.com/");
         let config = HttpClientConfig::default();
@@ -103,32 +103,32 @@ mod tests {
         let result =
             send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
-        // 可能会失败（网络问题），但不应该 panic
+        // maywillfailure（network问题），but不should panic
         if let Ok(response) = result {
-            println!("状态码: {}", response.status_code);
+            println!("status code: {}", response.status_code);
             assert!(response.status_code > 0);
         }
     }
 
     #[test]
-    #[ignore] // 需要网络
+    #[ignore] // neednetwork
     fn test_connection_reuse() {
         let request = HttpRequest::new(HttpMethod::Get, "http://example.com/");
         let config = HttpClientConfig::default();
         let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
 
-        // 第一次请求
+        // 第一次request
         let _ =
             send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
-        // 第二次请求（应该复用连接）
+        // 第二次request（should复用connection）
         let _ =
             send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
-        // 检查统计信息
+        // Checkstatisticsinfo
         let stats = pool_manager.get_stats();
         if !stats.is_empty() {
-            println!("连接池统计:");
+            println!("connection poolstatistics:");
             for stat in stats {
                 stat.print();
             }

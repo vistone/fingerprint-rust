@@ -47,8 +47,8 @@ use fingerprint_profiles::profiles::ClientProfile;
 use std::io as std_io;
 use std::time::Duration;
 
-// 修复：使用全局单例 Runtime 避免频繁创建（用于 HTTP/2 和 HTTP/3 连接池场景）
-// 注意：只在 connection-pool 启用时才需要，因为只有连接池场景才需要同步包装异步代码
+// Fix: use全局单例 Runtime 避免频繁Create（ for  HTTP/2  and HTTP/3 connection pool场景）
+// Note: 只 in connection-pool enabled when 才need，because只有connection pool场景才needsync包装async代码
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -56,7 +56,7 @@ use once_cell::sync::Lazy;
 static SHARED_RUNTIME: Lazy<tokio::runtime::Runtime> =
     Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
 
-/// HTTP 客户端错误
+/// HTTP clienterror
 #[derive(Debug)]
 pub enum HttpClientError {
     Io(std_io::Error),
@@ -75,17 +75,17 @@ pub enum HttpClientError {
 impl std::fmt::Display for HttpClientError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            HttpClientError::Io(e) => write!(f, "IO 错误: {}", e),
-            HttpClientError::InvalidUrl(s) => write!(f, "无效的 URL: {}", s),
-            HttpClientError::InvalidResponse(s) => write!(f, "无效的响应: {}", s),
-            HttpClientError::TlsError(s) => write!(f, "TLS 错误: {}", s),
-            HttpClientError::ConnectionFailed(s) => write!(f, "连接失败: {}", s),
-            HttpClientError::Timeout => write!(f, "请求超时"),
+            HttpClientError::Io(e) => write!(f, "IO error: {}", e),
+            HttpClientError::InvalidUrl(s) => write!(f, "Invalid URL: {}", s),
+            HttpClientError::InvalidResponse(s) => write!(f, "Invalid response: {}", s),
+            HttpClientError::TlsError(s) => write!(f, "TLS error: {}", s),
+            HttpClientError::ConnectionFailed(s) => write!(f, "Connection failed: {}", s),
+            HttpClientError::Timeout => write!(f, "Request timeout"),
             #[cfg(feature = "http2")]
-            HttpClientError::Http2Error(s) => write!(f, "HTTP/2 错误: {}", s),
+            HttpClientError::Http2Error(s) => write!(f, "HTTP/2 error: {}", s),
             #[cfg(feature = "http3")]
-            HttpClientError::Http3Error(s) => write!(f, "HTTP/3 错误: {}", s),
-            HttpClientError::InvalidRequest(s) => write!(f, "无效的请求: {}", s),
+            HttpClientError::Http3Error(s) => write!(f, "HTTP/3 error: {}", s),
+            HttpClientError::InvalidRequest(s) => write!(f, "Invalid request: {}", s),
         }
     }
 }
@@ -100,30 +100,30 @@ impl From<std_io::Error> for HttpClientError {
 
 pub type Result<T> = std::result::Result<T, HttpClientError>;
 
-/// HTTP 客户端配置
+/// HTTP clientconfiguration
 #[derive(Debug, Clone)]
 pub struct HttpClientConfig {
-    /// 用户代理
+    /// 用户proxy
     pub user_agent: String,
     /// HTTP Headers
     pub headers: HTTPHeaders,
-    /// 浏览器配置
+    /// browserconfiguration
     pub profile: Option<ClientProfile>,
-    /// 连接超时
+    /// connectiontimeout
     pub connect_timeout: Duration,
-    /// 读取超时
+    /// readtimeout
     pub read_timeout: Duration,
-    /// 写入超时
+    /// writetimeout
     pub write_timeout: Duration,
-    /// 最大重定向次数
+    /// maximumredirect次count
     pub max_redirects: usize,
-    /// 是否验证 TLS 证书
+    /// whetherValidate TLS certificate
     pub verify_tls: bool,
-    /// 优先使用 HTTP/2
+    /// 优先use HTTP/2
     pub prefer_http2: bool,
-    /// 优先使用 HTTP/3
+    /// 优先use HTTP/3
     pub prefer_http3: bool,
-    /// Cookie 存储（可选）
+    /// Cookie 存储（optional）
     pub cookie_store: Option<Arc<CookieStore>>,
 }
 
@@ -138,26 +138,26 @@ impl Default for HttpClientConfig {
             write_timeout: Duration::from_secs(30),
             max_redirects: 10,
             verify_tls: true,
-            prefer_http2: true,  // 默认优先使用 HTTP/2
-            prefer_http3: false, // HTTP/3 默认关闭（需要特殊配置）
+            prefer_http2: true,  // default优先use HTTP/2
+            prefer_http3: false, // HTTP/3 defaultclose（need特殊configuration）
             cookie_store: None,
         }
     }
 }
 
-/// HTTP 客户端
+/// HTTP client
 ///
-/// 使用 netconnpool 管理连接，应用 fingerprint-rust 的配置
+/// use netconnpool 管理connection，application fingerprint-rust 的configuration
 pub struct HttpClient {
     config: HttpClientConfig,
-    /// 连接池管理器（可选）
+    /// connection pool管理器（optional）
     pool_manager: Option<Arc<ConnectionPoolManager>>,
 }
 
 use std::sync::Arc;
 
 impl HttpClient {
-    /// 创建新的 HTTP 客户端
+    /// Create a new HTTP client
     pub fn new(config: HttpClientConfig) -> Self {
         Self {
             config,
@@ -165,7 +165,7 @@ impl HttpClient {
         }
     }
 
-    /// 创建带连接池的 HTTP 客户端
+    /// Create带connection pool HTTP client
     pub fn with_pool(config: HttpClientConfig, pool_config: PoolManagerConfig) -> Self {
         Self {
             config,
@@ -173,7 +173,7 @@ impl HttpClient {
         }
     }
 
-    /// 使用浏览器配置创建客户端
+    /// usebrowserconfigurationCreateclient
     pub fn with_profile(profile: ClientProfile, headers: HTTPHeaders, user_agent: String) -> Self {
         let config = HttpClientConfig {
             profile: Some(profile),
@@ -184,19 +184,19 @@ impl HttpClient {
         Self::new(config)
     }
 
-    /// 获取连接池统计信息
+    /// Getconnection poolstatisticsinfo
     pub fn pool_stats(&self) -> Option<Vec<PoolStats>> {
         self.pool_manager.as_ref().map(|pm| pm.get_stats())
     }
 
-    /// 清理空闲连接
+    /// 清理empty闲connection
     pub fn cleanup_idle_connections(&self) {
         if let Some(pm) = &self.pool_manager {
             pm.cleanup_idle();
         }
     }
 
-    /// 发送 GET 请求
+    /// send GET request
     pub fn get(&self, url: &str) -> Result<HttpResponse> {
         let request = HttpRequest::new(HttpMethod::Get, url)
             .with_user_agent(&self.config.user_agent)
@@ -204,7 +204,7 @@ impl HttpClient {
         self.send_request(&request)
     }
 
-    /// 发送 POST 请求
+    /// send POST request
     pub fn post(&self, url: &str, body: &[u8]) -> Result<HttpResponse> {
         let request = HttpRequest::new(HttpMethod::Post, url)
             .with_user_agent(&self.config.user_agent)
@@ -213,12 +213,12 @@ impl HttpClient {
         self.send_request(&request)
     }
 
-    /// 发送自定义请求（支持重定向）
+    /// sendcustomrequest（supportredirect）
     pub fn send_request(&self, request: &HttpRequest) -> Result<HttpResponse> {
         self.send_request_with_redirects(request, 0)
     }
 
-    /// 发送请求并处理重定向
+    /// sendrequest并processredirect
     fn send_request_with_redirects(
         &self,
         request: &HttpRequest,
@@ -231,49 +231,49 @@ impl HttpClient {
         )
     }
 
-    /// 内部重定向处理（带循环检测）
+    /// inside部redirectprocess（带循环检测）
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,
         redirect_count: usize,
         visited_urls: &mut std::collections::HashSet<String>,
     ) -> Result<HttpResponse> {
-        // 检查重定向次数
+        // Checkredirect次count
         if redirect_count >= self.config.max_redirects {
             return Err(HttpClientError::InvalidResponse(format!(
-                "重定向次数超过限制: {}",
+                "redirect次count超过limit: {}",
                 self.config.max_redirects
             )));
         }
 
-        // 检查重定向循环
+        // Checkredirect循环
         if visited_urls.contains(&request.url) {
             return Err(HttpClientError::InvalidResponse(format!(
-                "检测到重定向循环: {}",
+                "检测 to redirect循环: {}",
                 request.url
             )));
         }
         visited_urls.insert(request.url.clone());
 
-        // 解析 URL
+        // Parse URL
         let (scheme, host, port, path) = self.parse_url(&request.url)?;
 
-        // 根据协议选择处理方式
+        // Based onprotocolselectprocess方式
         let response = match scheme.as_str() {
             "http" => self.send_http_request(&host, port, &path, request)?,
             "https" => self.send_https_request(&host, port, &path, request)?,
             _ => {
                 return Err(HttpClientError::InvalidUrl(format!(
-                    "不支持的协议: {}",
+                    "不support的protocol: {}",
                     scheme
                 )));
             }
         };
 
-        // 处理重定向
+        // processredirect
         if (300..400).contains(&response.status_code) {
             if let Some(location) = response.headers.get("location") {
-                // 构建新的 URL（可能是相对路径或绝对路径）
+                // Buildnew URL（may是相pairpath or 绝pairpath）
                 let redirect_url =
                     if location.starts_with("http://") || location.starts_with("https://") {
                         location.clone()
@@ -282,14 +282,14 @@ impl HttpClient {
                     } else if location.starts_with('/') {
                         format!("{}://{}:{}{}", scheme, host, port, location)
                     } else {
-                        // 相对路径
-                        // 修复：正确处理路径拼接，避免双斜杠
+                        // 相pairpath
+                        // Fix: 正确processpath拼接，避免双斜杠
                         let base_path = if path.ends_with('/') {
                             &path
                         } else {
                             path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
                         };
-                        // 确保 base_path 以 / 结尾，location 不以 / 开头
+                        // 确保 base_path 以 / 结尾，location 不以 / 开header
                         let location = location.trim_start_matches('/');
                         if base_path == "/" {
                             format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -298,26 +298,26 @@ impl HttpClient {
                         }
                     };
 
-                // 修复：根据 HTTP 状态码正确处理重定向方法（RFC 7231）
+                // Fix: Based on HTTP status code正确processredirectmethod（RFC 7231）
                 let redirect_method = match response.status_code {
                     301..=303 => {
-                        // 301, 302, 303: POST 应该改为 GET，并移除请求体
+                        // 301, 302, 303: POST should改为 GET，并removerequest体
                         HttpMethod::Get
                     }
                     307 | 308 => {
-                        // 307, 308: 保持原 HTTP 方法（POST 仍然是 POST）
+                        // 307, 308: 保持original HTTP method（POST 仍然是 POST）
                         request.method
                     }
                     _ => {
-                        // 其他 3xx 状态码保持原方法
+                        // 其他 3xx status code保持原method
                         request.method
                     }
                 };
 
-                // 修复：处理 Set-Cookie（如果重定向响应中有 Cookie）
+                // Fix: process Set-Cookie（ if redirectresponse中有 Cookie）
                 if let Some(cookie_store) = &self.config.cookie_store {
                     if let Some(set_cookie) = response.headers.get("set-cookie") {
-                        // 解析并添加 Cookie
+                        // Parse并Add Cookie
                         if let Some(cookie) =
                             super::cookie::Cookie::parse_set_cookie(set_cookie, host.clone())
                         {
@@ -326,23 +326,23 @@ impl HttpClient {
                     }
                 }
 
-                // 解析新 URL 的域名和路径（用于 Cookie 域过滤）
+                // Parsenew URL 的domain and path（ for  Cookie 域过滤）
                 let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
 
-                // 修复：重新构建请求，只包含适用于新域名的 Cookie
+                // Fix: 重新Buildrequest，只including适 for 新domain Cookie
                 let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
 
-                // 复制非 Cookie 的 headers，并添加 Referer
+                // 复制非 Cookie  headers，并Add Referer
                 for (key, value) in &request.headers {
                     if key.to_lowercase() != "cookie" {
                         final_redirect_request = final_redirect_request.with_header(key, value);
                     }
                 }
-                // 修复：添加 Referer 头（模拟浏览器行为）
+                // Fix: Add Referer header（模拟browser行为）
                 final_redirect_request =
                     final_redirect_request.with_header("Referer", &request.url);
 
-                // 添加适用于新域名的 Cookie
+                // Add适 for 新domain Cookie
                 if let Some(cookie_store) = &self.config.cookie_store {
                     if let Some(cookie_header) = cookie_store.generate_cookie_header(
                         &new_host,
@@ -354,14 +354,14 @@ impl HttpClient {
                     }
                 }
 
-                // 如果保持 POST/PUT/PATCH，保留请求体；如果改为 GET，移除请求体（RFC 7231 要求）
+                // If保持 POST/PUT/PATCH, 保留request体； if 改为 GET，removerequest体（RFC 7231 要求）
                 if redirect_method != HttpMethod::Get {
                     if let Some(body) = &request.body {
                         final_redirect_request = final_redirect_request.with_body(body.clone());
                     }
                 }
 
-                // 递归处理重定向（传递 visited_urls 以检测循环）
+                // 递归processredirect（传递 visited_urls 以检测循环）
                 return self.send_request_with_redirects_internal(
                     &final_redirect_request,
                     redirect_count + 1,
@@ -373,64 +373,64 @@ impl HttpClient {
         Ok(response)
     }
 
-    /// 解析 URL
-    /// 修复：支持 IPv6 地址和正确处理 query/fragment
+    /// Parse URL
+    /// Fix: support IPv6 address and 正确process query/fragment
     fn parse_url(&self, url: &str) -> Result<(String, String, u16, String)> {
         let url = url.trim();
 
-        // 提取 scheme
+        // Extract scheme
         let (scheme, rest) = if let Some(stripped) = url.strip_prefix("https://") {
             ("https", stripped)
         } else if let Some(stripped) = url.strip_prefix("http://") {
             ("http", stripped)
         } else {
-            return Err(HttpClientError::InvalidUrl("缺少协议".to_string()));
+            return Err(HttpClientError::InvalidUrl("缺少protocol".to_string()));
         };
 
-        // 移除 fragment（# 后面的部分）
+        // remove fragment（# back面的partial）
         let rest = if let Some(frag_pos) = rest.find('#') {
             &rest[..frag_pos]
         } else {
             rest
         };
 
-        // 分离 query 参数（? 后面的部分）和 path
+        // 分离 query parameter（? back面的partial） and path
         let (host_port, path_with_query) = if let Some(pos) = rest.find('/') {
             (&rest[..pos], &rest[pos..])
         } else {
             (rest, "/")
         };
 
-        // 提取 path（移除 query 参数，但保留在 path 中发送）
-        // 注意：query 参数应该保留在 path 中，因为服务器需要它们
+        // Extract path（remove query parameter，but保留 in path 中send）
+        // Note: query parametershould保留 in path 中，becauseserverneed它们
         let path = path_with_query.to_string();
 
-        // 解析 host 和 port
-        // 修复：支持 IPv6 地址格式 [2001:db8::1]:8080
+        // Parse host  and port
+        // Fix: support IPv6 addressformat [2001:db8::1]:8080
         let (host, port) = if host_port.starts_with('[') {
-            // IPv6 地址格式
+            // IPv6 addressformat
             if let Some(close_bracket) = host_port.find(']') {
                 let host = host_port[1..close_bracket].to_string();
                 if let Some(colon_pos) = host_port[close_bracket + 1..].find(':') {
                     let port_str = &host_port[close_bracket + 2 + colon_pos..];
                     let port = port_str
                         .parse::<u16>()
-                        .map_err(|_| HttpClientError::InvalidUrl("无效的端口".to_string()))?;
+                        .map_err(|_| HttpClientError::InvalidUrl("invalid的port".to_string()))?;
                     (host, port)
                 } else {
                     let default_port = if scheme == "https" { 443 } else { 80 };
                     (host, default_port)
                 }
             } else {
-                return Err(HttpClientError::InvalidUrl("IPv6 地址格式错误".to_string()));
+                return Err(HttpClientError::InvalidUrl("IPv6 addressformaterror".to_string()));
             }
         } else {
-            // IPv4 地址或域名
+            // IPv4 address or domain
             if let Some(pos) = host_port.find(':') {
                 let host = host_port[..pos].to_string();
                 let port = host_port[pos + 1..]
                     .parse::<u16>()
-                    .map_err(|_| HttpClientError::InvalidUrl("无效的端口".to_string()))?;
+                    .map_err(|_| HttpClientError::InvalidUrl("invalid的port".to_string()))?;
                 (host, port)
             } else {
                 let default_port = if scheme == "https" { 443 } else { 80 };
@@ -441,7 +441,7 @@ impl HttpClient {
         Ok((scheme.to_string(), host, port, path))
     }
 
-    /// 发送 HTTP 请求
+    /// send HTTP request
     fn send_http_request(
         &self,
         host: &str,
@@ -449,7 +449,7 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
-        // 如果有连接池，使用连接池
+        // If有connection pool, useconnection pool
         #[cfg(feature = "connection-pool")]
         {
             if let Some(pool_manager) = &self.pool_manager {
@@ -463,11 +463,11 @@ impl HttpClient {
                 );
             }
         }
-        // 否则使用普通连接
+        // otherwiseuse普通connection
         http1::send_http1_request(host, port, path, request, &self.config)
     }
 
-    /// 发送 HTTPS 请求（支持 HTTP/1.1、HTTP/2、HTTP/3）
+    /// send HTTPS request（support HTTP/1.1、HTTP/2、HTTP/3）
     fn send_https_request(
         &self,
         host: &str,
@@ -475,13 +475,13 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
-        // 如果有连接池，优先使用连接池（HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1）
+        // If有connection pool, 优先useconnection pool（HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1）
         #[cfg(feature = "connection-pool")]
         if let Some(pool_manager) = &self.pool_manager {
-            // HTTP/3 with pool（异步 -> 同步包装）
+            // HTTP/3 with pool（async -> sync包装）
             #[cfg(feature = "http3")]
             if self.config.prefer_http3 {
-                // 修复：使用全局单例 Runtime
+                // Fix: use全局单例 Runtime
                 return SHARED_RUNTIME.block_on(async {
                     http3_pool::send_http3_request_with_pool(
                         host,
@@ -495,12 +495,12 @@ impl HttpClient {
                 });
             }
 
-            // HTTP/2 with pool（异步 -> 同步包装）
+            // HTTP/2 with pool（async -> sync包装）
             #[cfg(feature = "http2")]
             if self.config.prefer_http2 {
-                // 修复：使用全局单例 Runtime
-                // 注意：这里不做"自动降级"，因为 pool 场景我们更希望按用户偏好走指定协议
-                //（测试里也会严格验证版本）
+                // Fix: use全局单例 Runtime
+                // Note: 这里不做"automatic降level"，because pool 场景我们更希望按用户偏好走specifiedprotocol
+                //（test里alsowill严格Validateversion）
                 return SHARED_RUNTIME.block_on(async {
                     http2_pool::send_http2_request_with_pool(
                         host,
@@ -525,44 +525,44 @@ impl HttpClient {
             );
         }
 
-        // 优先级：HTTP/3 > HTTP/2 > HTTP/1.1
+        // priority：HTTP/3 > HTTP/2 > HTTP/1.1
 
-        // 尝试 HTTP/3
+        // try HTTP/3
         #[cfg(feature = "http3")]
         {
             if self.config.prefer_http3 {
-                // 如果开启了 HTTP/3，我们尝试它。
-                // 如果失败，我们可能希望降级，但 HTTP/3 到 TCP 是不同的传输层，
-                // 通常如果用户明确要求 HTTP/3，失败就应该报错。
-                // 但这里为了稳健性，如果是因为协议错误，我们可以降级。
-                // 暂时保持简单：直接返回。
+                // If开启了 HTTP/3, 我们try它。
+                // Iffailure, 我们may希望降level，but HTTP/3  to  TCP 是不同的传输layer，
+                // 通常 if 用户明确要求 HTTP/3，failure就should报错。
+                // but这里为了稳健性， if 是becauseprotocolerror，我们can降level。
+                // 暂 when 保持简单：直接return。
                 match http3::send_http3_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(e) => {
-                        // 如果仅仅是偏好，可以尝试降级
-                        // 如果是连接失败，可能是网络问题，也可能是服务器不支持
-                        eprintln!("警告: HTTP/3 失败，尝试降级: {}", e);
+                        // Ifonlyonly是偏好, cantry降level
+                        // If是Connection failed, may是network问题，alsomay是server不support
+                        eprintln!("warning: HTTP/3 failure，try降level: {}", e);
                     }
                 }
             }
         }
 
-        // 尝试 HTTP/2
+        // try HTTP/2
         #[cfg(feature = "http2")]
         {
             if self.config.prefer_http2 {
                 match http2::send_http2_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(_e) => {
-                        // 记录错误但继续尝试 HTTP/1.1
-                        // 在实际生产中应该使用日志系统
-                        // eprintln!("HTTP/2 尝试失败: {}，回退到 HTTP/1.1", e);
+                        // recorderrorbutcontinuetry HTTP/1.1
+                        //  in 实际生产中shoulduse日志system
+                        // eprintln!("HTTP/2 tryfailure: {}，回退 to  HTTP/1.1", e);
                     }
                 }
             }
         }
 
-        // 回退到 HTTP/1.1 + TLS
+        // 回退 to  HTTP/1.1 + TLS
         tls::send_https_request(host, port, path, request, &self.config)
     }
 }

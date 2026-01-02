@@ -1,27 +1,27 @@
-//! TLS ClientHello Signature 模块
+//! TLS ClientHello Signature module
 //!
-//! 提供 TLS ClientHello 的签名提取和比较功能
-//! 参考：Huginn Net 的 Signature 结构设计
+//! provide TLS ClientHello 的signatureExtract and 比较Features
+//! 参考：Huginn Net  Signature struct设计
 
 use crate::tls_config::grease::{filter_grease_values, is_grease_value};
 use crate::tls_config::version::TlsVersion;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
-/// TLS ClientHello 签名
-/// 包含从 ClientHello 消息中提取的所有关键信息
+/// TLS ClientHello signature
+/// including from  ClientHello message中Extract的all关keyinfo
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
-    /// TLS 版本
+    /// TLS version
     pub version: TlsVersion,
-    /// 密码套件列表（包含 GREASE）
+    /// cipher suitelist (including GREASE)
     pub cipher_suites: Vec<u16>,
-    /// 扩展列表（包含 GREASE）
+    /// extensionlist (including GREASE)
     pub extensions: Vec<u16>,
-    /// 椭圆曲线列表
+    /// 椭圆曲线list
     pub elliptic_curves: Vec<CurveID>,
-    /// 椭圆曲线点格式
+    /// 椭圆曲线点format
     pub elliptic_curve_point_formats: Vec<u8>,
-    /// 签名算法列表
+    /// signaturealgorithmlist
     pub signature_algorithms: Vec<u16>,
     /// Server Name Indication
     pub sni: Option<String>,
@@ -30,10 +30,10 @@ pub struct ClientHelloSignature {
 }
 
 impl ClientHelloSignature {
-    /// 创建新的签名
+    /// Create a newsignature
     pub fn new() -> Self {
         Self {
-            version: TlsVersion::V1_2, // 默认 TLS 1.2
+            version: TlsVersion::V1_2, // default TLS 1.2
             cipher_suites: Vec::new(),
             extensions: Vec::new(),
             elliptic_curves: Vec::new(),
@@ -44,22 +44,22 @@ impl ClientHelloSignature {
         }
     }
 
-    /// 获取过滤 GREASE 后的密码套件
+    /// Get过滤 GREASE back's cipher suites
     pub fn cipher_suites_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.cipher_suites)
     }
 
-    /// 获取过滤 GREASE 后的扩展
+    /// Get过滤 GREASE back's extensions
     pub fn extensions_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.extensions)
     }
 
-    /// 获取过滤 GREASE 后的签名算法
+    /// Get过滤 GREASE back的signaturealgorithm
     pub fn signature_algorithms_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.signature_algorithms)
     }
 
-    /// 检查是否包含 GREASE 值
+    /// Checkwhetherincluding GREASE value
     pub fn has_grease(&self) -> bool {
         self.cipher_suites.iter().any(|&v| is_grease_value(v))
             || self.extensions.iter().any(|&v| is_grease_value(v))
@@ -69,13 +69,13 @@ impl ClientHelloSignature {
                 .any(|&v| is_grease_value(v))
     }
 
-    /// 比较两个签名是否相似（忽略 GREASE 值）
+    /// 比较两个signaturewhether相似（忽略 GREASE value）
     ///
-    /// # 参数
-    /// * `other` - 要比较的另一个签名
+    /// # Parameters
+    /// * `other` - 要比较的另ansignature
     ///
-    /// # 返回
-    /// * `true` 如果签名相似（忽略 GREASE 后相同），`false` 否则
+    /// # Returns
+    /// * `true`  if signature相似（忽略 GREASE back相同），`false` otherwise
     pub fn similar_to(&self, other: &Self) -> bool {
         self.version == other.version
             && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -88,8 +88,8 @@ impl ClientHelloSignature {
             && self.alpn == other.alpn
     }
 
-    /// 计算签名的哈希值（用于快速比较）
-    /// 使用过滤 GREASE 后的值
+    /// Calculatesignature的hashvalue（ for 快速比较）
+    /// use过滤 GREASE back的value
     pub fn hash(&self) -> u64 {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
@@ -121,15 +121,15 @@ mod tests {
     fn test_similar_to() {
         let mut sig1 = ClientHelloSignature::new();
         sig1.version = TlsVersion::V1_2;
-        sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // 包含 GREASE
+        sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // including GREASE
         sig1.extensions = vec![0x0000, 0x0010];
 
         let mut sig2 = ClientHelloSignature::new();
         sig2.version = TlsVersion::V1_2;
-        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // 不同的 GREASE，但过滤后相同
+        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // 不同 GREASE，but过滤back相同
         sig2.extensions = vec![0x0000, 0x0010];
 
-        // 过滤 GREASE 后应该相同
+        // 过滤 GREASE backshould相同
         assert_eq!(
             sig1.cipher_suites_without_grease(),
             sig2.cipher_suites_without_grease()

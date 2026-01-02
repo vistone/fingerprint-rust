@@ -1,8 +1,8 @@
-//! TLS 配置宏
+//! TLS configuration宏
 //!
-//! 提供宏来简化常见配置的构建，减少重复代码
+//! provide宏来简化常见configuration的Build，减少重复代码
 
-/// 创建 Chrome 扩展列表的辅助宏
+/// Create Chrome extensionlist的辅助宏
 /// 类似 wreq-util 的宏设计
 #[macro_export]
 macro_rules! chrome_extensions {

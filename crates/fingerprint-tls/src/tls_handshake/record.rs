@@ -1,6 +1,6 @@
-//! TLS 记录层 (Record Layer)
+//! TLS recordlayer (Record Layer)
 //!
-//! TLS 记录格式：
+//! TLS recordformat：
 //! ```text
 //! struct {
 //!     ContentType type;      // 1 byte
@@ -10,7 +10,7 @@
 //! } TLSPlaintext;
 //! ```
 
-/// TLS 记录类型
+/// TLS recordtype
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TLSRecordType {
@@ -26,19 +26,19 @@ impl TLSRecordType {
     }
 }
 
-/// TLS 记录
+/// TLS record
 #[derive(Debug, Clone)]
 pub struct TLSRecord {
-    /// 内容类型
+    /// inside容type
     pub content_type: TLSRecordType,
-    /// 协议版本（通常是 TLS 1.0 = 0x0301，用于兼容性）
+    /// protocolversion（通常是 TLS 1.0 = 0x0301， for 兼容性）
     pub version: u16,
-    /// 数据内容
+    /// count据inside容
     pub fragment: Vec<u8>,
 }
 
 impl TLSRecord {
-    /// 创建新的 TLS 记录
+    /// Create a new TLS record
     pub fn new(content_type: TLSRecordType, version: u16, fragment: Vec<u8>) -> Self {
         Self {
             content_type,
@@ -47,12 +47,12 @@ impl TLSRecord {
         }
     }
 
-    /// 创建握手记录
+    /// Createhandshakerecord
     pub fn handshake(version: u16, data: Vec<u8>) -> Self {
         Self::new(TLSRecordType::Handshake, version, data)
     }
 
-    /// 序列化为字节流
+    /// 序列化为bytesstream
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
 
@@ -72,10 +72,10 @@ impl TLSRecord {
         bytes
     }
 
-    /// 从字节流解析
+    ///  from bytesstreamParse
     pub fn from_bytes(data: &[u8]) -> Result<(Self, usize), String> {
         if data.len() < 5 {
-            return Err("数据太短，无法解析 TLS 记录".to_string());
+            return Err("count据太短，unable toParse TLS record".to_string());
         }
 
         let content_type = match data[0] {
@@ -83,7 +83,7 @@ impl TLSRecord {
             21 => TLSRecordType::Alert,
             22 => TLSRecordType::Handshake,
             23 => TLSRecordType::ApplicationData,
-            _ => return Err(format!("未知的内容类型: {}", data[0])),
+            _ => return Err(format!("not知的inside容type: {}", data[0])),
         };
 
         let version = u16::from_be_bytes([data[1], data[2]]);
@@ -91,7 +91,7 @@ impl TLSRecord {
 
         if data.len() < 5 + length {
             return Err(format!(
-                "数据不完整，需要 {} 字节，实际只有 {} 字节",
+                "count据不complete，need {} bytes，实际只有 {} bytes",
                 5 + length,
                 data.len()
             ));
@@ -114,7 +114,7 @@ mod tests {
 
         let bytes = record.to_bytes();
 
-        // 验证格式
+        // Validateformat
         assert_eq!(bytes[0], 22); // Handshake
         assert_eq!(u16::from_be_bytes([bytes[1], bytes[2]]), 0x0303); // TLS 1.2
         assert_eq!(u16::from_be_bytes([bytes[3], bytes[4]]), 5); // Length

@@ -1,6 +1,6 @@
 //! # fingerprint-tls
 //!
-//! TLS 配置、扩展和握手模块
+//! TLS configuration、extension and handshakemodule
 
 pub mod tls_config;
 pub mod tls_extensions;

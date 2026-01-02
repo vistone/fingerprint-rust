@@ -1,11 +1,11 @@
-//! HTTP Headers 模块
+//! HTTP Headers module
 //!
-//! 提供标准 HTTP 请求头的生成和管理功能
+//! providestandard HTTP requestheader的Generate and 管理Features
 
 use fingerprint_core::types::BrowserType;
 use fingerprint_core::utils::{extract_chrome_version, extract_platform, random_choice_string};
 
-/// 全球语言列表（按使用频率排序）
+/// 全球语言list（按use频率排序）
 pub static LANGUAGES: &[&str] = &[
     "en-US,en;q=0.9",          // 英语（美国）
     "zh-CN,zh;q=0.9,en;q=0.8", // 中文（简体）
@@ -39,39 +39,39 @@ pub static LANGUAGES: &[&str] = &[
     "zh-TW,zh;q=0.9,en;q=0.8", // 中文（繁体）
 ];
 
-/// 标准的 HTTP 请求头
+/// standard HTTP requestheader
 #[derive(Debug, Clone)]
 pub struct HTTPHeaders {
-    /// Accept 头
+    /// Accept header
     pub accept: String,
-    /// Accept-Language 头（支持全球语言）
+    /// Accept-Language header（support全球语言）
     pub accept_language: String,
-    /// Accept-Encoding 头
+    /// Accept-Encoding header
     pub accept_encoding: String,
-    /// User-Agent 头
+    /// User-Agent header
     pub user_agent: String,
-    /// Sec-Fetch-Site 头
+    /// Sec-Fetch-Site header
     pub sec_fetch_site: String,
-    /// Sec-Fetch-Mode 头
+    /// Sec-Fetch-Mode header
     pub sec_fetch_mode: String,
-    /// Sec-Fetch-User 头
+    /// Sec-Fetch-User header
     pub sec_fetch_user: String,
-    /// Sec-Fetch-Dest 头
+    /// Sec-Fetch-Dest header
     pub sec_fetch_dest: String,
-    /// Sec-CH-UA 头
+    /// Sec-CH-UA header
     pub sec_ch_ua: String,
-    /// Sec-CH-UA-Mobile 头
+    /// Sec-CH-UA-Mobile header
     pub sec_ch_ua_mobile: String,
-    /// Sec-CH-UA-Platform 头
+    /// Sec-CH-UA-Platform header
     pub sec_ch_ua_platform: String,
-    /// Upgrade-Insecure-Requests 头
+    /// Upgrade-Insecure-Requests header
     pub upgrade_insecure_requests: String,
-    /// 用户自定义的 headers（如 Cookie、Authorization、X-API-Key 等）
+    /// 用户custom headers（如 Cookie、Authorization、X-API-Key 等）
     pub custom: std::collections::HashMap<String, String>,
 }
 
 impl HTTPHeaders {
-    /// 创建新的 HTTPHeaders
+    /// Create a new HTTPHeaders
     pub fn new() -> Self {
         Self {
             accept: String::new(),
@@ -90,9 +90,9 @@ impl HTTPHeaders {
         }
     }
 
-    /// 克隆 HTTPHeaders 对象，返回一个新的副本
+    /// 克隆 HTTPHeaders pair象，returnannew副本
     ///
-    /// 注意：此方法名称与标准库的 `Clone::clone` 不同，以避免命名冲突
+    /// Note: 此methodname and standard库的 `Clone::clone` 不同，以避免命名冲突
     #[allow(clippy::should_implement_trait)]
     pub fn clone(&self) -> Self {
         Self {
@@ -112,9 +112,9 @@ impl HTTPHeaders {
         }
     }
 
-    /// 设置用户自定义的 header（系统会自动合并到 to_map() 中）
-    /// 这是推荐的方式，设置后调用 to_map() 即可自动包含自定义 headers
-    /// 示例：result.headers.set("Cookie", "session_id=abc123")
+    /// settings用户custom header（systemwillautomatic合并 to  to_map() 中）
+    /// 这是推荐的方式，settingsbackcall to_map() 即可automaticincludingcustom headers
+    /// Examples：result.headers.set("Cookie", "session_id=abc123")
     pub fn set(&mut self, key: &str, value: &str) {
         if value.is_empty() {
             self.custom.remove(key);
@@ -123,30 +123,30 @@ impl HTTPHeaders {
         }
     }
 
-    /// 批量设置用户自定义的 headers（系统会自动合并到 to_map() 中）
-    /// 示例：result.headers.set_headers(&[("Cookie", "session_id=abc123"), ("X-API-Key", "key")])
+    /// 批量settings用户custom headers（systemwillautomatic合并 to  to_map() 中）
+    /// Examples：result.headers.set_headers(&[("Cookie", "session_id=abc123"), ("X-API-Key", "key")])
     pub fn set_headers(&mut self, custom_headers: &[(&str, &str)]) {
         for (key, value) in custom_headers {
             self.set(key, value);
         }
     }
 
-    /// 将 HTTPHeaders 转换为 HashMap
-    /// 系统会自动合并 Custom 中的用户自定义 headers（如 Cookie、Authorization、X-API-Key 等）
+    /// will HTTPHeaders convert to HashMap
+    /// systemwillautomatic合并 Custom 中的用户custom headers（如 Cookie、Authorization、X-API-Key 等）
     pub fn to_map(&self) -> std::collections::HashMap<String, String> {
         self.to_map_with_custom(&[])
     }
 
-    /// 将 HTTPHeaders 转换为 HashMap，并合并用户自定义的 headers
-    /// custom_headers: 用户自定义的 headers（如 session、cookie、apikey 等）
-    /// 用户自定义的 headers 优先级更高，会覆盖系统生成的 headers
+    /// will HTTPHeaders convert to HashMap，并合并用户custom headers
+    /// custom_headers: 用户custom headers（如 session、cookie、apikey 等）
+    /// 用户custom headers priority更高，will覆盖systemGenerate headers
     pub fn to_map_with_custom(
         &self,
         custom_headers: &[(&str, &str)],
     ) -> std::collections::HashMap<String, String> {
         let mut headers = std::collections::HashMap::new();
 
-        // 先添加系统生成的标准 headers
+        // 先AddsystemGenerate's standard headers
         if !self.accept.is_empty() {
             headers.insert("Accept".to_string(), self.accept.clone());
         }
@@ -193,14 +193,14 @@ impl HTTPHeaders {
             );
         }
 
-        // 合并 HTTPHeaders 中的 Custom headers
+        // 合并 HTTPHeaders 中 Custom headers
         for (key, value) in &self.custom {
             if !value.is_empty() {
                 headers.insert(key.clone(), value.clone());
             }
         }
 
-        // 合并传入的 custom_headers（优先级最高，会覆盖所有已有的 headers）
+        // 合并传入 custom_headers（priority最高，will覆盖allalready有 headers）
         for (key, value) in custom_headers {
             if !value.is_empty() {
                 headers.insert((*key).to_string(), (*value).to_string());
@@ -210,15 +210,15 @@ impl HTTPHeaders {
         headers
     }
 
-    /// 将 HTTPHeaders 转换为有序的 Vec，遵循指定的 header_order
+    /// will HTTPHeaders convert to有序 Vec，遵循specified header_order
     pub fn to_ordered_vec(&self, order: &[String]) -> Vec<(String, String)> {
         let map = self.to_map();
         let mut result = Vec::with_capacity(map.len());
         let mut used = std::collections::HashSet::new();
 
-        // 1. 先按指定的 order 顺序添加
+        // 1. 先按specified order 顺序Add
         for key in order {
-            // 查找 map 中是否存在匹配的 key (忽略大小写进行匹配，但保留 order 中的大小写)
+            // 查找 map is否 existsmatch key (忽略size写进行match，but保留 order 中的size写)
             for (m_key, m_val) in &map {
                 if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
                     result.push((key.clone(), m_val.clone()));
@@ -228,7 +228,7 @@ impl HTTPHeaders {
             }
         }
 
-        // 2. 添加剩下的且不再 order 中的 headers
+        // 2. Add剩down的且不再 order 中 headers
         for (m_key, m_val) in map {
             if !used.contains(&m_key) {
                 result.push((m_key, m_val));
@@ -245,12 +245,12 @@ impl Default for HTTPHeaders {
     }
 }
 
-/// 随机选择一个语言
+/// randomly selectan语言
 pub fn random_language() -> String {
     random_choice_string(LANGUAGES).unwrap_or_else(|| "en-US,en;q=0.9".to_string())
 }
 
-/// 根据浏览器类型和 User-Agent 生成标准 HTTP headers
+/// Based onbrowsertype and User-Agent Generatestandard HTTP headers
 pub fn generate_headers(
     browser_type: BrowserType,
     user_agent: &str,
@@ -294,8 +294,8 @@ pub fn generate_headers(
         BrowserType::Firefox => {
             headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
             headers.accept_encoding = "gzip, deflate, br".to_string();
-            // Firefox 不使用 Sec-Fetch-* headers（旧版本）
-            // 新版本 Firefox 使用，但格式不同
+            // Firefox 不use Sec-Fetch-* headers（旧version）
+            // 新version Firefox use，butformat不同
             if is_mobile {
                 headers.sec_fetch_site = "none".to_string();
                 headers.sec_fetch_mode = "navigate".to_string();
@@ -315,7 +315,7 @@ pub fn generate_headers(
             }
         }
         BrowserType::Opera => {
-            // Opera 使用 Chrome 内核，headers 类似 Chrome
+            // Opera use Chrome inside核，headers 类似 Chrome
             headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
             headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
             headers.sec_fetch_site = "none".to_string();
@@ -337,7 +337,7 @@ pub fn generate_headers(
             }
         }
         BrowserType::Edge => {
-            // Edge 使用 Chrome 内核
+            // Edge use Chrome inside核
             headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
             headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
             headers.sec_fetch_site = "none".to_string();
@@ -348,7 +348,7 @@ pub fn generate_headers(
         }
     }
 
-    // Accept-Language 使用随机语言
+    // Accept-Language userandom语言
     headers.accept_language = random_language();
 
     headers

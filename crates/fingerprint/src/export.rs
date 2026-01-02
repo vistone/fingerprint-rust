@@ -1,6 +1,6 @@
-//! 配置导出模块
+//! configurationexportmodule
 //!
-//! 将 ClientHelloSpec 导出为 JSON 格式，以便供其他语言（如 Go uTLS）使用。
+//! will ClientHelloSpec export为 JSON format，以便供其他语言（如 Go uTLS）use。
 
 #[cfg(feature = "export")]
 use fingerprint_tls::tls_config::ClientHelloSpec;
@@ -9,7 +9,7 @@ use fingerprint_tls::tls_extensions::*;
 #[cfg(feature = "export")]
 use serde::{Deserialize, Serialize};
 
-/// 导出的配置结构体
+/// export的configurationstruct
 #[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExportConfig {
@@ -20,7 +20,7 @@ pub struct ExportConfig {
     pub tls_vers_max: u16,
 }
 
-/// 导出的 KeyShare
+/// export KeyShare
 #[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExportKeyShare {
@@ -28,12 +28,12 @@ pub struct ExportKeyShare {
     pub data_hex: String,
 }
 
-/// 导出的扩展枚举
+/// export's extensionsenum
 #[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum ExportExtension {
-    SNI, // 只有类型，没有数据（由客户端运行时决定）
+    SNI, // 只有type，没有count据（由clientrun when 决定）
     StatusRequest,
     SupportedCurves(Vec<u16>),
     SupportedPoints(Vec<u8>),
@@ -55,7 +55,7 @@ pub enum ExportExtension {
     Unknown(u16),
 }
 
-/// 将 ClientHelloSpec 转换为 JSON 字符串
+/// will ClientHelloSpec convert to JSON string
 #[cfg(feature = "export")]
 pub fn export_config_json(spec: &ClientHelloSpec) -> Result<String, serde_json::Error> {
     let export = ExportConfig::from(spec);
@@ -74,7 +74,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                 .extensions
                 .iter()
                 .map(|ext| {
-                    // 使用 as_any 进行向下转型
+                    // use as_any 进行向down转型
                     let any_ext = ext.as_any();
 
                     if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {
@@ -137,7 +137,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                                     }
                                     #[cfg(not(feature = "hex"))]
                                     {
-                                        // 如果没有 hex feature，使用十六进制格式手动编码
+                                        // If没有 hex feature, use十六进制formatmanualencoding
                                         ks.data
                                             .iter()
                                             .map(|b| format!("{:02x}", b))

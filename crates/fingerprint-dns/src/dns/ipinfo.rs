@@ -1,30 +1,30 @@
-//! IPInfo.io 集成模块
+//! IPInfo.io 集成module
 //!
-//! 从 IPInfo.io API 获取 IP 地址的详细信息（地理位置、ISP 等）
+//!  from  IPInfo.io API Get IP address的详细info（地理bit置、ISP 等）
 
 use crate::dns::types::{DNSError, IPInfo};
 use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
 use std::time::Duration;
 
-/// IPInfo.io 客户端
+/// IPInfo.io client
 pub struct IPInfoClient {
     token: String,
     timeout: Duration,
 }
 
 impl IPInfoClient {
-    /// 创建新的 IPInfo 客户端
+    /// Create a new IPInfo client
     pub fn new(token: String, timeout: Duration) -> Self {
         Self { token, timeout }
     }
 
-    /// 获取 IP 地址的详细信息
+    /// Get IP address的详细info
     pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
-        // 安全修复：使用 HTTP Header 传递 token，而不是 URL 参数
-        // 这样可以避免 token 泄露到日志、错误消息、代理服务器等
+        // securityFix: use HTTP Header 传递 token，而is not URL parameter
+        // 这样can避免 token 泄露 to 日志、errormessage、proxyserver等
         let url = format!("https://ipinfo.io/{}", ip);
 
-        // 使用项目内部的 HttpClient
+        // use项目inside部 HttpClient
         let config = HttpClientConfig {
             connect_timeout: self.timeout,
             read_timeout: self.timeout,
@@ -33,12 +33,12 @@ impl IPInfoClient {
         };
         let client = HttpClient::new(config);
 
-        // 创建带有 Authorization header 的请求
+        // Create带有 Authorization header 的request
         use fingerprint_http::http_client::{HttpMethod, HttpRequest};
         let request = HttpRequest::new(HttpMethod::Get, &url)
             .with_header("Authorization", &format!("Bearer {}", self.token));
 
-        // 在异步上下文中执行同步的 HTTP 请求
+        //  in asyncupdown文中executesync HTTP request
         let response = tokio::task::spawn_blocking({
             let request = request.clone();
             move || client.send_request(&request)
@@ -54,12 +54,12 @@ impl IPInfoClient {
             )));
         }
 
-        // 解析 JSON 响应
+        // Parse JSON response
         let body_str = String::from_utf8_lossy(&response.body);
         let json: serde_json::Value = serde_json::from_str(&body_str)
             .map_err(|e| DNSError::Http(format!("failed to parse JSON: {}", e)))?;
 
-        // 解析响应
+        // Parseresponse
         Ok(IPInfo {
             ip: json["ip"].as_str().unwrap_or(ip).to_string(),
             hostname: json["hostname"].as_str().map(|s| s.to_string()),
@@ -72,8 +72,8 @@ impl IPInfoClient {
         })
     }
 
-    /// 批量获取 IP 地址信息（并发）
-    /// 自动去重，确保每个 IP 只查询一次
+    /// 批量Get IP addressinfo（并发）
+    /// automatic去重，确保each IP 只query一次
     pub async fn get_ip_infos(
         &self,
         ips: Vec<String>,
@@ -82,7 +82,7 @@ impl IPInfoClient {
         use futures::stream::{self, StreamExt};
         use std::collections::HashSet;
 
-        // 对 IP 列表去重，确保每个 IP 只查询一次
+        // pair IP list去重，确保each IP 只query一次
         let unique_ips: Vec<String> = ips
             .into_iter()
             .collect::<HashSet<String>>()
@@ -108,11 +108,11 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    #[ignore] // 需要真实的 token，默认跳过
+    #[ignore] // needreal token，defaultskip
     async fn test_get_ip_info() {
         let _client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
 
-        // 这个测试需要真实的 token
+        // 这个testneedreal token
         // let result = client.get_ip_info("8.8.8.8").await;
         // assert!(result.is_ok());
     }

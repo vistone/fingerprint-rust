@@ -1,9 +1,9 @@
-//! HTTP 响应解析
+//! HTTP responseParse
 //!
-//! 支持：
+//! support：
 //! - chunked encoding
-//! - gzip/deflate/brotli 压缩
-//! - 完整的 HTTP/1.1 响应解析
+//! - gzip/deflate/brotli compression
+//! - complete HTTP/1.1 responseParse
 
 #[cfg(feature = "compression")]
 use brotli_decompressor::Decompressor;
@@ -11,7 +11,7 @@ use std::collections::HashMap;
 #[cfg(feature = "compression")]
 use std::io::Read;
 
-/// HTTP 响应
+/// HTTP response
 #[derive(Debug, Clone)]
 pub struct HttpResponse {
     pub status_code: u16,
@@ -19,11 +19,11 @@ pub struct HttpResponse {
     pub headers: HashMap<String, String>,
     pub body: Vec<u8>,
     pub http_version: String,
-    pub response_time_ms: u64, // 响应时间
+    pub response_time_ms: u64, // response when 间
 }
 
 impl HttpResponse {
-    /// 创建新的响应
+    /// Create a newresponse
     pub fn new(status_code: u16) -> Self {
         Self {
             status_code,
@@ -35,28 +35,28 @@ impl HttpResponse {
         }
     }
 
-    /// 从原始响应解析（完整版本）
+    ///  from 原beginningresponseParse（completeversion）
     pub fn parse(raw_response: &[u8]) -> Result<Self, String> {
         let start = std::time::Instant::now();
 
-        // 1. 分离 headers 和 body
+        // 1. 分离 headers  and body
         let (headers_end, body_start) = Self::find_headers_end(raw_response)?;
 
         let header_bytes = &raw_response[..headers_end];
         let body_bytes = &raw_response[body_start..];
 
-        // 2. 解析 headers
+        // 2. Parse headers
         let header_str = String::from_utf8_lossy(header_bytes);
         let mut lines = header_str.lines();
 
-        // 3. 解析状态行: HTTP/1.1 200 OK
-        let status_line = lines.next().ok_or("缺少状态行")?;
+        // 3. Parsestatus行: HTTP/1.1 200 OK
+        let status_line = lines.next().ok_or("缺少status行")?;
         let (http_version, status_code, status_text) = Self::parse_status_line(status_line)?;
 
-        // 4. 解析 headers
+        // 4. Parse headers
         let headers = Self::parse_headers(lines)?;
 
-        // 5. 处理 body
+        // 5. process body
         let body = Self::process_body(body_bytes, &headers)?;
 
         let response_time_ms = start.elapsed().as_millis() as u64;
@@ -71,42 +71,42 @@ impl HttpResponse {
         })
     }
 
-    /// 查找 headers 结束位置（\r\n\r\n）
+    /// 查找 headers endbit置（\r\n\r\n）
     fn find_headers_end(data: &[u8]) -> Result<(usize, usize), String> {
-        // 安全检查：确保数据长度至少为 4 字节
+        // securityCheck：确保count据length至少为 4 bytes
         if data.len() < 4 {
-            return Err("数据太短，无法包含 headers 结束标记".to_string());
+            return Err("count据太短，unable toincluding headers end标记".to_string());
         }
 
-        // 使用 saturating_sub 防止下溢，但需要额外检查边界
+        // use saturating_sub 防止down溢，butneed额outsideCheckedge界
         let max_i = data.len().saturating_sub(3);
         for i in 0..max_i {
-            // 安全检查：确保不会越界访问
+            // securityCheck：确保不will越界访问
             if i + 4 <= data.len() && &data[i..i + 4] == b"\r\n\r\n" {
                 return Ok((i, i + 4));
             }
         }
-        Err("未找到 headers 结束标记".to_string())
+        Err("not找 to  headers end标记".to_string())
     }
 
-    /// 解析状态行
+    /// Parsestatus行
     fn parse_status_line(line: &str) -> Result<(String, u16, String), String> {
         let parts: Vec<&str> = line.splitn(3, ' ').collect();
 
         if parts.len() < 2 {
-            return Err(format!("无效的状态行: {}", line));
+            return Err(format!("invalid的status行: {}", line));
         }
 
         let http_version = parts[0].to_string();
         let status_code = parts[1]
             .parse::<u16>()
-            .map_err(|_| format!("无效的状态码: {}", parts[1]))?;
+            .map_err(|_| format!("invalid的status code: {}", parts[1]))?;
         let status_text = parts.get(2).unwrap_or(&"").to_string();
 
         Ok((http_version, status_code, status_text))
     }
 
-    /// 解析 headers
+    /// Parse headers
     fn parse_headers<'a, I>(lines: I) -> Result<HashMap<String, String>, String>
     where
         I: Iterator<Item = &'a str>,
@@ -128,21 +128,21 @@ impl HttpResponse {
         Ok(headers)
     }
 
-    /// 处理响应体（支持 chunked 和压缩）
+    /// processresponse体（support chunked  and compression）
     fn process_body(
         body_bytes: &[u8],
         headers: &HashMap<String, String>,
     ) -> Result<Vec<u8>, String> {
         let mut body = body_bytes.to_vec();
 
-        // 1. 处理 Transfer-Encoding: chunked
+        // 1. process Transfer-Encoding: chunked
         if let Some(te) = headers.get("transfer-encoding") {
             if te.contains("chunked") {
                 body = Self::parse_chunked(&body)?;
             }
         }
 
-        // 2. 处理 Content-Encoding
+        // 2. process Content-Encoding
         if let Some(ce) = headers.get("content-encoding") {
             body = Self::decompress(&body, ce)?;
         }
@@ -150,33 +150,33 @@ impl HttpResponse {
         Ok(body)
     }
 
-    /// 解析 chunked encoding
+    /// Parse chunked encoding
     fn parse_chunked(data: &[u8]) -> Result<Vec<u8>, String> {
-        /// 最大允许的单个 chunk 大小（10MB）
-        /// 防止恶意服务器发送超大 chunk 导致内存耗尽
+        /// maximum允许的single chunk size（10MB）
+        /// 防止恶意serversend超大 chunk 导致inside存耗尽
         const MAX_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB
 
         let mut result = Vec::new();
         let mut pos = 0;
 
         loop {
-            // 查找 chunk size 行的结束（\r\n）
+            // 查找 chunk size 行的end（\r\n）
             let size_line_end = data[pos..]
                 .windows(2)
                 .position(|w| w == b"\r\n")
                 .ok_or("Invalid chunked encoding: missing CRLF after size")?;
 
-            // 解析 chunk size（十六进制）
+            // Parse chunk size（十六进制）
             let size_str = std::str::from_utf8(&data[pos..pos + size_line_end])
                 .map_err(|_| "Invalid chunk size: not UTF-8")?;
 
-            // 移除可能的扩展参数（如 "3b; name=value"）
+            // removemay's extensionsparameter（如 "3b; name=value"）
             let size_str = size_str.split(';').next().unwrap_or(size_str).trim();
 
             let size = usize::from_str_radix(size_str, 16)
                 .map_err(|e| format!("Invalid chunk size '{}': {}", size_str, e))?;
 
-            // 安全检查：防止恶意服务器发送超大 chunk
+            // securityCheck：防止恶意serversend超大 chunk
             if size > MAX_CHUNK_SIZE {
                 return Err(format!(
                     "Chunk size {} exceeds maximum allowed size {} bytes",
@@ -184,24 +184,24 @@ impl HttpResponse {
                 ));
             }
 
-            // size = 0 表示最后一个 chunk
+            // size = 0 表示last chunk
             if size == 0 {
                 break;
             }
 
-            // 跳过 size 行和 \r\n
+            // skip size 行 and \r\n
             pos += size_line_end + 2;
 
-            // 检查是否有足够的数据
+            // Checkwhether有足够的count据
             if pos + size > data.len() {
                 return Err(format!("Chunk size {} exceeds available data", size));
             }
 
-            // 提取 chunk data
+            // Extract chunk data
             result.extend_from_slice(&data[pos..pos + size]);
             pos += size;
 
-            // 跳过 chunk 后面的 \r\n
+            // skip chunk back面的 \r\n
             if pos + 2 <= data.len() && &data[pos..pos + 2] == b"\r\n" {
                 pos += 2;
             } else {
@@ -212,30 +212,30 @@ impl HttpResponse {
         Ok(result)
     }
 
-    /// 解压缩响应体
+    /// 解compressionresponse体
     fn decompress(data: &[u8], encoding: &str) -> Result<Vec<u8>, String> {
         match encoding.to_lowercase().as_str() {
             #[cfg(feature = "compression")]
             "gzip" => Self::decompress_gzip(data),
             #[cfg(not(feature = "compression"))]
-            "gzip" => Err("gzip 解压需要 --features compression".to_string()),
+            "gzip" => Err("gzip decompressionneed --features compression".to_string()),
             #[cfg(feature = "compression")]
             "deflate" => Self::decompress_deflate(data),
             #[cfg(not(feature = "compression"))]
-            "deflate" => Err("deflate 解压需要 --features compression".to_string()),
+            "deflate" => Err("deflate decompressionneed --features compression".to_string()),
             "br" => Self::decompress_brotli(data),
             "identity" | "" => Ok(data.to_vec()),
-            _ => Err(format!("不支持的编码: {}", encoding)),
+            _ => Err(format!("不support的encoding: {}", encoding)),
         }
     }
 
-    /// 解压 gzip
+    /// decompression gzip
     #[cfg(feature = "compression")]
     fn decompress_gzip(data: &[u8]) -> Result<Vec<u8>, String> {
         #[cfg(not(feature = "compression"))]
         {
             let _ = data;
-            return Err("gzip 解压需要启用 feature: compression".to_string());
+            return Err("gzip decompressionneedenabled feature: compression".to_string());
         }
 
         #[cfg(feature = "compression")]
@@ -248,23 +248,23 @@ impl HttpResponse {
         #[cfg(feature = "compression")]
         decoder
             .read_to_end(&mut result)
-            .map_err(|e| format!("gzip 解压失败: {}", e))?;
+            .map_err(|e| format!("gzip decompressionfailure: {}", e))?;
         #[cfg(feature = "compression")]
         Ok(result)
     }
 
     #[cfg(not(feature = "compression"))]
     fn decompress_gzip(_data: &[u8]) -> Result<Vec<u8>, String> {
-        Err("压缩功能未启用，请使用 --features compression 编译".to_string())
+        Err("compressionFeaturesnotenabled，请use --features compression 编译".to_string())
     }
 
-    /// 解压 deflate
+    /// decompression deflate
     #[cfg(feature = "compression")]
     fn decompress_deflate(data: &[u8]) -> Result<Vec<u8>, String> {
         #[cfg(not(feature = "compression"))]
         {
             let _ = data;
-            return Err("deflate 解压需要启用 feature: compression".to_string());
+            return Err("deflate decompressionneedenabled feature: compression".to_string());
         }
 
         #[cfg(feature = "compression")]
@@ -277,43 +277,43 @@ impl HttpResponse {
         #[cfg(feature = "compression")]
         decoder
             .read_to_end(&mut result)
-            .map_err(|e| format!("deflate 解压失败: {}", e))?;
+            .map_err(|e| format!("deflate decompressionfailure: {}", e))?;
         #[cfg(feature = "compression")]
         Ok(result)
     }
 
     #[cfg(not(feature = "compression"))]
     fn decompress_deflate(_data: &[u8]) -> Result<Vec<u8>, String> {
-        Err("压缩功能未启用，请使用 --features compression 编译".to_string())
+        Err("compressionFeaturesnotenabled，请use --features compression 编译".to_string())
     }
 
-    /// 解压 brotli
+    /// decompression brotli
     #[cfg(feature = "compression")]
     fn decompress_brotli(data: &[u8]) -> Result<Vec<u8>, String> {
         let mut decompressor = Decompressor::new(data, 4096);
         let mut result = Vec::new();
         decompressor
             .read_to_end(&mut result)
-            .map_err(|e| format!("brotli 解压失败: {}", e))?;
+            .map_err(|e| format!("brotli decompressionfailure: {}", e))?;
         Ok(result)
     }
 
     #[cfg(not(feature = "compression"))]
     fn decompress_brotli(_data: &[u8]) -> Result<Vec<u8>, String> {
-        Err("brotli 解压需要启用 feature: compression".to_string())
+        Err("brotli decompressionneedenabled feature: compression".to_string())
     }
 
-    /// 获取响应体为字符串
+    /// Getresponse体为string
     pub fn body_as_string(&self) -> Result<String, std::string::FromUtf8Error> {
         String::from_utf8(self.body.clone())
     }
 
-    /// 检查是否成功
+    /// Checkwhethersuccess
     pub fn is_success(&self) -> bool {
         self.status_code >= 200 && self.status_code < 300
     }
 
-    /// 获取 header
+    /// Get header
     pub fn get_header(&self, key: &str) -> Option<&String> {
         self.headers.get(key)
     }
@@ -338,7 +338,7 @@ mod tests {
 
         assert_eq!(response.status_code, 200);
         assert_eq!(response.status_text, "OK");
-        // headers 存储时会转换为小写
+        // headers 存储 when willconvert to小写
         assert_eq!(
             response.get_header("content-type"),
             Some(&"text/html".to_string())
@@ -377,7 +377,7 @@ mod tests {
                     0\r\n\
                     \r\n";
 
-        let response = HttpResponse::parse(raw).expect("Chunked 解析失败");
+        let response = HttpResponse::parse(raw).expect("Chunked Parsefailure");
         assert_eq!(
             response.body_as_string().unwrap(),
             "Wikipedia in\r\n\r\nchunks."
@@ -398,7 +398,7 @@ mod tests {
             .to_vec();
         raw.extend_from_slice(&compressed);
 
-        let response = HttpResponse::parse(&raw).expect("Gzip 解析失败");
+        let response = HttpResponse::parse(&raw).expect("Gzip Parsefailure");
         assert_eq!(response.body_as_string().unwrap(), data);
     }
 
@@ -410,7 +410,7 @@ mod tests {
         encoder.write_all(data.as_bytes()).unwrap();
         let compressed = encoder.finish().unwrap();
 
-        // 将压缩数据分块
+        // willcompressioncount据分块
         let chunk1 = &compressed[0..10];
         let chunk2 = &compressed[10..];
 
@@ -433,7 +433,7 @@ mod tests {
         // Last chunk
         raw.extend_from_slice(b"0\r\n\r\n");
 
-        let response = HttpResponse::parse(&raw).expect("Chunked+Gzip 解析失败");
+        let response = HttpResponse::parse(&raw).expect("Chunked+Gzip Parsefailure");
         assert_eq!(response.body_as_string().unwrap(), data);
     }
 }

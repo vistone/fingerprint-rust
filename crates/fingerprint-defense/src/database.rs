@@ -1,19 +1,19 @@
-//! 指纹数据库实现
+//! fingerprintdatabaseimplement
 //!
-//! 提供指纹的持久化存储和查询功能。
+//! providefingerprint的持久化存储 and queryFeatures。
 
 use fingerprint_core::system::NetworkFlow;
 use rusqlite::{params, Connection, Result as SqliteResult};
 use serde_json;
 use std::path::Path;
 
-/// 存储指纹的对象
+/// 存储fingerprint的pair象
 pub struct FingerprintDatabase {
     conn: Connection,
 }
 
 impl FingerprintDatabase {
-    /// 打开或创建数据库
+    /// open or Createdatabase
     pub fn open<P: AsRef<Path>>(path: P) -> Result<Self, String> {
         let conn = Connection::open(path).map_err(|e| e.to_string())?;
         let db = Self { conn };
@@ -21,7 +21,7 @@ impl FingerprintDatabase {
         Ok(db)
     }
 
-    /// 初始化表结构
+    /// Initialize表struct
     fn init(&self) -> SqliteResult<()> {
         self.conn.execute(
             "CREATE TABLE IF NOT EXISTS flows (
@@ -52,7 +52,7 @@ impl FingerprintDatabase {
         Ok(())
     }
 
-    /// 存储完整的流量记录
+    /// 存储complete的trafficrecord
     pub fn store_flow(&self, flow: &NetworkFlow, score: u8, bot: bool) -> Result<(), String> {
         self.conn.execute(
             "INSERT OR REPLACE INTO flows (id, source_ip, target_ip, protocol, timestamp, consistency_score, bot_detected)
@@ -68,7 +68,7 @@ impl FingerprintDatabase {
             ],
         ).map_err(|e| e.to_string())?;
 
-        // 存储各个层级的指纹
+        // 存储各个layerlevel的fingerprint
         for fp in flow.fingerprints() {
             let fp_type = format!("{:?}", fp.fingerprint_type());
             let fp_id = fp.id();
@@ -93,7 +93,7 @@ impl FingerprintDatabase {
         Ok(())
     }
 
-    /// 获取统计信息
+    /// Getstatisticsinfo
     pub fn get_stats(&self) -> Result<String, String> {
         let flow_count: i64 = self
             .conn

@@ -1,24 +1,24 @@
 //! # fingerprint-defense
 //!
-//! **系统级别防护的实现层**，基于 `fingerprint-core` 的系统级别抽象构建。
+//! **systemlevel防护的implementlayer**，基于 `fingerprint-core` 的systemlevel抽象Build。
 //!
-//! ## 核心定位
+//! ## 核心定bit
 //!
-//! `fingerprint-defense` 是 `fingerprint-core` 系统级别防护接口的具体实现。
+//! `fingerprint-defense` 是 `fingerprint-core` systemlevel防护interface的具体implement。
 //!
-//! ## 目前已实现的功能
+//! ## 目frontalreadyimplement的Features
 //!
-//! - ✅ **被动指纹识别** (`passive`): TCP/IP (p0f), HTTP, TLS 被动识别
-//! - ✅ **跨层一致性审计** (`consistency`): JA4+ 一致性校验
-//! - ✅ **指纹数据库** (`database`): SQLite 存储和分析指纹特征
-//! - ✅ **学习机制** (`learner`): 自动发现和记录未知指纹
-//! - ✅ **数据包捕获** (`capture`): 纯 Rust 实现的实时网卡和 pcap 文件捕获（无系统依赖）
+//! - ✅ **被动fingerprint识别** (`passive`): TCP/IP (p0f), HTTP, TLS 被动识别
+//! - ✅ **跨layer一致性审计** (`consistency`): JA4+ 一致性校验
+//! - ✅ **fingerprintdatabase** (`database`): SQLite 存储 and analysisfingerprinttrait
+//! - ✅ **学习机制** (`learner`): automatic发现 and recordnot知fingerprint
+//! - ✅ **count据包捕获** (`capture`): 纯 Rust implement的实 when 网卡 and pcap file捕获（无system依赖）
 //!
-//! ## 计划中的功能
+//! ## 计划中的Features
 //!
-//! - **系统分析器** (`analyzer`): 实现 `SystemAnalyzer` trait
-//! - **系统防护器** (`protector`): 实现 `SystemProtector` trait
-//! - **威胁狩猎** (`hunting`): 蜜罐和行为分析
+//! - **systemanalysis器** (`analyzer`): implement `SystemAnalyzer` trait
+//! - **system防护器** (`protector`): implement `SystemProtector` trait
+//! - **威胁狩猎** (`hunting`): 蜜罐 and 行为analysis
 
 pub mod capture;
 pub mod database;
@@ -29,7 +29,7 @@ pub use capture::CaptureEngine;
 pub use database::FingerprintDatabase;
 pub use learner::SelfLearningAnalyzer;
 
-// Re-export 主要类型
+// Re-export 主要type
 pub use passive::{
     ConsistencyAnalyzer, HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult,
     PassiveAnalyzer, PassiveError, TcpFingerprint, TlsFingerprint,

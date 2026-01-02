@@ -1,8 +1,8 @@
-//! TLS 连接支持
+//! TLS connectionsupport
 //!
-//! 使用官方 rustls 作为底层 TLS 实现
-//! 通过 ClientHelloCustomizer 应用浏览器指纹（Chrome、Firefox、Safari 等）
-//! 模拟市场成熟浏览器的 TLS 指纹，不自定义自己的指纹
+//! use官方 rustls 作为bottomlayer TLS implement
+//! through ClientHelloCustomizer applicationbrowserfingerprint（Chrome、Firefox、Safari 等）
+//! 模拟市场成熟browser TLS fingerprint，不custom自己的fingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -10,11 +10,11 @@ use std::net::TcpStream;
 #[allow(unused_imports)]
 use std::sync::Arc;
 
-/// TLS 连接器
+/// TLS connection器
 ///
-/// 使用官方 rustls，通过 ClientHelloCustomizer 应用浏览器指纹
+/// use官方 rustls，through ClientHelloCustomizer applicationbrowserfingerprint
 pub struct TlsConnector {
-    // rustls 配置通过 HttpClientConfig 传递
+    // rustls configurationthrough HttpClientConfig 传递
 }
 
 impl TlsConnector {
@@ -29,11 +29,11 @@ impl Default for TlsConnector {
     }
 }
 
-/// 发送 HTTPS 请求
+/// send HTTPS request
 ///
-/// 使用官方 rustls 作为底层 TLS 实现
-/// 如果配置了 ClientProfile，会通过 ClientHelloCustomizer 应用浏览器指纹
-/// 模拟市场成熟浏览器的 TLS 指纹（Chrome、Firefox、Safari 等）
+/// use官方 rustls 作为bottomlayer TLS implement
+/// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
+/// 模拟市场成熟browser TLS fingerprint（Chrome、Firefox、Safari 等）
 pub fn send_https_request(
     host: &str,
     port: u16,
@@ -41,14 +41,14 @@ pub fn send_https_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // 使用 rustls，如果配置了 profile，会自动通过 ClientHelloCustomizer 应用浏览器指纹
+    // use rustls， if configuration了 profile，willautomaticthrough ClientHelloCustomizer applicationbrowserfingerprint
 
-    // 建立 TCP 连接
+    // 建立 TCP connection
     let addr = format!("{}:{}", host, port);
     let tcp_stream = TcpStream::connect(&addr)
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("连接失败 {}: {}", addr, e)))?;
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("Connection failed {}: {}", addr, e)))?;
 
-    // 设置超时
+    // settingstimeout
     tcp_stream
         .set_read_timeout(Some(config.read_timeout))
         .map_err(HttpClientError::Io)?;
@@ -56,14 +56,14 @@ pub fn send_https_request(
         .set_write_timeout(Some(config.write_timeout))
         .map_err(HttpClientError::Io)?;
 
-    // 使用官方 rustls，通过 ClientHelloCustomizer 应用浏览器指纹
+    // use官方 rustls，through ClientHelloCustomizer applicationbrowserfingerprint
 
     #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
         use std::sync::Arc;
 
-        // 构建 TLS 配置（尊重 verify_tls）
+        // Build TLS configuration（尊重 verify_tls）
         let tls_config = super::rustls_utils::build_client_config(
             config.verify_tls,
             Vec::new(),
@@ -71,14 +71,14 @@ pub fn send_https_request(
         );
 
         let server_name = ServerName::try_from(host)
-            .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
+            .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
         let conn = rustls::ClientConnection::new(Arc::new(tls_config), server_name)
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 连接创建失败: {}", e)))?;
+            .map_err(|e| HttpClientError::TlsError(format!("TLS connectionCreatefailure: {}", e)))?;
 
         let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
-        // 修复：添加 Cookie 到请求（如果存在）
+        // Fix: Add Cookie  to request（ if  exists）
         let mut request_with_cookies = request.clone();
         if let Some(cookie_store) = &config.cookie_store {
             super::request::add_cookies_to_request(
@@ -86,11 +86,11 @@ pub fn send_https_request(
                 cookie_store,
                 host,
                 path,
-                true, // HTTPS 是安全连接
+                true, // HTTPS 是securityconnection
             );
         }
 
-        // 发送 HTTP 请求
+        // send HTTP request
         let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
         let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
         tls_stream
@@ -98,30 +98,30 @@ pub fn send_https_request(
             .map_err(HttpClientError::Io)?;
         tls_stream.flush().map_err(HttpClientError::Io)?;
 
-        // 读取响应
+        // readresponse
         let buffer = super::io::read_http1_response_bytes(
             &mut tls_stream,
             super::io::DEFAULT_MAX_RESPONSE_BYTES,
         )
         .map_err(HttpClientError::Io)?;
 
-        // 解析响应
+        // Parseresponse
         HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
     }
 
     #[cfg(not(feature = "rustls-tls"))]
     {
         Err(HttpClientError::TlsError(
-            "需要启用 rustls-tls 特性".to_string(),
+            "needenabled rustls-tls Features".to_string(),
         ))
     }
 }
 
-/// 使用连接池发送 HTTPS（HTTP/1.1 over TLS）请求
+/// useconnection poolsend HTTPS（HTTP/1.1 over TLS）request
 ///
 /// 说明：
-/// - 这是“连接池 + TLS”的同步实现（面向 `kh.google.com` 这类 https 站点）
-/// - 目前只用于回归测试与 `HttpClient` 的 https+pool 路径
+/// - 这是“connection pool + TLS”的syncimplement（面向 `kh.google.com` 这类 https 站点）
+/// - 目front只 for 回归test and `HttpClient`  https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(
     host: &str,
@@ -136,14 +136,14 @@ pub fn send_https_request_with_pool(
     let pool = pool_manager.get_pool(host, port)?;
     let conn = pool
         .get_tcp()
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("从连接池获取连接失败: {:?}", e)))?;
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
-    // PooledConnection 实现了 Deref<Target = Connection>，可以直接使用 Connection 的方法
+    // PooledConnection implement了 Deref<Target = Connection>，can直接use Connection 的method
     let tcp_stream = conn
         .tcp_conn()
-        .ok_or_else(|| HttpClientError::ConnectionFailed("期望 TCP 连接但得到 UDP".to_string()))?;
+        .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
-    // 保持 conn 生命周期覆盖整个请求；同时用 clone 得到可用的 std::net::TcpStream
+    // 保持 conn 生命周期覆盖整个request；同 when 用 clone 得 to available std::net::TcpStream
     let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
     tcp_stream
@@ -153,7 +153,7 @@ pub fn send_https_request_with_pool(
         .set_write_timeout(Some(config.write_timeout))
         .map_err(HttpClientError::Io)?;
 
-    // rustls 路径与 send_https_request 保持一致
+    // rustls path and send_https_request 保持一致
     #[cfg(feature = "rustls-tls")]
     {
         use rustls::client::ServerName;
@@ -165,13 +165,13 @@ pub fn send_https_request_with_pool(
             config.profile.as_ref(),
         );
         let server_name = ServerName::try_from(host)
-            .map_err(|_| HttpClientError::TlsError("无效的服务器名称".to_string()))?;
+            .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
         let conn_tls = rustls::ClientConnection::new(Arc::new(tls_config), server_name)
-            .map_err(|e| HttpClientError::TlsError(format!("TLS 连接创建失败: {}", e)))?;
+            .map_err(|e| HttpClientError::TlsError(format!("TLS connectionCreatefailure: {}", e)))?;
 
         let mut tls_stream = rustls::StreamOwned::new(conn_tls, tcp_stream);
 
-        // 修复：添加 Cookie 到请求（如果存在）
+        // Fix: Add Cookie  to request（ if  exists）
         let mut request_with_cookies = request.clone();
         if let Some(cookie_store) = &config.cookie_store {
             super::request::add_cookies_to_request(
@@ -179,7 +179,7 @@ pub fn send_https_request_with_pool(
                 cookie_store,
                 host,
                 path,
-                true, // HTTPS 是安全连接
+                true, // HTTPS 是securityconnection
             );
         }
 
@@ -203,7 +203,7 @@ pub fn send_https_request_with_pool(
     {
         let _ = conn; // keep for symmetry
         Err(HttpClientError::TlsError(
-            "需要启用 rustls-tls 特性".to_string(),
+            "needenabled rustls-tls Features".to_string(),
         ))
     }
 }
@@ -214,7 +214,7 @@ mod tests {
     use crate::http_client::request::HttpMethod;
 
     #[test]
-    #[ignore] // 需要网络连接
+    #[ignore] // neednetworkconnection
     fn test_send_https_request() {
         let request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get")
             .with_user_agent("TestClient/1.0");
@@ -222,7 +222,7 @@ mod tests {
         let config = HttpClientConfig::default();
         let response = send_https_request("httpbin.org", 443, "/get", &request, &config).unwrap();
 
-        // 外部服务可能会短暂返回 429/503 等；这里主要验证“能建立 TLS + 能解析响应”。
+        // outside部服务maywill短暂return 429/503 等；这里主要Validate“能建立 TLS + 能Parseresponse”。
         assert!(response.status_code > 0);
     }
 }

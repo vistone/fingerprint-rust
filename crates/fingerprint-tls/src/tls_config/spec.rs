@@ -1,6 +1,6 @@
-//! TLS ClientHelloSpec 实现
+//! TLS ClientHelloSpec implement
 //!
-//! 提供真实的 TLS Client Hello 配置，对应 Go 版本的 utls.ClientHelloSpec
+//! providereal TLS Client Hello configuration，Corresponds to Go version's utls.ClientHelloSpec
 
 use crate::tls_extensions::{
     ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension, KeyShare,
@@ -20,59 +20,59 @@ use fingerprint_core::dicttls::{
     },
 };
 
-/// TLS 版本常量
+/// TLS versionconstant
 pub const VERSION_TLS10: u16 = 0x0301;
 pub const VERSION_TLS11: u16 = 0x0302;
 pub const VERSION_TLS12: u16 = 0x0303;
 pub const VERSION_TLS13: u16 = 0x0304;
 
-/// 压缩方法常量
+/// compressionmethodconstant
 pub const COMPRESSION_NONE: u8 = 0x00;
 
-/// 点格式常量
+/// 点formatconstant
 pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0x00;
 
-/// PSK 模式常量
+/// PSK patternconstant
 pub const PSK_MODE_DHE: u8 = 0x01;
 
-/// 重新协商常量
+/// 重新协商constant
 pub const RENEGOTIATE_ONCE_AS_CLIENT: u8 = 1;
 
-/// 证书压缩算法常量
+/// certificatecompressionalgorithmconstant
 pub const CERT_COMPRESSION_BROTLI: u16 = 0x0002;
 
-/// 密码套件 ID
+/// cipher suite ID
 pub type CipherSuiteID = u16;
 
-/// TLS Client Hello 配置
-/// 对应 Go 版本的 tls.ClientHelloSpec
+/// TLS Client Hello configuration
+/// Corresponds to Go version's tls.ClientHelloSpec
 ///
-/// 注意：由于扩展是 trait 对象，Clone 实现会创建新的扩展实例
+/// Note: 由于extension是 trait pair象，Clone implementwillCreate a newextension实例
 #[derive(Debug)]
 pub struct ClientHelloSpec {
-    /// 密码套件列表
-    /// 对应 Go 版本的 CipherSuites []uint16
+    /// cipher suitelist
+    /// Corresponds to Go version's CipherSuites []uint16
     pub cipher_suites: Vec<CipherSuiteID>,
-    /// 压缩方法
-    /// 对应 Go 版本的 CompressionMethods []uint8
+    /// compressionmethod
+    /// Corresponds to Go version's CompressionMethods []uint8
     pub compression_methods: Vec<u8>,
-    /// 扩展列表
-    /// 对应 Go 版本的 Extensions []TLSExtension
+    /// extensionlist
+    /// Corresponds to Go version's Extensions []TLSExtension
     pub extensions: Vec<Box<dyn TLSExtension>>,
-    /// TLS 版本最小值
-    /// 对应 Go 版本的 TLSVersMin uint16
+    /// TLS versionminimumvalue
+    /// Corresponds to Go version's TLSVersMin uint16
     pub tls_vers_min: u16,
-    /// TLS 版本最大值
-    /// 对应 Go 版本的 TLSVersMax uint16
+    /// TLS versionmaximumvalue
+    /// Corresponds to Go version's TLSVersMax uint16
     pub tls_vers_max: u16,
-    /// 扩展元数据（用于存储 SNI、ALPN 等数据）
+    /// extensionmetadata（ for 存储 SNI、ALPN 等count据）
     /// 参考：Huginn Net Profiler 的设计
     pub metadata: Option<crate::tls_config::metadata::SpecMetadata>,
 }
 
 impl ClientHelloSpec {
-    /// 创建新的 ClientHelloSpec
-    /// 对应 Go 版本的 ClientHelloSpec{} 零值
+    /// Create a new ClientHelloSpec
+    /// Corresponds to Go version's ClientHelloSpec{} 零value
     pub fn new() -> Self {
         Self {
             cipher_suites: Vec::new(),
@@ -84,7 +84,7 @@ impl ClientHelloSpec {
         }
     }
 
-    /// 创建 Chrome 136 指纹的 ClientHelloSpec
+    /// Create Chrome 136 fingerprint ClientHelloSpec
     pub fn chrome_136() -> Self {
         use crate::tls_config::ClientHelloSpecBuilder;
         let (extensions, metadata) = ClientHelloSpecBuilder::chrome_136_extensions();
@@ -97,10 +97,10 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// 创建 Chrome 133 指纹的 ClientHelloSpec
-    /// 对应 Go 版本的 Chrome_133 SpecFactory
+    /// Create Chrome 133 fingerprint ClientHelloSpec
+    /// Corresponds to Go version's Chrome_133 SpecFactory
     ///
-    /// 使用 Builder 模式可以更灵活地构建：
+    /// use Builder patterncan更灵活地Build：
     /// ```rust,no_run
     /// use fingerprint_tls::tls_config::ClientHelloSpecBuilder;
     /// let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
@@ -122,12 +122,12 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// 创建 Chrome 133 指纹的 ClientHelloSpec（旧实现，保留用于兼容）
-    #[deprecated(note = "使用 ClientHelloSpecBuilder 代替")]
+    /// Create Chrome 133 fingerprint ClientHelloSpec（旧implement，保留 for 兼容）
+    #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
     pub fn chrome_133_old() -> Self {
         let mut spec = Self::new();
 
-        // Chrome 133 的密码套件
+        // Chrome 133 's cipher suites
         spec.cipher_suites = vec![
             GREASE_CS,
             cs::TLS_AES_128_GCM_SHA256,
@@ -147,10 +147,10 @@ impl ClientHelloSpec {
             cs::TLS_RSA_WITH_AES_256_CBC_SHA,
         ];
 
-        // 压缩方法
+        // compressionmethod
         spec.compression_methods = vec![COMPRESSION_NONE];
 
-        // Chrome 133 的扩展顺序（对应 Go 版本的 ShuffleChromeTLSExtensions）
+        // Chrome 133 's extensions顺序（Corresponds to Go version's ShuffleChromeTLSExtensions）
         spec.extensions = vec![
             Box::new(UtlsGREASEExtension::new()),
             Box::new(SNIExtension::new(String::new())),
@@ -190,11 +190,11 @@ impl ClientHelloSpec {
                 },
                 KeyShare {
                     group: X25519_MLKEM768,
-                    data: vec![], // 实际需要生成密钥
+                    data: vec![], // 实际needGeneratekey
                 },
                 KeyShare {
                     group: X25519,
-                    data: vec![], // 实际需要生成密钥
+                    data: vec![], // 实际needGeneratekey
                 },
             ])),
             Box::new(PSKKeyExchangeModesExtension::new(vec![PSK_MODE_DHE])),
@@ -214,8 +214,8 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// 创建 Chrome 103 指纹的 ClientHelloSpec
-    /// 对应 Go 版本的 Chrome_103 SpecFactory
+    /// Create Chrome 103 fingerprint ClientHelloSpec
+    /// Corresponds to Go version's Chrome_103 SpecFactory
     pub fn calculate_ja4(&self) -> fingerprint_core::ja4::JA4 {
         let transport = 't'; // Default to TCP
         let version = if self.tls_vers_max >= VERSION_TLS13 {
@@ -260,12 +260,12 @@ impl ClientHelloSpec {
         self.calculate_ja4().to_fingerprint_string()
     }
 
-    /// 创建 Chrome 103 指纹的 ClientHelloSpec
-    /// 对应 Go 版本的 Chrome_103 SpecFactory
+    /// Create Chrome 103 fingerprint ClientHelloSpec
+    /// Corresponds to Go version's Chrome_103 SpecFactory
     pub fn chrome_103() -> Self {
         let mut spec = Self::chrome_133();
 
-        // Chrome 103 的椭圆曲线（不包含 X25519MLKEM768）
+        // Chrome 103 's elliptic curves (excluding X25519MLKEM768)
         spec.extensions = vec![
             Box::new(UtlsGREASEExtension::new()),
             Box::new(SNIExtension::new(String::new())),
@@ -301,7 +301,7 @@ impl ClientHelloSpec {
                 },
                 KeyShare {
                     group: X25519,
-                    data: vec![], // 实际需要生成密钥
+                    data: vec![], // 实际needGeneratekey
                 },
             ])),
             Box::new(PSKKeyExchangeModesExtension::new(vec![PSK_MODE_DHE])),
@@ -321,12 +321,12 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// 创建 Firefox 133 指纹的 ClientHelloSpec
-    /// 对应 Go 版本的 Firefox_133 SpecFactory
+    /// Create Firefox 133 fingerprint ClientHelloSpec
+    /// Corresponds to Go version's Firefox_133 SpecFactory
     pub fn firefox_133() -> Self {
         let mut spec = Self::new();
 
-        // Firefox 133 的密码套件
+        // Firefox 133 's cipher suites
         spec.cipher_suites = vec![
             cs::TLS_AES_256_GCM_SHA384,
             cs::TLS_AES_128_GCM_SHA256,
@@ -339,10 +339,10 @@ impl ClientHelloSpec {
             cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
         ];
 
-        // 压缩方法
+        // compressionmethod
         spec.compression_methods = vec![COMPRESSION_NONE];
 
-        // Firefox 133 的扩展（简化版本，实际需要查看 Go 版本的完整实现）
+        // Firefox 133 's extensions（simplified version，实际need查看 Go version的completeimplement）
         spec.extensions = vec![
             Box::new(SupportedCurvesExtension::new(vec![
                 CURVE_P256, CURVE_P384, SECP521R1, X25519,
@@ -372,12 +372,12 @@ impl ClientHelloSpec {
         spec
     }
 
-    /// 创建 Safari 16.0 指纹的 ClientHelloSpec
-    /// 对应 Go 版本的 Safari_16_0 SpecFactory
+    /// Create Safari 16.0 fingerprint ClientHelloSpec
+    /// Corresponds to Go version's Safari_16_0 SpecFactory
     pub fn safari_16_0() -> Self {
         let mut spec = Self::new();
 
-        // Safari 16.0 的密码套件
+        // Safari 16.0 's cipher suites
         spec.cipher_suites = vec![
             cs::TLS_AES_128_GCM_SHA256,
             cs::TLS_AES_256_GCM_SHA384,
@@ -388,10 +388,10 @@ impl ClientHelloSpec {
             cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
         ];
 
-        // 压缩方法
+        // compressionmethod
         spec.compression_methods = vec![COMPRESSION_NONE];
 
-        // Safari 16.0 的扩展（简化版本）
+        // Safari 16.0 's extensions (simplified version)
         spec.extensions = vec![
             Box::new(SupportedCurvesExtension::new(vec![
                 CURVE_P256, CURVE_P384, X25519,
@@ -418,7 +418,7 @@ impl ClientHelloSpec {
 }
 
 /// Chrome 103 Spec Factory
-/// 对应 Go 版本的 Chrome_103 SpecFactory
+/// Corresponds to Go version's Chrome_103 SpecFactory
 pub fn chrome_103_spec() -> Result<ClientHelloSpec, String> {
     Ok(ClientHelloSpec::chrome_103())
 }
@@ -429,19 +429,19 @@ pub fn chrome_136_spec() -> Result<ClientHelloSpec, String> {
 }
 
 /// Chrome 133 Spec Factory
-/// 对应 Go 版本的 Chrome_133 SpecFactory
+/// Corresponds to Go version's Chrome_133 SpecFactory
 pub fn chrome_133_spec() -> Result<ClientHelloSpec, String> {
     Ok(ClientHelloSpec::chrome_133())
 }
 
 /// Firefox 133 Spec Factory
-/// 对应 Go 版本的 Firefox_133 SpecFactory
+/// Corresponds to Go version's Firefox_133 SpecFactory
 pub fn firefox_133_spec() -> Result<ClientHelloSpec, String> {
     Ok(ClientHelloSpec::firefox_133())
 }
 
 /// Safari 16.0 Spec Factory
-/// 对应 Go 版本的 Safari_16_0 SpecFactory
+/// Corresponds to Go version's Safari_16_0 SpecFactory
 pub fn safari_16_0_spec() -> Result<ClientHelloSpec, String> {
     Ok(ClientHelloSpec::safari_16_0())
 }

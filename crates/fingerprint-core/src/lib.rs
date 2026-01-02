@@ -1,38 +1,38 @@
 //! # fingerprint-core
 //!
-//! **系统级别防护的核心抽象层**
+//! **systemlevel防护的核心抽象layer**
 //!
-//! 从**单一服务防护**提升到**系统级别防护**，提供系统级别的核心抽象和接口。
+//!  from **单一服务防护**提升 to **systemlevel防护**，providesystemlevel的核心抽象 and interface。
 //!
-//! ## 核心定位
+//! ## 核心定bit
 //!
-//! `fingerprint-core` 是系统级别防护的核心，所有外部组件都围绕这个核心展开：
+//! `fingerprint-core` 是systemlevel防护的核心，alloutside部组件都围绕这个核心展开：
 //!
-//! - **系统级别抽象**: 系统上下文、网络流量、防护决策等
-//! - **攻防统一接口**: 指纹抽象、分析接口、防护接口等
-//! - **核心类型和工具**: 类型定义、元数据、工具函数等
+//! - **systemlevel抽象**: systemupdown文、networktraffic、防护决策等
+//! - **攻防统一interface**: fingerprint抽象、analysisinterface、防护interface等
+//! - **核心type and 工具**: type定义、metadata、工具function等
 //!
-//! ## 核心功能
+//! ## 核心Features
 //!
-//! ### 系统级别抽象
+//! ### systemlevel抽象
 //!
-//! - **系统上下文** (`SystemContext`): 网络实体的完整信息（IP、端口、协议、方向等）
-//! - **网络流量** (`NetworkFlow`): 系统级别的网络流量，包含上下文和指纹信息
-//! - **系统防护接口** (`SystemProtector`): 系统级别防护的统一接口
-//! - **系统分析接口** (`SystemAnalyzer`): 系统级别分析的统一接口
+//! - **systemupdown文** (`SystemContext`): network实体的completeinfo（IP、port、protocol、方向等）
+//! - **networktraffic** (`NetworkFlow`): systemlevel的networktraffic，includingupdown文 and fingerprintinfo
+//! - **system防护interface** (`SystemProtector`): systemlevel防护的统一interface
+//! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysis的统一interface
 //!
 //! ### 攻防统一抽象
 //!
-//! - **指纹抽象** (`Fingerprint` trait): 支持 TLS、HTTP、TCP 等多种指纹类型
-//! - **指纹元数据** (`FingerprintMetadata`): 包含浏览器、操作系统、置信度等信息
-//! - **TLS 指纹** (`ClientHelloSignature`): TLS ClientHello 签名
-//! - **HTTP 指纹** (`HttpFingerprint`): HTTP 请求指纹
-//! - **TCP 指纹** (`TcpFingerprint`): TCP 连接指纹
+//! - **fingerprint抽象** (`Fingerprint` trait): support TLS、HTTP、TCP 等多种fingerprinttype
+//! - **fingerprintmetadata** (`FingerprintMetadata`): includingbrowser、operating system、置信度等info
+//! - **TLS fingerprint** (`ClientHelloSignature`): TLS ClientHello signature
+//! - **HTTP fingerprint** (`HttpFingerprint`): HTTP requestfingerprint
+//! - **TCP fingerprint** (`TcpFingerprint`): TCP connectionfingerprint
 //!
-//! ### 核心类型和工具
+//! ### 核心type and 工具
 //!
-//! - **类型系统**: `BrowserType`、`OperatingSystem` 等核心类型
-//! - **工具函数**: GREASE 处理、随机选择等工具函数
+//! - **typesystem**: `BrowserType`、`OperatingSystem` 等核心type
+//! - **工具function**: GREASE process、randomly select等工具function
 
 pub mod database;
 pub mod dicttls;
@@ -53,10 +53,10 @@ pub mod version;
 
 // Re-export 公共 API
 
-// 指纹抽象
+// fingerprint抽象
 pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison, FingerprintType};
 
-// 元数据
+// metadata
 pub use metadata::FingerprintMetadata;
 
 // TLS 相关
@@ -77,34 +77,34 @@ pub use http::{Http2Settings, HttpFingerprint};
 // TCP 相关
 pub use tcp::{TcpFingerprint, TcpProfile};
 
-// 类型系统
+// typesystem
 pub use types::{
     BrowserType, OperatingSystem, OperatingSystems, UserAgentTemplate, OPERATING_SYSTEMS,
 };
 
-// 工具函数
+// 工具function
 pub use utils::{
     extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
     random_choice, random_choice_string,
 };
 
-// 系统级别抽象
+// systemlevel抽象
 pub use system::{
     AnalysisDetails,
     FlowCharacteristics,
-    // 网络流量
+    // networktraffic
     NetworkFlow,
     ProtocolType,
     SystemAnalysisResult,
-    // 系统分析
+    // systemanalysis
     SystemAnalyzer,
-    // 系统上下文
+    // systemupdown文
     SystemContext,
     SystemProtectionDecision,
     SystemProtectionResult,
-    // 系统统计
+    // systemstatistics
     SystemProtectionStats,
-    // 系统防护
+    // system防护
     SystemProtector,
     ThreatType,
     TrafficDirection,

@@ -1,6 +1,6 @@
-//! 数据包捕获模块
+//! count据包捕获module
 //!
-//! 使用纯 Rust 实现从网络接口或文件实时捕获数据包（无系统依赖）。
+//! use纯 Rust implement from networkinterface or file实 when 捕获count据包（无system依赖）。
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
@@ -12,24 +12,24 @@ pub struct CaptureEngine {
 }
 
 impl CaptureEngine {
-    /// 创建新的捕获引擎
+    /// Create a new捕获引擎
     pub fn new(analyzer: Arc<PassiveAnalyzer>) -> Self {
         Self { analyzer }
     }
 
-    /// 从指定网卡开始实时捕获
+    ///  from specified网卡start实 when 捕获
     pub async fn start_live(&self, device_name: &str) -> Result<(), String> {
-        // 查找指定的网络接口
+        // 查找specified的networkinterface
         let interface = datalink::interfaces()
             .into_iter()
             .find(|iface| iface.name == device_name)
-            .ok_or_else(|| format!("找不到网络接口: {}", device_name))?;
+            .ok_or_else(|| format!("找不 to networkinterface: {}", device_name))?;
 
         println!("[Capture] Listening on device: {}", device_name);
 
         let analyzer = self.analyzer.clone();
 
-        // 使用 spawn_blocking 因为 pnet 的接收是阻塞的
+        // use spawn_blocking because pnet 的receive是阻塞的
         tokio::task::spawn_blocking(move || {
             Self::capture_from_interface(interface, analyzer)
         });
@@ -37,30 +37,30 @@ impl CaptureEngine {
         Ok(())
     }
 
-    /// 从网络接口捕获数据包（阻塞式）
+    ///  from networkinterface捕获count据包（阻塞式）
     fn capture_from_interface(
         interface: NetworkInterface,
         analyzer: Arc<PassiveAnalyzer>,
     ) -> Result<(), String> {
-        // 创建数据链路通道
+        // Createcount据链路通道
         let (_tx, mut rx) = match datalink::channel(&interface, Default::default()) {
             Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
-            Ok(_) => return Err("不支持的通道类型".to_string()),
-            Err(e) => return Err(format!("创建通道失败: {}", e)),
+            Ok(_) => return Err("不support的通道type".to_string()),
+            Err(e) => return Err(format!("Create通道failure: {}", e)),
         };
 
-        // 循环接收数据包
+        // 循环receivecount据包
         loop {
             match rx.next() {
                 Ok(packet) => {
-                    // 安全检查：限制最大数据包大小以防止 DoS 攻击（65535 字节 = 最大 IP 包）
+                    // securityCheck：limitmaximumcount据包size以防止 DoS 攻击（65535 bytes = maximum IP 包）
                     const MAX_PACKET_SIZE: usize = 65535;
                     if packet.len() > MAX_PACKET_SIZE {
-                        eprintln!("[Capture] 数据包过大，已忽略: {} 字节", packet.len());
+                        eprintln!("[Capture] count据包过大，already忽略: {} bytes", packet.len());
                         continue;
                     }
                     
-                    // 跳过以太网帧头（14 字节）
+                    // skip以太网frameheader（14 bytes）
                     if packet.len() > 14 {
                         let ip_packet = &packet[14..];
                         if let Ok(p) = PacketParser::parse(ip_packet) {
@@ -69,48 +69,48 @@ impl CaptureEngine {
                     }
                 }
                 Err(e) => {
-                    eprintln!("[Capture] 接收数据包错误: {}", e);
-                    // 继续接收，不中断
+                    eprintln!("[Capture] receivecount据包error: {}", e);
+                    // continuereceive，不中断
                 }
             }
         }
     }
 
-    /// 从文件加载并处理
+    ///  from fileload并process
     pub fn process_file(&self, path: &str) -> Result<(), String> {
         use pcap_file::pcap::PcapReader;
         use std::fs::File;
 
-        // 打开 pcap 文件
-        let file = File::open(path).map_err(|e| format!("打开文件失败: {}", e))?;
+        // open pcap file
+        let file = File::open(path).map_err(|e| format!("openfilefailure: {}", e))?;
         let mut pcap_reader =
-            PcapReader::new(file).map_err(|e| format!("解析 pcap 文件失败: {}", e))?;
+            PcapReader::new(file).map_err(|e| format!("Parse pcap filefailure: {}", e))?;
 
-        // 读取所有数据包
+        // readallcount据包
         let mut packet_count = 0;
-        const MAX_PACKETS: usize = 1_000_000; // 限制最大数据包数量以防止内存耗尽
+        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcount据包count以防止inside存耗尽
         
         while let Some(packet) = pcap_reader.next_packet() {
-            // 安全检查：限制处理的数据包数量
+            // securityCheck：limitprocess的count据包count
             packet_count += 1;
             if packet_count > MAX_PACKETS {
-                eprintln!("[Capture] 已达到最大数据包处理限制: {}", MAX_PACKETS);
+                eprintln!("[Capture] already达 to maximumcount据包processlimit: {}", MAX_PACKETS);
                 break;
             }
             
             match packet {
                 Ok(pkt) => {
-                    // 安全检查：限制单个数据包大小
+                    // securityCheck：limitsinglecount据包size
                     const MAX_PACKET_SIZE: usize = 65535;
                     let data = pkt.data;
                     if data.len() > MAX_PACKET_SIZE {
-                        eprintln!("[Capture] 数据包过大，已忽略: {} 字节", data.len());
+                        eprintln!("[Capture] count据包过大，already忽略: {} bytes", data.len());
                         continue;
                     }
                     
-                    // pcap 文件中的数据通常包含以太网帧头
+                    // pcap file中的count据通常including以太网frameheader
                     if data.len() > 14 {
-                        // 跳过以太网帧头（14 字节）
+                        // skip以太网frameheader（14 bytes）
                         let ip_packet = &data[14..];
                         if let Ok(p) = PacketParser::parse(ip_packet) {
                             let _ = self.analyzer.analyze(&p);
@@ -118,13 +118,13 @@ impl CaptureEngine {
                     }
                 }
                 Err(e) => {
-                    eprintln!("[Capture] 读取数据包错误: {}", e);
-                    // 继续处理下一个包
+                    eprintln!("[Capture] readcount据包error: {}", e);
+                    // continueprocessnext包
                 }
             }
         }
 
-        println!("[Capture] 已处理 {} 个数据包", packet_count);
+        println!("[Capture] alreadyprocess {} 个count据包", packet_count);
         Ok(())
     }
 }

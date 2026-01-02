@@ -1,39 +1,39 @@
-//! 代理支持
+//! proxysupport
 //!
-//! 支持 HTTP 和 SOCKS5 代理
+//! support HTTP  and SOCKS5 proxy
 
 use super::{HttpClientError, Result};
 use std::io::{Read, Write};
 use std::net::TcpStream;
 
-/// 代理类型
+/// proxytype
 #[derive(Debug, Clone)]
 pub enum ProxyType {
-    /// HTTP 代理
+    /// HTTP proxy
     Http,
-    /// HTTPS 代理
+    /// HTTPS proxy
     Https,
-    /// SOCKS5 代理
+    /// SOCKS5 proxy
     Socks5,
 }
 
-/// 代理配置
+/// proxyconfiguration
 #[derive(Debug, Clone)]
 pub struct ProxyConfig {
-    /// 代理类型
+    /// proxytype
     pub proxy_type: ProxyType,
-    /// 代理服务器地址
+    /// proxyserveraddress
     pub host: String,
-    /// 代理服务器端口
+    /// proxyserverport
     pub port: u16,
-    /// 用户名（可选）
+    /// 用户名（optional）
     pub username: Option<String>,
-    /// 密码（可选）
+    /// cipher（optional）
     pub password: Option<String>,
 }
 
 impl ProxyConfig {
-    /// 创建 HTTP 代理配置
+    /// Create HTTP proxyconfiguration
     pub fn http(host: String, port: u16) -> Self {
         Self {
             proxy_type: ProxyType::Http,
@@ -44,7 +44,7 @@ impl ProxyConfig {
         }
     }
 
-    /// 创建 SOCKS5 代理配置
+    /// Create SOCKS5 proxyconfiguration
     pub fn socks5(host: String, port: u16) -> Self {
         Self {
             proxy_type: ProxyType::Socks5,
@@ -55,7 +55,7 @@ impl ProxyConfig {
         }
     }
 
-    /// 设置认证信息
+    /// settings认证info
     pub fn with_auth(mut self, username: String, password: String) -> Self {
         self.username = Some(username);
         self.password = Some(password);
@@ -63,7 +63,7 @@ impl ProxyConfig {
     }
 }
 
-/// 通过代理连接
+/// throughproxyconnection
 pub fn connect_through_proxy(
     proxy: &ProxyConfig,
     target_host: &str,
@@ -75,18 +75,18 @@ pub fn connect_through_proxy(
     }
 }
 
-/// 通过 HTTP 代理连接
+/// through HTTP proxyconnection
 fn connect_http_proxy(
     proxy: &ProxyConfig,
     target_host: &str,
     target_port: u16,
 ) -> Result<TcpStream> {
-    // 连接到代理服务器
+    // connection to proxyserver
     let proxy_addr = format!("{}:{}", proxy.host, proxy.port);
     let mut stream = TcpStream::connect(&proxy_addr)
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("连接代理失败: {}", e)))?;
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxyfailure: {}", e)))?;
 
-    // 发送 CONNECT 请求
+    // send CONNECT request
     let connect_request = format!(
         "CONNECT {}:{} HTTP/1.1\r\nHost: {}:{}\r\n\r\n",
         target_host, target_port, target_host, target_port
@@ -96,47 +96,47 @@ fn connect_http_proxy(
         .write_all(connect_request.as_bytes())
         .map_err(HttpClientError::Io)?;
 
-    // 读取响应
+    // readresponse
     let mut buffer = vec![0u8; 1024];
     let n = stream.read(&mut buffer).map_err(HttpClientError::Io)?;
 
     let response = String::from_utf8_lossy(&buffer[..n]);
 
-    // 检查响应是否成功
+    // Checkresponsewhethersuccess
     if !response.contains("200") {
         return Err(HttpClientError::ConnectionFailed(format!(
-            "代理连接失败: {}",
-            response.lines().next().unwrap_or("未知错误")
+            "proxyConnection failed: {}",
+            response.lines().next().unwrap_or("not知error")
         )));
     }
 
     Ok(stream)
 }
 
-/// 通过 SOCKS5 代理连接
+/// through SOCKS5 proxyconnection
 fn connect_socks5_proxy(
     proxy: &ProxyConfig,
     target_host: &str,
     target_port: u16,
 ) -> Result<TcpStream> {
-    // 连接到代理服务器
+    // connection to proxyserver
     let proxy_addr = format!("{}:{}", proxy.host, proxy.port);
     let mut stream = TcpStream::connect(&proxy_addr)
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("连接代理失败: {}", e)))?;
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxyfailure: {}", e)))?;
 
-    // SOCKS5 握手
-    // 1. 发送认证方法
+    // SOCKS5 handshake
+    // 1. send认证method
     let auth_methods = if proxy.username.is_some() {
-        vec![0x05, 0x02, 0x00, 0x02] // 版本5，2个方法：无认证和用户名密码认证
+        vec![0x05, 0x02, 0x00, 0x02] // version5，2个method：无认证 and 用户名cipher认证
     } else {
-        vec![0x05, 0x01, 0x00] // 版本5，1个方法：无认证
+        vec![0x05, 0x01, 0x00] // version5，1个method：无认证
     };
 
     stream
         .write_all(&auth_methods)
         .map_err(HttpClientError::Io)?;
 
-    // 2. 读取服务器选择的方法
+    // 2. readserverselect的method
     let mut response = [0u8; 2];
     stream
         .read_exact(&mut response)
@@ -144,14 +144,14 @@ fn connect_socks5_proxy(
 
     if response[0] != 0x05 {
         return Err(HttpClientError::ConnectionFailed(
-            "无效的 SOCKS5 版本".to_string(),
+            "invalid SOCKS5 version".to_string(),
         ));
     }
 
-    // 3. 如果需要认证
+    // 3.  if need认证
     if response[1] == 0x02 {
         if let (Some(username), Some(password)) = (&proxy.username, &proxy.password) {
-            let mut auth_request = vec![0x01]; // 认证版本
+            let mut auth_request = vec![0x01]; // 认证version
             auth_request.push(username.len() as u8);
             auth_request.extend_from_slice(username.as_bytes());
             auth_request.push(password.len() as u8);
@@ -168,27 +168,27 @@ fn connect_socks5_proxy(
 
             if auth_response[1] != 0x00 {
                 return Err(HttpClientError::ConnectionFailed(
-                    "SOCKS5 认证失败".to_string(),
+                    "SOCKS5 认证failure".to_string(),
                 ));
             }
         } else {
             return Err(HttpClientError::ConnectionFailed(
-                "代理需要认证但未提供凭据".to_string(),
+                "proxyneed认证butnotprovide凭据".to_string(),
             ));
         }
     } else if response[1] != 0x00 {
         return Err(HttpClientError::ConnectionFailed(format!(
-            "不支持的认证方法: {}",
+            "不support的认证method: {}",
             response[1]
         )));
     }
 
-    // 4. 发送连接请求
+    // 4. sendconnectionrequest
     let mut connect_request = vec![
-        0x05, // 版本
+        0x05, // version
         0x01, // CONNECT 命令
         0x00, // 保留
-        0x03, // 域名类型
+        0x03, // domaintype
     ];
     connect_request.push(target_host.len() as u8);
     connect_request.extend_from_slice(target_host.as_bytes());
@@ -199,20 +199,20 @@ fn connect_socks5_proxy(
         .write_all(&connect_request)
         .map_err(HttpClientError::Io)?;
 
-    // 5. 读取连接响应
-    let mut connect_response = [0u8; 10]; // 至少10字节
+    // 5. readconnectionresponse
+    let mut connect_response = [0u8; 10]; // 至少10bytes
     stream
         .read_exact(&mut connect_response[..4])
         .map_err(HttpClientError::Io)?;
 
     if connect_response[1] != 0x00 {
         return Err(HttpClientError::ConnectionFailed(format!(
-            "SOCKS5 连接失败，错误码: {}",
+            "SOCKS5 Connection failed，error码: {}",
             connect_response[1]
         )));
     }
 
-    // 读取剩余的地址信息
+    // read剩余的addressinfo
     match connect_response[3] {
         0x01 => {
             // IPv4
@@ -221,7 +221,7 @@ fn connect_socks5_proxy(
                 .map_err(HttpClientError::Io)?;
         }
         0x03 => {
-            // 域名
+            // domain
             let mut len = [0u8; 1];
             stream.read_exact(&mut len).map_err(HttpClientError::Io)?;
             let mut addr = vec![0u8; len[0] as usize + 2];
@@ -234,7 +234,7 @@ fn connect_socks5_proxy(
         }
         _ => {
             return Err(HttpClientError::ConnectionFailed(
-                "不支持的地址类型".to_string(),
+                "不support的addresstype".to_string(),
             ));
         }
     }

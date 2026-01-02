@@ -1,6 +1,6 @@
-//! 随机指纹生成模块
+//! randomfingerprintGeneratemodule
 //!
-//! 提供随机获取指纹和 User-Agent 的功能
+//! providerandomGetfingerprint and User-Agent 的Features
 
 use fingerprint_core::types::{BrowserType, OperatingSystem};
 use fingerprint_core::utils::{
@@ -12,20 +12,20 @@ use fingerprint_headers::useragent::{
 };
 use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 
-/// 指纹结果，包含指纹、User-Agent 和标准 HTTP Headers
+/// fingerprintresult，includingfingerprint、User-Agent  and standard HTTP Headers
 #[derive(Debug, Clone)]
 pub struct FingerprintResult {
-    /// TLS 指纹配置
+    /// TLS fingerprintconfiguration
     pub profile: ClientProfile,
-    /// 对应的 User-Agent
+    /// pair应 User-Agent
     pub user_agent: String,
-    /// Client Hello ID（与 tls-client 保持一致）
+    /// Client Hello ID（ and tls-client 保持一致）
     pub hello_client_id: String,
-    /// 标准 HTTP 请求头（包含全球语言支持）
+    /// standard HTTP requestheader（including全球语言support）
     pub headers: fingerprint_headers::headers::HTTPHeaders,
 }
 
-/// 浏览器类型未找到错误
+/// browsertypenot找 to error
 #[derive(Debug, Clone)]
 pub struct BrowserNotFoundError {
     pub browser: String,
@@ -39,14 +39,14 @@ impl std::fmt::Display for BrowserNotFoundError {
 
 impl std::error::Error for BrowserNotFoundError {}
 
-/// 随机获取一个指纹和对应的 User-Agent
-/// 操作系统会随机选择
+/// randomGetanfingerprint and pair应 User-Agent
+/// operating systemwillrandomly select
 pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
     get_random_fingerprint_with_os(None)
 }
 
-/// 随机获取一个指纹和对应的 User-Agent，并指定操作系统
-/// 如果 os 为 None，则随机选择操作系统
+/// randomGetanfingerprint and pair应 User-Agent，并specifiedoperating system
+/// If os 为 None, 则randomly selectoperating system
 pub fn get_random_fingerprint_with_os(
     os: Option<OperatingSystem>,
 ) -> Result<FingerprintResult, String> {
@@ -55,10 +55,10 @@ pub fn get_random_fingerprint_with_os(
         return Err("no TLS client profiles available".to_string());
     }
 
-    // 获取所有可用的指纹名称
+    // Getallavailable的fingerprint name
     let names: Vec<String> = clients.keys().cloned().collect();
 
-    // 随机选择一个（线程安全）
+    // randomly selectan（线程security）
     let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
     let random_name = random_choice_string(&name_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -75,17 +75,17 @@ pub fn get_random_fingerprint_with_os(
         ));
     }
 
-    // 获取对应的 User-Agent
+    // Getpair应 User-Agent
     let ua = match os {
         Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 关键修复：根据 User-Agent 同步 TCP Profile
-    // 确保浏览器指纹和 TCP 指纹完全一致
+    // 🔥 关keyFix: Based on User-Agent sync TCP Profile
+    // 确保browserfingerprint and TCP fingerprint完全一致
     profile = profile.with_synced_tcp_profile(&ua);
 
-    // 生成标准 HTTP Headers
+    // Generatestandard HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
     let browser_type = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
@@ -100,7 +100,7 @@ pub fn get_random_fingerprint_with_os(
     })
 }
 
-/// 根据浏览器类型随机获取指纹和 User-Agent
+/// Based onbrowsertyperandomGetfingerprint and User-Agent
 /// browser_type: "chrome", "firefox", "safari", "opera" 等
 pub fn get_random_fingerprint_by_browser(
     browser_type: &str,
@@ -108,7 +108,7 @@ pub fn get_random_fingerprint_by_browser(
     get_random_fingerprint_by_browser_with_os(browser_type, None)
 }
 
-/// 根据浏览器类型随机获取指纹和 User-Agent，并指定操作系统
+/// Based onbrowsertyperandomGetfingerprint and User-Agent，并specifiedoperating system
 pub fn get_random_fingerprint_by_browser_with_os(
     browser_type: &str,
     os: Option<OperatingSystem>,
@@ -124,7 +124,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
     let browser_type_lower = browser_type.to_lowercase();
 
-    // 筛选出指定浏览器类型的指纹
+    // 筛选出specifiedbrowsertype的fingerprint
     let candidates: Vec<String> = clients
         .keys()
         .filter(|name| {
@@ -140,7 +140,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
         }));
     }
 
-    // 随机选择一个（线程安全）
+    // randomly selectan（线程security）
     let candidate_refs: Vec<&str> = candidates.iter().map(|s| s.as_str()).collect();
     let random_name = random_choice_string(&candidate_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -154,17 +154,17 @@ pub fn get_random_fingerprint_by_browser_with_os(
         return Err(format!("profile {} is invalid (empty ClientHelloStr)", random_name).into());
     }
 
-    // 获取对应的 User-Agent
+    // Getpair应 User-Agent
     let ua = match os {
         Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 关键修复：根据 User-Agent 同步 TCP Profile
-    // 确保浏览器指纹和 TCP 指纹完全一致
+    // 🔥 关keyFix: Based on User-Agent sync TCP Profile
+    // 确保browserfingerprint and TCP fingerprint完全一致
     profile = profile.with_synced_tcp_profile(&ua);
 
-    // 生成标准 HTTP Headers
+    // Generatestandard HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
     let browser_type_enum = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
@@ -209,14 +209,14 @@ mod tests {
     #[test]
     fn test_tcp_sync_real_demo() {
         println!("\n╔════════════════════════════════════════════════════════════════╗");
-        println!("║        TCP 指纹与浏览器指纹同步 - 真实测试                    ║");
+        println!("║        TCP fingerprint and browserfingerprintsync - realtest                    ║");
         println!("╚════════════════════════════════════════════════════════════════╝\n");
 
-        println!("【测试】随机选择浏览器指纹（验证 TCP 指纹自动同步）\n");
+        println!("【test】randomly selectbrowserfingerprint（Validate TCP fingerprintautomaticsync）\n");
 
         for i in 1..=5 {
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            println!("第 {} 次随机选择：", i);
+            println!("第 {} 次randomly select：", i);
 
             let result = get_random_fingerprint().unwrap();
             let user_agent = &result.user_agent;
@@ -234,9 +234,9 @@ mod tests {
                 "Unknown"
             };
 
-            println!("  浏览器指纹: {}", result.hello_client_id);
+            println!("  browserfingerprint: {}", result.hello_client_id);
             println!("  User-Agent: {}", user_agent);
-            println!("  推断的操作系统: {}", inferred_os);
+            println!("  推断的operating system: {}", inferred_os);
 
             if let Some(tcp_profile) = &profile.tcp_profile {
                 println!("  TCP Profile:");
@@ -247,30 +247,30 @@ mod tests {
                     "Windows" => 128,
                     "macOS" | "Linux" => 64,
                     _ => {
-                        println!("    ⚠️  无法验证（未知操作系统）");
+                        println!("    ⚠️  unable toValidate（not知operating system）");
                         continue;
                     }
                 };
 
                 if tcp_profile.ttl == expected_ttl {
                     println!(
-                        "    ✅ 同步验证通过！TTL ({}) 与操作系统 ({}) 匹配",
+                        "    ✅ syncValidatethrough！TTL ({})  and operating system ({}) match",
                         tcp_profile.ttl, inferred_os
                     );
                 } else {
                     println!(
-                        "    ❌ 同步失败！TTL ({}) 与操作系统 ({}) 不匹配（期望: {}）",
+                        "    ❌ syncfailure！TTL ({})  and operating system ({}) does not match（期望: {}）",
                         tcp_profile.ttl, inferred_os, expected_ttl
                     );
                 }
             } else {
-                println!("  ❌ TCP Profile 不存在 - 同步失败！");
+                println!("  ❌ TCP Profile 不 exists - syncfailure！");
             }
             println!();
         }
 
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        println!("✅ 测试完成！");
+        println!("✅ testcomplete！");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
     }
 }

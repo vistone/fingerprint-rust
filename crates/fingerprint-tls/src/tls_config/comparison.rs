@@ -1,33 +1,33 @@
-//! TLS 指纹比较模块
+//! TLS fingerprint比较module
 //!
-//! 提供指纹比较和匹配功能
-//! 参考：Huginn Net 的指纹比较实现
+//! providefingerprint比较 and matchFeatures
+//! 参考：Huginn Net 的fingerprint比较implement
 
 use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 
-/// 指纹匹配结果
+/// fingerprintmatchresult
 #[derive(Debug, Clone, PartialEq)]
 pub enum FingerprintMatch {
-    /// 完全匹配（包括 GREASE 值）
+    /// 完全match（包括 GREASE value）
     Exact,
-    /// 相似匹配（忽略 GREASE 值后相同）
+    /// 相似match（忽略 GREASE valueback相同）
     Similar,
-    /// 不匹配
+    /// does not match
     None,
 }
 
 /// 比较两个 ClientHelloSpec 的相似度
 ///
-/// # 参数
-/// * `spec1` - 第一个 ClientHelloSpec
+/// # Parameters
+/// * `spec1` - first ClientHelloSpec
 /// * `spec2` - 第二个 ClientHelloSpec
 ///
-/// # 返回
-/// * `FingerprintMatch` - 匹配结果
+/// # Returns
+/// * `FingerprintMatch` - matchresult
 ///
-/// # 示例
+/// # Examples
 /// ```
 /// use fingerprint_tls::tls_config::{ClientHelloSpec, compare_specs};
 /// let spec1 = ClientHelloSpec::chrome_133();
@@ -41,24 +41,24 @@ pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> Finger
     compare_signatures(&sig1, &sig2)
 }
 
-/// 比较两个签名的相似度
+/// 比较两个signature的相似度
 ///
-/// # 参数
-/// * `sig1` - 第一个签名
-/// * `sig2` - 第二个签名
+/// # Parameters
+/// * `sig1` - firstsignature
+/// * `sig2` - 第二个signature
 ///
-/// # 返回
-/// * `FingerprintMatch` - 匹配结果
+/// # Returns
+/// * `FingerprintMatch` - matchresult
 pub fn compare_signatures(
     sig1: &ClientHelloSignature,
     sig2: &ClientHelloSignature,
 ) -> FingerprintMatch {
-    // 完全匹配
+    // 完全match
     if sig1 == sig2 {
         return FingerprintMatch::Exact;
     }
 
-    // 相似匹配（忽略 GREASE）
+    // 相似match（忽略 GREASE）
     if sig1.similar_to(sig2) {
         return FingerprintMatch::Similar;
     }
@@ -66,14 +66,14 @@ pub fn compare_signatures(
     FingerprintMatch::None
 }
 
-/// 查找与给定签名最相似的指纹配置
+/// 查找 and 给定signature最相似的fingerprintconfiguration
 ///
-/// # 参数
-/// * `signature` - 要匹配的签名
-/// * `specs` - 候选的 ClientHelloSpec 列表
+/// # Parameters
+/// * `signature` - 要match的signature
+/// * `specs` - 候选 ClientHelloSpec list
 ///
-/// # 返回
-/// * `Option<usize>` - 最相似配置的索引，如果没有找到则返回 None
+/// # Returns
+/// * `Option<usize>` - 最相似configuration的index， if 没有找 to 则return None
 pub fn find_best_match(
     signature: &ClientHelloSignature,
     specs: &[ClientHelloSpec],
@@ -109,8 +109,8 @@ mod tests {
         let spec1 = ClientHelloSpec::chrome_133();
         let spec2 = ClientHelloSpec::chrome_133();
         let result = compare_specs(&spec1, &spec2);
-        // 由于集成了随机 GREASE，两次生成的 spec 在 GREASE 值上可能不同，
-        // 因此结果应该是 Similar（忽略 GREASE 后相同）
+        // 由于集成了random GREASE，两次Generate spec  in GREASE valueupmay不同，
+        // thereforeresultshould是 Similar（忽略 GREASE back相同）
         assert!(matches!(
             result,
             FingerprintMatch::Exact | FingerprintMatch::Similar
@@ -126,6 +126,6 @@ mod tests {
             ClientHelloSpec::firefox_133(),
         ];
         let best = find_best_match(&signature, &specs);
-        assert_eq!(best, Some(1)); // chrome_133 应该是最匹配的
+        assert_eq!(best, Some(1)); // chrome_133 should是最match的
     }
 }

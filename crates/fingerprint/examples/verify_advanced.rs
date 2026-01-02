@@ -15,13 +15,13 @@ use std::sync::Arc;
 async fn main() {
     println!("🚀 Advanced Fingerprinting & Learner Verification\n");
 
-    #[allow(clippy::arc_with_non_send_sync)] // 在示例代码中使用，不需要跨线程
+    #[allow(clippy::arc_with_non_send_sync)] //  in Examples代码中use，不need跨线程
     let db = Arc::new(FingerprintDatabase::open("advanced.db").expect("Failed to open DB"));
     let analyzer = Arc::new(PassiveAnalyzer::new().expect("Failed to create analyzer"));
     let learner = SelfLearningAnalyzer::new(db.clone());
 
-    // 1. 模拟一个 HTTP/2 连接前奏和 SETTINGS 帧
-    println!("1️⃣  模拟 HTTP/2 握手特征:");
+    // 1. 模拟an HTTP/2 connectionfront奏 and SETTINGS frame
+    println!("1️⃣  模拟 HTTP/2 handshaketrait:");
     let h2_preface = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
     let h2_settings = vec![
         0x00, 0x00, 0x0c, // Length 12
@@ -56,25 +56,25 @@ async fn main() {
 
     let result = analyzer.analyze(&packet);
     if let Some(http) = &result.http {
-        println!("   ✅ HTTP 解析成功 (Version: {})", http.id());
+        println!("   ✅ HTTP Parsesuccess (Version: {})", http.id());
         if let Some(settings) = &http.h2_settings {
             println!("   ✅ H2 SETTINGS 捕获: {:?}", settings);
         }
     }
 
     // 2. 模拟自学习过程
-    println!("\n2️⃣  自学习机制验证:");
+    println!("\n2️⃣  自学习机制Validate:");
     for i in 1..=12 {
         learner.process_result(&result);
         if i == 5 {
-            println!("   ... 观察未知指纹 5 次");
+            println!("   ... 观察not知fingerprint 5 次");
         }
         if i == 10 {
-            println!("   ... 观察未知指纹 10 次 (触发学习阈值)");
+            println!("   ... 观察not知fingerprint 10 次 (触发学习阈value)");
         }
     }
 
-    println!("\n✨ 高级功能验证完成！");
+    println!("\n✨ 高levelFeaturesValidatecomplete！");
 }
 
 #[cfg(not(feature = "defense"))]

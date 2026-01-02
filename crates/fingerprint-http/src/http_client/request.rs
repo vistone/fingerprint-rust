@@ -1,9 +1,9 @@
-//! HTTP 请求构建器
+//! HTTP requestBuild器
 
 use fingerprint_headers::headers::HTTPHeaders;
 use std::collections::HashMap;
 
-/// HTTP 方法
+/// HTTP method
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum HttpMethod {
     Get,
@@ -29,7 +29,7 @@ impl HttpMethod {
     }
 }
 
-/// HTTP 请求
+/// HTTP request
 #[derive(Debug, Clone)]
 pub struct HttpRequest {
     pub method: HttpMethod,
@@ -38,7 +38,7 @@ pub struct HttpRequest {
     pub body: Option<Vec<u8>>,
 }
 
-/// 辅助函数：为请求添加 Cookie（如果存在）
+/// 辅助function：为requestAdd Cookie（ if  exists）
 pub fn add_cookies_to_request(
     request: &mut HttpRequest,
     cookie_store: &super::cookie::CookieStore,
@@ -52,7 +52,7 @@ pub fn add_cookies_to_request(
 }
 
 impl HttpRequest {
-    /// 创建新的请求
+    /// Create a newrequest
     pub fn new(method: HttpMethod, url: &str) -> Self {
         Self {
             method,
@@ -62,20 +62,20 @@ impl HttpRequest {
         }
     }
 
-    /// 添加 User-Agent
+    /// Add User-Agent
     pub fn with_user_agent(mut self, user_agent: &str) -> Self {
         self.headers
             .insert("User-Agent".to_string(), user_agent.to_string());
         self
     }
 
-    /// 添加自定义 header
+    /// Addcustom header
     pub fn with_header(mut self, key: &str, value: &str) -> Self {
         self.headers.insert(key.to_string(), value.to_string());
         self
     }
 
-    /// 批量添加 headers
+    /// 批量Add headers
     pub fn with_headers(mut self, headers: &HTTPHeaders) -> Self {
         let headers_map = headers.to_map();
         for (key, value) in headers_map {
@@ -84,13 +84,13 @@ impl HttpRequest {
         self
     }
 
-    /// 设置请求体
+    /// settingsrequest体
     pub fn with_body(mut self, body: Vec<u8>) -> Self {
         self.body = Some(body);
         self
     }
 
-    /// 设置 JSON 请求体
+    /// settings JSON request体
     pub fn with_json_body(mut self, json: &str) -> Self {
         self.headers
             .insert("Content-Type".to_string(), "application/json".to_string());
@@ -98,32 +98,32 @@ impl HttpRequest {
         self
     }
 
-    /// 构建 HTTP/1.1 请求字符串
+    /// Build HTTP/1.1 requeststring
     ///
-    /// 注意：该方法会把 body 当作 UTF-8 文本拼接到字符串中，**不适用于二进制 body**。
-    /// 如需发送二进制数据，请使用 `build_http1_request_bytes`。
+    /// Note: 该methodwill把 body when作 UTF-8 文本拼接 to string中，**不适 for 二进制 body**。
+    /// 如需send二进制count据，请use `build_http1_request_bytes`。
     pub fn build_http1_request(&self, host: &str, path: &str) -> String {
-        // 安全清洗：防止 CRLF 注入
+        // security清洗：防止 CRLF 注入
         let safe_method = self.method.as_str().replace(['\r', '\n'], "");
         let safe_path = path.replace(['\r', '\n'], "");
         let safe_host = host.replace(['\r', '\n'], "");
 
         let mut request = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
-        // Host header (必需)
+        // Host header (required)
         request.push_str(&format!("Host: {}\r\n", safe_host));
 
-        // 添加其他 headers
+        // Add其他 headers
         for (key, value) in &self.headers {
             if key.to_lowercase() != "host" {
-                // 安全清理 Key 和 Value
+                // security清理 Key  and Value
                 let safe_key = key.replace(['\r', '\n'], "");
                 let safe_value = value.replace(['\r', '\n'], "");
                 request.push_str(&format!("{}: {}\r\n", safe_key, safe_value));
             }
         }
 
-        // Content-Length (如果有 body)
+        // Content-Length ( if 有 body)
         if let Some(ref body) = self.body {
             request.push_str(&format!("Content-Length: {}\r\n", body.len()));
         }
@@ -137,10 +137,10 @@ impl HttpRequest {
             request.push_str("Connection: close\r\n");
         }
 
-        // 结束 headers
+        // end headers
         request.push_str("\r\n");
 
-        // 添加 body
+        // Add body
         if let Some(ref body) = self.body {
             request.push_str(&String::from_utf8_lossy(body));
         }
@@ -148,21 +148,21 @@ impl HttpRequest {
         request
     }
 
-    /// 构建 HTTP/1.1 请求字节（推荐）
+    /// Build HTTP/1.1 requestbytes（推荐）
     pub fn build_http1_request_bytes(
         &self,
         host: &str,
         path: &str,
         header_order: Option<&[String]>,
     ) -> Vec<u8> {
-        // 安全清洗
+        // security清洗
         let safe_method = self.method.as_str().replace(['\r', '\n'], "");
         let safe_path = path.replace(['\r', '\n'], "");
         let safe_host = host.replace(['\r', '\n'], "");
 
         let mut head = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
-        // 使用有序列表（如果提供）
+        // use有序list（ if provide）
         let ordered_headers = if let Some(order) = header_order {
             let mut h = HTTPHeaders::new();
             for (k, v) in &self.headers {
@@ -184,7 +184,7 @@ impl HttpRequest {
             head.push_str(&format!("Host: {}\r\n", safe_host));
         }
 
-        // 添加其他 headers
+        // Add其他 headers
         for (key, value) in ordered_headers {
             let safe_key = key.replace(['\r', '\n'], "");
             let safe_value = value.replace(['\r', '\n'], "");
@@ -206,7 +206,7 @@ impl HttpRequest {
             head.push_str("Connection: close\r\n");
         }
 
-        // 结束 headers
+        // end headers
         head.push_str("\r\n");
 
         let mut out = head.into_bytes();
@@ -216,7 +216,7 @@ impl HttpRequest {
         out
     }
 
-    /// 随机化 Header 的大小写（模拟某些特定指纹或避免 WAF 特征）
+    /// random化 Header 的size写（模拟某些特定fingerprint or 避免 WAF trait）
     pub fn with_randomized_header_case(&mut self) {
         let mut new_headers = HashMap::new();
         for (key, value) in self.headers.drain() {
