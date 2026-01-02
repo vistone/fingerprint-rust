@@ -20,6 +20,7 @@ hex = "0.4"
 thiserror.workspace = true
 chrono = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
 
 [dev-dependencies]
 serde = { workspace = true, features = ["derive"] }
