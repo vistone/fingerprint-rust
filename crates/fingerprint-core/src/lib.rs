@@ -65,7 +65,7 @@ pub use grease::{
 };
 pub use hassh::{HASSH, HASSHServer, JA4SSH, SSHKexInit};
 pub use ja3::{JA3, JA3S};
-pub use ja4::{ConsistencyReport, JA4, JA4H, JA4S, JA4T};
+pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
 

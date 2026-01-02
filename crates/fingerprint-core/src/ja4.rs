@@ -459,3 +459,240 @@ mod ja4s_tests {
         assert_eq!(ja4s1.extension_hash, ja4s2.extension_hash);
     }
 }
+
+/// JA4L - 轻量级指纹（Light Version）
+///
+/// 简化版 JA4，适用于资源受限环境
+/// - 使用更快的哈希算法
+/// - 减少计算复杂度
+/// - 更小的内存占用
+///
+/// 格式: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
+///
+/// ## 示例
+/// ```
+/// use fingerprint_core::ja4::JA4L;
+///
+/// let ja4l = JA4L::generate(
+///     't',
+///     "1.3",
+///     true,
+///     &[0x1301, 0x1302, 0x1303],
+///     &[0, 10, 11, 13],
+/// );
+/// assert!(!ja4l.fingerprint_string().is_empty());
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct JA4L {
+    /// 传输协议 (t=tcp, q=quic)
+    pub transport: char,
+    
+    /// TLS 版本
+    pub version: String,
+    
+    /// 是否有 SNI (d=domain, i=ip)
+    pub destination: char,
+    
+    /// 密码套件数量
+    pub cipher_count: usize,
+    
+    /// 扩展数量
+    pub extension_count: usize,
+    
+    /// 密码套件采样（前3个，十六进制）
+    pub cipher_sample: String,
+    
+    /// 扩展采样（前3个，十六进制）
+    pub extension_sample: String,
+}
+
+impl JA4L {
+    /// 生成 JA4L 轻量级指纹
+    ///
+    /// # 参数
+    /// - `transport`: 传输协议 ('t' for TCP, 'q' for QUIC)
+    /// - `version`: TLS 版本 ("1.0", "1.1", "1.2", "1.3")
+    /// - `has_sni`: 是否包含 SNI 扩展
+    /// - `ciphers`: 密码套件列表
+    /// - `extensions`: 扩展列表
+    pub fn generate(
+        transport: char,
+        version: &str,
+        has_sni: bool,
+        ciphers: &[u16],
+        extensions: &[u16],
+    ) -> Self {
+        let v = match version {
+            "1.3" => "13",
+            "1.2" => "12",
+            "1.1" => "11",
+            "1.0" => "10",
+            _ => "00",
+        };
+        
+        let d = if has_sni { 'd' } else { 'i' };
+
+        // 过滤 GREASE 值
+        let filtered_ciphers: Vec<u16> = ciphers
+            .iter()
+            .filter(|&&c| !crate::grease::is_grease_value(c))
+            .cloned()
+            .collect();
+
+        let filtered_extensions: Vec<u16> = extensions
+            .iter()
+            .filter(|&&e| !crate::grease::is_grease_value(e))
+            .cloned()
+            .collect();
+
+        let cipher_count = filtered_ciphers.len().min(99);
+        let extension_count = filtered_extensions.len().min(99);
+
+        // 采样前3个密码套件（轻量级方法）
+        let cipher_sample = filtered_ciphers
+            .iter()
+            .take(3)
+            .map(|c| format!("{:04x}", c))
+            .collect::<Vec<_>>()
+            .join("");
+
+        // 采样前3个扩展（轻量级方法）
+        let extension_sample = filtered_extensions
+            .iter()
+            .take(3)
+            .map(|e| format!("{:04x}", e))
+            .collect::<Vec<_>>()
+            .join("");
+
+        Self {
+            transport,
+            version: v.to_string(),
+            destination: d,
+            cipher_count,
+            extension_count,
+            cipher_sample: if cipher_sample.is_empty() {
+                "000000000000".to_string()
+            } else {
+                cipher_sample
+            },
+            extension_sample: if extension_sample.is_empty() {
+                "000000000000".to_string()
+            } else {
+                extension_sample
+            },
+        }
+    }
+
+    /// 转换为标准的 JA4L 指纹字符串
+    /// 格式: t{version}{destination}{cipher_count:02}{extension_count:02}_{cipher_sample}_{extension_sample}
+    pub fn fingerprint_string(&self) -> String {
+        format!(
+            "{}{}{}{:02}{:02}_{}_{}",
+            self.transport,
+            self.version,
+            self.destination,
+            self.cipher_count,
+            self.extension_count,
+            self.cipher_sample,
+            self.extension_sample
+        )
+    }
+
+    /// 从完整的 JA4 指纹生成轻量级版本
+    pub fn from_ja4(ja4: &JA4) -> Self {
+        Self {
+            transport: ja4.transport,
+            version: ja4.version.clone(),
+            destination: ja4.destination,
+            cipher_count: ja4.cipher_count,
+            extension_count: ja4.extension_count,
+            // 从哈希中提取采样（简化）
+            cipher_sample: ja4.cipher_hash[0..12.min(ja4.cipher_hash.len())].to_string(),
+            extension_sample: ja4.extension_hash[0..12.min(ja4.extension_hash.len())].to_string(),
+        }
+    }
+
+    /// 估算指纹的计算成本（相对值）
+    /// 返回值：1-10，1 为最轻量，10 为最重
+    pub fn computational_cost() -> u8 {
+        2 // JA4L 是轻量级的，成本评分为 2/10
+    }
+
+    /// 估算内存占用（字节）
+    pub fn memory_footprint(&self) -> usize {
+        std::mem::size_of::<Self>()
+            + self.version.capacity()
+            + self.cipher_sample.capacity()
+            + self.extension_sample.capacity()
+    }
+}
+
+impl std::fmt::Display for JA4L {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+#[cfg(test)]
+mod ja4l_tests {
+    use super::*;
+
+    #[test]
+    fn test_ja4l_generation() {
+        let ja4l = JA4L::generate(
+            't',
+            "1.3",
+            true,
+            &[0x1301, 0x1302, 0x1303, 0x1304],
+            &[0, 10, 11, 13, 16],
+        );
+
+        assert_eq!(ja4l.transport, 't');
+        assert_eq!(ja4l.version, "13");
+        assert_eq!(ja4l.destination, 'd');
+        assert_eq!(ja4l.cipher_count, 4);
+        assert_eq!(ja4l.extension_count, 5);
+        assert!(!ja4l.cipher_sample.is_empty());
+        assert!(!ja4l.extension_sample.is_empty());
+    }
+
+    #[test]
+    fn test_ja4l_fingerprint_string() {
+        let ja4l = JA4L::generate('t', "1.2", true, &[0xc02f, 0xc030], &[0, 10]);
+
+        let fp = ja4l.fingerprint_string();
+        assert!(fp.starts_with("t12d"));
+        assert!(fp.contains('_'));
+    }
+
+    #[test]
+    fn test_ja4l_empty_ciphers() {
+        let ja4l = JA4L::generate('t', "1.3", false, &[], &[0, 10]);
+
+        assert_eq!(ja4l.cipher_count, 0);
+        assert_eq!(ja4l.cipher_sample, "000000000000");
+    }
+
+    #[test]
+    fn test_ja4l_display() {
+        let ja4l = JA4L::generate('t', "1.3", true, &[0x1301], &[0]);
+
+        let displayed = format!("{}", ja4l);
+        assert_eq!(displayed, ja4l.fingerprint_string());
+    }
+
+    #[test]
+    fn test_ja4l_computational_cost() {
+        let cost = JA4L::computational_cost();
+        assert!(cost <= 3); // 应该是轻量级的
+    }
+
+    #[test]
+    fn test_ja4l_memory_footprint() {
+        let ja4l = JA4L::generate('t', "1.3", true, &[0x1301], &[0]);
+        let footprint = ja4l.memory_footprint();
+        
+        // 内存占用应该很小
+        assert!(footprint < 200); // 少于 200 字节
+    }
+}
