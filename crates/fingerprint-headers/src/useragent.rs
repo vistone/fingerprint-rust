@@ -1,6 +1,6 @@
 //! User-Agent generation module
 //!
-//! 根据指纹配置生成对应的 User-Agent
+//! Generates corresponding User-Agent based on fingerprint configuration
 
 use fingerprint_core::types::{BrowserType, OperatingSystem, UserAgentTemplate, OPERATING_SYSTEMS};
 use fingerprint_core::utils::random_choice;

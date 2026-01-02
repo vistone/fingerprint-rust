@@ -1,12 +1,12 @@
 //! HTTP client module
 //!
-//! 结合 netconnpool + fingerprint-rust 实现完整的 HTTP 客户端
+//! Complete HTTP client implementation combining netconnpool + fingerprint-rust
 //!
-//! 特性：
-//! - 使用 netconnpool 管理连接
-//! - 应用 fingerprint-rust 的配置
-//! - 支持 HTTP/1.1 和 HTTP/2
-//! - TLS 层设计为可替换
+//! Features:
+//! - Use netconnpool for connection management
+//! - Apply fingerprint-rust configurations
+//! - Support HTTP/1.1 and HTTP/2
+//! - TLS layer designed to be replaceable
 
 pub mod cookie;
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
