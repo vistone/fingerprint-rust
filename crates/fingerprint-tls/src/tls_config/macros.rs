@@ -1,8 +1,8 @@
 //! TLS configuration宏
 //!
-//! provide宏 from simplifycommonconfigurationBuild，decreaseduplicatecode
+//! provide宏来simplifycommonconfigurationBuild，decreaseduplicatecode
 
-/// Create Chrome extensionlist assist 宏
+/// Create Chrome extensionlistauxiliary宏
 /// similar wreq-util 宏design
 #[macro_export]
 macro_rules! chrome_extensions {
@@ -11,7 +11,7 @@ macro_rules! chrome_extensions {
  key_shares: [$($key_share:expr),*],
  alpn: [$($alpn:expr),*],
  app_settings: [$($app_setting:expr),*],
-) => {{
+ ) => {{
  use $crate::tls_config::builder::ClientHelloSpecBuilder;
  use $crate::tls_extensions::{
  ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension,
@@ -40,7 +40,7 @@ macro_rules! chrome_extensions {
  Box::new(StatusRequestExtension),
  Box::new(SignatureAlgorithmsExtension::new(
  ClientHelloSpecBuilder::chrome_signature_algorithms()
-)),
+ )),
  Box::new(SCTExtension),
  Box::new(KeyShareExtension::new(vec![$($key_share),*])),
  Box::new(PSKKeyExchangeModesExtension::new(vec![PSK_MODE_DHE])),

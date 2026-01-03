@@ -11,16 +11,16 @@ use fingerprint_core::fingerprint::Fingerprint;
 
 /// 自learnanalysiser
 pub struct SelfLearningAnalyzer {
- #[ all ow (dead_code)] // will from will for storelearn to fingerprint
+ #[allow(dead_code)] // will来will for storelearn to fingerprint
  db: Arc<FingerprintDatabase>,
- /// not know fingerprintobservecounter (fp_id -> count)
+ /// not知fingerprintobservecounter (fp_id -> count)
  observations: DashMap<String, u64>,
- /// learning thresholdvalue (observe many 少 times back转入database)
+ /// learning thresholdvalue (observe多少次back转入database)
  learning_threshold: u64,
 }
 
 impl SelfLearningAnalyzer {
- /// create a new learnanalysiser
+ /// Create a newlearnanalysiser
  pub fn new(db: Arc<FingerprintDatabase>) -> Self {
  Self {
  db,
@@ -29,11 +29,11 @@ impl SelfLearningAnalyzer {
  }
  }
 
- /// processanalysisresult and learn
+ /// processanalysisresult并learn
  pub fn process_result(&self, result: &PassiveAnalysisResult) {
  // respectivelyprocesseachlayerlevelfingerprint
  if let Some(tls) = &result.tls {
- // TLS item frontdirectlyobserve ID (JA4)
+ // TLS 目frontdirectlyobserve ID (JA4)
  self.observe(tls.id(), "tls");
  }
 
@@ -58,19 +58,19 @@ impl SelfLearningAnalyzer {
 
  let key = format!("{}:{}", fp_type, fp_id);
 
- // protection point ：limitobservelistsize，preventinside存撑爆 (DoS protection)
+ // protection点：limitobservelistsize，preventinside存撑爆 (DoS protection)
  const MAX_OBSERVATIONS: usize = 10000;
- if self.observations.len() >= MAX_OBSERVATIONS &&!self.observations.contains_key(&key) {
- // If达 to up限 and is new key, then ignore 
+ if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
+ // If达 to up限 and  is new key, 则ignore
  return;
  }
 
- let mut count = self.observations.en try (key.clone()).or_insert(0);
+ let mut count = self.observations.entry(key.clone()).or_insert(0);
  *count += 1;
 
  if *count >= self.learning_threshold {
- // 达 to 阈value，can in database in establishinitial步en try 
- // TODO: Extracttrait and store as 待 core准signature
+ // 达 to 阈value，can in database in establishinitial步entry
+ // TODO: Extracttrait并store as 待核准signature
  println!("[Learner] Detected stable unknown fingerprint: {}", key);
  }
  }

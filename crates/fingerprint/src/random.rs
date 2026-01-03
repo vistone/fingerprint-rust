@@ -4,7 +4,7 @@
 
 use fingerprint_core::types::{BrowserType, OperatingSystem};
 use fingerprint_core::utils::{
- infer_browser_from_profile_name, is_ mobile _profile, random_choice_string,
+ infer_browser_from_profile_name, is_mobile_profile, random_choice_string,
 };
 use fingerprint_headers::headers::generate_headers;
 use fingerprint_headers::useragent::{
@@ -17,11 +17,11 @@ use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 pub struct FingerprintResult {
  /// TLS fingerprintconfiguration
  pub profile: ClientProfile,
- /// pair should User-Agent
+ /// pair应 User-Agent
  pub user_agent: String,
- /// Client Hello ID (and tls-client keepconsistent)
+ /// Client Hello ID ( and tls-client keepconsistent)
  pub hello_client_id: String,
- /// standard HTTP requestheader (includingglob all anguagesupport)
+ /// standard HTTP requestheader (includinggloballanguagesupport)
  pub headers: fingerprint_headers::headers::HTTPHeaders,
 }
 
@@ -39,23 +39,23 @@ impl std::fmt::Display for BrowserNotFoundError {
 
 impl std::error::Error for BrowserNotFoundError {}
 
-/// randomGetanfingerprint and pair should User-Agent
-/// operating system will randomly select 
+/// randomGetanfingerprint and pair应 User-Agent
+/// operating systemwill randomly select
 pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
  get_random_fingerprint_with_os(None)
 }
 
-/// randomGetanfingerprint and pair should User-Agent， and specifiedoperating system 
-/// If os as None, then randomly select operating system 
+/// randomGetanfingerprint and pair应 User-Agent，并specifiedoperating system
+/// If os as None, 则randomly selectoperating system
 pub fn get_random_fingerprint_with_os(
  os: Option<OperatingSystem>,
 ) -> Result<FingerprintResult, String> {
  let clients = mapped_tls_clients();
  if clients.is_empty() {
- return Err("no TLS client profiles available ".to_string());
+ return Err("no TLS client profiles available".to_string());
  }
 
- // Get all available fingerprint name
+ // Getallavailablefingerprint name
  let names: Vec<String> = clients.keys().cloned().collect();
 
  // randomly select an (threadsecurity)
@@ -72,10 +72,10 @@ pub fn get_random_fingerprint_with_os(
  return Err(format!(
  "profile {} is invalid (empty ClientHelloStr)",
  random_name
-));
+ ));
  }
 
- // Getpair should User-Agent
+ // Getpair应 User-Agent
  let ua = match os {
  Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
  None => get_user_agent_by_profile_name(&random_name)?,
@@ -87,9 +87,9 @@ pub fn get_random_fingerprint_with_os(
 
  // Generatestandard HTTP Headers
  let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
- let is_ mobile = is_ mobile _profile(&random_name);
+ let is_mobile = is_mobile_profile(&random_name);
  let browser_type = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
- let headers = generate_headers(browser_type, &ua, is_ mobile);
+ let headers = generate_headers(browser_type, &ua, is_mobile);
 
  let hello_client_id = profile.get_client_hello_str();
  Ok(FingerprintResult {
@@ -108,7 +108,7 @@ pub fn get_random_fingerprint_by_browser(
  get_random_fingerprint_by_browser_with_os(browser_type, None)
 }
 
-/// Based onbrowsertyperandomGetfingerprint and User-Agent， and specifiedoperating system 
+/// Based onbrowsertyperandomGetfingerprint and User-Agent，并specifiedoperating system
 pub fn get_random_fingerprint_by_browser_with_os(
  browser_type: &str,
  os: Option<OperatingSystem>,
@@ -119,7 +119,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
  let clients = mapped_tls_clients();
  if clients.is_empty() {
- return Err("no TLS client profiles available ".into());
+ return Err("no TLS client profiles available".into());
  }
 
  let browser_type_lower = browser_type.to_lowercase();
@@ -154,7 +154,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
  return Err(format!("profile {} is invalid (empty ClientHelloStr)", random_name).into());
  }
 
- // Getpair should User-Agent
+ // Getpair应 User-Agent
  let ua = match os {
  Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
  None => get_user_agent_by_profile_name(&random_name)?,
@@ -166,9 +166,9 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
  // Generatestandard HTTP Headers
  let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
- let is_ mobile = is_ mobile _profile(&random_name);
+ let is_mobile = is_mobile_profile(&random_name);
  let browser_type_enum = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
- let headers = generate_headers(browser_type_enum, &ua, is_ mobile);
+ let headers = generate_headers(browser_type_enum, &ua, is_mobile);
 
  let hello_client_id = profile.get_client_hello_str();
  Ok(FingerprintResult {
@@ -212,11 +212,11 @@ mod tests {
  println!("║ TCP fingerprint and browserfingerprintsync - realtest ║");
  println!("╚════════════════════════════════════════════════════════════════╝\n");
 
- println!("【test】randomly select browserfingerprint (Validate TCP fingerprintautomaticsync)\n");
+ println!("【test】randomly selectbrowserfingerprint (Validate TCP fingerprintautomaticsync)\n");
 
  for i in 1..=5 {
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
- println!("第 {} times randomly select ：", i);
+ println!("第 {} 次randomly select：", i);
 
  let result = get_random_fingerprint().unwrap();
  let user_agent = &result.user_agent;
@@ -236,18 +236,18 @@ mod tests {
 
  println!(" browserfingerprint: {}", result.hello_client_id);
  println!(" User-Agent: {}", user_agent);
- println!(" inferoperating system : {}", inferred_os);
+ println!(" inferoperating system: {}", inferred_os);
 
  if let Some(tcp_profile) = &profile.tcp_profile {
  println!(" TCP Profile:");
  println!(" TTL: {}", tcp_profile.ttl);
- println!(" Window Size: {}", tcp_profile. window _size);
+ println!(" Window Size: {}", tcp_profile.window_size);
 
  let expected_ttl = match inferred_os {
  "Windows" => 128,
  "macOS" | "Linux" => 64,
  _ => {
- println!(" ⚠️ unable toValidate (not know operating system)");
+ println!(" ⚠️ unable toValidate (not知operating system)");
  continue;
  }
  };
@@ -256,15 +256,15 @@ mod tests {
  println!(
  " ✅ syncValidatethrough！TTL ({}) and operating system ({}) match",
  tcp_profile.ttl, inferred_os
-);
+ );
  } else {
  println!(
- " ❌ sync failure！TTL ({}) and operating system ({}) does not match (expected: {})",
+ " ❌ syncfailure！TTL ({}) and operating system ({}) does not match (expected: {})",
  tcp_profile.ttl, inferred_os, expected_ttl
-);
+ );
  }
  } else {
- println!(" ❌ TCP Profile not exists - sync failure！");
+ println!(" ❌ TCP Profile 不 exists - syncfailure！");
  }
  println!();
  }

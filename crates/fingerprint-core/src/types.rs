@@ -1,6 +1,6 @@
 //! typedefinemodule
 //!
-//! definebrowsertype、operating system type etc.coretype
+//! define了browsertype、operating systemtype etc.coretype
 
 /// browsertype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -15,8 +15,8 @@ pub enum BrowserType {
 impl BrowserType {
  /// from stringconvert tobrowsertype
  ///
- /// Note: this methodname and standardlibrary `FromStr::from_str` different，to avoid namingconflict
- #[ all ow (clippy::should_implement_trait)]
+ /// Note: 此methodname and standardlibrary `FromStr::from_str` different，以avoidnamingconflict
+ #[allow(clippy::should_implement_trait)]
  pub fn from_str(s: &str) -> Option<Self> {
  match s.to_lowercase().as_str() {
  "chrome" => Some(Self::Chrome),
@@ -46,7 +46,7 @@ impl std::fmt::Display for BrowserType {
  }
 }
 
-/// operating system type
+/// operating systemtype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum OperatingSystem {
  Windows10,
@@ -60,7 +60,7 @@ pub enum OperatingSystem {
 }
 
 impl OperatingSystem {
- /// Getoperating system stringrepresent
+ /// Getoperating systemstringrepresent
  pub fn as_str(&self) -> &'static str {
  match self {
  Self::Windows10 => "Windows NT 10.0; Win64; x64",
@@ -81,7 +81,7 @@ impl std::fmt::Display for OperatingSystem {
  }
 }
 
-/// operating system list (for randomly select)
+/// operating systemlist ( for randomly select)
 pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
  OperatingSystem::Windows10,
  OperatingSystem::Windows11,
@@ -93,7 +93,7 @@ pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
  OperatingSystem::LinuxDebian,
 ];
 
-/// in order tokeep and Go versioncompatible property，providealias
+/// in order tokeep and Go versioncompatible性，providealias
 pub type OperatingSystems = [OperatingSystem; 8];
 
 /// User-Agent templates
@@ -102,7 +102,7 @@ pub struct UserAgentTemplate {
  pub browser: BrowserType,
  pub version: String,
  pub template: String,
- pub mobile : bool,
+ pub mobile: bool,
  pub os_required: bool,
 }
 
@@ -111,9 +111,9 @@ impl UserAgentTemplate {
  browser: BrowserType,
  version: String,
  template: String,
- mobile : bool,
+ mobile: bool,
  os_required: bool,
-) -> Self {
+ ) -> Self {
  Self {
  browser,
  version,

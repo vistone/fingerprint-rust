@@ -1,11 +1,11 @@
 //! HTTP/1.1 with Connection Pool
 //!
-//! architecture explain ：
+//! architectureexplain：
 //! - HTTP/1.1 adopt netconnpool manage TCP connection pool
-//! - poolizepairobject：TcpStream (裸 TCP connection)
+//! - pool化pair象：TcpStream (裸 TCP connection)
 //! - reusemethod：serialreuse (anconnectionsame when betweencan onlyprocessanrequest)
 //! - protocollimit：HTTP/1.1 unable tomultiplereuse，needlarge numberconnectionsupportconcurrent
-//! - netconnpool 负责：connectionCreate、keepactive、故障detect and 回 receive 
+//! - netconnpool 负责：connectionCreate、keepactive、故障detect and 回收
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;
@@ -34,15 +34,15 @@ pub fn send_http1_request_with_pool(
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
  // from Connection in Extract TcpStream
- // PooledConnection implement Deref<Target = Connection>，candirectlyuse Connection method
+ // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection method
  let tcp_stream = conn
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
  // clone TcpStream so thatwecanuse它
- let mut stream = tcp_stream. try _clone().map_err(HttpClientError::Io)?;
+ let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
- // Fix: Add Cookie to request (if exists)
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -51,7 +51,7 @@ pub fn send_http1_request_with_pool(
  host,
  path,
  false, // HTTP is notsecurityconnection
-);
+ );
  }
 
  // Build HTTP request
@@ -59,16 +59,16 @@ pub fn send_http1_request_with_pool(
 
  // sendrequest
  stream
-.write_ all (http_request.as_bytes())
+.write_all(http_request.as_bytes())
 .map_err(HttpClientError::Io)?;
 
  // Fix: usecompleteresponsereadlogic (include body)
- // connection will automatic归still to connection pool (through Drop)
+ // connectionwillautomatic归still to connection pool (through Drop)
  let buffer =
  super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
 .map_err(HttpClientError::Io)?;
 
- // parsed response
+ // Parseresponse
  HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
 }
 
@@ -82,19 +82,19 @@ pub fn send_http1_request_with_pool(
  _pool_manager: &std::sync::Arc<super::pool::ConnectionPoolManager>,
 ) -> Result<HttpResponse> {
  Err(HttpClientError::ConnectionFailed(
- "connection poolFeaturesnotenabled， please use --features connection-pool compile".to_string(),
-))
+ "connection poolFeaturesnotenabled，请use --features connection-pool compile".to_string(),
+ ))
 }
 
-#[cfg(all (test, feature = "connection-pool"))]
+#[cfg(all(test, feature = "connection-pool"))]
 mod tests {
- #[ all ow (unused_imports)]
+ #[allow(unused_imports)]
  use super::*;
  use crate::http_client::pool::PoolManagerConfig;
  use crate::http_client::request::HttpMethod;
 
  #[test]
- #[ ignore ] // neednetwork
+ #[ignore] // neednetwork
  fn test_http1_with_pool() {
  let request = HttpRequest::new(HttpMethod::Get, "http://example.com/");
  let config = HttpClientConfig::default();
@@ -103,7 +103,7 @@ mod tests {
  let result =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // may will failure (networkissue)，but not should panic
+ // maywillfailure (networkissue)，but不should panic
  if let Ok(response) = result {
  println!("status code: {}", response.status_code);
  assert!(response.status_code > 0);
@@ -111,7 +111,7 @@ mod tests {
  }
 
  #[test]
- #[ ignore ] // neednetwork
+ #[ignore] // neednetwork
  fn test_connection_reuse() {
  let request = HttpRequest::new(HttpMethod::Get, "http://example.com/");
  let config = HttpClientConfig::default();
@@ -121,13 +121,13 @@ mod tests {
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // second times request (shouldreuseconnection)
+ // second次request (shouldreuseconnection)
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
  // Checkstatisticsinfo
  let stats = pool_manager.get_stats();
- if!stats.is_empty() {
+ if !stats.is_empty() {
  println!("connection poolstatistics:");
  for stat in stats {
  stat.print();

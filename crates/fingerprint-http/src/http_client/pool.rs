@@ -20,7 +20,7 @@ use netconnpool::{Config as PoolConfig, ConnectionType, Pool};
 /// connection poolmanageer
 #[cfg(feature = "connection-pool")]
 pub struct ConnectionPoolManager {
- /// connection poolinstance (by host:port group)
+ /// connection poolinstance ( by  host:port group)
  pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
  /// defaultconfiguration
  config: PoolManagerConfig,
@@ -39,10 +39,10 @@ impl Default for ConnectionPoolManager {
  }
 }
 
-/// connection poolmanageer (no connection poolFeatures when 占bit)
+/// connection poolmanageer (无connection poolFeatures when 占bit)
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
- #[ all ow (dead_code)]
+ #[allow(dead_code)]
  config: PoolManagerConfig,
 }
 
@@ -84,7 +84,7 @@ impl Default for PoolManagerConfig {
 }
 
 impl ConnectionPoolManager {
- /// create a new connection poolmanageer
+ /// Create a newconnection poolmanageer
  #[cfg(feature = "connection-pool")]
  pub fn new(config: PoolManagerConfig) -> Self {
  Self {
@@ -103,13 +103,13 @@ impl ConnectionPoolManager {
  }
 
  /// Get HTTP/2 sessionpool
- #[cfg(all (feature = "connection-pool", feature = "http2"))]
+ #[cfg(all(feature = "connection-pool", feature = "http2"))]
  pub fn h2_session_pool(&self) -> &Arc<super::h2_session_pool::H2SessionPool> {
  &self.h2_session_pool
  }
 
  /// Get HTTP/3 sessionpool
- #[cfg(all (feature = "connection-pool", feature = "http3"))]
+ #[cfg(all(feature = "connection-pool", feature = "http3"))]
  pub fn h3_session_pool(&self) -> &Arc<super::h3_session_pool::H3SessionPool> {
  &self.h3_session_pool
  }
@@ -121,16 +121,16 @@ impl ConnectionPoolManager {
  let mut pools = self
 .pools
 .lock()
-.map_err(|e| HttpClientError::ConnectionFailed(format!("connection poollock failure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("connection poollockfailure: {}", e)))?;
 
  if let Some(pool) = pools.get(&key) {
  return Ok(pool.clone());
  }
 
- // create a new connection pool
+ // Create a newconnection pool
  let pool_config = self.create_pool_config(host, port);
  let pool = Pool::new(pool_config)
-.map_err(|e| HttpClientError::ConnectionFailed(format!("Createconnection pool failure: {:?}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("Createconnection poolfailure: {:?}", e)))?;
 
  let pool = Arc::new(pool);
  pools.insert(key, pool.clone());
@@ -141,8 +141,8 @@ impl ConnectionPoolManager {
  #[cfg(not(feature = "connection-pool"))]
  pub fn get_pool(&self, _host: &str, _port: u16) -> Result<()> {
  Err(HttpClientError::ConnectionFailed(
- "connection poolFeaturesnotenabled， please use --features connection-pool compile".to_string(),
-))
+ "connection poolFeaturesnotenabled，请use --features connection-pool compile".to_string(),
+ ))
  }
 
  /// Createconnection poolconfiguration
@@ -164,9 +164,9 @@ impl ConnectionPoolManager {
  health_check_timeout: Duration::from_secs(3),
  connection_leak_timeout: Duration::from_secs(300),
 
- // provide Dialer function from Create TCP connection
- // Note: hereunable todirectlyaccess config.profile，because dialer is close package 
- // TCP Profile should in Createconnection poolbefore just application to config in 
+ // provide Dialer function来Create TCP connection
+ // Note: hereunable todirectlyaccess config.profile，because dialer is close包
+ // TCP Profile should in Createconnection poolbefore就application to config in 
  dialer: Some(Box::new(move |_protocol| {
  use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
@@ -175,7 +175,7 @@ impl ConnectionPoolManager {
 .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
 .collect();
 
- // priorityuse IPv4， avoid in " no IPv6 route"environment in appear `Network is unreachable`。
+ // priorityuse IPv4，avoid in "无 IPv6 route"environment in appear `Network is unreachable`。
  let mut v4 = Vec::new();
  let mut v6 = Vec::new();
  for a in addrs {
@@ -187,7 +187,7 @@ impl ConnectionPoolManager {
 
  let mut last_err: Option<std::io::Error> = None;
  for addr in v4.into_iter().chain(v6.into_iter()) {
- // Note: here temporary when usestandardconnection，TCP Profile should in Createconnection pool when throughothermethodapplication
+ // Note: here暂 when usestandardconnection，TCP Profile should in Createconnection pool when throughothermethodapplication
  // TODO: support in connection pool in application TCP Profile
  match TcpStream::connect_timeout(&addr, connect_timeout) {
  Ok(s) => return Ok(ConnectionType::Tcp(s)),
@@ -197,7 +197,7 @@ impl ConnectionPoolManager {
 
  Err(Box::new(
  last_err.unwrap_or_else(|| std::io::Error::other("no resolved addresses")),
-)
+ )
  as Box<dyn std::error::Error + Send + Sync>)
  })),
  listener: None,
@@ -221,7 +221,7 @@ impl ConnectionPoolManager {
  let pools = match self.pools.lock() {
  Ok(p) => p,
  Err(e) => {
- eprintln!("warning: connection poollock failure: {}", e);
+ eprintln!("warning: connection poollockfailure: {}", e);
  return Vec::new();
  }
  };
@@ -250,16 +250,16 @@ impl ConnectionPoolManager {
  /// cleanupempty闲connection
  #[cfg(feature = "connection-pool")]
  pub fn cleanup_idle(&self) {
- // netconnpool will automaticcleanup，here only is provideinterface
+ // netconnpool willautomaticcleanup，here只 is provideinterface
  if let Ok(pools) = self.pools.lock() {
- println!("connection poolstatus: {} end point ", pools.len());
+ println!("connection poolstatus: {} 端点", pools.len());
  }
  }
 
  #[cfg(not(feature = "connection-pool"))]
  pub fn cleanup_idle(&self) {}
 
- /// close all connection pool
+ /// closeallconnection pool
  #[cfg(feature = "connection-pool")]
  pub fn shutdown(&self) {
  if let Ok(mut pools) = self.pools.lock() {
@@ -267,7 +267,7 @@ impl ConnectionPoolManager {
  let _ = pool.close();
  }
  pools.clear();
- println!(" all connection poolalreadyclose");
+ println!("allconnection poolalreadyclose");
  }
  }
 
@@ -288,7 +288,7 @@ pub struct PoolStats {
 }
 
 impl PoolStats {
- /// Getsuccess rate 
+ /// Getsuccess率
  pub fn success_rate(&self) -> f64 {
  if self.total_requests == 0 {
  return 0.0;
@@ -299,24 +299,24 @@ impl PoolStats {
  /// printstatisticsinfo
  pub fn print(&self) {
  println!("\n📊 connection poolstatistics: {}", self.endpoint);
- println!(" total connectioncount: {}", self.total_connections);
+ println!(" 总connectioncount: {}", self.total_connections);
  println!(" activeconnection: {}", self.active_connections);
  println!(" empty闲connection: {}", self.idle_connections);
- println!(" total requestcount: {}", self.total_requests);
+ println!(" 总requestcount: {}", self.total_requests);
  println!(" successrequest: {}", self.successful_requests);
  println!(" failurerequest: {}", self.failed_requests);
- println!(" success rate : {:.2}%", self.success_rate());
+ println!(" success率: {:.2}%", self.success_rate());
  }
 }
 
-#[cfg(all (test, not(feature = "connection-pool")))]
+#[cfg(all(test, not(feature = "connection-pool")))]
 mod tests {
  use super::*;
 
  #[test]
  fn test_pool_manager_creation() {
  let manager = ConnectionPoolManager::default();
- // connection poolFeaturesnotenabled when ，no needCheckinside part status
+ // connection poolFeaturesnotenabled when ，no needCheckinside部status
  assert_eq!(manager.get_stats().len(), 0);
  }
 
@@ -329,12 +329,12 @@ mod tests {
  }
 }
 
-#[cfg(all (test, feature = "connection-pool"))]
+#[cfg(all(test, feature = "connection-pool"))]
 mod pool_tests {
  use super::*;
 
  #[test]
- #[ ignore ] // neednetwork
+ #[ignore] // neednetwork
  fn test_pool_creation_with_connection() {
  let manager = ConnectionPoolManager::default();
  let result = manager.get_pool("example.com", 80);
@@ -344,7 +344,7 @@ mod pool_tests {
 
  // Getanconnection
  let conn_result = pool.get();
- // may will failure (if unable toconnection)，but not should panic
+ // maywillfailure ( if unable toconnection)，but不should panic
  if let Ok(_conn) = conn_result {
  println!("successGetconnection");
  }

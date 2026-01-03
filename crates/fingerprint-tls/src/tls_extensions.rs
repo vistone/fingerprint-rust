@@ -16,7 +16,7 @@ pub type ExtensionID = u16;
 /// Padding length calculation function type
 pub type PaddingLengthFn = Box<dyn Fn(usize) -> (usize, bool)>;
 
-/// Key Share En try 
+/// Key Share Entry
 /// Corresponds to Go version's tls.KeyShare
 #[derive(Debug, Clone)]
 pub struct KeyShare {
@@ -81,7 +81,7 @@ impl TLSExtension for UtlsGREASEExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
  buf[0] = (self.value >> 8) as u8;
  buf[1] = (self.value & 0xff) as u8;
@@ -136,7 +136,7 @@ impl TLSExtension for SNIExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -178,7 +178,7 @@ impl TLSExtension for SNIExtension {
 
 impl TLSExtensionWriter for SNIExtension {
  fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
- // SNI Write is no-op，because SNI not should by fingerprintize， is user control 
+ // SNI Write is no-op，because SNI 不should被fingerprint化， is usercontrol的
  Ok(buf.len())
  }
 }
@@ -198,7 +198,7 @@ impl TLSExtension for StatusRequestExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -262,7 +262,7 @@ impl TLSExtension for SupportedCurvesExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -329,7 +329,7 @@ impl TLSExtension for SupportedPointsExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -393,7 +393,7 @@ impl TLSExtension for SignatureAlgorithmsExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -464,7 +464,7 @@ impl TLSExtension for ALPNExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -529,7 +529,7 @@ impl TLSExtension for ExtendedMasterSecretExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -573,7 +573,7 @@ impl TLSExtension for SessionTicketExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -626,7 +626,7 @@ impl TLSExtension for SupportedVersionsExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -692,7 +692,7 @@ impl TLSExtension for PSKKeyExchangeModesExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -762,7 +762,7 @@ impl TLSExtension for KeyShareExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -825,7 +825,7 @@ impl TLSExtension for SCTExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -877,7 +877,7 @@ impl TLSExtension for RenegotiationInfoExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -939,7 +939,7 @@ impl TLSExtension for ApplicationSettingsExtensionNew {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -1012,7 +1012,7 @@ impl TLSExtension for UtlsCompressCertExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -1061,7 +1061,7 @@ pub struct UtlsPreSharedKeyExtension;
 
 impl TLSExtension for UtlsPreSharedKeyExtension {
  fn len(&self) -> usize {
- 4 // extension_id (2) + length (2, will be set dynamic all y)
+ 4 // extension_id (2) + length (2, will be set dynamically)
  }
 
  fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
@@ -1069,7 +1069,7 @@ impl TLSExtension for UtlsPreSharedKeyExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -1123,7 +1123,7 @@ impl TLSExtension for GREASEEncryptedClientHelloExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID
@@ -1162,7 +1162,7 @@ impl Default for GREASEEncryptedClientHelloExtension {
 /// Corresponds to Go version's &tls.UtlsPaddingExtension{}
 pub struct UtlsPaddingExtension {
  pub padding_len: usize,
- pub will _pad: bool,
+ pub will_pad: bool,
  pub get_padding_len: Option<PaddingLengthFn>,
 }
 
@@ -1170,7 +1170,7 @@ impl std::fmt::Debug for UtlsPaddingExtension {
  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
  f.debug_struct("UtlsPaddingExtension")
 .field("padding_len", &self.padding_len)
-.field(" will _pad", &self. will _pad)
+.field("will_pad", &self.will_pad)
 .field("get_padding_len", &self.get_padding_len.is_some())
 .finish()
  }
@@ -1180,8 +1180,8 @@ impl Clone for UtlsPaddingExtension {
  fn clone(&self) -> Self {
  Self {
  padding_len: self.padding_len,
- will _pad: self. will _pad,
- get_padding_len: None, // not clonefunctionpointer
+ will_pad: self.will_pad,
+ get_padding_len: None, // 不clonefunctionpointer
  }
  }
 }
@@ -1190,7 +1190,7 @@ impl UtlsPaddingExtension {
  pub fn new() -> Self {
  Self {
  padding_len: 0,
- will _pad: false,
+ will_pad: false,
  get_padding_len: None,
  }
  }
@@ -1213,7 +1213,7 @@ impl UtlsPaddingExtension {
 
 impl TLSExtension for UtlsPaddingExtension {
  fn len(&self) -> usize {
- if self. will _pad {
+ if self.will_pad {
  4 + self.padding_len // extension_id (2) + length (2) + padding
  } else {
  0
@@ -1221,7 +1221,7 @@ impl TLSExtension for UtlsPaddingExtension {
  }
 
  fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
- if!self. will _pad {
+ if !self.will_pad {
  return Ok(0);
  }
  let len = self.len();
@@ -1229,7 +1229,7 @@ impl TLSExtension for UtlsPaddingExtension {
  return Err(io::Error::new(
  io::ErrorKind::InvalidInput,
  "buffer too short",
-));
+ ));
  }
 
  // Extension ID

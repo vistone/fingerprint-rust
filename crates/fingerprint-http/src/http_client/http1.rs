@@ -27,7 +27,7 @@ pub fn send_http1_request(
 .set_write_timeout(Some(config.write_timeout))
 .map_err(HttpClientError::Io)?;
 
- // Fix: Add Cookie to request (if exists)
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -36,14 +36,14 @@ pub fn send_http1_request(
  host,
  path,
  false, // HTTP is notsecurityconnection
-);
+ );
  }
 
- // Build and send HTTP/1.1 request
+ // Build并send HTTP/1.1 request
  let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
  let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
  stream
-.write_ all (&http_request)
+.write_all(&http_request)
 .map_err(HttpClientError::Io)?;
  stream.flush().map_err(HttpClientError::Io)?;
 
@@ -53,7 +53,7 @@ pub fn send_http1_request(
  super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
 .map_err(HttpClientError::Io)?;
 
- // parsed response
+ // Parseresponse
  HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
 }
 
@@ -62,12 +62,12 @@ mod tests {
  use super::*;
 
  #[test]
- #[ ignore ] // neednetworkconnection
+ #[ignore] // neednetworkconnection
  fn test_send_http1_request() {
  let request = HttpRequest::new(
  crate::http_client::request::HttpMethod::Get,
  "http://example.com",
-)
+ )
 .with_user_agent("TestClient/1.0");
 
  let config = HttpClientConfig::default();

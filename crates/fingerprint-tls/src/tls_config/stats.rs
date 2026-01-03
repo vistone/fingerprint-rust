@@ -10,7 +10,7 @@ use std::collections::HashMap;
 /// TLS fingerprintstatisticsinfo
 #[derive(Debug, Clone)]
 pub struct FingerprintStats {
- /// total fingerprintcount
+ /// 总fingerprintcount
  pub total_fingerprints: usize,
  /// including GREASE fingerprintcount
  pub fingerprints_with_grease: usize,
@@ -62,16 +62,16 @@ impl FingerprintStats {
 
  // TLS versiondistribution
  let version_str = format!("{}", signature.version);
- *stats.version_distribution.en try (version_str).or_insert(0) += 1;
+ *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
  // statisticscipher suite
  for suite in &signature.cipher_suites {
- *cipher_suite_counts.en try (*suite).or_insert(0) += 1;
+ *cipher_suite_counts.entry(*suite).or_insert(0) += 1;
  }
 
  // statisticsextension
  for ext in &signature.extensions {
- *extension_counts.en try (*ext).or_insert(0) += 1;
+ *extension_counts.entry(*ext).or_insert(0) += 1;
  }
  }
 
@@ -124,16 +124,16 @@ impl FingerprintStats {
 
  // TLS versiondistribution
  let version_str = format!("{}", signature.version);
- *stats.version_distribution.en try (version_str).or_insert(0) += 1;
+ *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
  // statisticscipher suite
  for suite in &signature.cipher_suites {
- *cipher_suite_counts.en try (*suite).or_insert(0) += 1;
+ *cipher_suite_counts.entry(*suite).or_insert(0) += 1;
  }
 
  // statisticsextension
  for ext in &signature.extensions {
- *extension_counts.en try (*ext).or_insert(0) += 1;
+ *extension_counts.entry(*ext).or_insert(0) += 1;
  }
  }
 

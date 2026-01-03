@@ -1,6 +1,6 @@
 //! DNS servercollectermodule
 //!
-//! collect available DNS server，include from public-dns.info Getpublic DNS serverlist
+//! collectavailable DNS server，include from public-dns.info Getpublic DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::DNSError;
@@ -16,7 +16,7 @@ impl ServerCollector {
  let timeout = timeout.unwrap_or(Duration::from_secs(30));
  let url = "https://public-dns.info/nameservers.txt";
 
- // useiteminside part HttpClient
+ // useiteminside部 HttpClient
  let config = fingerprint_http::http_client::HttpClientConfig {
  connect_timeout: timeout,
  read_timeout: timeout,
@@ -25,34 +25,34 @@ impl ServerCollector {
  };
  let client = fingerprint_http::http_client::HttpClient::new(config);
 
- // in asyncupdown text in executesync HTTP request
+ // in asyncupdown文 in executesync HTTP request
  let response = tokio::task::spawn_blocking(move || client.get(url))
 .await
 .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
 .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
- if!response.is_success() {
+ if !response.is_success() {
  return Err(DNSError::Http(format!(
  "failed to fetch nameservers: HTTP {}",
  response.status_code
-)));
+ )));
  }
 
  // readresponsetext
  let text = String::from_utf8_lossy(&response.body).to_string();
 
- // parsed text， each row an IP address
+ // Parsetext，每行an IP address
  let mut servers = Vec::new();
  for line in text.lines() {
  let line = line.trim();
 
- // skipempty row and comment
+ // skipempty行 and comment
  if line.is_empty() || line.starts_with('#') {
  continue;
  }
 
  // Validatewhether as valid IP address
- if is_valid_ip_ address(line) {
+ if is_valid_ip_address(line) {
  // Ifnoport, Adddefaultport 53
  let server = if line.contains(':') {
  line.to_string()
@@ -64,7 +64,7 @@ impl ServerCollector {
  }
 
  if servers.is_empty() {
- // IfGet failure, returndefaultserver
+ // IfGetfailure, returndefaultserver
  eprintln!("Warning: No servers fetched from public-dns.info, using defaults");
  return Ok(ServerPool::default());
  }
@@ -73,21 +73,21 @@ impl ServerCollector {
  }
 
  /// collectsystem DNS server
- pub fn collect_system _dns() -> ServerPool {
- // item frontreturndefaultpublic DNS server
- // not from canextension as from system configurationread
+ pub fn collect_system_dns() -> ServerPool {
+ // 目frontreturndefaultpublic DNS server
+ // not来canextension as from systemconfigurationread
  ServerPool::default()
  }
 
  /// from configurationfilecollect DNS server
  pub fn collect_from_config(_servers: Vec<String>) -> ServerPool {
- // Ifconfigurationcustomserver, usethem
+ // Ifconfiguration了customserver, usethem
  // otherwiseusedefaultserver
  ServerPool::default()
  }
 
- /// Validate and Updateexistingfile in DNS server
- /// from fileload all server， perform healthCheck， only preserve available server and save回file
+ /// Validate并Updateexistingfile in DNS server
+ /// from fileloadallserver，performhealthCheck，只preserveavailableserver并save回file
  ///
  /// # Parameters
  /// - `test_domain`: for testdomain，default as "google.com"
@@ -97,7 +97,7 @@ impl ServerCollector {
  test_domain: Option<&str>,
  test_timeout: Option<Duration>,
  max_concurrency: Option<usize>,
-) -> Result<(usize, usize), DNSError> {
+ ) -> Result<(usize, usize), DNSError> {
  use std::path::Path;
 
  const DEFAULT_SERVER_FILE: &str = "dnsservernames.json";
@@ -106,13 +106,13 @@ impl ServerCollector {
  let test_timeout = test_timeout.unwrap_or(Duration::from_secs(3));
  let max_concurrency = max_concurrency.unwrap_or(100);
 
- // from fileload all server
+ // from fileloadallserver
  let file_path = Path::new(DEFAULT_SERVER_FILE);
- if!file_path.exists() {
+ if !file_path.exists() {
  return Err(DNSError::Config(format!(
- "file {} not exists",
+ "file {} 不 exists",
  DEFAULT_SERVER_FILE
-)));
+ )));
  }
 
  let pool = ServerPool::load_from_file(file_path)?;
@@ -122,10 +122,10 @@ impl ServerCollector {
  return Err(DNSError::Config("file in no DNS server".to_string()));
  }
 
- eprintln!(" from fileload {} DNS server", total_count);
- eprintln!(" correct in test DNS server available property (testdomain: {})...", test_domain);
+ eprintln!(" from fileload了 {} DNS server", total_count);
+ eprintln!("正 in test DNS serveravailable性 (testdomain: {})...", test_domain);
 
- // perform healthCheck
+ // performhealthCheck
  let validated_pool = pool
 .health_check(test_domain, test_timeout, max_concurrency)
 .await;
@@ -134,27 +134,27 @@ impl ServerCollector {
  let invalid_count = total_count - valid_count;
 
  eprintln!("healthCheckcomplete:");
- eprintln!(" total servercount: {}", total_count);
+ eprintln!(" 总servercount: {}", total_count);
  eprintln!(
- " available server: {} ({:.2}%)",
+ " availableserver: {} ({:.2}%)",
  valid_count,
  if total_count > 0 {
  (valid_count as f64 / total_count as f64) * 100.0
  } else {
  0.0
  }
-);
+ );
  eprintln!(
- " un available server: {} ({:.2}%)",
+ " unavailableserver: {} ({:.2}%)",
  invalid_count,
  if total_count > 0 {
  (invalid_count as f64 / total_count as f64) * 100.0
  } else {
  0.0
  }
-);
+ );
 
- // saveValidatebackserver (first backup original file)
+ // saveValidatebackserver (先backup原file)
  if valid_count > 0 {
  let backup_path = format!("{}.backup", DEFAULT_SERVER_FILE);
  if let Err(e) = std::fs::copy(file_path, &backup_path) {
@@ -164,44 +164,44 @@ impl ServerCollector {
  }
 
  validated_pool.save_default()?;
- eprintln!("alreadysave {} available server to file", valid_count);
+ eprintln!("alreadysave {} availableserver to file", valid_count);
  } else {
- return Err(DNSError::Config("no available DNS server".to_string()));
+ return Err(DNSError::Config("noavailable DNS server".to_string()));
  }
 
  Ok((total_count, valid_count))
  }
 
- /// collect all available DNS server (pair should Go BootstrapPoolInternal)
- /// from multiplesourcecollect， and in savefront perform healthCheck， only preserve available server
- pub async fn collect_ all (timeout: Option<Duration>) -> ServerPool {
- // first try from localfileload (pair should Go loadDefault)
+ /// collectallavailable DNS server (pair应 Go BootstrapPoolInternal)
+ /// from multiplesourcecollect，并 in savefrontperformhealthCheck，只preserveavailableserver
+ pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
+ // 先try from localfileload (pair应 Go loadDefault)
  let pool = ServerPool::load_default();
 
- if!pool.is_empty() {
+ if !pool.is_empty() {
  eprintln!(
- " from localfileload {} DNS server (alreadythroughValidate，directlyuse)",
+ " from localfileload了 {} DNS server (alreadythroughValidate，directlyuse)",
  pool.len()
-);
- // fileinserveralreadythroughValidate，directlyuse， not perform 全面Check
- // only in back platformasyncdetect and slow eliminationnode，non-blockingmainthread
+ );
+ // fileinserveralreadythroughValidate，directlyuse，不perform全面Check
+ // 只 in back台asyncdetect and slow eliminationnode，non-blockingmainthread
  return pool;
  }
 
- // Iffile not exists or as empty, from networkcollect (pair should Go BootstrapPoolInternal)
- eprintln!("localfile not exists or as empty， from networkcollect DNS server...");
+ // Iffile不 exists or as empty, from networkcollect (pair应 Go BootstrapPoolInternal)
+ eprintln!("localfile不 exists or as empty， from networkcollect DNS server...");
 
  match Self::collect_public_dns(timeout).await {
  Ok(new_pool) => {
  let new_count = new_pool.len();
- eprintln!(" from networkcollect {} DNS server", new_count);
+ eprintln!(" from networkcollect了 {} DNS server", new_count);
 
- // in savefront perform healthCheck， only preserve available server
- // usehighconcurrentdetect， each detect to 一batch just immediatelysave，fastcomplete not 长 when betweenblocking
- eprintln!(" correct in highconcurrenttest DNS server available property (testwhichservercanreturn IP address)...");
+ // in savefrontperformhealthCheck，只preserveavailableserver
+ // usehighconcurrentdetect，每detect to 一batch就immediatelysave，fastcomplete不长 when betweenblocking
+ eprintln!("正 in highconcurrenttest DNS serveravailable性 (testwhichservercanreturn IP address)...");
  let test_timeout = Duration::from_secs(2); // decreasetimeout duration，speed updetect
  let max_concurrency = 500; // 大幅increaseconcurrentcount，speed updetectspeed
- let save_batch_size = 100; // each detect to 100 available server just saveonce
+ let save_batch_size = 100; // 每detect to 100availableserver就saveonce
 
  let validated_pool = new_pool
 .health_check_and_save_incremental(
@@ -209,37 +209,37 @@ impl ServerCollector {
  test_timeout,
  max_concurrency,
  save_batch_size,
-)
+ )
 .await;
 
  let valid_count = validated_pool.len();
  let invalid_count = new_count - valid_count;
  eprintln!("healthCheckcomplete:");
- eprintln!(" total servercount: {}", new_count);
+ eprintln!(" 总servercount: {}", new_count);
  eprintln!(
- " available server: {} ({:.2}%)",
+ " availableserver: {} ({:.2}%)",
  valid_count,
  if new_count > 0 {
  (valid_count as f64 / new_count as f64) * 100.0
  } else {
  0.0
  }
-);
+ );
  eprintln!(
- " un available server: {} ({:.2}%)",
+ " unavailableserver: {} ({:.2}%)",
  invalid_count,
  if new_count > 0 {
  (invalid_count as f64 / new_count as f64) * 100.0
  } else {
  0.0
  }
-);
+ );
 
- // filealready in incrementalsaveprocess in Update，directlyreturn
+ // filealready in incrementalsaveprocess in Update了，directlyreturn
  if valid_count > 0 {
  validated_pool
  } else {
- eprintln!("Warning: no available DNS server，usedefaultserver");
+ eprintln!("Warning: noavailable DNS server，usedefaultserver");
  ServerPool::default()
  }
  }
@@ -247,7 +247,7 @@ impl ServerCollector {
  eprintln!(
  "Warning: Failed to collect public DNS servers: {}, using defaults",
  e
-);
+ );
  ServerPool::default()
  }
  }
@@ -255,23 +255,23 @@ impl ServerCollector {
 }
 
 /// Validatewhether as valid IP address (IPv4 or IPv6)
-fn is_valid_ip_ address(s: &str) -> bool {
+fn is_valid_ip_address(s: &str) -> bool {
  use std::net::{IpAddr, SocketAddr};
 
- // Ifincludingport number, first parsed SocketAddr
+ // Ifincludingport号, 先Parse SocketAddr
  if s.contains(':') && s.matches(':').count() <= 2 {
  // may is IPv4:port format
  if s.parse::<SocketAddr>().is_ok() {
  return true;
  }
- // alsomay is IPv6:port， but format more complex，needspecialprocess
- // simplifyprocess： if including []， try parsed 
+ // alsomay is IPv6:port，butformat更complex，needspecialprocess
+ // simplifyprocess： if including []，tryParse
  if s.starts_with('[') {
  return s.parse::<SocketAddr>().is_ok();
  }
  }
 
- // try parsed as IP address
+ // tryParse as IP address
  s.parse::<IpAddr>().is_ok()
 }
 
@@ -280,18 +280,18 @@ mod tests {
  use super::*;
 
  #[test]
- fn test_is_valid_ip_ address() {
- assert!(is_valid_ip_ address("8.8.8.8"));
- assert!(is_valid_ip_ address("1.1.1.1"));
- assert!(is_valid_ip_ address("2001:4860:4860::8888"));
- assert!(is_valid_ip_ address("8.8.8.8:53"));
- assert!(!is_valid_ip_ address("invalid"));
- assert!(!is_valid_ip_ address(""));
- assert!(!is_valid_ip_ address("not.an.ip"));
+ fn test_is_valid_ip_address() {
+ assert!(is_valid_ip_address("8.8.8.8"));
+ assert!(is_valid_ip_address("1.1.1.1"));
+ assert!(is_valid_ip_address("2001:4860:4860::8888"));
+ assert!(is_valid_ip_address("8.8.8.8:53"));
+ assert!(!is_valid_ip_address("invalid"));
+ assert!(!is_valid_ip_address(""));
+ assert!(!is_valid_ip_address("not.an.ip"));
  }
 
  #[tokio::test]
- #[ ignore ] // neednetworkconnection，defaultskip
+ #[ignore] // neednetworkconnection，defaultskip
  async fn test_collect_public_dns() {
  let pool = ServerCollector::collect_public_dns(None).await;
  assert!(pool.is_ok());

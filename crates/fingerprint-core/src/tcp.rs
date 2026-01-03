@@ -13,29 +13,29 @@ pub struct TcpProfile {
  /// initialbeginning TTL
  pub ttl: u8,
 
- /// initialbeginning window size
- pub window _size: u16,
+ /// initialbeginningwindowsize
+ pub window_size: u16,
 
  /// MSS (Maximum Segment Size)
  pub mss: Option<u16>,
 
  /// Window Scale
- pub window _scale: Option<u8>,
+ pub window_scale: Option<u8>,
 }
 
 impl Default for TcpProfile {
  fn default() -> Self {
  Self {
  ttl: 64, // Linux default
- window _size: 64240, // typicalvalue
- mss: None, // operating system default
- window _scale: None, // operating system default
+ window_size: 64240, // typicalvalue
+ mss: None, // operating systemdefault
+ window_scale: None, // operating systemdefault
  }
  }
 }
 
 impl TcpProfile {
- /// Based onoperating system typeGenerates corresponding TCP Profile
+ /// Based onoperating systemtypeGenerates corresponding TCP Profile
  ///
  /// ensure TCP fingerprint and browserfingerprint (User-Agent)consistent
  pub fn for_os(os: crate::types::OperatingSystem) -> Self {
@@ -44,9 +44,9 @@ impl TcpProfile {
  // Windows: TTL=128, Window Size=64240 (Windows 10/11 typicalvalue)
  Self {
  ttl: 128,
- window _size: 64240,
+ window_size: 64240,
  mss: Some(1460),
- window _scale: Some(8),
+ window_scale: Some(8),
  }
  }
  crate::types::OperatingSystem::MacOS13
@@ -55,9 +55,9 @@ impl TcpProfile {
  // macOS: TTL=64, Window Size=65535 (macOS typicalvalue)
  Self {
  ttl: 64,
- window _size: 65535,
+ window_size: 65535,
  mss: Some(1460),
- window _scale: Some(6),
+ window_scale: Some(6),
  }
  }
  crate::types::OperatingSystem::Linux
@@ -66,22 +66,22 @@ impl TcpProfile {
  // Linux: TTL=64, Window Size=65535 (Linux typicalvalue)
  Self {
  ttl: 64,
- window _size: 65535,
+ window_size: 65535,
  mss: Some(1460),
- window _scale: Some(7),
+ window_scale: Some(7),
  }
  }
  }
  }
 
- /// from User-Agent stringinferoperating system and Generates corresponding TCP Profile
+ /// from User-Agent stringinferoperating system并Generates corresponding TCP Profile
  ///
  /// this isunifiedfingerprintGeneratecorefunction，ensurebrowserfingerprint and TCP fingerprintsync
  pub fn from_user_agent(user_agent: &str) -> Self {
  use crate::types::OperatingSystem;
 
- // from User-Agent inferoperating system 
- // Note: iPhone/iPad User-Agent including "Mac OS X"，need first Checkmovedevice
+ // from User-Agent inferoperating system
+ // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
  let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
  // iOS device：use macOS TCP fingerprint (iOS based on macOS)
  OperatingSystem::MacOS14
@@ -111,12 +111,12 @@ impl TcpProfile {
  Self::for_os(os)
  }
 
- /// from platformstring (such as "Windows", "macOS", "Linux")Generate TCP Profile
+ /// from platformstring (如 "Windows", "macOS", "Linux")Generate TCP Profile
  pub fn from_platform(platform: &str) -> Self {
  use crate::types::OperatingSystem;
 
  let os = match platform.to_lowercase().as_str() {
- " window s" | r#""Windows""# => OperatingSystem::Windows10,
+ "windows" | r#""Windows""# => OperatingSystem::Windows10,
  "macos" | r#""macOS""# => OperatingSystem::MacOS14,
  "linux" | r#""Linux""# => OperatingSystem::Linux,
  _ => OperatingSystem::Windows10, // default
@@ -136,15 +136,15 @@ pub struct TcpFingerprint {
  pub ttl: u8,
 
  /// Window Size
- pub window _size: u16,
+ pub window_size: u16,
 
  /// MSS (Maximum Segment Size)
  pub mss: Option<u16>,
 
  /// Window Scale
- pub window _scale: Option<u8>,
+ pub window_scale: Option<u8>,
 
- /// TCP optionsstring (for p0f compatible)
+ /// TCP optionsstring ( for p0f compatible)
  pub options_str: Option<String>,
 
  /// metadata
@@ -152,15 +152,15 @@ pub struct TcpFingerprint {
 }
 
 impl TcpFingerprint {
- /// create a new TCP fingerprint
- pub fn new(ttl: u8, window _size: u16) -> Self {
- let id = Self::calculate_id(ttl, window _size, None, None);
+ /// Create a new TCP fingerprint
+ pub fn new(ttl: u8, window_size: u16) -> Self {
+ let id = Self::calculate_id(ttl, window_size, None, None);
  Self {
  id,
  ttl,
- window _size,
+ window_size,
  mss: None,
- window _scale: None,
+ window_scale: None,
  options_str: None,
  metadata: FingerprintMetadata::new(),
  }
@@ -169,17 +169,17 @@ impl TcpFingerprint {
  /// Createcomplete TCP fingerprint
  pub fn with_options(
  ttl: u8,
- window _size: u16,
+ window_size: u16,
  mss: Option<u16>,
- window _scale: Option<u8>,
-) -> Self {
- let id = Self::calculate_id(ttl, window _size, mss, window _scale);
+ window_scale: Option<u8>,
+ ) -> Self {
+ let id = Self::calculate_id(ttl, window_size, mss, window_scale);
  Self {
  id,
  ttl,
- window _size,
+ window_size,
  mss,
- window _scale,
+ window_scale,
  options_str: None,
  metadata: FingerprintMetadata::new(),
  }
@@ -188,18 +188,18 @@ impl TcpFingerprint {
  /// Calculatefingerprint ID
  fn calculate_id(
  ttl: u8,
- window _size: u16,
+ window_size: u16,
  mss: Option<u16>,
- window _scale: Option<u8>,
-) -> String {
+ window_scale: Option<u8>,
+ ) -> String {
  use sha2::{Digest, Sha256};
  let mut hasher = Sha256::new();
  hasher.update([ttl]);
- hasher.update(window _size.to_be_bytes());
+ hasher.update(window_size.to_be_bytes());
  if let Some(mss_val) = mss {
  hasher.update(mss_val.to_be_bytes());
  }
- if let Some(ws_val) = window _scale {
+ if let Some(ws_val) = window_scale {
  hasher.update([ws_val]);
  }
  format!("{:x}", hasher.finalize())
@@ -240,27 +240,27 @@ impl Fingerprint for TcpFingerprint {
  use std::collections::hash_map::DefaultHasher;
  let mut hasher = DefaultHasher::new();
  self.ttl.hash(&mut hasher);
- self. window _size.hash(&mut hasher);
+ self.window_size.hash(&mut hasher);
  self.mss.hash(&mut hasher);
- self. window _scale.hash(&mut hasher);
+ self.window_scale.hash(&mut hasher);
  hasher.finish()
  }
 
- fn similar _to(&self, other: &dyn Fingerprint) -> bool {
- if other.fingerprint_type()!= FingerprintType::Tcp {
+ fn similar_to(&self, other: &dyn Fingerprint) -> bool {
+ if other.fingerprint_type() != FingerprintType::Tcp {
  return false;
  }
 
- // TCP fingerprint similar degree judge： all ow 一定容差
- // heresimplifyprocess，actualshouldconsider TTL infervalue、Window Size times countclose系 etc.
+ // TCP fingerprintsimilar度judge：allow一定容差
+ // heresimplifyprocess，actualshouldconsider TTL infervalue、Window Size 倍countclose系 etc.
  self.hash() == other.hash()
  }
 
  fn to_string(&self) -> String {
  format!(
- "TcpFingerprint(id={}, ttl={}, window ={})",
- self.id, self.ttl, self. window _size
-)
+ "TcpFingerprint(id={}, ttl={}, window={})",
+ self.id, self.ttl, self.window_size
+ )
  }
 }
 
@@ -273,14 +273,14 @@ mod tests {
  let fp = TcpFingerprint::new(64, 65535);
  assert!(!fp.id.is_empty());
  assert_eq!(fp.ttl, 64);
- assert_eq!(fp. window _size, 65535);
+ assert_eq!(fp.window_size, 65535);
  }
 
  #[test]
  fn test_tcp_fingerprint_with_options() {
  let fp = TcpFingerprint::with_options(64, 65535, Some(1460), Some(7));
  assert_eq!(fp.mss, Some(1460));
- assert_eq!(fp. window _scale, Some(7));
+ assert_eq!(fp.window_scale, Some(7));
  }
 
  #[test]

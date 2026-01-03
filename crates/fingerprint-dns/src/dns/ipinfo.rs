@@ -13,18 +13,18 @@ pub struct IPInfoClient {
 }
 
 impl IPInfoClient {
- /// create a new IPInfo client
+ /// Create a new IPInfo client
  pub fn new(token: String, timeout: Duration) -> Self {
  Self { token, timeout }
  }
 
  /// Get IP addressdetailedinfo
  pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
- // securityFix: use HTTP Header pass token， and is not URL parameter
- // this waycan avoid token 泄露 to log、errormessage、proxyserver etc.
+ // securityFix: use HTTP Header pass token，而is not URL parameter
+ // this waycanavoid token 泄露 to log、errormessage、proxyserver etc.
  let url = format!("https://ipinfo.io/{}", ip);
 
- // useiteminside part HttpClient
+ // useiteminside部 HttpClient
  let config = HttpClientConfig {
  connect_timeout: self.timeout,
  read_timeout: self.timeout,
@@ -33,12 +33,12 @@ impl IPInfoClient {
  };
  let client = HttpClient::new(config);
 
- // Createbring have Authorization header request
+ // Createbring有 Authorization header request
  use fingerprint_http::http_client::{HttpMethod, HttpRequest};
  let request = HttpRequest::new(HttpMethod::Get, &url)
 .with_header("Authorization", &format!("Bearer {}", self.token));
 
- // in asyncupdown text in executesync HTTP request
+ // in asyncupdown文 in executesync HTTP request
  let response = tokio::task::spawn_blocking({
  let request = request.clone();
  move || client.send_request(&request)
@@ -47,25 +47,25 @@ impl IPInfoClient {
 .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
 .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
- if!response.is_success() {
+ if !response.is_success() {
  return Err(DNSError::IPInfo(format!(
  "IPInfo API returned error: {}",
  response.status_code
-)));
+ )));
  }
 
- // parsed JSON response
+ // Parse JSON response
  let body_str = String::from_utf8_lossy(&response.body);
  let json: serde_json::Value = serde_json::from_str(&body_str)
 .map_err(|e| DNSError::Http(format!("failed to parse JSON: {}", e)))?;
 
- // parsed response
+ // Parseresponse
  Ok(IPInfo {
  ip: json["ip"].as_str().unwrap_or(ip).to_string(),
  hostname: json["hostname"].as_str().map(|s| s.to_string()),
  city: json["city"].as_str().map(|s| s.to_string()),
  region: json["region"].as_str().map(|s| s.to_string()),
- coun try : json["coun try "].as_str().map(|s| s.to_string()),
+ country: json["country"].as_str().map(|s| s.to_string()),
  loc: json["loc"].as_str().map(|s| s.to_string()),
  org: json["org"].as_str().map(|s| s.to_string()),
  timezone: json["timezone"].as_str().map(|s| s.to_string()),
@@ -73,16 +73,16 @@ impl IPInfoClient {
  }
 
  /// bulkGet IP addressinfo (concurrent)
- /// automaticdeduplicate，ensureeach IP only queryonce
+ /// automaticdeduplicate，ensureeach IP 只queryonce
  pub async fn get_ip_infos(
  &self,
  ips: Vec<String>,
  max_concurrency: usize,
-) -> Vec<(String, Result<IPInfo, DNSError>)> {
+ ) -> Vec<(String, Result<IPInfo, DNSError>)> {
  use futures::stream::{self, StreamExt};
  use std::collections::HashSet;
 
- // pair IP listdeduplicate，ensureeach IP only queryonce
+ // pair IP listdeduplicate，ensureeach IP 只queryonce
  let unique_ips: Vec<String> = ips
 .into_iter()
 .collect::<HashSet<String>>()
@@ -108,7 +108,7 @@ mod tests {
  use super::*;
 
  #[tokio::test]
- #[ ignore ] // needreal token，defaultskip
+ #[ignore] // needreal token，defaultskip
  async fn test_get_ip_info() {
  let _client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
 

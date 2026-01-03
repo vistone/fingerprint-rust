@@ -1,4 +1,4 @@
-//! TLS passivefingerprint identify
+//! TLS passivefingerprintidentify
 //!
 //! implement TLS ClientHello passiveanalysis and JA4 fingerprintGenerate。
 
@@ -57,8 +57,8 @@ impl fingerprint_core::fingerprint::Fingerprint for TlsFingerprint {
  hasher.finish()
  }
 
- fn similar _to(&self, other: &dyn fingerprint_core::fingerprint::Fingerprint) -> bool {
- if other.fingerprint_type()!= fingerprint_core::fingerprint::FingerprintType::Tls {
+ fn similar_to(&self, other: &dyn fingerprint_core::fingerprint::Fingerprint) -> bool {
+ if other.fingerprint_type() != fingerprint_core::fingerprint::FingerprintType::Tls {
  return false;
  }
  self.id() == other.id()
@@ -68,12 +68,12 @@ impl fingerprint_core::fingerprint::Fingerprint for TlsFingerprint {
  format!(
  "TLS Fingerprint (JA4: {:?}, Version: {:?})",
  self.ja4, self.version
-)
+ )
  }
 }
 
 impl TlsAnalyzer {
- /// create a new TLS analysiser
+ /// Create a new TLS analysiser
  pub fn new() -> Result<Self, String> {
  Ok(Self)
  }
@@ -114,7 +114,7 @@ impl TlsAnalyzer {
  let handshake_data = &data[i + 5..i + 5 + record_len];
 
  // Checkwhether is ClientHello (Type = 1)
- if!handshake_data.is_empty() && handshake_data[0] == 0x01 {
+ if !handshake_data.is_empty() && handshake_data[0] == 0x01 {
  return Some(handshake_data.to_vec());
  }
  }
@@ -127,13 +127,13 @@ impl TlsAnalyzer {
 
  /// analysis ClientHello
  fn analyze_client_hello(&self, client_hello: &[u8]) -> TlsFingerprint {
- // parsed ClientHello
+ // Parse ClientHello
  // [Type(1)][Length(3)][Version(2)][Random(32)][SessionID][CipherSuites][Compression][Extensions]
 
  let mut offset = 0;
 
  // Type (should is 1 = ClientHello)
- if client_hello.is_empty() || client_hello[offset]!= 0x01 {
+ if client_hello.is_empty() || client_hello[offset] != 0x01 {
  return TlsFingerprint::default();
  }
  offset += 1;
@@ -282,14 +282,14 @@ impl TlsAnalyzer {
  };
 
  let ja4 = fingerprint_core::ja4::JA4::generate(
- 't', // assume is TCP，actual should from packet judge
+ 't', // assume is TCP，actual应 from packet judge
  tls_ver_str,
  has_sni,
  &cipher_suites,
  &extensions,
  first_alpn.as_deref(),
  &sig_algs,
-);
+ );
 
  let ja4_string = ja4.to_fingerprint_string();
  let mut metadata = fingerprint_core::metadata::FingerprintMetadata::new();

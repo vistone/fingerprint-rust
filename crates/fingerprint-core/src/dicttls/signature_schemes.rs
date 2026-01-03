@@ -1,11 +1,11 @@
 //! TLS signaturesolutionconstant
 //!
-//! from source：https://www.iana.org/assignments/tls-parameters/tls-signaturescheme.csv
-//! fin all yUpdate：March 2023
+//! 来source：https://www.iana.org/assignments/tls-parameters/tls-signaturescheme.csv
+//! finallyUpdate：March 2023
 
 /// TLS signaturesolutionconstant
 /// Corresponds to Go version's tls.SignatureScheme constant
-#[ all ow (clippy::module_inception)]
+#[allow(clippy::module_inception)]
 pub mod signature_schemes {
  // RSA PKCS1
  pub const RSA_PKCS1_SHA256: u16 = 0x0401;

@@ -13,7 +13,7 @@ pub struct JA4 {
  pub transport: char,
  /// TLS version
  pub version: String,
- /// whether have SNI (d=domain, i=ip)
+ /// whether有 SNI (d=domain, i=ip)
  pub destination: char,
  /// cipher suitecount
  pub cipher_count: usize,
@@ -39,7 +39,7 @@ impl JA4 {
  extensions: &[u16],
  alpn: Option<&str>,
  signature_algorithms: &[u16],
-) -> Self {
+ ) -> Self {
  let v = match version {
  "1.3" => "13",
  "1.2" => "12",
@@ -49,20 +49,20 @@ impl JA4 {
  };
  let d = if has_sni { 'd' } else { 'i' };
 
- // filter and sortcipher suite (GREASE removed)
+ // filter并sortcipher suite (GREASE removed)
  let mut filtered_ciphers: Vec<u16> = ciphers
 .iter()
-.filter(|&&c|!crate::grease::is_grease_value(c))
+.filter(|&&c| !crate::grease::is_grease_value(c))
 .cloned()
 .collect();
  filtered_ciphers.sort();
 
  let c_count = filtered_ciphers.len().min(99);
 
- // filter and sortextension (GREASE removed)
+ // filter并sortextension (GREASE removed)
  let mut filtered_extensions: Vec<u16> = extensions
 .iter()
-.filter(|&&e|!crate::grease::is_grease_value(e))
+.filter(|&&e| !crate::grease::is_grease_value(e))
 .cloned()
 .collect();
  filtered_extensions.sort();
@@ -124,7 +124,7 @@ impl JA4 {
  self.cipher_hash,
  self.extension_hash,
  self.signature_hash
-)
+ )
  }
 }
 
@@ -142,7 +142,7 @@ impl std::fmt::Display for JA4 {
  self.cipher_hash,
  self.extension_hash,
  self.signature_hash
-)
+ )
  }
 }
 
@@ -167,7 +167,7 @@ impl JA4H {
  has_cookie: bool,
  has_referer: bool,
  headers: &[(&str, &str)],
-) -> String {
+ ) -> String {
  let m_raw = method.to_lowercase();
  let m = if m_raw.len() >= 2 {
  &m_raw[0..2]
@@ -185,7 +185,7 @@ impl JA4H {
  let r = if has_referer { "r" } else { "n" };
  let count = format!("{:02}", headers.len().min(99));
 
- // simplified version Header Hash
+ // simplify版 Header Hash
  use std::collections::hash_map::DefaultHasher;
  use std::hash::{Hash, Hasher};
  let mut hasher = DefaultHasher::new();
@@ -202,7 +202,7 @@ impl JA4H {
 /// format: [WindowSize]_[TCP_Options]_[MSS]_[TTL]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4T {
- pub window _size: u16,
+ pub window_size: u16,
  pub options: String,
  pub mss: u16,
  pub ttl: u8,
@@ -210,8 +210,8 @@ pub struct JA4T {
 
 impl JA4T {
  /// Generate JA4T string
- pub fn generate(window _size: u16, options: &str, mss: u16, ttl: u8) -> String {
- format!("{}_{}_{}_{}", window _size, options, mss, ttl)
+ pub fn generate(window_size: u16, options: &str, mss: u16, ttl: u8) -> String {
+ format!("{}_{}_{}_{}", window_size, options, mss, ttl)
  }
 }
 
@@ -220,14 +220,14 @@ impl std::fmt::Display for JA4T {
  write!(
  f,
  "{}_{}_{}_{}",
- self. window _size, self.options, self.mss, self.ttl
-)
+ self.window_size, self.options, self.mss, self.ttl
+ )
  }
 }
 
 /// JA4S TLS serverfingerprint (JA4 style)
 /// 
-/// and JA3S similar ，butuse SHA256 rather than MD5
+/// and JA3S similar，butuse SHA256 rather than MD5
 /// format: t_v_c_e (for example: t13d_1301_0000)
 /// 
 /// ## Examples
@@ -237,10 +237,10 @@ impl std::fmt::Display for JA4T {
 /// let ja4s = JA4S::generate(
 /// 't', // transport (TCP)
 /// "1.3", // TLS version
-/// 0x1301, // select ed cipher
+/// 0x1301, // selected cipher
 /// &[0, 10, 11], // extensions
 /// None, // ALPN
-///);
+/// );
 /// assert!(!ja4s.fingerprint_string().is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -249,13 +249,13 @@ pub struct JA4S {
  pub transport: char,
  /// TLS version
  pub version: String,
- /// select 's cipher suitescount (usu all y as 1)
+ /// select's cipher suitescount (usually as 1)
  pub cipher_count: usize,
  /// extensioncount
  pub extension_count: usize,
- /// first ALPN (if have)
+ /// first ALPN ( if 有)
  pub alpn: String,
- /// select 's cipher suites (hexadecimal)
+ /// select's cipher suites (hexadecimal)
  pub cipher: u16,
  /// extensionhash (SHA256 front 12-bit)
  pub extension_hash: String,
@@ -267,16 +267,16 @@ impl JA4S {
  /// # Parameters
  /// - `transport`: transferprotocol ('t' for TCP, 'q' for QUIC)
  /// - `version`: TLS version ("1.0", "1.1", "1.2", "1.3")
- /// - `cipher`: server select 's cipher suites
+ /// - `cipher`: serverselect's cipher suites
  /// - `extensions`: serverreturn's extensionslist
- /// - `alpn`: server select ALPN (optional)
+ /// - `alpn`: serverselect ALPN (optional)
  pub fn generate(
  transport: char,
  version: &str,
  cipher: u16,
  extensions: &[u16],
  alpn: Option<&str>,
-) -> Self {
+ ) -> Self {
  let v = match version {
  "1.3" => "13",
  "1.2" => "12",
@@ -288,7 +288,7 @@ impl JA4S {
  // filter GREASE value
  let filtered_extensions: Vec<u16> = extensions
 .iter()
-.filter(|&&e|!crate::grease::is_grease_value(e))
+.filter(|&&e| !crate::grease::is_grease_value(e))
 .cloned()
 .collect();
 
@@ -321,7 +321,7 @@ impl JA4S {
  Self {
  transport,
  version: v.to_string(),
- cipher_count: 1, // server only select ancipher suite
+ cipher_count: 1, // server只select ancipher suite
  extension_count: e_count,
  alpn: alpn_id.to_string(),
  cipher,
@@ -341,7 +341,7 @@ impl JA4S {
  self.alpn,
  self.cipher,
  self.extension_hash
-)
+ )
  }
 }
 
@@ -354,11 +354,11 @@ impl std::fmt::Display for JA4S {
 /// fingerprintconsistencyreport
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ConsistencyReport {
- /// over all score (0-100)
+ /// overallscore (0-100)
  pub score: u8,
- /// dis cover not consistent项
+ /// discover不consistent项
  pub discrepancies: Vec<String>,
- /// whether疑似 machine er person 
+ /// whether疑似机er人
  pub bot_detected: bool,
 }
 
@@ -417,7 +417,7 @@ mod ja4s_tests {
  // testincluding GREASE valuesituation
  let ja4s = JA4S::generate('t', "1.3", 0x1302, &[0x0a0a, 0, 10], Some("http/1.1"));
  
- // GREASE value 0x0a0a should by filter
+ // GREASE value 0x0a0a should被filter
  assert!(ja4s.extension_count < 3);
  }
 
@@ -462,10 +462,10 @@ mod ja4s_tests {
 
 /// JA4L - lightweightlevelfingerprint (Light Version)
 ///
-/// simplified version JA4，适 for 资source受限environment
-/// - use more 快hashalgorithm
-/// - decreaseCalculatecomplex degree 
-/// - more 小inside存usage
+/// simplify版 JA4，适 for 资source受限environment
+/// - use更快hashalgorithm
+/// - decreaseCalculatecomplex度
+/// - 更小inside存usage
 ///
 /// format: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
 ///
@@ -479,7 +479,7 @@ mod ja4s_tests {
 /// true,
 /// &[0x1301, 0x1302, 0x1303],
 /// &[0, 10, 11, 13],
-///);
+/// );
 /// assert!(!ja4l.fingerprint_string().is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -490,7 +490,7 @@ pub struct JA4L {
  /// TLS version
  pub version: String,
  
- /// whether have SNI (d=domain, i=ip)
+ /// whether有 SNI (d=domain, i=ip)
  pub destination: char,
  
  /// cipher suitecount
@@ -521,7 +521,7 @@ impl JA4L {
  has_sni: bool,
  ciphers: &[u16],
  extensions: &[u16],
-) -> Self {
+ ) -> Self {
  let v = match version {
  "1.3" => "13",
  "1.2" => "12",
@@ -535,13 +535,13 @@ impl JA4L {
  // filter GREASE value
  let filtered_ciphers: Vec<u16> = ciphers
 .iter()
-.filter(|&&c|!crate::grease::is_grease_value(c))
+.filter(|&&c| !crate::grease::is_grease_value(c))
 .cloned()
 .collect();
 
  let filtered_extensions: Vec<u16> = extensions
 .iter()
-.filter(|&&e|!crate::grease::is_grease_value(e))
+.filter(|&&e| !crate::grease::is_grease_value(e))
 .cloned()
 .collect();
 
@@ -595,7 +595,7 @@ impl JA4L {
  self.extension_count,
  self.cipher_sample,
  self.extension_sample
-)
+ )
  }
 
  /// from complete JA4 fingerprintGeneratelightweightlevelversion
@@ -612,10 +612,10 @@ impl JA4L {
  }
  }
 
- /// estimatefingerprintCalculate成本 (phase pairvalue)
- /// returnvalue：1-10，1 as most lightweight，10 as most 重
+ /// estimatefingerprintCalculate成本 (相pairvalue)
+ /// returnvalue：1-10，1 as 最lightweight，10 as 最重
  pub fn computational_cost() -> u8 {
- 2 // JA4L is lightweightlevel ，成本评分 as 2/10
+ 2 // JA4L is lightweightlevel的，成本评分 as 2/10
  }
 
  /// estimateinside存usage (bytes)
@@ -645,7 +645,7 @@ mod ja4l_tests {
  true,
  &[0x1301, 0x1302, 0x1303, 0x1304],
  &[0, 10, 11, 13, 16],
-);
+ );
 
  assert_eq!(ja4l.transport, 't');
  assert_eq!(ja4l.version, "13");
@@ -684,7 +684,7 @@ mod ja4l_tests {
  #[test]
  fn test_ja4l_computational_cost() {
  let cost = JA4L::computational_cost();
- assert!(cost <= 3); // should is lightweightlevel 
+ assert!(cost <= 3); // should is lightweightlevel的
  }
 
  #[test]

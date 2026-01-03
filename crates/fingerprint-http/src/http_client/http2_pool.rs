@@ -1,20 +1,20 @@
 //! HTTP/2 with Connection Pool
 //!
-//! architecture explain ：
+//! architectureexplain：
 //! - HTTP/2 adoptsessionpool (H2SessionPool)implementtrue multiplexreuse
-//! - poolizepairobject：h2::client::SendRequest handle (alreadyhandshakecompletesession)
+//! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
-//! - netconnpool 角色：only in Create new session when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
+//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
 //! - sessionestablishback，connectionlifecycle由 H2Session backbackground task (Driver)manage
 
-#[cfg(all (feature = "connection-pool", feature = "http2"))]
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
-#[cfg(all (feature = "connection-pool", feature = "http2"))]
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
 use std::sync::Arc;
 
 /// useconnection poolsend HTTP/2 request
-#[cfg(all (feature = "connection-pool", feature = "http2"))]
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub async fn send_http2_request_with_pool(
  host: &str,
  port: u16,
@@ -28,8 +28,8 @@ pub async fn send_http2_request_with_pool(
  use tokio_rustls::TlsConnector;
 
  // Note: connection poolinconnection in Create when maynoapplication TCP Profile
- // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbefore just through generate_unified_fingerprint sync TCP Profile
- // herewestill from connection poolGetconnection，but new Createconnection will application TCP Profile (if configuration)
+ // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
+ // herewestill from connection poolGetconnection，but新Createconnectionwillapplication TCP Profile ( if configuration了)
 
  // from connection poolGetconnection
  let pool = pool_manager.get_pool(host, port)?;
@@ -40,13 +40,13 @@ pub async fn send_http2_request_with_pool(
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
  // from Connection in Extract TcpStream
- // PooledConnection implement Deref<Target = Connection>，candirectlyuse Connection method
+ // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection method
  let tcp_stream = conn
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
  // clone TcpStream so thatwecanuse它
- let tcp_stream = tcp_stream. try _clone().map_err(HttpClientError::Io)?;
+ let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
  // convert to tokio TcpStream
  tcp_stream
@@ -59,18 +59,18 @@ pub async fn send_http2_request_with_pool(
  config.verify_tls,
  vec![b"h2".to_vec()],
  config.profile.as_ref(),
-);
+ );
  let connector = TlsConnector::from(std::sync::Arc::new(tls_config));
- let server_name = rustls::ServerName:: try _from(host)
+ let server_name = rustls::ServerName::try_from(host)
 .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
  let tls_stream = connector
 .connect(server_name, tcp_stream)
 .await
-.map_err(|e| HttpClientError::TlsError(format!("TLS handshake failure: {}", e)))?;
+.map_err(|e| HttpClientError::TlsError(format!("TLS handshakefailure: {}", e)))?;
 
  // Fix: use HTTP/2 sessionpoolimplementtrue multiplexreuse
- // avoid each time request all re perform TLS and HTTP/2 handshake
+ // avoideach timerequest都reperform TLS and HTTP/2 handshake
  let session_key = format!("{}:{}", host, port);
  let h2_session_pool = pool_manager.h2_session_pool();
 
@@ -79,7 +79,7 @@ pub async fn send_http2_request_with_pool(
  if let Ok(mut file) = std::fs::OpenOptions::new()
 .create(true)
 .append(true)
-. open ("/home/stone/fingerprint-rust/.cursor/debug.log")
+.open("/home/stone/fingerprint-rust/.cursor/debug.log")
  {
  use std::io::Write;
  let _ = writeln!(file, "{{\"timestamp\":{},\"location\":\"http2_pool.rs:66\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\",\"host\":\"{}\",\"port\":{}}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}", 
@@ -92,8 +92,8 @@ pub async fn send_http2_request_with_pool(
  let send_request = h2_session_pool
 .get_or_create_session::<_, tokio_rustls::client::TlsStream<tokio::net::TcpStream>>(&session_key, async {
  // #region agent log
- let log_msg = format!("http2_pool: startCreate new session key={}", session_key);
- if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true). open ("/home/stone/fingerprint-rust/.cursor/debug.log") {
+ let log_msg = format!("http2_pool: startCreate新session key={}", session_key);
+ if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open("/home/stone/fingerprint-rust/.cursor/debug.log") {
  use std::io::Write;
  let _ = writeln!(file, "{{\"timestamp\":{},\"location\":\"http2_pool.rs:74\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\"}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}", 
  std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
@@ -105,9 +105,9 @@ pub async fn send_http2_request_with_pool(
 
  // applicationfingerprintconfiguration in HTTP/2 Settings
  if let Some(profile) = &config.profile {
- // settingsinitialbeginning window size
- if let Some(& window _size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16()) {
- builder.initial_ window _size(window _size);
+ // settingsinitialbeginningwindowsize
+ if let Some(&window_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16()) {
+ builder.initial_window_size(window_size);
  }
 
  // settingsmaximumframesize
@@ -120,15 +120,15 @@ pub async fn send_http2_request_with_pool(
  builder.max_header_list_size(max_header_list_size);
  }
 
- // settingsconnectionlevel window size (Connection Flow)
- builder.initial_connection_ window _size(profile.connection_flow);
+ // settingsconnectionlevelwindowsize (Connection Flow)
+ builder.initial_connection_window_size(profile.connection_flow);
  }
 
  let (client, h2_conn) = builder.handshake(tls_stream)
 .await
-.map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 handshake failure: {}", e)))?;
+.map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 handshakefailure: {}", e)))?;
 
- // return SendRequest and Connection (sessionpool will manage Connection lifecycle)
+ // return SendRequest and Connection (sessionpoolwillmanage Connection lifecycle)
  Ok((client, h2_conn))
  })
 .await?;
@@ -154,10 +154,10 @@ pub async fn send_http2_request_with_pool(
  })
 .uri(uri)
 .version(Version::HTTP_2)
- // do notmanualAdd host header，h2 will automatic from URI Extract
+ // do notmanualAdd host header，h2 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
- // Fix: Add Cookie to request (if exists)
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -166,46 +166,46 @@ pub async fn send_http2_request_with_pool(
  host,
  path,
  true, // HTTPS is securityconnection
-);
+ );
  }
 
  let http2_request = request_with_cookies
 .headers
 .iter()
  // skip host header
-.filter(|(k, _)| k.to_lowercase()!= "host")
+.filter(|(k, _)| k.to_lowercase() != "host")
 .fold(http2_request, |builder, (k, v)| builder.header(k, v));
 
  // Fix: Buildrequest (h2 need Request<()>，thenthrough SendStream send body)
  let http2_request = http2_request
 .body(())
-.map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequest failure: {}", e)))?;
+.map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
 
  // sendrequest (Get SendStream for send body)
- // Fix: end_of_stream must as false，otherwisestream will immediatelyclose，unable tosend body
- let has_body = request.body.is_some() &&!request.body.as_ref().unwrap().is_empty();
+ // Fix: end_of_stream must as false，otherwisestreamwillimmediatelyclose，unable tosend body
+ let has_body = request.body.is_some() && !request.body.as_ref().unwrap().is_empty();
  let (response, mut send_stream) = client
 .send_request(http2_request, false) // Fix: 改 as false，only in send完 body back才endstream
-.map_err(|e| HttpClientError::Http2Error(format!("sendrequest failure: {}", e)))?;
+.map_err(|e| HttpClientError::Http2Error(format!("sendrequestfailure: {}", e)))?;
 
- // releaselock， all ow otherrequestreuse同ansession
+ // releaselock，allowotherrequestreuse同ansession
  drop(client);
 
- // Fix: through SendStream sendrequest body (if exists)
+ // Fix: through SendStream sendrequest体 ( if exists)
  if let Some(body) = &request.body {
- if!body.is_empty() {
- // send body countdata，end_of_stream = true representthis isfin all ycountdata
+ if !body.is_empty() {
+ // send body countdata，end_of_stream = true representthis isfinallycountdata
  send_stream
 .send_data(::bytes::Bytes::from(body.clone()), true)
 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
  } else {
- // empty body，sendemptycountdata and endstream
+ // empty body，sendemptycountdata并endstream
  send_stream
 .send_data(::bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
  }
- } else if!has_body {
- // no body，sendemptycountdata and endstream
+ } else if !has_body {
+ // no body，sendemptycountdata并endstream
  send_stream
 .send_data(::bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
@@ -214,9 +214,9 @@ pub async fn send_http2_request_with_pool(
  // waitresponseheader
  let response = response
 .await
-.map_err(|e| HttpClientError::Http2Error(format!("receiveresponse failure: {}", e)))?;
+.map_err(|e| HttpClientError::Http2Error(format!("receiveresponsefailure: {}", e)))?;
 
- // first Extract status and headers
+ // 先Extract status and headers
  let status_code = response.status().as_u16();
 
  // securityFix: Check HTTP/2 responseheadersize，prevent Header compressionbombattack
@@ -230,7 +230,7 @@ pub async fn send_http2_request_with_pool(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/2 responseheadertoo large (>{} bytes)",
  MAX_HTTP2_HEADER_SIZE
-)));
+ )));
  }
 
  let status_text = http::StatusCode::from_u16(status_code)
@@ -244,7 +244,7 @@ pub async fn send_http2_request_with_pool(
 .map(|(k, v)| (k.as_str().to_string(), v.to_str().unwrap_or("").to_string()))
 .collect();
 
- // readresponse body 
+ // readresponse体
  let mut body_stream = response.into_body();
  let mut body_data = Vec::new();
 
@@ -261,13 +261,13 @@ pub async fn send_http2_request_with_pool(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/2 responsebody too large (>{} bytes)",
  MAX_HTTP2_BODY_SIZE
-)));
+ )));
  }
 
  body_data.extend_from_slice(&chunk);
 
- // releasestream control window 
- let _ = body_stream.flow_ control ().release_capacity(chunk.len());
+ // releasestreamcontrolwindow
+ let _ = body_stream.flow_control().release_capacity(chunk.len());
  }
 
  Ok(HttpResponse {
@@ -281,14 +281,14 @@ pub async fn send_http2_request_with_pool(
 }
 
 #[cfg(test)]
-#[cfg(all (feature = "connection-pool", feature = "http2"))]
+#[cfg(all(feature = "connection-pool", feature = "http2"))]
 mod tests {
  use super::*;
  use crate::http_client::pool::PoolManagerConfig;
  use crate::http_client::request::HttpMethod;
 
  #[tokio::test]
- #[ ignore ] // neednetworkconnection
+ #[ignore] // neednetworkconnection
  async fn test_http2_with_pool() {
  // clearbeforelog
  let _ = std::fs::remove_file("/home/stone/fingerprint-rust/.cursor/debug.log");
@@ -304,7 +304,7 @@ mod tests {
 
  let request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get");
 
- println!("📡 sendfirst HTTP/2 request (shouldCreate new session)...");
+ println!("📡 sendfirst HTTP/2 request (shouldCreate新session)...");
  let result1 = send_http2_request_with_pool(
  "httpbin.org",
  443,
@@ -312,16 +312,16 @@ mod tests {
  &request,
  &config,
  &pool_manager,
-)
+ )
 .await;
 
- // may will failure (networkissue)，but not should panic
+ // maywillfailure (networkissue)，but不should panic
  if let Ok(response) = &result1 {
  assert_eq!(response.http_version, "HTTP/2");
  assert!(response.status_code > 0);
  println!(" ✅ firstrequestsuccess: {}", response.status_code);
  } else {
- println!(" ❌ firstrequest failure: {:?}", result1);
+ println!(" ❌ firstrequestfailure: {:?}", result1);
  return;
  }
 
@@ -336,7 +336,7 @@ mod tests {
  &request,
  &config,
  &pool_manager,
-)
+ )
 .await;
 
  if let Ok(response) = &result2 {
@@ -344,10 +344,10 @@ mod tests {
  assert!(response.status_code > 0);
  println!(" ✅ secondrequestsuccess: {}", response.status_code);
  } else {
- println!(" ❌ secondrequest failure: {:?}", result2);
+ println!(" ❌ secondrequestfailure: {:?}", result2);
  }
 
- // readlog and analysis
+ // readlog并analysis
  println!("\n📋 debugloganalysis:");
  if let Ok(log_content) =
  std::fs::read_to_string("/home/stone/fingerprint-rust/.cursor/debug.log")
@@ -355,7 +355,7 @@ mod tests {
  let mut create_count = 0;
  let mut reuse_count = 0;
  for line in log_content.lines() {
- // simplestringmatch from parsed JSON log
+ // simplestringmatch来Parse JSON log
  if line.contains("\"message\"") {
  let location = if let Some(start) = line.find("\"location\":\"") {
  let end = line[start + 12..].find('"').unwrap_or(0);
@@ -371,7 +371,7 @@ mod tests {
  };
  println!(" {}: {}", location, message);
 
- if message.contains("Create new session") {
+ if message.contains("Create新session") {
  create_count += 1;
  } else if message.contains("reuseexistingsession") {
  reuse_count += 1;
@@ -379,15 +379,15 @@ mod tests {
  }
  }
  println!("\n📊 sessionpoolstatistics:");
- println!(" Create new session: {} times ", create_count);
- println!(" reusesession: {} times ", reuse_count);
+ println!(" Create新session: {} 次", create_count);
+ println!(" reusesession: {} 次", reuse_count);
 
  if reuse_count > 0 {
  println!(" ✅ sessionreusesuccess！HTTP/2 multiplereusenormal工作");
  } else if create_count > 1 {
- println!(" ⚠️ sessionnotreuse， each time request create new session");
+ println!(" ⚠️ sessionnotreuse，each timerequest都Create新session");
  } else {
- println!(" ℹ️ only sendanrequest，unable toValidatesessionreuse");
+ println!(" ℹ️ 只send了anrequest，unable toValidatesessionreuse");
  }
  } else {
  println!(" ⚠️ unable toreadlogfile");

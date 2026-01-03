@@ -1,32 +1,32 @@
 //! # fingerprint
 //!
-//! anindependentbrowser TLS fingerprint library ， from golang version migrate and from 。
+//! anindependentbrowser TLS fingerprint库， from golang versionmigrate而来。
 //!
 //! ## Features
 //!
 //! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint (Chrome、Firefox、Safari、Opera、Edge)
 //! - ✅ **real TLS configuration**：complete TLS Client Hello Spec (cipher suite、elliptic curve、extension etc.)
 //! - ✅ **JA4 fingerprintGenerate**：complete JA4 TLS clientfingerprintGenerate (sorted and unsorted version)
-//! - ✅ **fingerprintcompare**：supportfingerprint similar degree compare and most 佳matchfind
+//! - ✅ **fingerprintcompare**：supportfingerprintsimilar度compare and 最佳matchfind
 //! - ✅ **GREASE process**：complete GREASE valuefilter and process
-//! - ✅ ** mobile support**：iOS、Android mobile fingerprint
+//! - ✅ **mobilesupport**：iOS、Android mobilefingerprint
 //! - ✅ **HTTP/2 & HTTP/3**：complete HTTP/2 configuration，compatible HTTP/3
 //! - ✅ **User-Agent match**：automaticGeneratematch User-Agent
 //! - ✅ **standard HTTP Headers**：complete's standard HTTP requestheader
-//! - ✅ **glob all anguagesupport**：30+ 种language Accept-Language
-//! - ✅ **operating system randomize**：randomly select operating system 
-//! - ✅ **high perform ance **：零 all ocateclosekeyoperation，concurrentsecurity
+//! - ✅ **globallanguagesupport**：30+ 种language Accept-Language
+//! - ✅ **operating systemrandom化**：randomly selectoperating system
+//! - ✅ **highperformance**：零allocateclosekeyoperation，concurrentsecurity
 //! - ✅ **Rust standard**：strictfollow Rust languagestandard and best practice
-//! - ✅ **independent library **： not dependother TLS client library 
-//! - ✅ **code质量**：through all Clippy Check，follow Rust best practice
+//! - ✅ **independent库**：不dependother TLS client库
+//! - ✅ **code质量**：throughall Clippy Check，follow Rust best practice
 
 #[cfg(feature = "export")]
 pub mod export;
 pub mod random;
 
-// reexport all public API
+// reexportallpublic API
 pub use fingerprint_core::{
- extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_ mobile _profile,
+ extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
  random_choice, random_choice_string, BrowserType, OperatingSystem, OperatingSystems,
  UserAgentTemplate,
 };
@@ -57,6 +57,6 @@ pub use fingerprint_dns::{
 
 #[cfg(feature = "defense")]
 pub use fingerprint_defense::{
- HttpFingerprint, Packet, Packet parsed r, PassiveAnalysisResult, PassiveAnalyzer, PassiveError,
+ HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult, PassiveAnalyzer, PassiveError,
  TcpFingerprint, TlsFingerprint,
 };

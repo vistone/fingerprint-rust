@@ -1,6 +1,6 @@
 //! networktrafficabstract
 //!
-//! definesystem levelnetworktraffic，includingcompleteupdown text and fingerprintinfo。
+//! definesystemlevelnetworktraffic，includingcompleteupdown文 and fingerprintinfo。
 
 use super::context::SystemContext;
 use crate::fingerprint::Fingerprint;
@@ -14,7 +14,7 @@ pub struct FlowCharacteristics {
  /// countpacketcount
  pub packet_count: u64,
 
- /// total bytescount
+ /// 总bytescount
  pub total_bytes: u64,
 
  /// continuous when between
@@ -26,7 +26,7 @@ pub struct FlowCharacteristics {
  /// averagecountpacketsize
  pub avg_packet_size: f64,
 
- /// countpacketrate (package /seconds)
+ /// countpacketrate (包/seconds)
  pub packet_rate: f64,
 
  /// bytesrate (bytes/seconds)
@@ -34,7 +34,7 @@ pub struct FlowCharacteristics {
 }
 
 impl FlowCharacteristics {
- /// create a new traffictrait
+ /// Create a newtraffictrait
  pub fn new() -> Self {
  Self {
  packet_count: 0,
@@ -54,17 +54,17 @@ impl FlowCharacteristics {
  self.avg_packet_size = self.total_bytes as f64 / self.packet_count as f64;
 
  // If duration is not零, Calculaterate
- if!self.duration.is_zero() {
+ if !self.duration.is_zero() {
  let secs = self.duration.as_secs_f64();
  self.packet_rate = self.packet_count as f64 / secs;
  self.byte_rate = self.total_bytes as f64 / secs;
  }
  }
 
- /// settings continuous when between and Updaterate
+ /// settingscontinuous when between并Updaterate
  pub fn set_duration(&mut self, duration: Duration) {
  self.duration = duration;
- if!duration.is_zero() {
+ if !duration.is_zero() {
  let secs = duration.as_secs_f64();
  self.packet_rate = self.packet_count as f64 / secs;
  self.byte_rate = self.total_bytes as f64 / secs;
@@ -80,35 +80,35 @@ impl Default for FlowCharacteristics {
 
 /// networktraffic
 ///
-/// representsystem levelnetworktraffic，includingcompleteupdown text 、fingerprintinfo and trait。
+/// representsystemlevelnetworktraffic，includingcompleteupdown文、fingerprintinfo and trait。
 ///
 /// ## Core Concept
 ///
-/// system levelprotectionneed from **networktraffic**perspective perform analysis and protection， and is notonlyonlyfocussingleservice：
-/// - completesystem updown text (source/target、protocol、direction etc.)
+/// systemlevelprotectionneed from **networktraffic**perspectiveperformanalysis and protection，而is notonlyonlyfocussingleservice：
+/// - completesystemupdown文 (source/target、protocol、direction etc.)
 /// - detect to fingerprintinfo (TLS、HTTP、TCP etc.)
 /// - trafficstatisticstrait and behaviorpattern
 ///
 /// ## Examples
 ///
 /// ```rust
-/// use fingerprint_core::system ::{NetworkFlow, SystemContext, ProtocolType};
+/// use fingerprint_core::system::{NetworkFlow, SystemContext, ProtocolType};
 ///
 /// let ctx = SystemContext::new(
 /// "192.168.1.100".parse().unwrap(),
 /// "10.0.0.1".parse().unwrap(),
 /// ProtocolType::Http,
-///);
+/// );
 ///
 /// let flow = NetworkFlow::new(ctx);
 /// ```
 pub struct NetworkFlow {
- /// system updown text 
+ /// systemupdown文
  pub context: SystemContext,
 
- /// detect to fingerprintlist (if have)
+ /// detect to fingerprintlist ( if 有)
  /// Note: due to trait object limit，herecannotdirectly Clone，needmanualprocess
- #[cfg_attr(test, all ow (dead_code))]
+ #[cfg_attr(test, allow(dead_code))]
  fingerprints: Vec<Box<dyn Fingerprint>>,
 
  /// traffictrait
@@ -116,7 +116,7 @@ pub struct NetworkFlow {
 }
 
 impl NetworkFlow {
- /// create a new networktraffic
+ /// Create a newnetworktraffic
  pub fn new(context: SystemContext) -> Self {
  Self {
  context,
@@ -130,12 +130,12 @@ impl NetworkFlow {
  self.fingerprints.push(fingerprint);
  }
 
- /// Checkwhether have fingerprint
+ /// Checkwhether有fingerprint
  pub fn has_fingerprints(&self) -> bool {
-!self.fingerprints.is_empty()
+ !self.fingerprints.is_empty()
  }
 
- /// Get all fingerprintreference
+ /// Getallfingerprintreference
  pub fn fingerprints(&self) -> &[Box<dyn Fingerprint>] {
  &self.fingerprints
  }
@@ -144,7 +144,7 @@ impl NetworkFlow {
  pub fn get_fingerprints_by_type(
  &self,
  fingerprint_type: crate::fingerprint::FingerprintType,
-) -> Vec<&dyn Fingerprint> {
+ ) -> Vec<&dyn Fingerprint> {
  self.fingerprints
 .iter()
 .filter(|f| f.fingerprint_type() == fingerprint_type)
@@ -177,8 +177,8 @@ impl std::fmt::Debug for NetworkFlow {
 // Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for NetworkFlow {
  fn clone(&self) -> Self {
- // Note: fingerprints cannot Clone，so new instance from emptyliststart
- // this is合理 ，becausefingerprintusu all y not should by copy， and is throughreferenceshared
+ // Note: fingerprints cannot Clone，so新instance from emptyliststart
+ // this is合理的，becausefingerprintusually不should被copy，而 is throughreferenceshared
  Self {
  context: self.context.clone(),
  fingerprints: Vec::new(), // cannot Clone trait object
@@ -204,13 +204,13 @@ mod tests {
 
  #[test]
  fn test_network_flow() {
- use crate::system ::context::ProtocolType;
+ use crate::system::context::ProtocolType;
 
  let ctx = SystemContext::new(
  "192.168.1.100".parse().unwrap(),
  "10.0.0.1".parse().unwrap(),
  ProtocolType::Http,
-);
+ );
 
  let flow = NetworkFlow::new(ctx);
  assert!(!flow.has_fingerprints());

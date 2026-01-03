@@ -21,7 +21,7 @@ pub fn get_random_grease() -> u16 {
 /// Checkanvaluewhether is GREASE value
 ///
 /// # Parameters
-/// * `value` - need Check u16 value
+/// * `value` - 要Check u16 value
 ///
 /// # Returns
 /// * `true` if is GREASE value，`false` otherwise
@@ -40,10 +40,10 @@ pub fn is_grease_value(value: u16) -> bool {
 /// from u16 list in filter掉 GREASE value
 ///
 /// # Parameters
-/// * `values` - need filter u16 valuelist
+/// * `values` - 要filter u16 valuelist
 ///
 /// # Returns
-/// * filterback `Vec<u16>`，excluding GREASE value
+/// * filterback的 `Vec<u16>`，excluding GREASE value
 ///
 /// # Examples
 /// ```
@@ -55,7 +55,7 @@ pub fn is_grease_value(value: u16) -> bool {
 pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
  values
 .iter()
-.filter(|&&v|!is_grease_value(v))
+.filter(|&&v| !is_grease_value(v))
 .copied()
 .collect()
 }
@@ -63,7 +63,7 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
 /// from u16 list in remove GREASE value (in-placemodify)
 ///
 /// # Parameters
-/// * `values` - need modify u16 valuelist (mutablereference)
+/// * `values` - 要modify u16 valuelist (mutablereference)
 ///
 /// # Examples
 /// ```
@@ -73,7 +73,7 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
 /// assert_eq!(values, vec![0x0017, 0x0018]);
 /// ```
 pub fn remove_grease_values(values: &mut Vec<u16>) {
- values.retain(|&v|!is_grease_value(v));
+ values.retain(|&v| !is_grease_value(v));
 }
 
 #[cfg(test)]
@@ -105,13 +105,13 @@ mod tests {
  }
 
  #[test]
- fn test_ all _grease_values() {
+ fn test_all_grease_values() {
  for &grease in &TLS_GREASE_VALUES {
  assert!(
  is_grease_value(grease),
  "{} should be a GREASE value",
  grease
-);
+ );
  }
  }
 }

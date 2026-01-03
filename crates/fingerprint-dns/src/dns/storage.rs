@@ -1,13 +1,13 @@
 //! DNS storemanagemodule
 //!
-//! provide original child propertyfilewrite and many formatoutput (JSON、YAML、TOML)
+//! provide原child性filewrite and 多formatoutput (JSON、YAML、TOML)
 
 use crate::dns::types::{DNSError, DomainIPs};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-/// will domain IP infosave to file (original child propertywrite)
+/// willdomain IP infosave to file (原child性write)
 /// support JSON、YAML、TOML threeformat
 pub fn save_domain_ips<P: AsRef<Path>>(
  domain: &str,
@@ -17,7 +17,7 @@ pub fn save_domain_ips<P: AsRef<Path>>(
  let base_dir = base_dir.as_ref();
 
  // ensuredirectory exists
- fs::create_dir_ all (base_dir)?;
+ fs::create_dir_all(base_dir)?;
 
  // save as JSON
  let json_path = base_dir.join(format!("{}.json", domain));
@@ -35,14 +35,14 @@ pub fn save_domain_ips<P: AsRef<Path>>(
 }
 
 /// from fileloaddomain IP info
-/// automatic try JSON、YAML、TOML format
+/// automatictry JSON、YAML、TOML format
 pub fn load_domain_ips<P: AsRef<Path>>(
  domain: &str,
  base_dir: P,
 ) -> Result<Option<DomainIPs>, DNSError> {
  let base_dir = base_dir.as_ref();
 
- // by priority try ：JSON -> YAML -> TOML
+ //  by prioritytry：JSON -> YAML -> TOML
  let json_path = base_dir.join(format!("{}.json", domain));
  if json_path.exists() {
  return Ok(Some(load_from_json(&json_path)?));
@@ -61,7 +61,7 @@ pub fn load_domain_ips<P: AsRef<Path>>(
  Ok(None)
 }
 
-/// save as JSON (original child propertywrite)
+/// save as JSON (原child性write)
 fn save_as_json(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
  let json_content = serde_json::to_string_pretty(domain_ips)?;
  atomic_write(path, json_content.as_bytes())?;
@@ -75,7 +75,7 @@ fn load_from_json(path: &Path) -> Result<DomainIPs, DNSError> {
  Ok(domain_ips)
 }
 
-/// save as YAML (original child propertywrite)
+/// save as YAML (原child性write)
 fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
  // use serde_yaml directlyserialize
  let yaml_string =
@@ -93,7 +93,7 @@ fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
  Ok(domain_ips)
 }
 
-/// save as TOML (original child propertywrite)
+/// save as TOML (原child性write)
 fn save_as_toml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
  let toml_content =
  toml::to_string_pretty(domain_ips).map_err(|e| DNSError::TomlSerialize(e.to_string()))?;
@@ -108,26 +108,26 @@ fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
  Ok(domain_ips)
 }
 
-/// original child propertywritefile
-/// first writetemporaryfile，thenrename，ensurecountdatasecurity
+/// 原child性writefile
+/// 先writetemporaryfile，thenrename，ensurecountdatasecurity
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
  let parent = path.parent().ok_or_else(|| {
  DNSError::IO(std::io::Error::new(
  std::io::ErrorKind::InvalidInput,
  "path has no parent directory",
-))
+ ))
  })?;
 
- fs::create_dir_ all (parent)?;
+ fs::create_dir_all(parent)?;
 
  // Createtemporaryfile
  let temp_path = path.with_extension(".tmp");
  let mut temp_file = fs::File::create(&temp_path)?;
- temp_file.write_ all (content)?;
- temp_file.sync_ all ()?;
+ temp_file.write_all(content)?;
+ temp_file.sync_all()?;
  drop(temp_file);
 
- // original child propertyrename
+ // 原child性rename
  fs::rename(&temp_path, path)?;
 
  Ok(())
@@ -144,7 +144,7 @@ mod tests {
  use std::path::PathBuf;
 
  let temp_dir = PathBuf::from("/tmp/test_dns_storage");
- fs::create_dir_ all (&temp_dir).ok();
+ fs::create_dir_all(&temp_dir).ok();
  let domain = "test.com";
 
  let mut domain_ips = DomainIPs::new();

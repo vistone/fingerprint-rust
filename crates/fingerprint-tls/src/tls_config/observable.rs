@@ -1,6 +1,6 @@
-//! TLS 可observe propertymodule
+//! TLS 可observe性module
 //!
-//! provide TLS ClientHello 可observe propertycountdataExtract
+//! provide TLS ClientHello 可observe性countdataExtract
 //! reference：Huginn Net Profiler TlsClientObserved design
 
 use crate::tls_config::extract::extract_signature;
@@ -9,11 +9,11 @@ use crate::tls_config::spec::ClientHelloSpec;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
 /// TLS ClientHello 可observecountdata
-/// including all can from ClientHello in observe to info
+/// includingallcan from ClientHello in observe to info
 /// reference：Huginn Net Profiler TlsClientObserved
 #[derive(Debug, Clone, PartialEq)]
 pub struct TlsClientObserved {
- /// TLS version (stringrepresent，such as "13", "12")
+ /// TLS version (stringrepresent，如 "13", "12")
  pub version: String,
  /// Server Name Indication
  pub sni: Option<String>,

@@ -1,23 +1,23 @@
 //! # fingerprint-defense
 //!
-//! **system levelprotectionimplementlayer**，based on `fingerprint-core` system levelabstractBuild。
+//! **systemlevelprotectionimplementlayer**，based on `fingerprint-core` systemlevelabstractBuild。
 //!
 //! ## core定bit
 //!
-//! `fingerprint-defense` is `fingerprint-core` system levelprotectioninterfaceconcreteimplement。
+//! `fingerprint-defense` is `fingerprint-core` systemlevelprotectioninterfaceconcreteimplement。
 //!
-//! ## item frontalreadyimplementFeatures
+//! ## 目frontalreadyimplementFeatures
 //!
-//! - ✅ **passivefingerprint identify** (`passive`): TCP/IP (p0f), HTTP, TLS passive identify
+//! - ✅ **passivefingerprintidentify** (`passive`): TCP/IP (p0f), HTTP, TLS passiveidentify
 //! - ✅ **crosslayerconsistency审计** (`consistency`): JA4+ consistencyvalidate
 //! - ✅ **fingerprintdatabase** (`database`): SQLite store and analysisfingerprinttrait
-//! - ✅ **learnmechanism** (`learner`): automaticdis cover and recordnot know fingerprint
-//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implement实 when network interface and pcap filecapture (no system depend)
+//! - ✅ **learnmechanism** (`learner`): automaticdiscover and recordnot知fingerprint
+//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implement实 when network interface and pcap filecapture (无systemdepend)
 //!
 //! ## planinFeatures
 //!
-//! - **system analysiser** (`analyzer`): implement `SystemAnalyzer` trait
-//! - **system protectioner** (`protector`): implement `SystemProtector` trait
+//! - **systemanalysiser** (`analyzer`): implement `SystemAnalyzer` trait
+//! - **systemprotectioner** (`protector`): implement `SystemProtector` trait
 //! - **threat狩猎** (`hunting`): 蜜罐 and behavioranalysis
 
 pub mod capture;
@@ -31,6 +31,6 @@ pub use learner::SelfLearningAnalyzer;
 
 // Re-export maintype
 pub use passive::{
- ConsistencyAnalyzer, HttpFingerprint, Packet, Packet parsed r, PassiveAnalysisResult,
+ ConsistencyAnalyzer, HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult,
  PassiveAnalyzer, PassiveError, TcpFingerprint, TlsFingerprint,
 };

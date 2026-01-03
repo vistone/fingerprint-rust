@@ -1,6 +1,6 @@
-//! passivefingerprint identifymodule
+//! passivefingerprintidentifymodule
 //!
-//! implement p0f stylepassivefingerprint identify，include TCP、HTTP、TLS analysis。
+//! implement p0f stylepassivefingerprintidentify，include TCP、HTTP、TLS analysis。
 
 pub mod consistency;
 pub mod http;
@@ -13,14 +13,14 @@ pub mod tls;
 pub use consistency::ConsistencyAnalyzer;
 
 pub use http::{HttpAnalyzer, HttpFingerprint};
-pub use packet::{Packet, Packet parsed r};
+pub use packet::{Packet, PacketParser};
 pub use tcp::{TcpAnalyzer, TcpFeatures, TcpFingerprint};
 pub use tls::{TlsAnalyzer, TlsFingerprint};
 
-// use core insystem levelabstract
-use fingerprint_core::system ::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
+// use core insystemlevelabstract
+use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
 
-/// passiveanalysiser (many protocol)
+/// passiveanalysiser (多protocol)
 pub struct PassiveAnalyzer {
  tcp_analyzer: TcpAnalyzer,
  http_analyzer: HttpAnalyzer,
@@ -28,7 +28,7 @@ pub struct PassiveAnalyzer {
 }
 
 impl PassiveAnalyzer {
- /// create a new passiveanalysiser
+ /// Create a newpassiveanalysiser
  pub fn new() -> Result<Self, PassiveError> {
  Ok(Self {
  tcp_analyzer: TcpAnalyzer::new().map_err(PassiveError::Tcp)?,
@@ -59,14 +59,14 @@ impl PassiveAnalyzer {
  result
  }
 
- /// analysiscountpacket and return NetworkFlow (new method， for system levelprotection)
+ /// analysiscountpacket并return NetworkFlow (新method， for systemlevelprotection)
  pub fn analyze_to_flow(&self, packet: &Packet) -> Result<NetworkFlow, PassiveError> {
  // 1. determineprotocoltype
  let protocol = match (
  packet.tcp_header.is_some(),
  packet.src_port,
  packet.dst_port,
-) {
+ ) {
  (true, 80, _) | (true, _, 80) => ProtocolType::Http,
  (true, 443, _) | (true, _, 443) => ProtocolType::Https,
  (true, _, _) => ProtocolType::Tcp,
@@ -82,17 +82,17 @@ impl PassiveAnalyzer {
  packet.src_port,
  packet.dst_port,
  protocol,
-);
+ );
 
- // settingsotherupdown text info
+ // settingsotherupdown文info
  context.timestamp = chrono::Utc::now();
  context.packet_size = packet.payload.len();
 
- // intelligentdirection identify： if is private address发往公网，usu all y is Outbound；反之 is Inbound
- // herelogiccanBased on part 署environment (gateway vs final end)furtherfine-tune
+ // intelligentdirectionidentify： if is privateaddress发往公网，usually is Outbound；反之 is Inbound
+ // herelogiccanBased on部署environment (gateway vs final端)furtherfine-tune
  let src_is_local = match packet.src_ip {
- std::net::IpAddr::V4(ip) => ip.is_ loop back() || ip.is_private(),
- std::net::IpAddr::V6(ip) => ip.is_ loop back(),
+ std::net::IpAddr::V4(ip) => ip.is_loopback() || ip.is_private(),
+ std::net::IpAddr::V6(ip) => ip.is_loopback(),
  };
  context.direction = if src_is_local {
  TrafficDirection::Outbound
@@ -100,7 +100,7 @@ impl PassiveAnalyzer {
  TrafficDirection::Inbound
  };
 
- // 3. c all original analyze methodGetfingerprint
+ // 3. calloriginal analyze methodGetfingerprint
  let analysis_result = self.analyze(packet);
 
  // 4. Create NetworkFlow
@@ -147,7 +147,7 @@ pub enum PassiveError {
  #[error("TLS analysiserror: {0}")]
  Tls(String),
 
- #[error("countpacket parsed error: {0}")]
+ #[error("countpacketParseerror: {0}")]
  Packet(#[from] crate::passive::packet::PacketError),
 }
 

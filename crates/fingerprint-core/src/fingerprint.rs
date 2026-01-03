@@ -34,12 +34,12 @@ impl std::fmt::Display for FingerprintType {
 
 /// fingerprintabstract trait
 ///
-/// all fingerprinttype (TLS、HTTP、TCP) all shouldimplementthis trait
+/// allfingerprinttype (TLS、HTTP、TCP)都shouldimplementthis trait
 pub trait Fingerprint: Send + Sync {
  /// Getfingerprinttype
  fn fingerprint_type(&self) -> FingerprintType;
 
- /// Getfingerprintuniqueidentifier符 (usu all y is hashvalue)
+ /// Getfingerprintuniqueidentifier符 (usually is hashvalue)
  fn id(&self) -> String;
 
  /// Getfingerprintmetadata
@@ -48,21 +48,21 @@ pub trait Fingerprint: Send + Sync {
  /// Getfingerprintmetadata (mutablereference)
  fn metadata_mut(&mut self) -> &mut FingerprintMetadata;
 
- /// Calculatefingerprinthashvalue (for fastcompare)
+ /// Calculatefingerprinthashvalue ( for fastcompare)
  fn hash(&self) -> u64;
 
- /// compare twofingerprintwhether similar 
- fn similar _to(&self, other: &dyn Fingerprint) -> bool;
+ /// compare twofingerprintwhethersimilar
+ fn similar_to(&self, other: &dyn Fingerprint) -> bool;
 
- /// Getfingerprintstringrepresent (for debug and log)
+ /// Getfingerprintstringrepresent ( for debug and log)
  fn to_string(&self) -> String;
 }
 
 /// fingerprintcompareresult
 #[derive(Debug, Clone, PartialEq)]
 pub struct FingerprintComparison {
- /// similar degree 分count (0.0 - 1.0)
- pub similar ity: f64,
+ /// similar度分count (0.0 - 1.0)
+ pub similarity: f64,
 
  /// whethermatch
  pub matched: bool,
@@ -75,10 +75,10 @@ pub struct FingerprintComparison {
 }
 
 impl FingerprintComparison {
- /// create a new compareresult
- pub fn new(similar ity: f64, matched: bool) -> Self {
+ /// Create a newcompareresult
+ pub fn new(similarity: f64, matched: bool) -> Self {
  Self {
- similar ity,
+ similarity,
  matched,
  matched_fields: Vec::new(),
  unmatched_fields: Vec::new(),
@@ -88,7 +88,7 @@ impl FingerprintComparison {
  /// Createcompletelymatchresult
  pub fn perfect_match() -> Self {
  Self {
- similar ity: 1.0,
+ similarity: 1.0,
  matched: true,
  matched_fields: Vec::new(),
  unmatched_fields: Vec::new(),
@@ -98,7 +98,7 @@ impl FingerprintComparison {
  /// Createcompletelydoes not matchresult
  pub fn no_match() -> Self {
  Self {
- similar ity: 0.0,
+ similarity: 0.0,
  matched: false,
  matched_fields: Vec::new(),
  unmatched_fields: Vec::new(),
@@ -113,20 +113,20 @@ impl FingerprintComparator {
  /// compare twofingerprint
  pub fn compare(f1: &dyn Fingerprint, f2: &dyn Fingerprint) -> FingerprintComparison {
  // typemustsame
- if f1.fingerprint_type()!= f2.fingerprint_type() {
+ if f1.fingerprint_type() != f2.fingerprint_type() {
  return FingerprintComparison::no_match();
  }
 
- // use similar _to method perform compare
- if f1. similar _to(f2) {
+ // use similar_to methodperformcompare
+ if f1.similar_to(f2) {
  FingerprintComparison::perfect_match()
  } else {
- // Calculate similar degree (based onhashvalue)
+ // Calculatesimilar度 (based onhashvalue)
  let h1 = f1.hash();
  let h2 = f2.hash();
 
- // simple similar degree Calculate (based onhashvalue汉明distance)
- let similar ity = if h1 == h2 {
+ // simplesimilar度Calculate (based onhashvalue汉明distance)
+ let similarity = if h1 == h2 {
  1.0
  } else {
  // Calculatehashvaluedifference
@@ -136,8 +136,8 @@ impl FingerprintComparator {
  };
 
  FingerprintComparison {
- similar ity,
- matched: similar ity > 0.8, // similar thresholdvalue
+ similarity,
+ matched: similarity > 0.8, // similarthresholdvalue
  matched_fields: Vec::new(),
  unmatched_fields: Vec::new(),
  }
@@ -159,11 +159,11 @@ mod tests {
  #[test]
  fn test_fingerprint_comparison() {
  let perfect = FingerprintComparison::perfect_match();
- assert_eq!(perfect. similar ity, 1.0);
+ assert_eq!(perfect.similarity, 1.0);
  assert!(perfect.matched);
 
  let no_match = FingerprintComparison::no_match();
- assert_eq!(no_match. similar ity, 0.0);
+ assert_eq!(no_match.similarity, 0.0);
  assert!(!no_match.matched);
  }
 }

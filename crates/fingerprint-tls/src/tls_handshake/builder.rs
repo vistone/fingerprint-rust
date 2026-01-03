@@ -15,11 +15,11 @@ impl TLSHandshakeBuilder {
  pub fn build_client_hello(
  spec: &ClientHelloSpec,
  server_name: &str,
-) -> Result<Vec<u8>, String> {
+ ) -> Result<Vec<u8>, String> {
  // 1. Create ClientHello message
  let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
 
- // 2. serialize ClientHello message body 
+ // 2. serialize ClientHello message体
  let body = client_hello.to_bytes();
 
  // 3. Createhandshakemessage
@@ -29,14 +29,14 @@ impl TLSHandshakeBuilder {
  let handshake_bytes = handshake.to_bytes();
 
  // 5. Create TLS record
- // use TLS 1.0 (0x0301) asrecordversion (in order tocompatible property)
+ // use TLS 1.0 (0x0301) asrecordversion (in order tocompatible性)
  let record = TLSRecord::handshake(0x0301, handshake_bytes);
 
  // 6. serialize TLS record
  Ok(record.to_bytes())
  }
 
- /// Build and printdebuginfo
+ /// Build并printdebuginfo
  pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
  // 1. Create ClientHello message
  let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
@@ -50,14 +50,14 @@ impl TLSHandshakeBuilder {
  println!(
  " - TLS versionrange: 0x{:04x} - 0x{:04x}",
  spec.tls_vers_min, spec.tls_vers_max
-);
+ );
  println!(" - compressionmethod: {:?}", spec.compression_methods);
 
  // print ClientHello debuginfo
  println!("\n{}", client_hello.debug_info());
 
  let body = client_hello.to_bytes();
- println!("\n📦 ClientHello message body : {} bytes", body.len());
+ println!("\n📦 ClientHello message体: {} bytes", body.len());
 
  let handshake = TLSHandshake::client_hello(body);
  let handshake_bytes = handshake.to_bytes();
@@ -72,7 +72,7 @@ impl TLSHandshakeBuilder {
  " useweselffingerprint: {} cipher suite, {} extension\n",
  spec.cipher_suites.len(),
  spec.extensions.len()
-);
+ );
 
  Ok(record_bytes)
  }
@@ -125,7 +125,7 @@ mod tests {
  let bytes = result.unwrap();
  println!("\nGenerate Chrome 133 ClientHello: {} bytes", bytes.len());
 
- // Chrome 133 should have 较 many 's cipher suites and extension
- assert!(bytes.len() > 200); // Chrome ClientHello usu all y很大
+ // Chrome 133 should有较多's cipher suites and extension
+ assert!(bytes.len() > 200); // Chrome ClientHello usually很大
  }
 }

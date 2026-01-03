@@ -1,7 +1,7 @@
 //! HASSH SSH fingerprintimplement
 //!
-//! HASSH is Salesforce open 发 SSH client/serverfingerprint identifymethod。
-//! similar 于 JA3 for TLS，HASSH for identify SSH client and server。
+//! HASSH is Salesforce open发 SSH client/serverfingerprintidentifymethod。
+//! similar于 JA3 for TLS，HASSH for identify SSH client and server。
 //!
 //! ## reference
 //! - paper: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
@@ -24,8 +24,8 @@ use serde::{Deserialize, Serialize};
 /// &["diffie-hellman-group14-sha1", "diffie-hellman-group-exchange-sha256"],
 /// &["aes128-ctr", "aes256-ctr"],
 /// &["hmac-sha2-256", "hmac-sha2-512"],
-/// &["none", "zlib@ open ssh.com"],
-///);
+/// &["none", "zlib@openssh.com"],
+/// );
 /// assert!(!hassh.fingerprint.is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -42,7 +42,7 @@ pub struct HASSH {
  /// compressionalgorithmlist (semicolon-separated)
  pub compression_algorithms: String,
  
- /// complete HASSH string (for Calculatehash)
+ /// complete HASSH string ( for Calculatehash)
  pub hassh_string: String,
  
  /// HASSH fingerprint (MD5 hash)
@@ -68,7 +68,7 @@ impl HASSH {
  encryption_algorithms: &[&str],
  mac_algorithms: &[&str],
  compression_algorithms: &[&str],
-) -> Self {
+ ) -> Self {
  // connectionalgorithmlist (usesemicolon-separated)
  let kex_str = kex_algorithms.join(";");
  let enc_str = encryption_algorithms.join(";");
@@ -105,7 +105,7 @@ impl HASSH {
  fn infer_client_type(
  kex_algorithms: &[&str],
  encryption_algorithms: &[&str],
-) -> Option<String> {
+ ) -> Option<String> {
  // based onalgorithmtraitinferclienttype
  
  // OpenSSH trait
@@ -131,7 +131,7 @@ impl HASSH {
  if kex_algorithms
 .iter()
 .any(|&k| k.contains("diffie-hellman-group14-sha1"))
- &&!kex_algorithms.iter().any(|&k| k.contains("curve25519"))
+ && !kex_algorithms.iter().any(|&k| k.contains("curve25519"))
  {
  return Some("Paramiko".to_string());
  }
@@ -147,7 +147,7 @@ impl HASSH {
  None
  }
 
- /// from SSH KEX_INIT message parsed HASSH
+ /// from SSH KEX_INIT messageParse HASSH
  ///
  /// SSH KEX_INIT messageincludingalgorithmnegotiateinfo
  pub fn from_kex_init(kex_init: &SSHKexInit) -> Self {
@@ -172,7 +172,7 @@ impl HASSH {
 .iter()
 .map(|s| s.as_str())
 .collect::<Vec<_>>(),
-)
+ )
  }
 }
 
@@ -195,7 +195,7 @@ impl std::fmt::Display for HASSH {
 /// &["aes256-ctr"],
 /// &["hmac-sha2-512"],
 /// &["none"],
-///);
+/// );
 /// assert!(!hassh_server.fingerprint.is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -229,7 +229,7 @@ impl HASSHServer {
  encryption_algorithms: &[&str],
  mac_algorithms: &[&str],
  compression_algorithms: &[&str],
-) -> Self {
+ ) -> Self {
  let kex_str = kex_algorithms.join(";");
  let enc_str = encryption_algorithms.join(";");
  let mac_str = mac_algorithms.join(";");
@@ -262,7 +262,7 @@ impl HASSHServer {
  fn infer_server_type(
  kex_algorithms: &[&str],
  encryption_algorithms: &[&str],
-) -> Option<String> {
+ ) -> Option<String> {
  // OpenSSH Server
  if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256"))
  && encryption_algorithms
@@ -292,7 +292,7 @@ impl HASSHServer {
  None
  }
 
- /// from SSH KEX_INIT message parsed HASSH Server
+ /// from SSH KEX_INIT messageParse HASSH Server
  pub fn from_kex_init(kex_init: &SSHKexInit) -> Self {
  Self::generate(
  &kex_init
@@ -315,7 +315,7 @@ impl HASSHServer {
 .iter()
 .map(|s| s.as_str())
 .collect::<Vec<_>>(),
-)
+ )
  }
 }
 
@@ -327,7 +327,7 @@ impl std::fmt::Display for HASSHServer {
 
 /// SSH KEX_INIT messagestruct
 ///
-/// including SSH keyswapInitializemessage all algorithmlist
+/// including SSH keyswapInitializemessageallalgorithmlist
 #[derive(Debug, Clone, Default)]
 pub struct SSHKexInit {
  /// keyswapalgorithm
@@ -356,29 +356,29 @@ pub struct SSHKexInit {
 }
 
 impl SSHKexInit {
- /// create a new KEX_INIT message
+ /// Create a new KEX_INIT message
  pub fn new() -> Self {
  Self::default()
  }
 
- /// from original beginning SSH countpacket parsed (simplified version)
+ /// from 原beginning SSH countpacketParse (simplified version)
  ///
- /// Note: this isanSimplified implementation，complete SSH protocol parsed need more complexstatus machine 
+ /// Note: this isanSimplified implementation，complete SSH protocolParseneed更complexstatus机
  pub fn parse(data: &[u8]) -> Result<Self, String> {
  // SSH protocolformatcomplex，hereprovidebasic框架
- // actualapplication in should use专门 SSH protocol parsed library 
+ // actualapplication in 应use专门 SSH protocolParse库
  
  if data.len() < 16 {
  return Err("countpackettoo short".to_string());
  }
 
  // SSH KEX_INIT messagetype as 20 (SSH_MSG_KEXINIT)
- if data[0]!= 20 {
+ if data[0] != 20 {
  return Err("is not KEX_INIT message".to_string());
  }
 
- // hereshould parsed name-list field
- // due to SSH protocol parsed complex， temporary when returnemptystruct
+ // hereshouldParse name-list field
+ // due to SSH protocolParsecomplex，暂 when returnemptystruct
  Ok(Self::new())
  }
 }
@@ -396,8 +396,8 @@ mod tests {
  ],
  &["aes128-ctr", "aes192-ctr", "aes256-ctr"],
  &["hmac-sha2-256", "hmac-sha2-512"],
- &["none", "zlib@ open ssh.com"],
-);
+ &["none", "zlib@openssh.com"],
+ );
 
  assert!(!hassh.fingerprint.is_empty());
  assert_eq!(hassh.fingerprint.len(), 32); // MD5 hashlength
@@ -406,13 +406,13 @@ mod tests {
  }
 
  #[test]
- fn test_hassh_ open ssh_detection() {
+ fn test_hassh_openssh_detection() {
  let hassh = HASSH::generate(
  &["curve25519-sha256", "ecdh-sha2-nistp256"],
- &["chacha20-poly1305@ open ssh.com", "aes256-ctr"],
+ &["chacha20-poly1305@openssh.com", "aes256-ctr"],
  &["hmac-sha2-256"],
  &["none"],
-);
+ );
 
  assert_eq!(hassh.client_type, Some("OpenSSH".to_string()));
  }
@@ -424,7 +424,7 @@ mod tests {
  &["aes256-ctr", "aes192-ctr"],
  &["hmac-sha2-256"],
  &["none"],
-);
+ );
 
  assert_eq!(hassh.client_type, Some("PuTTY".to_string()));
  }
@@ -443,20 +443,20 @@ mod tests {
  &["aes256-ctr", "aes128-ctr"],
  &["hmac-sha2-512", "hmac-sha2-256"],
  &["none"],
-);
+ );
 
  assert!(!hassh_server.fingerprint.is_empty());
  assert_eq!(hassh_server.fingerprint.len(), 32);
  }
 
  #[test]
- fn test_hassh_server_ open ssh_detection() {
+ fn test_hassh_server_openssh_detection() {
  let hassh_server = HASSHServer::generate(
  &["curve25519-sha256@libssh.org"],
- &["chacha20-poly1305@ open ssh.com"],
+ &["chacha20-poly1305@openssh.com"],
  &["hmac-sha2-256"],
  &["none"],
-);
+ );
 
  assert_eq!(hassh_server.server_type, Some("OpenSSH".to_string()));
  }
@@ -490,7 +490,7 @@ mod tests {
 
 /// JA4SSH - SSH fingerprint (JA4 style)
 ///
-/// similar 于 HASSH，butuse SHA256 rather than MD5， and adopt JA4 seriesformatstyle
+/// similar于 HASSH，butuse SHA256 rather than MD5，并adopt JA4 seriesformatstyle
 /// 
 /// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
 ///
@@ -503,7 +503,7 @@ mod tests {
 /// &["aes256-ctr"],
 /// &["hmac-sha2-256"],
 /// &["none"],
-///);
+/// );
 /// assert!(!ja4ssh.fingerprint_string().is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -552,7 +552,7 @@ impl JA4SSH {
  encryption_algorithms: &[&str],
  mac_algorithms: &[&str],
  compression_algorithms: &[&str],
-) -> Self {
+ ) -> Self {
  // Calculateeachalgorithmlist SHA256 hash
  let kex_hash = Self::compute_hash(kex_algorithms);
  let enc_hash = Self::compute_hash(encryption_algorithms);
@@ -582,13 +582,13 @@ impl JA4SSH {
  encryption_algorithms: &[&str],
  mac_algorithms: &[&str],
  compression_algorithms: &[&str],
-) -> Self {
+ ) -> Self {
  let mut ssh = Self::generate(
  kex_algorithms,
  encryption_algorithms,
  mac_algorithms,
  compression_algorithms,
-);
+ );
  ssh.direction = 's'; // server
  ssh.client_type = Self::infer_server_type(kex_algorithms, encryption_algorithms);
  ssh
@@ -614,7 +614,7 @@ impl JA4SSH {
  fn infer_client_type(
  kex_algorithms: &[&str],
  encryption_algorithms: &[&str],
-) -> Option<String> {
+ ) -> Option<String> {
  // OpenSSH trait
  if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256")) {
  if encryption_algorithms
@@ -638,7 +638,7 @@ impl JA4SSH {
  if kex_algorithms
 .iter()
 .any(|&k| k.contains("diffie-hellman-group14-sha1"))
- &&!kex_algorithms.iter().any(|&k| k.contains("curve25519"))
+ && !kex_algorithms.iter().any(|&k| k.contains("curve25519"))
  {
  return Some("Paramiko".to_string());
  }
@@ -650,7 +650,7 @@ impl JA4SSH {
  fn infer_server_type(
  kex_algorithms: &[&str],
  encryption_algorithms: &[&str],
-) -> Option<String> {
+ ) -> Option<String> {
  // OpenSSH Server
  if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256"))
  && encryption_algorithms
@@ -686,7 +686,7 @@ impl JA4SSH {
  self.encryption_hash,
  self.mac_hash,
  self.compression_hash
-)
+ )
  }
 
  /// from SSH KEX_INIT messageGenerate JA4SSH
@@ -712,7 +712,7 @@ impl JA4SSH {
 .iter()
 .map(|s| s.as_str())
 .collect::<Vec<_>>(),
-)
+ )
  }
 }
 
@@ -732,8 +732,8 @@ mod ja4ssh_tests {
  &["diffie-hellman-group14-sha256", "ecdh-sha2-nistp256"],
  &["aes256-ctr", "aes128-ctr"],
  &["hmac-sha2-256", "hmac-sha2-512"],
- &["none", "zlib@ open ssh.com"],
-);
+ &["none", "zlib@openssh.com"],
+ );
 
  assert_eq!(ja4ssh.direction, 'c');
  assert_eq!(ja4ssh.kex_count, 2);
@@ -751,20 +751,20 @@ mod ja4ssh_tests {
  &["aes256-ctr"],
  &["hmac-sha2-512"],
  &["none"],
-);
+ );
 
  assert_eq!(ja4ssh.direction, 's');
  assert_eq!(ja4ssh.kex_count, 1);
  }
 
  #[test]
- fn test_ja4ssh_ open ssh_detection() {
+ fn test_ja4ssh_openssh_detection() {
  let ja4ssh = JA4SSH::generate(
  &["curve25519-sha256", "ecdh-sha2-nistp256"],
- &["chacha20-poly1305@ open ssh.com", "aes256-ctr"],
+ &["chacha20-poly1305@openssh.com", "aes256-ctr"],
  &["hmac-sha2-256"],
  &["none"],
-);
+ );
 
  assert_eq!(ja4ssh.client_type, Some("OpenSSH".to_string()));
  }
@@ -776,7 +776,7 @@ mod ja4ssh_tests {
  &["aes256-ctr", "aes128-ctr"],
  &["hmac-sha2-256"],
  &["none"],
-);
+ );
 
  assert_eq!(ja4ssh.client_type, Some("PuTTY".to_string()));
  }
@@ -788,7 +788,7 @@ mod ja4ssh_tests {
  &["test-enc"],
  &["test-mac"],
  &["none"],
-);
+ );
 
  let fp = ja4ssh.fingerprint_string();
  assert!(fp.starts_with("c01010101_"));
@@ -802,7 +802,7 @@ mod ja4ssh_tests {
  &["enc"],
  &["mac"],
  &["none"],
-);
+ );
 
  let displayed = format!("{}", ja4ssh);
  assert_eq!(displayed, ja4ssh.fingerprint_string());
@@ -819,7 +819,7 @@ mod ja4ssh_tests {
 
  #[test]
  fn test_ja4ssh_hash_consistency() {
- // 同样algorithmshouldproducesame hash
+ // 同样algorithmshouldproducesame的hash
  let ja4ssh1 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
  let ja4ssh2 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
  

@@ -1,6 +1,6 @@
-//! system updown text 
+//! systemupdown文
 //!
-//! definesystem levelprotectionupdown text info，includenetworkentity、 when between、protocol etc.。
+//! definesystemlevelprotectionupdown文info，includenetworkentity、 when between、protocol etc.。
 
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
@@ -14,7 +14,7 @@ pub enum TrafficDirection {
  /// outputtraffic (leavesystem)
  Outbound,
 
- /// inside part traffic (system inside part)
+ /// inside部traffic (systeminside部)
  Internal,
 }
 
@@ -58,7 +58,7 @@ pub enum ProtocolType {
 }
 
 impl ProtocolType {
- /// from IP protocol number Create
+ /// from IP protocol号Create
  pub fn from_ip_protocol(protocol: u8) -> Self {
  match protocol {
  6 => Self::Tcp,
@@ -68,7 +68,7 @@ impl ProtocolType {
  }
  }
 
- /// convert to IP protocol number 
+ /// convert to IP protocol号
  pub fn to_ip_protocol(&self) -> u8 {
  match self {
  Self::Tcp => 6,
@@ -102,13 +102,13 @@ impl std::fmt::Display for ProtocolType {
  }
 }
 
-/// system updown text 
+/// systemupdown文
 ///
-/// representsystem levelprotectionupdown text info，includingnetworktrafficcompletemetadata。
+/// representsystemlevelprotectionupdown文info，includingnetworktrafficcompletemetadata。
 ///
 /// ## Core Concept
 ///
-/// system levelprotectionneedconsidercompletesystem updown text ， and not onlyonly is singleservice or port：
+/// systemlevelprotectionneedconsidercompletesystemupdown文，而not onlyonly is singleservice or port：
 /// - networkentitycompleteinfo (source/target IP、port)
 /// - protocoltype and direction
 /// - when between戳 and network interfaceinterface
@@ -117,7 +117,7 @@ impl std::fmt::Display for ProtocolType {
 /// ## Examples
 ///
 /// ```rust
-/// use fingerprint_core::system ::{SystemContext, ProtocolType, TrafficDirection};
+/// use fingerprint_core::system::{SystemContext, ProtocolType, TrafficDirection};
 /// use std::net::IpAddr;
 /// use chrono::Utc;
 ///
@@ -141,10 +141,10 @@ pub struct SystemContext {
  /// target IP address
  pub target_ip: IpAddr,
 
- /// sourceport (for UDP/TCP)
+ /// sourceport ( for UDP/TCP)
  pub source_port: Option<u16>,
 
- /// targetport (for UDP/TCP)
+ /// targetport ( for UDP/TCP)
  pub target_port: Option<u16>,
 
  /// protocoltype
@@ -164,7 +164,7 @@ pub struct SystemContext {
 }
 
 impl SystemContext {
- /// create a new system updown text 
+ /// Create a newsystemupdown文
  pub fn new(source_ip: IpAddr, target_ip: IpAddr, protocol: ProtocolType) -> Self {
  Self {
  source_ip,
@@ -179,14 +179,14 @@ impl SystemContext {
  }
  }
 
- /// Createbringportsystem updown text 
+ /// Createbringportsystemupdown文
  pub fn with_ports(
  source_ip: IpAddr,
  target_ip: IpAddr,
  source_port: u16,
  target_port: u16,
  protocol: ProtocolType,
-) -> Self {
+ ) -> Self {
  Self {
  source_ip,
  target_ip,
@@ -200,28 +200,28 @@ impl SystemContext {
  }
  }
 
- /// judgewhether as localtraffic (source or target as local address)
+ /// judgewhether as localtraffic (source or target as localaddress)
  pub fn is_local(&self) -> bool {
  self.is_source_local() || self.is_target_local()
  }
 
- /// judgesource addresswhether as local address
+ /// judgesourceaddresswhether as localaddress
  pub fn is_source_local(&self) -> bool {
  match self.source_ip {
- IpAddr::V4(ip) => ip.is_ loop back() || ip.is_private() || ip.is_link_local(),
- IpAddr::V6(ip) => ip.is_ loop back() || ip.is_unspecified(),
+ IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
+ IpAddr::V6(ip) => ip.is_loopback() || ip.is_unspecified(),
  }
  }
 
- /// judgetarget addresswhether as local address
+ /// judgetargetaddresswhether as localaddress
  pub fn is_target_local(&self) -> bool {
  match self.target_ip {
- IpAddr::V4(ip) => ip.is_ loop back() || ip.is_private() || ip.is_link_local(),
- IpAddr::V6(ip) => ip.is_ loop back() || ip.is_unspecified(),
+ IpAddr::V4(ip) => ip.is_loopback() || ip.is_private() || ip.is_link_local(),
+ IpAddr::V6(ip) => ip.is_loopback() || ip.is_unspecified(),
  }
  }
 
- /// Gettrafficuniqueidentifier符 (for 追踪)
+ /// Gettrafficuniqueidentifier符 ( for 追踪)
  pub fn flow_id(&self) -> String {
  format!(
  "{}:{}->{}:{}:{}",
@@ -230,7 +230,7 @@ impl SystemContext {
  self.target_ip,
  self.target_port.map(|p| p.to_string()).unwrap_or_default(),
  self.protocol.as_str()
-)
+ )
  }
 }
 
@@ -252,14 +252,14 @@ mod tests {
  }
 
  #[test]
- fn test_system _context() {
+ fn test_system_context() {
  let ctx = SystemContext::with_ports(
  "192.168.1.100".parse().unwrap(),
  "10.0.0.1".parse().unwrap(),
  54321,
  80,
  ProtocolType::Http,
-);
+ );
 
  assert_eq!(ctx.source_port, Some(54321));
  assert_eq!(ctx.target_port, Some(80));
@@ -272,7 +272,7 @@ mod tests {
  "127.0.0.1".parse().unwrap(),
  "192.168.1.1".parse().unwrap(),
  ProtocolType::Tcp,
-);
+ );
  assert!(local_ctx.is_source_local());
  assert!(local_ctx.is_local());
  }

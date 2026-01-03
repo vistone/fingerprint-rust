@@ -2,7 +2,7 @@
 fn main() {
  use bytes::Bytes;
  use chrono::Utc;
- use fingerprint_core::system ::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
+ use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
  // use fingerprint_core::Fingerprint; // notuse，alreadycomment
  use fingerprint_defense::passive::consistency::ConsistencyAnalyzer;
  use fingerprint_defense::passive::http::HttpAnalyzer;
@@ -14,14 +14,14 @@ fn main() {
  println!("🗄️ Fingerprint Database & Persistence Verification\n");
 
  let db_path = "fingerprints.db";
- let _ = fs::remove_file(db_path); // cleanup old countdata
+ let _ = fs::remove_file(db_path); // cleanup旧countdata
 
- let db = FingerprintDatabase:: open (db_path).expect("Failed to open database");
+ let db = FingerprintDatabase::open(db_path).expect("Failed to open database");
  let analyzer = ConsistencyAnalyzer::new();
  let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
  let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
- // 1. simulate and storenormal Chrome traffic
+ // 1. simulate并storenormal Chrome traffic
  println!("1️⃣ storenormaltraffic:");
  let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\n\r\n";
  let packet = Packet {
@@ -37,7 +37,7 @@ fn main() {
  tcp_header: Some(TcpHeader {
  seq: 1,
  ack: None,
- window : 64240,
+ window: 64240,
  flags: 0x02,
  options: vec![TcpOption {
  kind: 2,
@@ -70,8 +70,8 @@ fn main() {
 .expect("Failed to store flow");
  println!(" ✅ trafficalreadystore into SQLite");
 
- // 2. simulate and store machine er person traffic
- println!("\n2️⃣ store machine er person traffic:");
+ // 2. simulate并store机er人traffic
+ println!("\n2️⃣ store机er人traffic:");
  let packet_bot = Packet {
  src_ip: "192.168.1.101".parse().unwrap(),
  ttl: 64, // Bot TTL
@@ -94,7 +94,7 @@ fn main() {
  let report_bot = analyzer.analyze_flow(&flow_bot);
  db.store_flow(&flow_bot, report_bot.score, report_bot.bot_detected)
 .expect("Failed to store bot flow");
- println!(" ✅ machine er person trafficalreadystore into SQLite");
+ println!(" ✅ 机er人trafficalreadystore into SQLite");
 
  // 3. readstatisticsinfo
  println!("\n3️⃣ databasestatistics:");

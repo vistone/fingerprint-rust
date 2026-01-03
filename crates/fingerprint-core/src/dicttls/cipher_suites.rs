@@ -1,11 +1,11 @@
 //! TLS cipher suiteconstant
 //!
-//! from source：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4
-//! fin all yUpdate：March 2023
+//! 来source：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4
+//! finallyUpdate：March 2023
 
 /// TLS cipher suiteconstant
 /// Corresponds to Go version's tls.TLS_* constant
-#[ all ow (clippy::module_inception)]
+#[allow(clippy::module_inception)]
 pub mod cipher_suites {
  // TLS 1.3 cipher suite
  pub const TLS_AES_128_GCM_SHA256: u16 = 0x1301;

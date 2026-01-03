@@ -39,21 +39,21 @@ impl ClientHelloMessage {
  ///
  /// # Errors
  ///
- /// Ifunable toGetencryptionsecurityrandomcount (in no `crypto` feature when), will returnerror。
- /// suggest in productionenvironment in enabled `crypto` feature to ensuresecurity property。
+ /// Ifunable toGetencryptionsecurityrandomcount ( in no `crypto` feature when ), willreturnerror。
+ /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurity性。
  pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
- // use TLS 1.2 asclientversion (in order tocompatible property)
+ // use TLS 1.2 asclientversion (in order tocompatible性)
  let client_version = spec.tls_vers_max.max(0x0303);
 
  // Generaterandomcount (32 bytes)
  let mut random = Vec::with_capacity(32);
 
  // front 4 bytes: Unix when between戳
- // usecurrent when between， if Get failure then use 0 (虽然 not 太may failure)
- // fix 2038 year overflowissue： explicit truncatehighbit，ensure u32 rangeinside
+ // usecurrent when between， if Getfailure则use 0 (虽然不太mayfailure)
+ // fix 2038 year overflowissue：explicittruncatehighbit，ensure u32 rangeinside
  let timestamp = std::time::SystemTime::now()
 .duration_since(std::time::UNIX_EPOCH)
-.map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicit truncatehighbit，prevent 2038 year overflow
+.map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicittruncatehighbit，prevent 2038 year overflow
 .unwrap_or(0);
  random.extend_from_slice(&timestamp.to_be_bytes());
 
@@ -68,28 +68,28 @@ impl ClientHelloMessage {
  }
  #[cfg(not(feature = "crypto"))]
  {
- // Ifno crypto feature, try from system randomcountsourceGetencryptionsecurityrandomcount
- // Ifunable toGet, directlyreturnerror， not all ow use not security reduce levelsolution
+ // Ifno crypto feature, try from systemrandomcountsourceGetencryptionsecurityrandomcount
+ // Ifunable toGet, directlyreturnerror，不allowuse不security降levelsolution
  use std::io::Read;
  let mut random_bytes = [0u8; 28];
 
  // try from /dev/urandom (Unix) Getrandomcount
- let mut rng = std::fs::File:: open ("/dev/urandom")
+ let mut rng = std::fs::File::open("/dev/urandom")
 .map_err(|e| format!(
- "unable toaccesssystem randomcountsource /dev/urandom: {}. suggestenabled 'crypto' feature to useencryptionsecurityrandomcountGenerator",
+ "unable toaccesssystemrandomcountsource /dev/urandom: {}. suggestenabled 'crypto' feature 以useencryptionsecurityrandomcountGenerator",
  e
-))?;
+ ))?;
 
  rng.read_exact(&mut random_bytes)
 .map_err(|e| format!(
- "unable to from /dev/urandom readrandomcount: {}. suggestenabled 'crypto' feature to useencryptionsecurityrandomcountGenerator",
+ "unable to from /dev/urandom readrandomcount: {}. suggestenabled 'crypto' feature 以useencryptionsecurityrandomcountGenerator",
  e
-))?;
+ ))?;
 
  random.extend_from_slice(&random_bytes);
  }
 
- // emptysession ID (new session)
+ // emptysession ID (新session)
  let session_id = Vec::new();
 
  // cipher suite
@@ -97,7 +97,7 @@ impl ClientHelloMessage {
 
  // compressionmethod
  let compression_methods = if spec.compression_methods.is_empty() {
- vec![0] // no compression
+ vec![0] // 无compression
  } else {
  spec.compression_methods.clone()
  };
@@ -158,7 +158,7 @@ impl ClientHelloMessage {
  }
 
  // Ifno SNI extension, Addan
- if!has_sni &&!server_name.is_empty() {
+ if !has_sni && !server_name.is_empty() {
  let sni_data = Self::build_sni_extension(server_name);
  ext_bytes.extend_from_slice(&0u16.to_be_bytes()); // SNI extension ID
  ext_bytes.extend_from_slice(&(sni_data.len() as u16).to_be_bytes());
@@ -236,7 +236,7 @@ impl ClientHelloMessage {
  self.cipher_suites.len(),
  self.compression_methods.len(),
  self.extensions.len()
-)
+ )
  }
 }
 

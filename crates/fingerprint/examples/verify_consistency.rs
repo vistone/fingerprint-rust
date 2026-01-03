@@ -2,7 +2,7 @@
 fn main() {
  use bytes::Bytes;
  use chrono::Utc;
- use fingerprint_core::system ::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
+ use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
  use fingerprint_core::Fingerprint;
  use fingerprint_defense::passive::consistency::ConsistencyAnalyzer;
  use fingerprint_defense::passive::http::HttpAnalyzer;
@@ -15,8 +15,8 @@ fn main() {
  let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
  let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
- // 1. simulate annormal Chrome request (Windows)
- println!("1️⃣ simulate normal Chrome request (Windows):");
+ // 1. simulateannormal Chrome request (Windows)
+ println!("1️⃣ simulatenormal Chrome request (Windows):");
  let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\nAccept: text/html\r\n\r\n";
 
  let packet = Packet {
@@ -32,7 +32,7 @@ fn main() {
  tcp_header: Some(TcpHeader {
  seq: 1,
  ack: None,
- window : 64240,
+ window: 64240,
  flags: 0x02, // SYN
  options: vec![
  TcpOption {
@@ -72,15 +72,15 @@ fn main() {
  let report = analyzer.analyze_flow(&flow);
  println!(" ✅ consistencyscore: {}", report.score);
  if report.discrepancies.is_empty() {
- println!(" ✅ notdis cover abnormal，determine as 合法traffic");
+ println!(" ✅ notdiscoverabnormal，determine as 合法traffic");
  } else {
  for d in &report.discrepancies {
- println!(" ❌ dis cover 偏差: {}", d);
+ println!(" ❌ discover偏差: {}", d);
  }
  }
 
- // 2. simulate an伪造fingerprint machine er person (UA as Windows, but TCP trait as Linux)
- println!("\n2️⃣ simulate fingerprint错bitattack (User-Agent: Windows, TCP: Linux):");
+ // 2. simulatean伪造fingerprint机er人 (UA as Windows, but TCP trait as Linux)
+ println!("\n2️⃣ simulatefingerprint错bitattack (User-Agent: Windows, TCP: Linux):");
  let packet_bot = Packet {
  timestamp: 0,
  src_ip: "192.168.1.101".parse().unwrap(),
@@ -94,7 +94,7 @@ fn main() {
  tcp_header: Some(TcpHeader {
  seq: 1,
  ack: None,
- window : 65535,
+ window: 65535,
  flags: 0x02,
  options: vec![
  TcpOption {
@@ -126,17 +126,17 @@ fn main() {
  }
 
  if let Some(t_fp) = tcp_analyzer.analyze(&packet_bot) {
- println!(" ✅ TCP identify (machine er person): {}", Fingerprint::id(&t_fp));
+ println!(" ✅ TCP identify (机er人): {}", Fingerprint::id(&t_fp));
  flow_bot.add_fingerprint(Box::new(t_fp));
  }
 
  let report_bot = analyzer.analyze_flow(&flow_bot);
  println!(" ⚠️ consistencyscore: {}", report_bot.score);
  for d in &report_bot.discrepancies {
- println!(" ❌ dis cover 严重偏差: {}", d);
+ println!(" ❌ discover严重偏差: {}", d);
  }
  if report_bot.bot_detected {
- println!(" 🚨 warning: detect to machine er person /fingerprint simulate erbehavior！");
+ println!(" 🚨 warning: detect to 机er人/fingerprintsimulateerbehavior！");
  }
 
  println!("\n✨ Validatecomplete！");

@@ -8,7 +8,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http2")]
 use h2::client;
 
-// Fix: use globalsingleton Runtime avoid frequentCreate
+// Fix: useglobalsingleton Runtime avoidfrequentCreate
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
@@ -25,7 +25,7 @@ pub fn send_http2_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // Fix: use globalsingleton Runtime， avoid each time request all create a new runtime 
+ // Fix: useglobalsingleton Runtime，avoideach timerequest都Create a newrun when 
  RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
@@ -47,11 +47,11 @@ async fn send_http2_request_async(
  let addr = format!("{}:{}", host, port);
  let socket_addrs = addr
 .to_socket_addrs()
-.map_err(|e| HttpClientError::InvalidUrl(format!("DNS parsed failure: {}", e)))?
+.map_err(|e| HttpClientError::InvalidUrl(format!("DNS Parsefailure: {}", e)))?
 .next()
-.ok_or_else(|| HttpClientError::InvalidUrl("unable to parsed address".to_string()))?;
+.ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
 
- // application TCP Profile (if configuration)
+ // application TCP Profile ( if configuration了)
  let tcp = if let Some(profile) = &config.profile {
  if let Some(ref tcp_profile) = profile.tcp_profile {
  super::tcp_fingerprint::connect_tcp_with_profile(socket_addrs, Some(tcp_profile))
@@ -69,19 +69,19 @@ async fn send_http2_request_async(
  };
 
  // 2. TLS handshake
- let tls_stream = perform _tls_handshake(tcp, host, config).await?;
+ let tls_stream = perform_tls_handshake(tcp, host, config).await?;
 
  // 3. HTTP/2 handshake (application Settings configuration)
  let mut builder = client::Builder::new();
 
  // applicationfingerprintconfiguration in HTTP/2 Settings
  if let Some(profile) = &config.profile {
- // settingsinitialbeginning window size
- if let Some(& window _size) = profile
+ // settingsinitialbeginningwindowsize
+ if let Some(&window_size) = profile
 .settings
 .get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16())
  {
- builder.initial_ window _size(window _size);
+ builder.initial_window_size(window_size);
  }
 
  // settingsmaximumframesize
@@ -100,16 +100,16 @@ async fn send_http2_request_async(
  builder.max_header_list_size(max_header_list_size);
  }
 
- // settingsconnectionlevel window size (Connection Flow)
- builder.initial_connection_ window _size(profile.connection_flow);
+ // settingsconnectionlevelwindowsize (Connection Flow)
+ builder.initial_connection_window_size(profile.connection_flow);
  }
 
  let (mut client, h2_conn) = builder
 .handshake(tls_stream)
 .await
-.map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 handshake failure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("HTTP/2 handshakefailure: {}", e)))?;
 
- // in background driver HTTP/2 connection
+ // in backdriver HTTP/2 connection
  tokio::spawn(async move {
  if let Err(e) = h2_conn.await {
  eprintln!("warning: HTTP/2 connectionerror: {}", e);
@@ -123,7 +123,7 @@ async fn send_http2_request_async(
 .uri(uri)
 .version(http::Version::HTTP_2);
 
- // Fix: Add Cookie to request (if exists)
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -132,16 +132,16 @@ async fn send_http2_request_async(
  host,
  path,
  true, // HTTPS is securityconnection
-);
+ );
  }
 
  // Add headers
- // Note: do notmanualAdd host header，h2 will automatic from URI Extract
+ // Note: do notmanualAdd host header，h2 willautomatic from URI Extract
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
- // skip host header (if userpassed in)
- if key.to_lowercase()!= "host" {
+ // skip host header ( if userpassed in)
+ if key.to_lowercase() != "host" {
  http_request = http_request.header(key, value);
  }
  }
@@ -149,31 +149,31 @@ async fn send_http2_request_async(
  // Fix: Buildrequest (h2 need Request<()>，thenthrough SendStream send body)
  let http_request = http_request
 .body(())
-.map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequest failure: {}", e)))?;
+.map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
 
  // 6. sendrequest (Get SendStream for send body)
- // Fix: end_of_stream must as false，otherwisestream will immediatelyclose，unable tosend body
+ // Fix: end_of_stream must as false，otherwisestreamwillimmediatelyclose，unable tosend body
  let has_body = request_with_cookies.body.is_some()
- &&!request_with_cookies.body.as_ref().unwrap().is_empty();
+ && !request_with_cookies.body.as_ref().unwrap().is_empty();
  let (response_future, mut send_stream) = client
 .send_request(http_request, false) // Fix: 改 as false，only in send完 body back才endstream
-.map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequest failure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;
 
- // Fix: through SendStream sendrequest body (if exists)
+ // Fix: through SendStream sendrequest体 ( if exists)
  if let Some(body) = &request_with_cookies.body {
- if!body.is_empty() {
- // send body countdata，end_of_stream = true representthis isfin all ycountdata
+ if !body.is_empty() {
+ // send body countdata，end_of_stream = true representthis isfinallycountdata
  send_stream
 .send_data(bytes::Bytes::from(body.clone()), true)
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
  } else {
- // empty body，sendemptycountdata and endstream
+ // empty body，sendemptycountdata并endstream
  send_stream
 .send_data(bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
  }
- } else if!has_body {
- // no body，sendemptycountdata and endstream
+ } else if !has_body {
+ // no body，sendemptycountdata并endstream
  send_stream
 .send_data(bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
@@ -182,13 +182,13 @@ async fn send_http2_request_async(
  // 7. receiveresponse
  let response = response_future
 .await
-.map_err(|e| HttpClientError::InvalidResponse(format!("receiveresponse failure: {}", e)))?;
+.map_err(|e| HttpClientError::InvalidResponse(format!("receiveresponsefailure: {}", e)))?;
 
  let status_code = response.status().as_u16();
  let headers = response.headers().clone();
 
  // securityFix: Check HTTP/2 responseheadersize，prevent Header compressionbombattack
- // h2 crate 0.4 default MAX_HEADER_LIST_SIZE usu all y larger ，weAdd额outsideCheck
+ // h2 crate 0.4 default MAX_HEADER_LIST_SIZE usuallylarger，weAdd额outsideCheck
  const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 suggestminimumvalue)
  let total_header_size: usize = headers
 .iter()
@@ -198,7 +198,7 @@ async fn send_http2_request_async(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/2 responseheadertoo large (>{} bytes)",
  MAX_HTTP2_HEADER_SIZE
-)));
+ )));
  }
 
  // receive body
@@ -218,13 +218,13 @@ async fn send_http2_request_async(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/2 responsebody too large (>{} bytes)",
  MAX_HTTP2_BODY_SIZE
-)));
+ )));
  }
 
  body_data.extend_from_slice(&chunk);
 
- // releasestream control window 
- let _ = body_stream.flow_ control ().release_capacity(chunk.len());
+ // releasestreamcontrolwindow
+ let _ = body_stream.flow_control().release_capacity(chunk.len());
  }
 
  let elapsed = start.elapsed().as_millis() as u64;
@@ -250,7 +250,7 @@ async fn send_http2_request_async(
 }
 
 #[cfg(feature = "http2")]
-async fn perform _tls_handshake(
+async fn perform_tls_handshake(
  tcp: tokio::net::TcpStream,
  host: &str,
  config: &HttpClientConfig,
@@ -263,17 +263,17 @@ async fn perform _tls_handshake(
  config.verify_tls,
  vec![b"h2".to_vec(), b"http/1.1".to_vec()],
  config.profile.as_ref(),
-);
+ );
 
  let connector = TlsConnector::from(Arc::new(tls_config));
 
- let server_name = ServerName:: try _from(host)
+ let server_name = ServerName::try_from(host)
 .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
  connector
 .connect(server_name, tcp)
 .await
-.map_err(|e| HttpClientError::TlsError(format!("TLS handshake failure: {}", e)))
+.map_err(|e| HttpClientError::TlsError(format!("TLS handshakefailure: {}", e)))
 }
 
 #[cfg(not(feature = "http2"))]
@@ -285,27 +285,27 @@ pub fn send_http2_request(
  _config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
  Err(HttpClientError::InvalidResponse(
- "HTTP/2 supportnotenabled， please use --features http2 compile".to_string(),
-))
+ "HTTP/2 supportnotenabled，请use --features http2 compile".to_string(),
+ ))
 }
 
 #[cfg(test)]
 mod tests {
  #[test]
  #[cfg(feature = "http2")]
- #[ ignore ]
+ #[ignore]
  fn test_http2_request() {
  use super::*;
  let request = HttpRequest::new(
  crate::http_client::request::HttpMethod::Get,
  "https://www.google.com/",
-);
+ );
 
  let config = HttpClientConfig::default();
 
  match send_http2_request("www.google.com", 443, "/", &request, &config) {
  Ok(response) => {
- // Google may will redirect or 者return 200
+ // Google maywillredirect or 者return 200
  println!("Status: {}", response.status_code);
  println!("Version: {}", response.http_version);
  }

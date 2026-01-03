@@ -1,6 +1,6 @@
-//! DNS parsed ermodule
+//! DNS Parseermodule
 //!
-//! provideconcurrent DNS parsed Features，usecustom DNS serverlist
+//! provideconcurrent DNS ParseFeatures，usecustom DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::{DNSError, DNSResult, DomainIPs, IPInfo};
@@ -14,20 +14,20 @@ use hickory_resolver::{
  TokioAsyncResolver,
 };
 
-/// DNS parsed er
+/// DNS Parseer
 pub struct DNSResolver {
  /// DNS querytimeout duration
  timeout: Duration,
  /// DNS serverpool
  server_pool: Arc<ServerPool>,
- /// Fix: cache resolver instance， avoid frequentCreate and destroy
+ /// Fix: cache resolver instance，avoidfrequentCreate and destroy
  /// use Arc<Mutex<HashMap>> storeeach DNS server resolver
  resolver_cache:
  Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioAsyncResolver>>>>,
 }
 
 impl DNSResolver {
- /// create a new DNS parsed er (usedefault DNS server)
+ /// Create a new DNS Parseer (usedefault DNS server)
  pub fn new(timeout: Duration) -> Self {
  Self {
  timeout,
@@ -36,7 +36,7 @@ impl DNSResolver {
  }
  }
 
- /// usespecified DNS serverpoolCreate parsed er
+ /// usespecified DNS serverpoolCreateParseer
  pub fn with_server_pool(timeout: Duration, server_pool: Arc<ServerPool>) -> Self {
  Self {
  timeout,
@@ -45,44 +45,44 @@ impl DNSResolver {
  }
  }
 
- /// parsed domain all IP address (IPv4 and IPv6)
+ /// Parsedomainall IP address (IPv4 and IPv6)
  pub async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError> {
  eprintln!(
- "[DNS Resolver] ========== start parsed domain: {} ==========",
+ "[DNS Resolver] ========== startParsedomain: {} ==========",
  domain
-);
+ );
  let mut domain_ips = DomainIPs::new();
 
- // parsed IPv4
- eprintln!("[DNS Resolver] start parsed IPv4 address...");
+ // Parse IPv4
+ eprintln!("[DNS Resolver] startParse IPv4 address...");
  if let Ok(ipv4_addrs) = self.resolve_aaaa_or_a(domain, false).await {
  eprintln!(
- "[DNS Resolver] IPv4 parsed success，obtain {} address",
+ "[DNS Resolver] IPv4 Parsesuccess，obtain {} address",
  ipv4_addrs.len()
-);
+ );
  domain_ips.ipv4 = ipv4_addrs;
  } else {
- eprintln!("[DNS Resolver] IPv4 parsed failure");
+ eprintln!("[DNS Resolver] IPv4 Parsefailure");
  }
 
- // parsed IPv6
- eprintln!("[DNS Resolver] start parsed IPv6 address...");
+ // Parse IPv6
+ eprintln!("[DNS Resolver] startParse IPv6 address...");
  if let Ok(ipv6_addrs) = self.resolve_aaaa_or_a(domain, true).await {
  eprintln!(
- "[DNS Resolver] IPv6 parsed success，obtain {} address",
+ "[DNS Resolver] IPv6 Parsesuccess，obtain {} address",
  ipv6_addrs.len()
-);
+ );
  domain_ips.ipv6 = ipv6_addrs;
  } else {
- eprintln!("[DNS Resolver] IPv6 parsed failure");
+ eprintln!("[DNS Resolver] IPv6 Parsefailure");
  }
 
  eprintln!(
- "[DNS Resolver] ========== domain parsed complete: {} (IPv4: {}, IPv6: {}) ==========",
+ "[DNS Resolver] ========== domainParsecomplete: {} (IPv4: {}, IPv6: {} ) ==========",
  domain,
  domain_ips.ipv4.len(),
  domain_ips.ipv6.len()
-);
+ );
 
  Ok(DNSResult {
  domain: domain.to_string(),
@@ -90,18 +90,18 @@ impl DNSResolver {
  })
  }
 
- /// parsed IPv4 (A) or IPv6 (AAAA) record
- /// usecollect to global DNS server perform query
+ /// Parse IPv4 (A) or IPv6 (AAAA) record
+ /// usecollect to global DNS serverperformquery
  async fn resolve_aaaa_or_a(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
  self.resolve_with_hickory(domain, ipv6).await
  }
 
- /// use hickory-resolver perform DNS query，concurrentquerymultiple DNS server to Get all may IP
+ /// use hickory-resolver perform DNS query，concurrentquerymultiple DNS server以Getallmay IP
  async fn resolve_with_hickory(
  &self,
  domain: &str,
  ipv6: bool,
-) -> Result<Vec<IPInfo>, DNSError> {
+ ) -> Result<Vec<IPInfo>, DNSError> {
  use futures::stream::{self, StreamExt};
  use std::collections::HashSet;
  use std::net::SocketAddr;
@@ -109,18 +109,18 @@ impl DNSResolver {
 
  // from serverpool in Get DNS serverlist
  let servers = self.server_pool.servers();
- eprintln!("[DNS Resolver] start parsed domain: {} (IPv6: {})", domain, ipv6);
- eprintln!("[DNS Resolver] serverpool total count: {}", servers.len());
+ eprintln!("[DNS Resolver] startParsedomain: {} (IPv6: {})", domain, ipv6);
+ eprintln!("[DNS Resolver] serverpool总count: {}", servers.len());
 
- // use all serverconcurrentquery (not limitcount)
- // Go item ResolveDomain use pool.GetAllServers() Get all server，concurrentquery
- // failureserver will by ignore ，successserverreturn IP will by collect and deduplicate
- eprintln!("[DNS Resolver] will query all {} server", servers.len());
+ // useallserverconcurrentquery (不limitcount)
+ // Go item ResolveDomain use pool.GetAllServers() Getallserver，concurrentquery
+ // failureserverwill被ignore，successserverreturn IP will被collect并deduplicate
+ eprintln!("[DNS Resolver] willqueryall {} server", servers.len());
 
  let servers_with_sockets: Vec<_> = servers
 .iter()
 .filter_map(|server_str| {
- // parsed server addressformat：can is "ip:port" or only "ip" (defaultport 53)
+ // Parseserveraddressformat：can is "ip:port" or only "ip" (defaultport 53)
  let (ip_str, port) = if let Some(colon_pos) = server_str.find(':') {
  let ip = &server_str[..colon_pos];
  let port = server_str[colon_pos + 1..].parse::<u16>().unwrap_or(53);
@@ -129,7 +129,7 @@ impl DNSResolver {
  (server_str.to_string(), 53u16)
  };
 
- // parsed IP address
+ // Parse IP address
  if let Ok(ip_addr) = IpAddr::from_str(&ip_str) {
  Some((server_str.to_string(), SocketAddr::new(ip_addr, port)))
  } else {
@@ -139,11 +139,11 @@ impl DNSResolver {
 .collect();
 
  let total_servers = servers_with_sockets.len();
- eprintln!("[DNS Resolver] parsed backserver addresscount: {}", total_servers);
+ eprintln!("[DNS Resolver] Parsebackserveraddresscount: {}", total_servers);
 
  if servers_with_sockets.is_empty() {
- eprintln!("[DNS Resolver] no available server address，usesystem DNS");
- return self.resolve_with_system (domain, ipv6).await;
+ eprintln!("[DNS Resolver] noavailableserveraddress，usesystem DNS");
+ return self.resolve_with_system(domain, ipv6).await;
  }
 
  // recordtype
@@ -154,19 +154,19 @@ impl DNSResolver {
  };
  eprintln!("[DNS Resolver] queryrecordtype: {:?}", record_type);
 
- // configuration parsed options
+ // configurationParseoptions
  let mut opts = ResolverOpts::default();
  opts.timeout = Duration::from_millis(1000); // singleservertimeout duration 1 seconds
- opts.attempts = 1; // eachserver only try once，becauseweconcurrentquerymultiple
+ opts.attempts = 1; // eachserver只tryonce，becauseweconcurrentquerymultiple
  eprintln!(
- "[DNS Resolver] singleservertimeout: {:?}, over all timeout: {:?}",
+ "[DNS Resolver] singleservertimeout: {:?}, overalltimeout: {:?}",
  opts.timeout, self.timeout
-);
+ );
 
  // concurrentquerymultiple DNS server
- // usetimeoutwrap， avoid single慢serverblocking整query
+ // usetimeoutwrap，avoidsingle慢serverblocking整query
  let server_pool = self.server_pool.clone();
- let query_timeout = self.timeout; // use resolver over all timeout duration
+ let query_timeout = self.timeout; // use resolver overalltimeout duration
  // Fix: shared resolver cache
  let resolver_cache = self.resolver_cache.clone();
  let query_tasks = stream::iter(servers_with_sockets)
@@ -182,14 +182,14 @@ impl DNSResolver {
  async move {
  let start_time = std::time::Instant::now();
 
- // usetimeoutwrapquery， avoid singleserverblocking
+ // usetimeoutwrapquery，avoidsingleserverblocking
  let query_result = tokio::time::timeout(query_timeout, async {
- // Fix: reuse resolver instance， avoid frequentCreate and destroy
- // use server_str as key from cache resolver
+ // Fix: reuse resolver instance，avoidfrequentCreate and destroy
+ // use server_str as key 来cache resolver
  let resolver = {
  let mut cache = resolver_cache.lock().unwrap_or_else(|e| {
- eprintln!("warning: resolver cachelock failure: {}", e);
- // Iflock failure, Createannewempty HashMap and relock定
+ eprintln!("warning: resolver cachelockfailure: {}", e);
+ // Iflockfailure, Createannewempty HashMap 并relock定
  drop(e.into_inner());
  resolver_cache.lock().expect("unable toGet resolver cachelock")
  });
@@ -197,7 +197,7 @@ impl DNSResolver {
  if let Some(cached) = cache.get(&server_str) {
  cached.clone()
  } else {
- // create a new resolver and cache
+ // Create a new resolver 并cache
  let mut config = ResolverConfig::new();
  let name_server = NameServerConfig {
  socket_addr,
@@ -223,12 +223,12 @@ impl DNSResolver {
  let mut ips = Vec::new();
  let mut record_count = 0usize;
 
- // 遍历 all record，collect all IP address
+ // 遍历allrecord，collectall IP address
  for record in lookup.record_iter() {
  record_count += 1;
  if let Some(rdata) = record.data() {
  let ip_str = match rdata {
- RData::A(ipv4) if!ipv6 => {
+ RData::A(ipv4) if !ipv6 => {
  ipv4.to_string()
  }
  RData::AAAA(ipv6_addr) if ipv6 => {
@@ -242,89 +242,89 @@ impl DNSResolver {
 
  // recordsuccessresponse when between
  let response_time = start_time.elapsed();
- if!ips.is_empty() {
- // printdetailedlog，displayreturn all IP
- eprintln!("[DNS Query] ✅ server {} success，return {} IP (共 {} 条record)，耗 when : {:?}",
+ if !ips.is_empty() {
+ // printdetailedlog，displayreturnall IP
+ eprintln!("[DNS Query] ✅ server {} success，return {} IP (共 {} 条record)，耗 when: {:?}",
  server_str, ips.len(), record_count, response_time);
  if ips.len() > 1 {
  eprintln!(" [DNS Query] return IP list: {}", ips.join(", "));
  }
  if let Err(e) = server_pool.record_success(&server_str, response_time) {
- eprintln!("Warning: recordserversuccessstatistics failure: {}", e);
+ eprintln!("Warning: recordserversuccessstatisticsfailure: {}", e);
  }
  } else {
- eprintln!("[DNS Query] ⚠️ server {} querysuccessbutnotreturn IP (共 {} 条record，buttypedoes not match)，耗 when : {:?}",
+ eprintln!("[DNS Query] ⚠️ server {} querysuccessbutnotreturn IP (共 {} 条record，buttypedoes not match)，耗 when: {:?}",
  server_str, record_count, response_time);
- if let Err(e) = server_pool.record_ failure(&server_str) {
- eprintln!("Warning: recordserver failurestatistics failure: {}", e);
+ if let Err(e) = server_pool.record_failure(&server_str) {
+ eprintln!("Warning: recordserverfailurestatisticsfailure: {}", e);
  }
  }
  Ok(ips)
  }
  Ok(Err(_)) | Err(_) => {
- // record failure (query failure or timeout)， not printlog to decreaseoutput
- let _ = server_pool.record_ failure(&server_str);
- // singleserver failure not impactwhole，returnemptyresult
+ // recordfailure (queryfailure or timeout)，不printlog以decreaseoutput
+ let _ = server_pool.record_failure(&server_str);
+ // singleserverfailure不impactwhole，returnemptyresult
  Ok::<Vec<String>, DNSError>(Vec::new())
  }
  }
  }
  })
-.buffer_unordered(50); // Fix: reduce 低concurrentcount to 50， avoid filedescribe符耗尽 and 资source爆炸
+.buffer_unordered(50); // Fix: 降低concurrentcount to 50，avoidfiledescribe符耗尽 and 资source爆炸
 
  eprintln!("[DNS Resolver] startconcurrentquery，concurrentcount: 50");
 
- // stream式collectresult，wait all serverresponse，collect尽may many IP
- // for large numberserver，increaseover all timeout duration
- let over all _timeout = Duration::from_secs(30); // over all timeout 30 seconds，ensure all server all have machine will response
- let mut all _ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP only will preservean
+ // stream式collectresult，waitallserverresponse，collect尽may多 IP
+ // for large numberserver，increaseoveralltimeout duration
+ let overall_timeout = Duration::from_secs(30); // overalltimeout 30 seconds，ensureallserver都有机willresponse
+ let mut all_ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP 只willpreservean
  let mut query_tasks = query_tasks;
  let mut success_count = 0usize;
  let mut failure_count = 0usize;
- let mut total_ips_received = 0usize; // statistics receive to total IP count (deduplicatefront)
+ let mut total_ips_received = 0usize; // statistics收 to 总 IP count (deduplicatefront)
 
- // usetimeout and stream式process，collect尽may many result
- let timeout_future = tokio::time::sleep(over all _timeout);
+ // usetimeout and stream式process，collect尽may多result
+ let timeout_future = tokio::time::sleep(overall_timeout);
  tokio::pin!(timeout_future);
  let start_time = std::time::Instant::now();
  let mut last_log_time = std::time::Instant::now();
- let log_interval = Duration::from_millis(500); // each 500msprintonceprogress
+ let log_interval = Duration::from_millis(500); // 每500msprintonceprogress
 
  eprintln!(
- "[DNS Resolver] startcollectqueryresult (over all timeout: {:?}， total servercount: {})",
- over all _timeout, total_servers
-);
+ "[DNS Resolver] startcollectqueryresult (overalltimeout: {:?}，总servercount: {})",
+ overall_timeout, total_servers
+ );
 
  loop {
- tokio:: select! {
- // Checkwhether have newqueryresult
+ tokio::select! {
+ // Checkwhether有newqueryresult
  result = query_tasks.next() => {
  match result {
  Some(Ok(ips)) => {
  success_count += 1;
- let ips_count = ips.len(); // first save IP count， avoid movebackunable toaccess
- total_ips_received += ips_count; // statistics receive to total IP count (deduplicatefront)
+ let ips_count = ips.len(); // 先save IP count，avoidmovebackunable toaccess
+ total_ips_received += ips_count; // statistics收 to 总 IP count (deduplicatefront)
 
- let before_count = all _ips.len();
+ let before_count = all_ips.len();
  for ip in ips {
- all _ips.insert(ip); // HashSet automaticdeduplicate，same IP only will preservean
+ all_ips.insert(ip); // HashSet automaticdeduplicate，same IP 只willpreservean
  }
- let after_count = all _ips.len();
+ let after_count = all_ips.len();
  let new_ips_count = after_count - before_count;
 
- // Ifthisserverreturn IP in have duplicate, will in log in display
+ // Ifthisserverreturn IP in 有duplicate的, will in log in display
  if ips_count > new_ips_count {
- eprintln!("[DNS Resolver] serverreturn {} IP， its in {} is new IP，{} is duplicate (alreadyautomaticdeduplicate)",
+ eprintln!("[DNS Resolver] serverreturn {} IP，其 in {} is new IP，{} is duplicate的 (alreadyautomaticdeduplicate)",
  ips_count, new_ips_count, ips_count - new_ips_count);
  }
 
  // regularprintprogress，displaydeduplicatestatistics
  if last_log_time.elapsed() >= log_interval {
- let duplicate_count = total_ips_received - all _ips.len();
- eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ， failure {} ",
+ let duplicate_count = total_ips_received - all_ips.len();
+ eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ，failure {} ",
  success_count + failure_count, total_servers, success_count, failure_count);
- eprintln!("[DNS Resolver] IP statistics: receive to {} IP，deduplicateback {} unique IP，filter {} duplicate IP",
- total_ips_received, all _ips.len(), duplicate_count);
+ eprintln!("[DNS Resolver] IP statistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
+ total_ips_received, all_ips.len(), duplicate_count);
  last_log_time = std::time::Instant::now();
  }
  }
@@ -332,62 +332,62 @@ impl DNSResolver {
  failure_count += 1;
  // regularprintprogress
  if last_log_time.elapsed() >= log_interval {
- eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ， failure {} ，alreadycollect IP: {} ",
- success_count + failure_count, total_servers, success_count, failure_count, all _ips.len());
+ eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ，failure {} ，alreadycollect IP: {} ",
+ success_count + failure_count, total_servers, success_count, failure_count, all_ips.len());
  last_log_time = std::time::Instant::now();
  }
- // singlequery failure，continue
+ // singlequeryfailure，continue
  }
  None => {
- // all querycomplete
- let duplicate_count = total_ips_received - all _ips.len();
- eprintln!("[DNS Resolver] ✅ all querycomplete: success {} ， failure {} ",
+ // allquerycomplete
+ let duplicate_count = total_ips_received - all_ips.len();
+ eprintln!("[DNS Resolver] ✅ allquerycomplete: success {} ，failure {} ",
  success_count, failure_count);
- eprintln!("[DNS Resolver] IP deduplicatestatistics: receive to {} IP，deduplicateback {} unique IP，filter {} duplicate IP",
- total_ips_received, all _ips.len(), duplicate_count);
+ eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
+ total_ips_received, all_ips.len(), duplicate_count);
  break;
  }
  }
  }
  // timeout
  _ = &mut timeout_future => {
- let duplicate_count = total_ips_received - all _ips.len();
- eprintln!("[DNS Resolver] ⏱️ queryover all timeout ({}seconds)，complete {}/{} server，success {} ， failure {} ",
- over all _timeout.as_secs(), success_count + failure_count, total_servers, success_count, failure_count);
- eprintln!("[DNS Resolver] IP deduplicatestatistics: receive to {} IP，deduplicateback {} unique IP，filter {} duplicate IP",
- total_ips_received, all _ips.len(), duplicate_count);
+ let duplicate_count = total_ips_received - all_ips.len();
+ eprintln!("[DNS Resolver] ⏱️ queryoveralltimeout ({}seconds)，complete {}/{} server，success {} ，failure {} ",
+ overall_timeout.as_secs(), success_count + failure_count, total_servers, success_count, failure_count);
+ eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
+ total_ips_received, all_ips.len(), duplicate_count);
  break;
  }
  }
  }
 
  let total_time = start_time.elapsed();
- let duplicate_count = total_ips_received - all _ips.len();
- eprintln!("[DNS Resolver] querycomplete， total 耗 when : {:?}", total_time);
- eprintln!("[DNS Resolver] most final IP deduplicatestatistics: receive to {} IP，deduplicateback {} unique IP，filter {} duplicate IP (deduplicate rate : {:.2}%)",
- total_ips_received, all _ips.len(), duplicate_count,
+ let duplicate_count = total_ips_received - all_ips.len();
+ eprintln!("[DNS Resolver] querycomplete，总耗 when: {:?}", total_time);
+ eprintln!("[DNS Resolver] 最final IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP (deduplicate率: {:.2}%)",
+ total_ips_received, all_ips.len(), duplicate_count,
  if total_ips_received > 0 { (duplicate_count as f64 / total_ips_received as f64) * 100.0 } else { 0.0 });
 
  // convert to IPInfo list
- // Note: all _ips is HashSet，alreadyautomaticdeduplicate，same IP only will preservean
- let ip_infos: Vec<IPInfo> = all _ips.into_iter().map(IPInfo::new).collect();
+ // Note: all_ips is HashSet，alreadyautomaticdeduplicate，same IP 只willpreservean
+ let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
  eprintln!(
- "[DNS Resolver] convert to IPInfo， most finalreturn {} unique IP address (alreadydeduplicate)",
+ "[DNS Resolver] convert to IPInfo，最finalreturn {} unique IP address (alreadydeduplicate)",
  ip_infos.len()
-);
+ );
 
  if ip_infos.is_empty() {
- // If all query all failure, back to system DNS
- eprintln!("[DNS Resolver] ⚠️ all query all failure，back to system DNS");
- self.resolve_with_system (domain, ipv6).await
+ // Ifallquery都failure, back to system DNS
+ eprintln!("[DNS Resolver] ⚠️ allquery都failure，back to system DNS");
+ self.resolve_with_system(domain, ipv6).await
  } else {
  Ok(ip_infos)
  }
  }
 
- /// usesystem DNS parsed (backsolution)
- async fn resolve_with_system (&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
+ /// usesystem DNS Parse (backsolution)
+ async fn resolve_with_system(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
  use std::net::ToSocketAddrs;
 
  let addr_str = format!("{}:80", domain);
@@ -396,7 +396,7 @@ impl DNSResolver {
  if let Ok(addrs) = addr_str.to_socket_addrs() {
  for addr in addrs {
  let ip = addr.ip();
- // Based on ipv6 parameterfilter addresstype
+ // Based on ipv6 parameterfilteraddresstype
  match (ipv6, ip) {
  (true, IpAddr::V6(_)) => {
  ip_infos.push(IPInfo::new(ip.to_string()));
@@ -414,12 +414,12 @@ impl DNSResolver {
  Ok(ip_infos)
  }
 
- /// bulk parsed domain (concurrent)
+ /// bulkParsedomain (concurrent)
  pub async fn resolve_many(
  &self,
  domains: Vec<String>,
  max_concurrency: usize,
-) -> Vec<(String, Result<DNSResult, DNSError>)> {
+ ) -> Vec<(String, Result<DNSResult, DNSError>)> {
  use futures::stream::{self, StreamExt};
 
  let tasks = stream::iter(domains)
@@ -446,6 +446,6 @@ mod tests {
  let result = resolver.resolve("google.com").await;
  assert!(result.is_ok());
  let dns_result = result.unwrap();
- assert!(!dns_result.ips.ipv4.is_empty() ||!dns_result.ips.ipv6.is_empty());
+ assert!(!dns_result.ips.ipv4.is_empty() || !dns_result.ips.ipv6.is_empty());
  }
 }

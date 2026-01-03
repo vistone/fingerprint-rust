@@ -1,16 +1,16 @@
-//! DNS pre parsed library 
+//! DNS preParse库
 //!
-//! provide DNS parsed service，regular parsed domainlist， and set成 IPInfo.io Get IP geographicinfo。
+//! provide DNS Parseservice，regularParsedomainlist，并set成 IPInfo.io Get IP geographicinfo。
 //!
 //! ## Features
 //!
-//! - ✅ **concurrent DNS parsed **：supporthighconcurrent DNS query
-//! - ✅ ** many formatconfiguration**：support JSON、YAML、TOML threeconfigurationformat
+//! - ✅ **concurrent DNS Parse**：supporthighconcurrent DNS query
+//! - ✅ **多formatconfiguration**：support JSON、YAML、TOML threeconfigurationformat
 //! - ✅ **IP geographicinfo**：set成 IPInfo.io Getdetailedgeographicbit置 and ISP info
-//! - ✅ **intelligentintervaladjust**：dis cover new IP when high频detect，otherwise指countbackoff
-//! - ✅ ** many formatoutput**：support JSON、YAML、TOML threeoutputformat
-//! - ✅ ** original child propertywrite**：usetemporaryfileensurecountdatasecurity
-//! - ✅ **易于set成**：providesimple Start/Stop interface，supportas library use
+//! - ✅ **intelligentintervaladjust**：discovernew IP when high频detect，otherwise指countbackoff
+//! - ✅ **多formatoutput**：support JSON、YAML、TOML threeoutputformat
+//! - ✅ **原child性write**：usetemporaryfileensurecountdatasecurity
+//! - ✅ **易于set成**：providesimple Start/Stop interface，supportas库use
 
 mod collector;
 mod config;

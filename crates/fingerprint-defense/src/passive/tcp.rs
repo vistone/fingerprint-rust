@@ -1,20 +1,20 @@
-//! TCP passivefingerprint identify
+//! TCP passivefingerprintidentify
 //!
-//! implement p0f style TCP fingerprint identify。
+//! implement p0f style TCP fingerprintidentify。
 
 use crate::passive::packet::{Packet, TcpHeader};
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// TCP signature (simplified version， for match)
+/// TCP signature (simplify版， for match)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TcpSignature {
  pub id: String,
  pub ttl: u8,
- pub window _size: u16,
+ pub window_size: u16,
  pub mss: Option<u16>,
- pub window _scale: Option<u8>,
+ pub window_scale: Option<u8>,
  pub os_type: Option<String>,
  pub confidence: f64,
  pub sample_count: u64,
@@ -32,13 +32,13 @@ pub struct TcpFingerprint {
  /// matchsignature
  pub signature: Option<TcpSignature>,
 
- /// similar degree 
- pub similar ity: f64,
+ /// similar度
+ pub similarity: f64,
 
- /// detect to operating system 
+ /// detect to operating system
  pub os: Option<String>,
 
- /// original beginningtrait
+ /// 原beginningtrait
  pub features: TcpFeatures,
 
  /// fingerprintmetadata
@@ -73,8 +73,8 @@ impl fingerprint_core::fingerprint::Fingerprint for TcpFingerprint {
  hasher.finish()
  }
 
- fn similar _to(&self, other: &dyn fingerprint_core::fingerprint::Fingerprint) -> bool {
- if other.fingerprint_type()!= fingerprint_core::fingerprint::FingerprintType::Tcp {
+ fn similar_to(&self, other: &dyn fingerprint_core::fingerprint::Fingerprint) -> bool {
+ if other.fingerprint_type() != fingerprint_core::fingerprint::FingerprintType::Tcp {
  return false;
  }
  self.id() == other.id()
@@ -84,8 +84,8 @@ impl fingerprint_core::fingerprint::Fingerprint for TcpFingerprint {
  format!(
  "TCP Fingerprint (ID: {}, Similarity: {:.2})",
  self.id(),
- self. similar ity
-)
+ self.similarity
+ )
  }
 }
 
@@ -98,14 +98,14 @@ pub struct TcpFeatures {
  /// initialbeginning TTL (infer)
  pub initial_ttl: u8,
 
- /// window size
- pub window : u16,
+ /// windowsize
+ pub window: u16,
 
  /// MSS
  pub mss: Option<u16>,
 
  /// Window Scale
- pub window _scale: Option<u8>,
+ pub window_scale: Option<u8>,
 
  /// TCP optionsstring
  pub options_str: String,
@@ -115,7 +115,7 @@ pub struct TcpFeatures {
 }
 
 impl TcpAnalyzer {
- /// create a new TCP analysiser
+ /// Create a new TCP analysiser
  pub fn new() -> Result<Self, String> {
  let mut analyzer = Self {
  signatures: HashMap::new(),
@@ -134,8 +134,8 @@ impl TcpAnalyzer {
  let db = P0fDatabase::load_from_file(path)
 .map_err(|e| format!("Failed to load p0f database: {}", e))?;
 
- // load all TCP requestsignature
- for sig in db.get_ all _tcp_request() {
+ // loadall TCP requestsignature
+ for sig in db.get_all_tcp_request() {
  self.signatures.insert(sig.id.clone(), sig.clone());
  }
 
@@ -145,15 +145,15 @@ impl TcpAnalyzer {
  /// loaddefaultsignature
  fn load_default_signatures(&mut self) -> Result<(), String> {
  // AddsomebasicsignatureasExamples
- // these is commonoperating system signature
+ // these is commonoperating systemsignature
 
  // Linux Examplessignature
  let linux_sig = TcpSignature {
  id: "linux-generic".to_string(),
  ttl: 64,
- window _size: 0,
+ window_size: 0,
  mss: Some(1460),
- window _scale: Some(7),
+ window_scale: Some(7),
  os_type: Some("Linux".to_string()),
  confidence: 0.8,
  sample_count: 1000,
@@ -162,11 +162,11 @@ impl TcpAnalyzer {
 
  // Windows 10 Examplessignature
  let win10_sig = TcpSignature {
- id: " window s-10".to_string(),
+ id: "windows-10".to_string(),
  ttl: 128,
- window _size: 64240,
+ window_size: 64240,
  mss: Some(1460),
- window _scale: Some(8),
+ window_scale: Some(8),
  os_type: Some("Windows".to_string()),
  confidence: 0.85,
  sample_count: 1000,
@@ -177,9 +177,9 @@ impl TcpAnalyzer {
  let macos_sig = TcpSignature {
  id: "macos-generic".to_string(),
  ttl: 64,
- window _size: 65535,
+ window_size: 65535,
  mss: Some(1460),
- window _scale: Some(6),
+ window_scale: Some(6),
  os_type: Some("macOS".to_string()),
  confidence: 0.8,
  sample_count: 1000,
@@ -197,22 +197,22 @@ impl TcpAnalyzer {
  let features = self.extract_features(packet, tcp_header);
 
  // matchsignature
- let (signature, similar ity) = self.match_signature(&features);
+ let (signature, similarity) = self.match_signature(&features);
 
  let mut metadata = fingerprint_core::metadata::FingerprintMetadata::new();
 
  // Calculate JA4T
  let ja4t = fingerprint_core::ja4::JA4T::generate(
- features. window,
+ features.window,
  &features.options_str,
  features.mss.unwrap_or(0),
  features.ttl,
-);
+ );
  metadata.add_tag(format!("ja4t:{}", ja4t));
 
  Some(TcpFingerprint {
  signature: signature.clone(),
- similar ity,
+ similarity,
  os: signature.as_ref().and_then(|s| s.os_type.clone()),
  features,
  metadata,
@@ -228,7 +228,7 @@ impl TcpAnalyzer {
  let mss = self.extract_mss(&tcp_header.options);
 
  // Extract Window Scale
- let window _scale = self.extract_ window _scale(&tcp_header.options);
+ let window_scale = self.extract_window_scale(&tcp_header.options);
 
  // Generateoptionsstring
  let options_str = self.build_options_string(&tcp_header.options);
@@ -236,9 +236,9 @@ impl TcpAnalyzer {
  TcpFeatures {
  ttl: packet.ttl,
  initial_ttl,
- window : tcp_header. window,
+ window: tcp_header.window,
  mss,
- window _scale,
+ window_scale,
  options_str,
  ip_flags: packet.ip_flags,
  }
@@ -271,9 +271,9 @@ impl TcpAnalyzer {
  }
 
  /// Extract Window Scale
- fn extract_ window _scale(&self, options: &[crate::passive::packet::TcpOption]) -> Option<u8> {
+ fn extract_window_scale(&self, options: &[crate::passive::packet::TcpOption]) -> Option<u8> {
  for opt in options {
- if opt.kind == 3 &&!opt.data.is_empty() {
+ if opt.kind == 3 && !opt.data.is_empty() {
  // Window Scale option
  return Some(opt.data[0]);
  }
@@ -305,20 +305,20 @@ impl TcpAnalyzer {
  let mut best_match: Option<(&TcpSignature, f64)> = None;
 
  for sig in self.signatures.values() {
- let similar ity = self.calculate_ similar ity(features, sig);
+ let similarity = self.calculate_similarity(features, sig);
 
  if let Some((_, best_sim)) = best_match {
- if similar ity > best_sim {
- best_match = Some((sig, similar ity));
+ if similarity > best_sim {
+ best_match = Some((sig, similarity));
  }
  } else {
- best_match = Some((sig, similar ity));
+ best_match = Some((sig, similarity));
  }
  }
 
  if let Some((sig, sim)) = best_match {
  if sim > 0.6 {
- // similar thresholdvalue
+ // similarthresholdvalue
  (Some(sig.clone()), sim)
  } else {
  (None, sim)
@@ -328,8 +328,8 @@ impl TcpAnalyzer {
  }
  }
 
- /// Calculate similar degree 
- fn calculate_ similar ity(&self, features: &TcpFeatures, signature: &TcpSignature) -> f64 {
+ /// Calculatesimilar度
+ fn calculate_similarity(&self, features: &TcpFeatures, signature: &TcpSignature) -> f64 {
  let mut score = 0.0;
  let mut total = 0.0;
 
@@ -347,12 +347,12 @@ impl TcpAnalyzer {
  }
 
  // Window Size match (simplify)
- if signature. window _size > 0 {
+ if signature.window_size > 0 {
  total += 1.0;
- let window _diff = (features. window as i32 - signature. window _size as i32).abs();
- if window _diff < 100 {
+ let window_diff = (features.window as i32 - signature.window_size as i32).abs();
+ if window_diff < 100 {
  score += 1.0;
- } else if window _diff < 1000 {
+ } else if window_diff < 1000 {
  score += 0.7;
  } else {
  score += 0.3;
@@ -377,9 +377,9 @@ impl TcpAnalyzer {
  }
 
  // Window Scale match
- if let Some(sig_ws) = signature. window _scale {
+ if let Some(sig_ws) = signature.window_scale {
  total += 1.0;
- if let Some(feat_ws) = features. window _scale {
+ if let Some(feat_ws) = features.window_scale {
  if sig_ws == feat_ws {
  score += 1.0;
  } else {
