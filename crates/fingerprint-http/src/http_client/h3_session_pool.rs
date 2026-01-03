@@ -1,6 +1,6 @@
 //! HTTP/3 sessionpool
 //!
-//! pool化 h3::client::SendRequest handle，implementtrue HTTP/3 multiplereuse
+//! pool化 h3::client::SendRequest handle, implementtrue HTTP/3 multiplereuse
 //! avoideach timerequest都reperform QUIC handshake and HTTP/3 connectionestablish
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -126,7 +126,7 @@ impl H3SessionPool {
  // Createnewsession
  let result = create_session.await;
 
- // none论successfailure，都 from pending in remove
+ // none论successfailure, 都 from pending in remove
  if let Ok(mut pending) = self.pending_sessions.lock() {
  pending.remove(key);
  }

@@ -25,7 +25,7 @@ pub fn send_http2_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // Fix: useglobalsingleton Runtime，avoideach timerequest都Create a newrun when 
+ // Fix: useglobalsingleton Runtime, avoideach timerequest都Create a newrun when 
  RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
@@ -136,7 +136,7 @@ async fn send_http2_request_async(
  }
 
  // Add headers
- // Note: do notmanualAdd host header，h2 willautomatic from URI Extract
+ // Note: do notmanualAdd host header, h2 willautomatic from URI Extract
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
@@ -146,13 +146,13 @@ async fn send_http2_request_async(
  }
  }
 
- // Fix: Buildrequest (h2 need Request<()>，thenthrough SendStream send body)
+ // Fix: Buildrequest (h2 need Request<()>, thenthrough SendStream send body)
  let http_request = http_request
 .body(())
 .map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
 
  // 6. sendrequest (Get SendStream for send body)
- // Fix: end_of_stream must as false，otherwisestreamwillimmediatelyclose，unable tosend body
+ // Fix: end_of_stream must as false, otherwisestreamwillimmediatelyclose, unable tosend body
  let has_body = request_with_cookies.body.is_some()
  && !request_with_cookies.body.as_ref().unwrap().is_empty();
  let (response_future, mut send_stream) = client
@@ -162,18 +162,18 @@ async fn send_http2_request_async(
  // Fix: through SendStream sendrequest体 ( if exists)
  if let Some(body) = &request_with_cookies.body {
  if !body.is_empty() {
- // send body countdata，end_of_stream = true representthis isfinallycountdata
+ // send body countdata, end_of_stream = true representthis isfinallycountdata
  send_stream
 .send_data(bytes::Bytes::from(body.clone()), true)
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
  } else {
- // empty body，sendemptycountdata并endstream
+ // empty body, sendemptycountdata并endstream
  send_stream
 .send_data(bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
  }
  } else if !has_body {
- // no body，sendemptycountdata并endstream
+ // no body, sendemptycountdata并endstream
  send_stream
 .send_data(bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to send request body: {}", e)))?;
@@ -187,8 +187,8 @@ async fn send_http2_request_async(
  let status_code = response.status().as_u16();
  let headers = response.headers().clone();
 
- // securityFix: Check HTTP/2 responseheadersize，prevent Header compressionbombattack
- // h2 crate 0.4 default MAX_HEADER_LIST_SIZE usuallylarger，weAdd额outsideCheck
+ // securityFix: Check HTTP/2 responseheadersize, prevent Header compressionbombattack
+ // h2 crate 0.4 default MAX_HEADER_LIST_SIZE usuallylarger, weAdd额outsideCheck
  const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 suggestminimumvalue)
  let total_header_size: usize = headers
 .iter()

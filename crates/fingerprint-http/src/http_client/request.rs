@@ -100,8 +100,8 @@ impl HttpRequest {
 
  /// Build HTTP/1.1 requeststring
  ///
- /// Note: 该methodwill把 body when作 UTF-8 textconcatenate to string in ，**unsuitable for binary body**。
- /// if neededsendbinarycountdata，pleaseuse `build_http1_request_bytes`。
+ /// Note: 该methodwill把 body when作 UTF-8 textconcatenate to string in , **unsuitable for binary body**. 
+ /// if neededsendbinarycountdata, pleaseuse `build_http1_request_bytes`. 
  pub fn build_http1_request(&self, host: &str, path: &str) -> String {
  // securityclean：prevent CRLF noteenter
  let safe_method = self.method.as_str().replace(['\r', '\n'], "");

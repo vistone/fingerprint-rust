@@ -123,13 +123,13 @@ impl ClientProfile {
 
  /// Based on User-Agent automaticGeneratematch TCP Profile
  ///
- /// this isunifiedfingerprintGeneratecoremethod，ensurebrowserfingerprint and TCP fingerprintsync
+ /// this isunifiedfingerprintGeneratecoremethod, ensurebrowserfingerprint and TCP fingerprintsync
  ///
  /// # Parameters
- /// - `user_agent`: User-Agent string， for inferoperating system
+ /// - `user_agent`: User-Agent string,  for inferoperating system
  ///
  /// # Returns
- /// returnannew ClientProfile，其 in tcp_profile alreadyBased on User-Agent settings
+ /// returnannew ClientProfile, 其 in tcp_profile alreadyBased on User-Agent settings
  pub fn with_synced_tcp_profile(self, user_agent: &str) -> Self {
  use fingerprint_core::tcp::TcpProfile;
  let tcp_profile = TcpProfile::from_user_agent(user_agent);
@@ -145,7 +145,7 @@ impl ClientProfile {
  /// - `os`: operating systemtype
  ///
  /// # Returns
- /// returnannew ClientProfile，其 in tcp_profile alreadyBased onoperating systemsettings
+ /// returnannew ClientProfile, 其 in tcp_profile alreadyBased onoperating systemsettings
  pub fn with_tcp_profile_for_os(self, os: fingerprint_core::types::OperatingSystem) -> Self {
  use fingerprint_core::tcp::TcpProfile;
  let tcp_profile = TcpProfile::for_os(os);
@@ -161,7 +161,7 @@ impl ClientProfile {
  /// If不 exists, Based on User-Agent Generate
  ///
  /// # Parameters
- /// - `user_agent`: User-Agent string， for inferoperating system ( if tcp_profile 不 exists)
+ /// - `user_agent`: User-Agent string,  for inferoperating system ( if tcp_profile 不 exists)
  ///
  /// # Returns
  /// TCP Profile reference
@@ -204,7 +204,7 @@ impl ClientProfile {
  }
 
  /// Get ClientHelloSpec (Corresponds to Go version's GetClientHelloSpec())
- /// this istrue TLS fingerprintconfiguration，can for actual TLS handshake
+ /// this istrue TLS fingerprintconfiguration, can for actual TLS handshake
  pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
  self.client_hello_id.to_spec()
  }
@@ -389,7 +389,7 @@ pub fn safari_16_0() -> ClientProfile {
 /// Opera 91 fingerprintconfiguration
 /// Corresponds to Go version's Opera_91
 pub fn opera_91() -> ClientProfile {
- // Opera use Chrome insidecore，configuration and Chrome same
+ // Opera use Chrome insidecore, configuration and Chrome same
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
  ClientHelloID::new("Opera", "91", fingerprint_tls::tls_config::chrome_133_spec), // Opera use Chrome TLS configuration
@@ -405,9 +405,9 @@ pub fn opera_91() -> ClientProfile {
 }
 
 /// Edge 120 fingerprintconfiguration
-/// Edge use Chromium insidecore，TLS fingerprint and Chrome same
+/// Edge use Chromium insidecore, TLS fingerprint and Chrome same
 pub fn edge_120() -> ClientProfile {
- // Edge use Chrome insidecore，configuration and Chrome same
+ // Edge use Chrome insidecore, configuration and Chrome same
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
  ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge use Chrome TLS configuration
@@ -423,7 +423,7 @@ pub fn edge_120() -> ClientProfile {
 }
 
 /// Edge 124 fingerprintconfiguration
-/// Edge use Chromium insidecore，TLS fingerprint and Chrome same
+/// Edge use Chromium insidecore, TLS fingerprint and Chrome same
 pub fn edge_124() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
@@ -440,7 +440,7 @@ pub fn edge_124() -> ClientProfile {
 }
 
 /// Edge 133 fingerprintconfiguration
-/// Edge use Chromium insidecore，TLS fingerprint and Chrome same
+/// Edge use Chromium insidecore, TLS fingerprint and Chrome same
 pub fn edge_133() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
@@ -461,8 +461,8 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  let mut map = HashMap::new();
 
  // Chrome series
- // Note: heresimplifyprocess，actualshould as eachversionCreateindependentconfiguration
- // in order tomatch Go version，weuse chrome_133 asdefaultconfiguration
+ // Note: heresimplifyprocess, actualshould as eachversionCreateindependentconfiguration
+ // in order tomatch Go version, weuse chrome_133 asdefaultconfiguration
  map.insert("chrome_103".to_string(), chrome_133()); // simplify：use chrome_133
  map.insert("chrome_104".to_string(), chrome_133());
  map.insert("chrome_105".to_string(), chrome_133());
@@ -518,7 +518,7 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  map.insert("opera_90".to_string(), opera_91());
  map.insert("opera_91".to_string(), opera_91());
 
- // Edge series (use Chromium insidecore，TLS fingerprint and Chrome same)
+ // Edge series (use Chromium insidecore, TLS fingerprint and Chrome same)
  map.insert("edge_120".to_string(), edge_120());
  map.insert("edge_124".to_string(), edge_124());
  map.insert("edge_133".to_string(), edge_133());
@@ -564,7 +564,7 @@ pub fn mapped_tls_clients() -> &'static HashMap<String, ClientProfile> {
 /// - `profile_name`: fingerprintconfigurationname (如 "chrome_135", "firefox_133")
 ///
 /// # Returns
-/// returnpairshould ClientProfile， if 不 existsthenreturnerror
+/// returnpairshould ClientProfile,  if 不 existsthenreturnerror
 pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
  let clients = mapped_tls_clients();
  clients
@@ -579,10 +579,10 @@ pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
 ///
 /// # Parameters
 /// - `profile_name`: fingerprintconfigurationname (如 "chrome_135", "firefox_133")
-/// - `user_agent`: User-Agent string， for sync TCP fingerprint
+/// - `user_agent`: User-Agent string,  for sync TCP fingerprint
 ///
 /// # Returns
-/// returnan ClientProfile，其 in tcp_profile alreadyBased on User-Agent sync
+/// returnan ClientProfile, 其 in tcp_profile alreadyBased on User-Agent sync
 ///
 /// # Examples
 /// ```rust

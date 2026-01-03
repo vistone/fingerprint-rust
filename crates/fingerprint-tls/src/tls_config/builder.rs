@@ -1,6 +1,6 @@
 //! ClientHelloSpec Builder module
 //!
-//! provide Builder patternfromBuild ClientHelloSpec，使codeclearer、typesecurity
+//! provide Builder patternfromBuild ClientHelloSpec, 使codeclearer, typesecurity
 
 use crate::tls_config::spec::{
  ClientHelloSpec, CERT_COMPRESSION_BROTLI, POINT_FORMAT_UNCOMPRESSED, PSK_MODE_DHE,
@@ -25,7 +25,7 @@ use fingerprint_core::dicttls::{
 };
 
 /// ClientHelloSpec Builder
-/// use Builder patternBuild ClientHelloSpec，使codeclearer
+/// use Builder patternBuild ClientHelloSpec, 使codeclearer
 #[derive(Debug, Default)]
 pub struct ClientHelloSpecBuilder {
  cipher_suites: Vec<u16>,
@@ -91,7 +91,7 @@ impl ClientHelloSpecBuilder {
  }
 
  /// Chrome 136 defaultcipher suite
- /// in 136 version in ，Chrome furtheroptimize了encryptionsuiteweight，completelypriorityconsidermodern AEAD suite
+ /// in 136 version in , Chrome furtheroptimize了encryptionsuiteweight, completelypriorityconsidermodern AEAD suite
  pub fn chrome_136_cipher_suites() -> Vec<u16> {
  vec![
  GREASE_CS,
@@ -137,7 +137,7 @@ impl ClientHelloSpecBuilder {
  }
 
  /// Chrome defaultsignaturealgorithm
- /// returnstaticreference，avoidunnecessaryinsidesaveallocate
+ /// returnstaticreference, avoidunnecessaryinsidesaveallocate
  pub fn chrome_signature_algorithms() -> &'static [u16] {
  &[
  ECDSA_WITH_P256_AND_SHA256,

@@ -48,7 +48,7 @@ use std::io as std_io;
 use std::time::Duration;
 
 // Fix: useglobalsingleton Runtime avoidfrequentCreate ( for HTTP/2 and HTTP/3 connection poolscenario)
-// Note: only in connection-pool enabled when 才need，becauseonlyconnection poolscenario才needsyncwrapasynccode
+// Note: only in connection-pool enabled when 才need, becauseonlyconnection poolscenario才needsyncwrapasynccode
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -147,7 +147,7 @@ impl Default for HttpClientConfig {
 
 /// HTTP client
 ///
-/// use netconnpool manageconnection，application fingerprint-rust configuration
+/// use netconnpool manageconnection, application fingerprint-rust configuration
 pub struct HttpClient {
  config: HttpClientConfig,
  /// connection poolmanageer (optional)
@@ -283,13 +283,13 @@ impl HttpClient {
  format!("{}://{}:{}{}", scheme, host, port, location)
  } else {
  // mutualpairpath
- // Fix: correctprocesspathconcatenate，avoiddouble slash
+ // Fix: correctprocesspathconcatenate, avoiddouble slash
  let base_path = if path.ends_with('/') {
  &path
  } else {
  path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
  };
- // ensure base_path 以 / ending，location not / openheader
+ // ensure base_path 以 / ending, location not / openheader
  let location = location.trim_start_matches('/');
  if base_path == "/" {
  format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -301,7 +301,7 @@ impl HttpClient {
  // Fix: Based on HTTP status codecorrectprocessredirectmethod (RFC 7231)
  let redirect_method = match response.status_code {
  301..=303 => {
- // 301, 302, 303: POST shouldchange as GET，并removerequest体
+ // 301, 302, 303: POST shouldchange as GET, 并removerequest体
  HttpMethod::Get
  }
  307 | 308 => {
@@ -329,10 +329,10 @@ impl HttpClient {
  // Parsenew URL domain and path ( for Cookie fieldfilter)
  let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
 
- // Fix: reBuildrequest，onlyincludingsuitable for newdomain Cookie
+ // Fix: reBuildrequest, onlyincludingsuitable for newdomain Cookie
  let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
 
- // copynon Cookie headers，并Add Referer
+ // copynon Cookie headers, 并Add Referer
  for (key, value) in &request.headers {
  if key.to_lowercase() != "cookie" {
  final_redirect_request = final_redirect_request.with_header(key, value);
@@ -354,7 +354,7 @@ impl HttpClient {
  }
  }
 
- // Ifkeep POST/PUT/PATCH, preserverequest体； if change as GET，removerequest体 (RFC 7231 require)
+ // Ifkeep POST/PUT/PATCH, preserverequest体； if change as GET, removerequest体 (RFC 7231 require)
  if redirect_method != HttpMethod::Get {
  if let Some(body) = &request.body {
  final_redirect_request = final_redirect_request.with_body(body.clone());
@@ -401,8 +401,8 @@ impl HttpClient {
  (rest, "/")
  };
 
- // Extract path (remove query parameter，butpreserve in path in send)
- // Note: query parametershouldpreserve in path in ，becauseserverneedthem
+ // Extract path (remove query parameter, butpreserve in path in send)
+ // Note: query parametershouldpreserve in path in , becauseserverneedthem
  let path = path_with_query.to_string();
 
  // Parse host and port
@@ -467,7 +467,7 @@ impl HttpClient {
  http1::send_http1_request(host, port, path, request, &self.config)
  }
 
- /// send HTTPS request (support HTTP/1.1、HTTP/2、HTTP/3)
+ /// send HTTPS request (support HTTP/1.1, HTTP/2, HTTP/3)
  fn send_https_request(
  &self,
  host: &str,
@@ -499,7 +499,7 @@ impl HttpClient {
  #[cfg(feature = "http2")]
  if self.config.prefer_http2 {
  // Fix: useglobalsingleton Runtime
- // Note: herenot do"automatic降level"，because pool scenariowemore希望by userpreference走specifiedprotocol
+ // Note: herenot do"automatic降level", because pool scenariowemore希望by userpreference走specifiedprotocol
  // (test里alsowillstrictValidateversion)
  return SHARED_RUNTIME.block_on(async {
  http2_pool::send_http2_request_with_pool(
@@ -531,16 +531,16 @@ impl HttpClient {
  #[cfg(feature = "http3")]
  {
  if self.config.prefer_http3 {
- // Ifopen了 HTTP/3, wetry它。
- // Iffailure, wemaywant to reducelevel，but HTTP/3 to TCP is differenttransferlayer，
- // usually if userexplicitrequire HTTP/3，failurethenshouldreport error。
- // butherein order tostable健property， if is becauseprotocolerror，wecan降level。
- // temporary when keepsimple：directlyreturn。
+ // Ifopen了 HTTP/3, wetry它. 
+ // Iffailure, wemaywant to reducelevel, but HTTP/3 to TCP is differenttransferlayer, 
+ // usually if userexplicitrequire HTTP/3, failurethenshouldreport error. 
+ // butherein order tostable健property,  if is becauseprotocolerror, wecan降level. 
+ // temporary when keepsimple：directlyreturn. 
  match http3::send_http3_request(host, port, path, request, &self.config) {
  Ok(resp) => return Ok(resp),
  Err(e) => {
  // Ifonlyonly is preference, cantry降level
- // If is Connection failed, may is networkissue，alsomay is server不support
+ // If is Connection failed, may is networkissue, alsomay is server不support
  eprintln!("warning: HTTP/3 failure，try降level: {}", e);
  }
  }
@@ -556,7 +556,7 @@ impl HttpClient {
  Err(_e) => {
  // recorderrorbutcontinuetry HTTP/1.1
  // in actualproduction in shoulduselogsystem
- // eprintln!("HTTP/2 tryfailure: {}，back to HTTP/1.1", e);
+ // eprintln!("HTTP/2 tryfailure: {}, back to HTTP/1.1", e);
  }
  }
  }

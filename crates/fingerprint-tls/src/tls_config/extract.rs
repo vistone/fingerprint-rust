@@ -1,6 +1,6 @@
 //! ClientHelloSpec Extractmodule
 //!
-//! from ClientHelloSpec in Extractsignatureinfo， for fingerprintcompare and match
+//! from ClientHelloSpec in Extractsignatureinfo,  for fingerprintcompare and match
 //!
 //! reference：Huginn Net Signature Extractimplement
 
@@ -17,8 +17,8 @@ use crate::tls_config::version::TlsVersion;
 /// * `ClientHelloSignature` - Extractsignatureinfo
 ///
 /// # Notes
-/// If spec including metadata, will from in Extract SNI、ALPN etc.info。
-/// otherwisecan onlyExtractextension ID。
+/// If spec including metadata, will from in Extract SNI, ALPN etc.info. 
+/// otherwisecan onlyExtractextension ID. 
 ///
 /// # Examples
 /// ```

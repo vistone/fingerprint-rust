@@ -4,8 +4,8 @@
 //! - HTTP/3 adoptsessionpool (H3SessionPool)implement QUIC sessionreuse
 //! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
 //! - reusemethod：concurrentmultiplereuse (an QUIC connectioncan when processmultiple Stream)
-//! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage，no need netconnpool
-//! - sessionestablishback，connectionlifecycleby H3Session backbackground task (Driver)manage
+//! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage, no need netconnpool
+//! - sessionestablishback, connectionlifecycleby H3Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -128,7 +128,7 @@ pub async fn send_http3_request_with_pool(
  })
 .uri(uri)
 .version(Version::HTTP_3)
- // do notmanualAdd host header，h3 willautomatic from URI Extract
+ // do notmanualAdd host header, h3 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
  // Fix: Add Cookie to request ( if exists)
@@ -150,7 +150,7 @@ pub async fn send_http3_request_with_pool(
 .filter(|(k, _)| k.to_lowercase() != "host")
 .fold(http3_request, |builder, (k, v)| builder.header(k, v));
 
- // Fix: Buildrequest (h3 need Request<()>，thenthrough stream send body)
+ // Fix: Buildrequest (h3 need Request<()>, thenthrough stream send body)
  let http3_request = http3_request
 .body(())
 .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
@@ -212,7 +212,7 @@ pub async fn send_http3_request_with_pool(
  // Parseresponse
  let status_code = response.status().as_u16();
 
- // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compressionbombattack
+ // securityFix: Check HTTP/3 responseheadersize, prevent QPACK compressionbombattack
  const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 suggestminimumvalue)
  let total_header_size: usize = response
 .headers()
@@ -278,7 +278,7 @@ mod tests {
  )
 .await;
 
- // maywillfailure (networkissue or server不support HTTP/3)，but不should panic
+ // maywillfailure (networkissue or server不support HTTP/3), but不should panic
  if let Ok(response) = result {
  assert_eq!(response.http_version, "HTTP/3");
  }

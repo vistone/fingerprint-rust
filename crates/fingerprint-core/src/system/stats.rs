@@ -1,12 +1,12 @@
 //! systemlevelstatisticsinfo
 //!
-//! definesystemlevelprotectionstatisticsinfo。
+//! definesystem-level protectionstatisticsinfo. 
 
 use std::time::Instant;
 
-/// systemlevelprotectionstatisticsinfo
+/// system-level protectionstatisticsinfo
 ///
-/// recordsystemlevelprotectionsystemrunstatisticsinfo。
+/// recordsystem-level protectionsystemrunstatisticsinfo. 
 #[derive(Debug, Clone)]
 pub struct SystemProtectionStats {
  /// totalpacketcount

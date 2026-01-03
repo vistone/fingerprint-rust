@@ -49,7 +49,7 @@ impl Service {
  })
  }
 
- /// Create a new Service instance，并usespecified DNS serverpool
+ /// Create a new Service instance, 并usespecified DNS serverpool
  pub async fn with_server_pool(
  config: DNSConfig,
  server_pool: Arc<ServerPool>,
@@ -84,8 +84,8 @@ impl Service {
  Self::new(config)
  }
 
- /// startservice ( in back台threadrun，non-blockingmainthread)
- /// automaticmaintain DNS serverpool (dnsservernames.json)，no needmanualinterferepre
+ /// startservice ( in back台threadrun, non-blockingmainthread)
+ /// automaticmaintain DNS serverpool (dnsservernames.json), no needmanualinterferepre
  pub async fn start(&self) -> Result<(), DNSError> {
  // Checkwhetheralready in run
  {
@@ -97,9 +97,9 @@ impl Service {
  }
 
  // load/collect DNS serverpool (pairshould Go NewServerPool)
- // priority from localfileload， if 不 exists or as empty，才 from networkcollect
+ // priority from localfileload,  if 不 exists or as empty, 才 from networkcollect
  // collect_all alreadyprocess了：
- // - if file exists and is notempty：directlyuse，不performCheck
+ // - if file exists and is notempty：directlyuse, 不performCheck
  // - if file不 exists or as empty： from networkcollect并performhealthCheckbacksave
  let mut server_pool = ServerCollector::collect_all(Some(Duration::from_secs(30))).await;
  eprintln!("currentserverpool有 {} DNS server", server_pool.len());
@@ -132,7 +132,7 @@ impl Service {
  }
 
  // startbackbackground task：regularslow eliminationDNSserver (non-blockingmainthread)
- // reference Go itemdestinationimplement： in Parseprocess in recordperformance，back台regularcleanup慢node
+ // reference Go itemdestinationimplement： in Parseprocess in recordperformance, back台regularcleanup慢node
  let resolver_for_cleanup = self.resolver.clone();
  let server_pool_for_cleanup = server_pool_arc.clone();
  let dns_timeout_for_cleanup = dns_timeout;
@@ -175,7 +175,7 @@ impl Service {
  });
 
  // in back台threadstartservicemainloop (non-blockingmainthread)
- // use Arc wrapfield，candirectly in closepackage in use
+ // use Arc wrapfield, candirectly in closepackage in use
  let config = self.config.clone();
  let resolver = self.resolver.clone();
  let ipinfo_client = self.ipinfo_client.clone();
@@ -195,7 +195,7 @@ impl Service {
  );
 
  // Createtemporary Service instance for call resolve_and_save_all
- // Note: resolve_and_save_all need &self，soweneedCreateanauxiliaryfunction
+ // Note: resolve_and_save_all need &self, soweneedCreateanauxiliaryfunction
  // or one whodirectly in hereimplementParselogic
 
  // dynamicintervaladjust
@@ -220,7 +220,7 @@ impl Service {
  resolve_duration.as_secs_f64()
  );
 
- // intelligentintervaladjust：discovernew IP when highfrequencydetect，otherwisepointcountbackoff
+ // intelligentintervaladjust：discovernew IP when highfrequencydetect, otherwisepointcountbackoff
  if has_new_ips {
  current_interval = base_interval;
  last_has_new_ips = true;
@@ -230,11 +230,11 @@ impl Service {
  );
  } else {
  if last_has_new_ips {
- // before有new IP，current in no了，逐stepincreaseinterval
+ // before有new IP, current in no了, 逐stepincreaseinterval
  current_interval = base_interval;
  last_has_new_ips = false;
  } else {
- // pointcountbackoff，but不exceed 10 倍basicinterval
+ // pointcountbackoff, but不exceed 10 倍basicinterval
  current_interval = (current_interval * 2).min(base_interval * 10);
  }
  eprintln!(
@@ -298,12 +298,12 @@ impl Service {
 
  /// settingsbasicexecuteinterval
  pub fn set_interval(&self, _interval: Duration) {
- // Note: dynamicadjustpatterndown，actualintervalwillBased onwhetherdiscovernewIP而change
- // thisfunctionmain for staticpattern，itemfronttemporary不support
+ // Note: dynamicadjustpatterndown, actualintervalwillBased onwhetherdiscovernewIP而change
+ // thisfunctionmain for staticpattern, itemfronttemporary不support
  }
 
  /// Parse并savealldomain IP info
- /// Note: 此methoditemfrontnotdirectlyuse，actualuse的 is resolve_and_save_all_internal
+ /// Note: 此methoditemfrontnotdirectlyuse, actualuse的 is resolve_and_save_all_internal
  #[allow(dead_code)]
  async fn resolve_and_save_all(&self) -> Result<bool, DNSError> {
  resolve_and_save_all_internal(&self.resolver, &self.ipinfo_client, &self.config).await
@@ -360,7 +360,7 @@ async fn resolve_and_save_all_internal(
  let new_ipv4: Vec<String> = all_ipv4.difference(&existing_ipv4).cloned().collect();
  let new_ipv6: Vec<String> = all_ipv6.difference(&existing_ipv6).cloned().collect();
 
- // Buildmostfinal domain_ips，先copyalready existscountdata
+ // Buildmostfinal domain_ips, 先copyalready existscountdata
  let mut domain_ips = DomainIPs::new();
 
  // copyalready exists IPv4 info
@@ -400,7 +400,7 @@ async fn resolve_and_save_all_internal(
  }
  Err(e) => {
  eprintln!("[DNS Service] Failed to get IP info for {}: {}", ip, e);
- // that is使failure，alsosavebasic IP info
+ // that is使failure, alsosavebasic IP info
  domain_ips.ipv4.push(IPInfo::new(ip));
  }
  }

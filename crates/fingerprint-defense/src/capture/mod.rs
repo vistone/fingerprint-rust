@@ -1,6 +1,6 @@
 //! countpacketcapturemodule
 //!
-//! usepure Rust implement from networkinterface or fileactual when capturecountpacket (nonesystemdepend)。
+//! usepure Rust implement from networkinterface or fileactual when capturecountpacket (nonesystemdepend). 
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
@@ -70,7 +70,7 @@ impl CaptureEngine {
  }
  Err(e) => {
  eprintln!("[Capture] receivecountpacketerror: {}", e);
- // continuereceive，不 in 断
+ // continuereceive, 不 in 断
  }
  }
  }

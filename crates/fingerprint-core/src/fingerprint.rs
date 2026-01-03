@@ -1,6 +1,6 @@
 //! fingerprintcoreabstract
 //!
-//! defineunifiedfingerprintabstract，support TLS、HTTP、TCP etc.multiplefingerprinttype。
+//! defineunifiedfingerprint abstractions, support TLS, HTTP, TCP etc.multiple fingerprint types. 
 
 use crate::metadata::FingerprintMetadata;
 
@@ -32,9 +32,9 @@ impl std::fmt::Display for FingerprintType {
  }
 }
 
-/// fingerprintabstract trait
+/// fingerprint abstractions trait
 ///
-/// allfingerprinttype (TLS、HTTP、TCP)都shouldimplementthis trait
+/// allfingerprinttype (TLS, HTTP, TCP)都shouldimplementthis trait
 pub trait Fingerprint: Send + Sync {
  /// Getfingerprinttype
  fn fingerprint_type(&self) -> FingerprintType;

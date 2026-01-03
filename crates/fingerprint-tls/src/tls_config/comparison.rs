@@ -73,7 +73,7 @@ pub fn compare_signatures(
 /// * `specs` - candidate ClientHelloSpec list
 ///
 /// # Returns
-/// * `Option<usize>` - mostsimilarconfigurationindex， if no找 to thenreturn None
+/// * `Option<usize>` - mostsimilarconfigurationindex,  if no找 to thenreturn None
 pub fn find_best_match(
  signature: &ClientHelloSignature,
  specs: &[ClientHelloSpec],
@@ -109,7 +109,7 @@ mod tests {
  let spec1 = ClientHelloSpec::chrome_133();
  let spec2 = ClientHelloSpec::chrome_133();
  let result = compare_specs(&spec1, &spec2);
- // due tosetbecome了random GREASE，两timeGenerate spec in GREASE valueupmaydifferent，
+ // due tosetbecome了random GREASE, 两timeGenerate spec in GREASE valueupmaydifferent, 
  // thereforeresultshould is Similar (ignore GREASE backsame)
  assert!(matches!(
  result,

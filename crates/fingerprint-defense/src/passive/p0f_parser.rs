@@ -1,6 +1,6 @@
 //! p0f signatureParseer (detailedimplement)
 //!
-//! completeimplement p0f.fp formatParse，supportallfield and pattern。
+//! completeimplement p0f.fp formatParse, supportallfield and pattern. 
 
 use crate::passive::tcp::TcpSignature;
 use thiserror::Error;
@@ -203,7 +203,7 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
 
  // Parse MSS pattern and TCP options
  // p0f format: [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[MSSpattern]:[optionsorder]:[IPflag]:[other]
- // so parts[4] is MSS pattern，parts[5] is optionsorder
+ // so parts[4] is MSS pattern, parts[5] is optionsorder
  let mss_str = parts[4];
  let options_str = if parts.len() > 5 { parts[5] } else { "" };
 
@@ -326,7 +326,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  let mut options_order = Vec::new();
 
  // optionsformat: mss*20,10:mss,sok,ts,nop,ws
- // firstpartial is MSS pattern，secondpartial is optionsorder
+ // firstpartial is MSS pattern, secondpartial is optionsorder
 
  let parts: Vec<&str> = options_str.split(':').collect();
  if parts.is_empty() {
@@ -368,7 +368,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  } else {
  // Ifnosecondpartial, mayoptionsorderthen in firstpartial ( in MSS patternafter)
  // format: mss*20,10 or mss,1460
- // thissituationdown，optionsordermay不 exists， or one whoneed from otherplaceExtract
+ // thissituationdown, optionsordermay不 exists,  or one whoneed from otherplaceExtract
  // temporary when 不processthissituation
  }
 
@@ -397,7 +397,7 @@ fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
  // findfirst逗numberbackcount字
  if let Some(pos) = mss_str.find(',') {
  let value_str = &mss_str[pos + 1..];
- // maystill有more逗number，onlygetfirstcount字partial
+ // maystill有more逗number, onlygetfirstcount字partial
  let value_part = value_str.split(',').next().unwrap_or(value_str);
  if let Ok(value) = value_part.parse::<u16>() {
  return Ok(MssPattern::Fixed(value));

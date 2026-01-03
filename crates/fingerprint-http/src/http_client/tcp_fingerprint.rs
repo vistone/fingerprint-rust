@@ -1,6 +1,6 @@
 //! TCP fingerprintapplicationmodule
 //!
-//! in Create TCP connection when application TCP Profile，ensure TCP fingerprint and browserfingerprintconsistent
+//! in Create TCP connection when application TCP Profile, ensure TCP fingerprint and browserfingerprintconsistent
 
 use fingerprint_core::tcp::TcpProfile;
 use socket2::{Domain, Protocol, Socket, Type};
@@ -10,29 +10,29 @@ use tokio::net::TcpStream;
 
 /// application TCP Profile to socket
 ///
-/// settings TTL、Window Size、MSS、Window Scale etc.parameter
+/// settings TTL, Window Size, MSS, Window Scale etc.parameter
 ///
 /// # Parameters
 /// - `socket`: socket2::Socket instance
 /// - `tcp_profile`: TCP Profile configuration
 ///
 /// # Returns
-/// successreturn Ok(())，failurereturnerror
+/// successreturn Ok(()), failurereturnerror
 pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Result<()> {
  // 1. settings TTL (socket2 set_ttl need u32)
  socket.set_ttl(tcp_profile.ttl as u32)?;
 
  // 2. settings TCP options
- // Note: socket2 不directlysupportsettings Window Size、MSS、Window Scale
+ // Note: socket2 不directlysupportsettings Window Size, MSS, Window Scale
  // theseparameterneed in TCP handshake when through TCP optionssettings
  // butwecanthroughsettings socket optionsfromimpacttheseparameter
 
- // settings TCP_NODELAY (disabled Nagle algorithm，improveperformance)
+ // settings TCP_NODELAY (disabled Nagle algorithm, improveperformance)
  socket.set_nodelay(true)?;
 
  // 3. settingsreceivebuffersize (impact Window Size)
- // Window Size usually and receivebuffersizemutualclose
- // Note: actual Window Size is in TCP handshake when negotiate的，hereonly is settingsbuffer
+ // Window Size usually and receivebuffersizerelated
+ // Note: actual Window Size is in TCP handshake when negotiate的, hereonly is settingsbuffer
  let recv_buffer_size = tcp_profile.window_size as usize;
  socket.set_recv_buffer_size(recv_buffer_size)?;
 
@@ -64,7 +64,7 @@ pub fn create_tcp_socket_with_profile(
 
  // application TCP Profile ( if provide)
  // Note: TTL must in connectionbeforesettings
- // in Linux up， for client socket，TTL can in connectionfrontsettings，不needbind
+ // in Linux up,  for client socket, TTL can in connectionfrontsettings, 不needbind
  if let Some(profile) = tcp_profile {
  apply_tcp_profile(&socket, profile)?;
  }
@@ -98,7 +98,7 @@ pub async fn connect_tcp_with_profile(
  TcpStream::from_std(std_stream)
  }
  Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
- // non-blockingconnectionwillreturn WouldBlock，this isnormal的
+ // non-blockingconnectionwillreturn WouldBlock, this isnormal的
  // convert to tokio::net::TcpStream 并waitconnectioncomplete
  let std_stream: std::net::TcpStream = socket.into();
  let stream = TcpStream::from_std(std_stream)?;
@@ -110,7 +110,7 @@ pub async fn connect_tcp_with_profile(
  match stream.try_write(&[]) {
  Ok(_) => Ok(stream),
  Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
- // connectionstill in perform in ，againwait
+ // connectionstill in perform in , againwait
  stream.writable().await?;
  Ok(stream)
  }
@@ -173,7 +173,7 @@ mod tests {
  assert_eq!(ttl, 128);
  }
 
- /// actual TCP connectiontest：Createserver and client，Validate TCP Profile whethertrueapplication
+ /// actual TCP connectiontest：Createserver and client, Validate TCP Profile whethertrueapplication
  #[test]
  fn test_tcp_profile_real_connection() {
  use std::io::{Read, Write};
@@ -209,7 +209,7 @@ mod tests {
  let _fd = stream.as_raw_fd();
 
  // tryGetreceivebuffersize (impact Window Size)
- // Note: thisneed libc crate，butin order tosimplify，wetemporary when comment掉
+ // Note: thisneed libc crate, butin order tosimplify, wetemporary when comment掉
  // actualValidateshoulduse tcpdump or wireshark packet captureanalysis
  println!(" 🔍 server端 TCP parameterdetect：");
  println!(" ⚠️ Note: TTL in service端unable todirectlydetect (transferprocess in will递减)");

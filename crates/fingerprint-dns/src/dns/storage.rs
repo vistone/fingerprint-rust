@@ -1,6 +1,6 @@
 //! DNS storemanagemodule
 //!
-//! provideoriginalchildpropertyfilewrite and multipleformatoutput (JSON、YAML、TOML)
+//! provideoriginalchildpropertyfilewrite and multipleformatoutput (JSON, YAML, TOML)
 
 use crate::dns::types::{DNSError, DomainIPs};
 use std::fs;
@@ -8,7 +8,7 @@ use std::io::Write;
 use std::path::Path;
 
 /// willdomain IP infosave to file (originalchildpropertywrite)
-/// support JSON、YAML、TOML threeformat
+/// support JSON, YAML, TOML threeformat
 pub fn save_domain_ips<P: AsRef<Path>>(
  domain: &str,
  domain_ips: &DomainIPs,
@@ -35,7 +35,7 @@ pub fn save_domain_ips<P: AsRef<Path>>(
 }
 
 /// from fileloaddomain IP info
-/// automatictry JSON、YAML、TOML format
+/// automatictry JSON, YAML, TOML format
 pub fn load_domain_ips<P: AsRef<Path>>(
  domain: &str,
  base_dir: P,
@@ -109,7 +109,7 @@ fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
 }
 
 /// originalchildpropertywritefile
-/// 先writetemporaryfile，thenrename，ensurecountdatasecurity
+/// 先writetemporaryfile, thenrename, ensurecountdatasecurity
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
  let parent = path.parent().ok_or_else(|| {
  DNSError::IO(std::io::Error::new(

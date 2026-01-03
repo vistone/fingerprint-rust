@@ -1,6 +1,6 @@
 //! TLS dictionarymodule
 //!
-//! provide TLS mutualcloseconstantdefine，Corresponds to Go version's dicttls package
+//! provide TLS relatedconstantdefine, Corresponds to Go version's dicttls package
 //! countdatafromsource：IANA TLS Parameters
 
 pub mod cipher_suites;

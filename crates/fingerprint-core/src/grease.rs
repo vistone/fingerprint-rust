@@ -4,7 +4,7 @@
 //! reference：Huginn Net GREASE processimplement
 
 /// TLS GREASE valueconstant
-/// Based on RFC 8701，GREASE valuepattern is ：0x1a1a, 0x2a2a, 0x3a3a,..., 0xfafa
+/// Based on RFC 8701, GREASE valuepattern is ：0x1a1a, 0x2a2a, 0x3a3a,..., 0xfafa
 /// and 0x0a0a (specialvalue)
 pub const TLS_GREASE_VALUES: [u16; 16] = [
  0x0a0a, 0x1a1a, 0x2a2a, 0x3a3a, 0x4a4a, 0x5a5a, 0x6a6a, 0x7a7a, 0x8a8a, 0x9a9a, 0xaaaa, 0xbaba,
@@ -24,7 +24,7 @@ pub fn get_random_grease() -> u16 {
 /// * `value` - needCheck u16 value
 ///
 /// # Returns
-/// * `true` if is GREASE value，`false` otherwise
+/// * `true` if is GREASE value, `false` otherwise
 ///
 /// # Examples
 /// ```
@@ -43,7 +43,7 @@ pub fn is_grease_value(value: u16) -> bool {
 /// * `values` - needfilter u16 valuelist
 ///
 /// # Returns
-/// * filterback的 `Vec<u16>`，excluding GREASE value
+/// * filterback的 `Vec<u16>`, excluding GREASE value
 ///
 /// # Examples
 /// ```

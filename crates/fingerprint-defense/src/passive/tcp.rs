@@ -1,13 +1,13 @@
 //! TCP passivefingerprintidentify
 //!
-//! implement p0f style TCP fingerprintidentify。
+//! implement p0f style TCP fingerprintidentify. 
 
 use crate::passive::packet::{Packet, TcpHeader};
 use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// TCP signature (simplify版， for match)
+/// TCP signature (simplify版,  for match)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TcpSignature {
  pub id: String,

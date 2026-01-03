@@ -33,7 +33,7 @@ pub use signature_schemes::*;
 /// Corresponds to Go version's tls.SignatureScheme
 pub type SignatureScheme = u16;
 
-/// in order to and Go versionkeepconsistent，providealias
+/// in order to and Go versionkeepconsistent, providealias
 /// Corresponds to Go version's tls.ECDSAWithP256AndSHA256
 pub const ECDSA_WITH_P256_AND_SHA256: u16 = signature_schemes::ECDSA_WITH_P256_AND_SHA256;
 /// Corresponds to Go version's tls.PSSWithSHA256

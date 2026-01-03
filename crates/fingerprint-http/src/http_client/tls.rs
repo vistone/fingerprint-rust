@@ -1,8 +1,8 @@
 //! TLS connectionsupport
 //!
 //! useofficial rustls asbottomlayer TLS implement
-//! through ClientHelloCustomizer applicationbrowserfingerprint (Chrome、Firefox、Safari etc.)
-//! simulatemarket maturebrowser TLS fingerprint，不customselffingerprint
+//! through ClientHelloCustomizer applicationbrowserfingerprint (Chrome, Firefox, Safari etc.)
+//! simulatemarket maturebrowser TLS fingerprint, 不customselffingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -12,7 +12,7 @@ use std::sync::Arc;
 
 /// TLS connectioner
 ///
-/// useofficial rustls，through ClientHelloCustomizer applicationbrowserfingerprint
+/// useofficial rustls, through ClientHelloCustomizer applicationbrowserfingerprint
 pub struct TlsConnector {
  // rustls configurationthrough HttpClientConfig pass
 }
@@ -33,7 +33,7 @@ impl Default for TlsConnector {
 ///
 /// useofficial rustls asbottomlayer TLS implement
 /// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
-/// simulatemarket maturebrowser TLS fingerprint (Chrome、Firefox、Safari etc.)
+/// simulatemarket maturebrowser TLS fingerprint (Chrome, Firefox, Safari etc.)
 pub fn send_https_request(
  host: &str,
  port: u16,
@@ -41,7 +41,7 @@ pub fn send_https_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // use rustls， if configuration了 profile，willautomaticthrough ClientHelloCustomizer applicationbrowserfingerprint
+ // use rustls,  if configuration了 profile, willautomaticthrough ClientHelloCustomizer applicationbrowserfingerprint
 
  // establish TCP connection
  let addr = format!("{}:{}", host, port);
@@ -56,7 +56,7 @@ pub fn send_https_request(
 .set_write_timeout(Some(config.write_timeout))
 .map_err(HttpClientError::Io)?;
 
- // useofficial rustls，through ClientHelloCustomizer applicationbrowserfingerprint
+ // useofficial rustls, through ClientHelloCustomizer applicationbrowserfingerprint
 
  #[cfg(feature = "rustls-tls")]
  {
@@ -138,7 +138,7 @@ pub fn send_https_request_with_pool(
 .get_tcp()
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
- // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection method
+ // PooledConnection implement了 Deref<Target = Connection>, candirectlyuse Connection method
  let tcp_stream = conn
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
@@ -222,7 +222,7 @@ mod tests {
  let config = HttpClientConfig::default();
  let response = send_https_request("httpbin.org", 443, "/get", &request, &config).unwrap();
 
- // outside部servicemaywillshorttemporaryreturn 429/503 etc.；heremainValidate“canestablish TLS + canParseresponse”。
+ // outside部servicemaywillshorttemporaryreturn 429/503 etc.；heremainValidate“canestablish TLS + canParseresponse”. 
  assert!(response.status_code > 0);
  }
 }

@@ -75,7 +75,7 @@ impl ClientHelloSignature {
  /// * `other` - needcompare另ansignature
  ///
  /// # Returns
- /// * `true` if signaturesimilar (ignore GREASE backsame)，`false` otherwise
+ /// * `true` if signaturesimilar (ignore GREASE backsame), `false` otherwise
  pub fn similar_to(&self, other: &Self) -> bool {
  self.version == other.version
  && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()

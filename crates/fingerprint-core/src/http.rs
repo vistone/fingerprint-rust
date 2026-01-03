@@ -1,6 +1,6 @@
 //! HTTP fingerprintcoretype
 //!
-//! define HTTP fingerprintcorecountdatastruct。
+//! define HTTP fingerprintcorecountdatastruct. 
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
@@ -135,7 +135,7 @@ impl Fingerprint for HttpFingerprint {
  }
 
  // tryconvert to HttpFingerprint
- // Note: hereneedtypeConvert，butdue to trait limit，wecan onlycomparehashvalue
+ // Note: hereneedtypeConvert, butdue to trait limit, wecan onlycomparehashvalue
  self.hash() == other.hash()
  }
 

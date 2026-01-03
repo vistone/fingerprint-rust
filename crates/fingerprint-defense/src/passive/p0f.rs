@@ -1,6 +1,6 @@
 //! p0f signaturedatabaseParse
 //!
-//! Parse p0f.fp formatsignaturedatabasefile。
+//! Parse p0f.fp formatsignaturedatabasefile. 
 
 use crate::passive::p0f_parser;
 use crate::passive::tcp::TcpSignature;

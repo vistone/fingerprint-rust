@@ -13,7 +13,7 @@ use std::fmt;
 pub enum Ja4Fingerprint {
  /// sortversion (ja4)
  Sorted(String),
- /// notsortversion (ja4_o，originalbeginningorder)
+ /// notsortversion (ja4_o, originalbeginningorder)
  Unsorted(String),
 }
 
@@ -44,12 +44,12 @@ impl Ja4Fingerprint {
  }
 }
 
-/// JA4 originalbeginningfingerprint (completeversion，sort/notsort)
+/// JA4 originalbeginningfingerprint (completeversion, sort/notsort)
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ja4RawFingerprint {
  /// sortversion (ja4_r)
  Sorted(String),
- /// notsortversion (ja4_ro，originalbeginningorder)
+ /// notsortversion (ja4_ro, originalbeginningorder)
  Unsorted(String),
 }
 
@@ -90,9 +90,9 @@ pub struct Ja4Payload {
  pub ja4_b: String,
  /// JA4_c: extension + signaturealgorithm (originalbeginningstring)
  pub ja4_c: String,
- /// JA4 fingerprint (hash，sort/notsort)
+ /// JA4 fingerprint (hash, sort/notsort)
  pub full: Ja4Fingerprint,
- /// JA4 originalbeginningfingerprint (complete，sort/notsort)
+ /// JA4 originalbeginningfingerprint (complete, sort/notsort)
  pub raw: Ja4RawFingerprint,
 }
 
@@ -117,13 +117,13 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
 
 /// Generate 12 characterhash (SHA256 front 12character)
 ///
-/// SHA256 hashalwaysproduce 64hexadecimalcharacter，sofront 12characteralways exists。
-/// 此function for JA4 fingerprintGenerate。
+/// SHA256 hashalwaysproduce 64hexadecimalcharacter, sofront 12characteralways exists. 
+/// 此function for JA4 fingerprintGenerate. 
 pub fn hash12(input: &str) -> String {
  let hash = Sha256::digest(input.as_bytes());
  let hash_hex = format!("{:x}", hash);
- // SHA256 hashalways 64hexadecimalcharacter，sofront 12characteralways exists
- // use get() methodsecurity地Getslice，avoidpotential in panic
+ // SHA256 hashalways 64hexadecimalcharacter, sofront 12characteralways exists
+ // use get() methodsecurity地Getslice, avoidpotential in panic
  hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
 }
 
@@ -156,26 +156,26 @@ impl Ja4Signature {
  }
 
  /// Generate JA4 fingerprint (specifiedorder)
- /// original_order: true representnotsort (originalbeginningorder)，false representsort
+ /// original_order: true representnotsort (originalbeginningorder), false representsort
  fn generate_ja4_with_order(&self, original_order: bool) -> Ja4Payload {
  // filter GREASE value
  let filtered_ciphers = filter_grease_values(&self.cipher_suites);
  let filtered_extensions = filter_grease_values(&self.extensions);
  let filtered_sig_algs = filter_grease_values(&self.signature_algorithms);
 
- // protocolmarker (TLS as 't'，QUIC as 'q')
+ // protocolmarker (TLS as 't', QUIC as 'q')
  let protocol = "t";
 
  // TLS version
  let tls_version_str = format!("{}", self.version);
 
- // SNI indicateer：'d' if exists SNI，'i' if 不 exists
+ // SNI indicateer：'d' if exists SNI, 'i' if 不 exists
  let sni_indicator = if self.sni.is_some() { "d" } else { "i" };
 
- // cipher suitecount (2-bitdecimal，maximum 99)- useoriginalbeginningcount (filterfront)
+ // cipher suitecount (2-bitdecimal, maximum 99)- useoriginalbeginningcount (filterfront)
  let cipher_count = format!("{:02}", self.cipher_suites.len().min(99));
 
- // extensioncount (2-bitdecimal，maximum 99)- useoriginalbeginningcount (filterfront)
+ // extensioncount (2-bitdecimal, maximum 99)- useoriginalbeginningcount (filterfront)
  let extension_count = format!("{:02}", self.extensions.len().min(99));
 
  // ALPN first and lastcharacter
@@ -189,7 +189,7 @@ impl Ja4Signature {
  "{protocol}{tls_version_str}{sni_indicator}{cipher_count}{extension_count}{alpn_first}{alpn_last}"
  );
 
- // JA4_b: cipher suite (sort or originalbeginningorder，comma-separated，4-bithexadecimal)- filter GREASE
+ // JA4_b: cipher suite (sort or originalbeginningorder, comma-separated, 4-bithexadecimal)- filter GREASE
  let mut ciphers_for_b = filtered_ciphers;
  if !original_order {
  ciphers_for_b.sort_unstable();
@@ -200,7 +200,7 @@ impl Ja4Signature {
 .collect::<Vec<String>>()
 .join(",");
 
- // JA4_c: extension (sort or originalbeginningorder，comma-separated，4-bithexadecimal)+ "_" + signaturealgorithm
+ // JA4_c: extension (sort or originalbeginningorder, comma-separated, 4-bithexadecimal)+ "_" + signaturealgorithm
  let mut extensions_for_c = filtered_extensions;
 
  // for sortversion：remove SNI (0x0000) and ALPN (0x0010) 并sort
@@ -216,14 +216,14 @@ impl Ja4Signature {
 .collect::<Vec<String>>()
 .join(",");
 
- // signaturealgorithm不sort (Based onspecification)，butfilter GREASE
+ // signaturealgorithm不sort (Based onspecification), butfilter GREASE
  let sig_algs_str = filtered_sig_algs
 .iter()
 .map(|s| format!("{s:04x}"))
 .collect::<Vec<String>>()
 .join(",");
 
- // Based onspecification， if nosignaturealgorithm，string不belowunderscoreending
+ // Based onspecification,  if nosignaturealgorithm, string不belowunderscoreending
  let ja4_c_raw = if sig_algs_str.is_empty() {
  extensions_str
  } else if extensions_str.is_empty() {

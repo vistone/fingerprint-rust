@@ -1,6 +1,6 @@
-//! networktrafficabstract
+//! network trafficabstract
 //!
-//! definesystemlevelnetworktraffic，includingcompleteupdowntext and fingerprintinfo。
+//! definesystemlevelnetwork traffic, includingcompleteupdowntext and fingerprintinfo. 
 
 use super::context::SystemContext;
 use crate::fingerprint::Fingerprint;
@@ -8,7 +8,7 @@ use std::time::Duration;
 
 /// traffictrait
 ///
-/// describenetworktrafficstatisticstrait and behaviorpattern。
+/// describenetwork trafficstatisticstrait and behaviorpattern. 
 #[derive(Debug, Clone, PartialEq)]
 pub struct FlowCharacteristics {
  /// countpacketcount
@@ -78,15 +78,15 @@ impl Default for FlowCharacteristics {
  }
 }
 
-/// networktraffic
+/// network traffic
 ///
-/// representsystemlevelnetworktraffic，includingcompleteupdowntext、fingerprintinfo and trait。
+/// representsystemlevelnetwork traffic, includingcompleteupdowntext, fingerprintinfo and trait. 
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneed from **networktraffic**perspectiveperformanalysis and protection，而is notonlyonlyfocussingleservice：
-/// - completesystemupdowntext (source/target、protocol、direction etc.)
-/// - detect to fingerprintinfo (TLS、HTTP、TCP etc.)
+/// system-level protectionneed from **network traffic**perspectiveperformanalysis and protection, 而is notonlyonlyfocussingleservice：
+/// - completesystem context (source/target, protocol, direction etc.)
+/// - detect to fingerprintinfo (TLS, HTTP, TCP etc.)
 /// - trafficstatisticstrait and behaviorpattern
 ///
 /// ## Examples
@@ -103,11 +103,11 @@ impl Default for FlowCharacteristics {
 /// let flow = NetworkFlow::new(ctx);
 /// ```
 pub struct NetworkFlow {
- /// systemupdowntext
+ /// system context
  pub context: SystemContext,
 
  /// detect to fingerprintlist ( if 有)
- /// Note: due to trait object limit，herecannotdirectly Clone，needmanualprocess
+ /// Note: due to trait object limit, herecannotdirectly Clone, needmanualprocess
  #[cfg_attr(test, allow(dead_code))]
  fingerprints: Vec<Box<dyn Fingerprint>>,
 
@@ -116,7 +116,7 @@ pub struct NetworkFlow {
 }
 
 impl NetworkFlow {
- /// Create a newnetworktraffic
+ /// Create a newnetwork traffic
  pub fn new(context: SystemContext) -> Self {
  Self {
  context,
@@ -163,7 +163,7 @@ impl NetworkFlow {
  }
 }
 
-// Manual implementation Debug，because Box<dyn Fingerprint> cannotautomaticimplement Debug
+// Manual implementation Debug, because Box<dyn Fingerprint> cannotautomaticimplement Debug
 impl std::fmt::Debug for NetworkFlow {
  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
  f.debug_struct("NetworkFlow")
@@ -174,11 +174,11 @@ impl std::fmt::Debug for NetworkFlow {
  }
 }
 
-// Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
+// Manual implementation Clone, because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for NetworkFlow {
  fn clone(&self) -> Self {
- // Note: fingerprints cannot Clone，sonewinstance from emptyliststart
- // this is合process的，becausefingerprintusually不should被copy，而 is throughreferenceshared
+ // Note: fingerprints cannot Clone, sonewinstance from emptyliststart
+ // this is合process的, becausefingerprintusually不should被copy, 而 is throughreferenceshared
  Self {
  context: self.context.clone(),
  fingerprints: Vec::new(), // cannot Clone trait object

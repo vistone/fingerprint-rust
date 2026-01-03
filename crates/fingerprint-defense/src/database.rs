@@ -1,6 +1,6 @@
 //! fingerprintdatabaseimplement
 //!
-//! providefingerprintpersistent化store and queryFeatures。
+//! providefingerprintpersistent化store and queryFeatures. 
 
 use fingerprint_core::system::NetworkFlow;
 use rusqlite::{params, Connection, Result as SqliteResult};

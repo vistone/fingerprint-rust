@@ -1,14 +1,14 @@
-//! systemlevelprotectioninterface
+//! system-level protection interface
 //!
-//! definesystemlevelprotectioninterface and decisiontype。
+//! definesystem-level protection interface and decisiontype. 
 
 use super::flow::NetworkFlow;
 use super::stats::SystemProtectionStats;
 use std::time::Duration;
 
-/// systemlevelprotectiondecision
+/// system-level protection decision
 ///
-/// representsystemlevelprotectionsystempairnetworktrafficmakedecision。
+/// representsystem-level protectionsystempairnetwork trafficmakedecision. 
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemProtectionDecision {
  /// allowthrough
@@ -75,12 +75,12 @@ impl SystemProtectionDecision {
  }
 }
 
-/// systemlevelprotectionresult
+/// system-level protectionresult
 ///
-/// includingprotectiondecision and mutualclosemetadata。
+/// includingprotection decision and relatedmetadata. 
 #[derive(Debug, Clone)]
 pub struct SystemProtectionResult {
- /// protectiondecision
+ /// protection decision
  pub decision: SystemProtectionDecision,
 
  /// risk score (0.0 - 1.0)
@@ -151,15 +151,15 @@ impl SystemProtectionResult {
  }
 }
 
-/// systemlevelprotectioninterface
+/// system-level protection interface
 ///
-/// allsystemlevelprotectioner都shouldimplementthis trait。
+/// allsystem-level protectioner都shouldimplementthis trait. 
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotection from **systemperspective**makeprotectiondecision：
-/// - not onlyonly is singleserviceprotection，而 is wholesystemprotection
-/// - canactual施systemlevelmeasure (blacklist、rate limit、firewallrule etc.)
+/// system-level protection from **systemperspective**makeprotection decision：
+/// - not onlyonly is single service protection, 而 is wholesystemprotection
+/// - canactual施systemlevelmeasure (blacklist, rate limit, firewallrule etc.)
 /// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example
@@ -186,32 +186,32 @@ impl SystemProtectionResult {
 /// }
 /// ```
 pub trait SystemProtector: Send {
- /// analysisnetworktraffic并makeprotectiondecision
+ /// analysisnetwork traffic并makeprotection decision
  ///
  /// # Parameters
  ///
- /// - `flow`: needanalysisnetworktraffic
+ /// - `flow`: needanalysisnetwork traffic
  ///
  /// # Returns
  ///
- /// systemlevelprotectionresult，includingdecision、risk score、confidence etc.info
+ /// system-level protectionresult, includingdecision, risk score, confidence etc.info
  fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult;
 
  /// Updatesystemstatus
  ///
- /// in makeprotectiondecisionback，canBased onresultUpdatesystemstatus (如Updateblacklist、statisticsinfo etc.)。
+ /// in makeprotection decisionback, canBased onresultUpdatesystemstatus (如Updateblacklist, statisticsinfo etc.). 
  ///
  /// # Parameters
  ///
- /// - `flow`: networktraffic
- /// - `result`: protectiondecisionresult
+ /// - `flow`: network traffic
+ /// - `result`: protection decisionresult
  fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult);
 
  /// Getsystemstatisticsinfo
  ///
  /// # Returns
  ///
- /// systemlevelprotectionstatisticsinfo
+ /// system-level protectionstatisticsinfo
  fn get_stats(&self) -> SystemProtectionStats;
 }
 

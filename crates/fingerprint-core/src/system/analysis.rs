@@ -1,13 +1,13 @@
-//! systemlevelanalysisinterface
+//! systemlevelanalysis interface
 //!
-//! definesystemlevelanalysisinterface and resulttype。
+//! definesystemlevelanalysis interface and resulttype. 
 
 use super::flow::NetworkFlow;
 use crate::fingerprint::Fingerprint;
 
 /// threattype
 ///
-/// representdetect to threattype。
+/// representdetect to threattype. 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ThreatType {
  /// not知fingerprint
@@ -73,7 +73,7 @@ impl std::fmt::Display for ThreatType {
 
 /// analysisdetails
 ///
-/// includinganalysisdetailedinfo and verifydata。
+/// includinganalysisdetailedinfo and verifydata. 
 #[derive(Debug, Clone, Default)]
 pub struct AnalysisDetails {
  /// detect to fingerprinttype
@@ -116,10 +116,10 @@ impl AnalysisDetails {
 
 /// systemlevelanalysisresult
 ///
-/// includinganalysisresult、threattype、risk score etc.info。
+/// includinganalysisresult, threattype, risk score etc.info. 
 pub struct SystemAnalysisResult {
  /// detect to fingerprintlist
- /// Note: due to trait object limit，herecannotdirectly Clone
+ /// Note: due to trait object limit, herecannotdirectly Clone
  fingerprints: Vec<Box<dyn Fingerprint>>,
 
  /// risk score (0.0 - 1.0)
@@ -212,7 +212,7 @@ impl Default for SystemAnalysisResult {
  }
 }
 
-// Manual implementation Debug，because Box<dyn Fingerprint> cannotautomaticimplement Debug
+// Manual implementation Debug, because Box<dyn Fingerprint> cannotautomaticimplement Debug
 impl std::fmt::Debug for SystemAnalysisResult {
  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
  f.debug_struct("SystemAnalysisResult")
@@ -225,10 +225,10 @@ impl std::fmt::Debug for SystemAnalysisResult {
  }
 }
 
-// Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
+// Manual implementation Clone, because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for SystemAnalysisResult {
  fn clone(&self) -> Self {
- // Note: fingerprints cannot Clone，sonewinstance from emptyliststart
+ // Note: fingerprints cannot Clone, sonewinstance from emptyliststart
  Self {
  fingerprints: Vec::new(), // cannot Clone trait object
  risk_score: self.risk_score,
@@ -239,16 +239,16 @@ impl Clone for SystemAnalysisResult {
  }
 }
 
-/// systemlevelanalysisinterface
+/// systemlevelanalysis interface
 ///
-/// allsystemlevelanalysiser都shouldimplementthis trait。
+/// allsystemlevelanalysiser都shouldimplementthis trait. 
 ///
 /// ## Core Concept
 ///
-/// systemlevelanalysis from **systemperspective**analysisnetworktraffic：
-/// - not onlyonly is singleprotocolParse，而 is comprehensiveanalysis
+/// systemlevelanalysis from **systemperspective**analysisnetwork traffic：
+/// - not onlyonly is singleprotocolParse, 而 is comprehensiveanalysis
 /// - considersystemwholebehaviorpattern
-/// - detectsystemlevelthreat (DDoS、scan、abnormaltraffic etc.)
+/// - detectsystemlevelthreat (DDoS, scan, abnormaltraffic etc.)
 ///
 /// ## Implementation Example
 ///
@@ -269,22 +269,22 @@ impl Clone for SystemAnalysisResult {
 /// }
 /// ```
 pub trait SystemAnalyzer: Send + Sync {
- /// analysisnetworktraffic
+ /// analysisnetwork traffic
  ///
  /// # Parameters
  ///
- /// - `flow`: needanalysisnetworktraffic
+ /// - `flow`: needanalysisnetwork traffic
  ///
  /// # Returns
  ///
- /// systemlevelanalysisresult，includingfingerprint、threattype、risk score etc.info
+ /// systemlevelanalysisresult, includingfingerprint, threattype, risk score etc.info
  fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult;
 
  /// bulkanalysismultipletraffic
  ///
  /// # Parameters
  ///
- /// - `flows`: needanalysisnetworktrafficlist
+ /// - `flows`: needanalysisnetwork trafficlist
  ///
  /// # Returns
  ///

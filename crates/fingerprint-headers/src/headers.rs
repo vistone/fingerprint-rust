@@ -66,7 +66,7 @@ pub struct HTTPHeaders {
  pub sec_ch_ua_platform: String,
  /// Upgrade-Insecure-Requests header
  pub upgrade_insecure_requests: String,
- /// usercustom headers (如 Cookie、Authorization、X-API-Key etc.)
+ /// usercustom headers (如 Cookie, Authorization, X-API-Key etc.)
  pub custom: std::collections::HashMap<String, String>,
 }
 
@@ -90,9 +90,9 @@ impl HTTPHeaders {
  }
  }
 
- /// clone HTTPHeaders pair象，returnannew副this
+ /// clone HTTPHeaders pair象, returnannew副this
  ///
- /// Note: 此methodname and standardlibrary `Clone::clone` different，以avoidnamingconflict
+ /// Note: 此methodname and standardlibrary `Clone::clone` different, 以avoidnamingconflict
  #[allow(clippy::should_implement_trait)]
  pub fn clone(&self) -> Self {
  Self {
@@ -113,7 +113,7 @@ impl HTTPHeaders {
  }
 
  /// settingsusercustom header (systemwillautomaticmerge to to_map() in )
- /// this isrecommendmethod，settingsbackcall to_map() canautomaticincludingcustom headers
+ /// this isrecommendmethod, settingsbackcall to_map() canautomaticincludingcustom headers
  /// Examples：result.headers.set("Cookie", "session_id=abc123")
  pub fn set(&mut self, key: &str, value: &str) {
  if value.is_empty() {
@@ -132,14 +132,14 @@ impl HTTPHeaders {
  }
 
  /// will HTTPHeaders convert to HashMap
- /// systemwillautomaticmerge Custom inusercustom headers (如 Cookie、Authorization、X-API-Key etc.)
+ /// systemwillautomaticmerge Custom inusercustom headers (如 Cookie, Authorization, X-API-Key etc.)
  pub fn to_map(&self) -> std::collections::HashMap<String, String> {
  self.to_map_with_custom(&[])
  }
 
- /// will HTTPHeaders convert to HashMap，并mergeusercustom headers
- /// custom_headers: usercustom headers (如 session、cookie、apikey etc.)
- /// usercustom headers prioritymorehigh，willcoversystemGenerate headers
+ /// will HTTPHeaders convert to HashMap, 并mergeusercustom headers
+ /// custom_headers: usercustom headers (如 session, cookie, apikey etc.)
+ /// usercustom headers prioritymorehigh, willcoversystemGenerate headers
  pub fn to_map_with_custom(
  &self,
  custom_headers: &[(&str, &str)],
@@ -200,7 +200,7 @@ impl HTTPHeaders {
  }
  }
 
- // mergepass in custom_headers (prioritymosthigh，willcoverallalready有 headers)
+ // mergepass in custom_headers (prioritymosthigh, willcoverallalready有 headers)
  for (key, value) in custom_headers {
  if !value.is_empty() {
  headers.insert((*key).to_string(), (*value).to_string());
@@ -210,7 +210,7 @@ impl HTTPHeaders {
  headers
  }
 
- /// will HTTPHeaders convert toordered Vec，followspecified header_order
+ /// will HTTPHeaders convert toordered Vec, followspecified header_order
  pub fn to_ordered_vec(&self, order: &[String]) -> Vec<(String, String)> {
  let map = self.to_map();
  let mut result = Vec::with_capacity(map.len());
@@ -218,7 +218,7 @@ impl HTTPHeaders {
 
  // 1. 先 by specified order orderAdd
  for key in order {
- // find map is否 existsmatch key (ignoresizewriteperformmatch，butpreserve order insizewrite)
+ // find map is否 existsmatch key (ignoresizewriteperformmatch, butpreserve order insizewrite)
  for (m_key, m_val) in &map {
  if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
  result.push((key.clone(), m_val.clone()));
@@ -295,7 +295,7 @@ pub fn generate_headers(
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
  headers.accept_encoding = "gzip, deflate, br".to_string();
  // Firefox 不use Sec-Fetch-* headers (oldversion)
- // newversion Firefox use，butformatdifferent
+ // newversion Firefox use, butformatdifferent
  if is_mobile {
  headers.sec_fetch_site = "none".to_string();
  headers.sec_fetch_mode = "navigate".to_string();
@@ -315,7 +315,7 @@ pub fn generate_headers(
  }
  }
  BrowserType::Opera => {
- // Opera use Chrome insidecore，headers similar Chrome
+ // Opera use Chrome insidecore, headers similar Chrome
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
  headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
  headers.sec_fetch_site = "none".to_string();

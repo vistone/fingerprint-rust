@@ -1,20 +1,20 @@
 //! rustls ClientHello customizeer (optional)
 //!
-//! itemfrontonlydoone thing：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**。
+//! itemfrontonlydoone thing：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**. 
 //!
 //! explain：
-//! - rustls not necessarilyfixedwillsend spec 里listallextension；herewill以 rustls actual `used` as allow，
-//! onlypair交setreorder，and putnotcover's extensions by  rustls defaultorderchaseadd，ensure仍 is anvalidarrange。
-//! - spec 里mayappearmultiple GREASE extension ( in realbrowser in themusually is different GREASE value)。
-//! as avoid"duplicateextensiontype"cause rustls refuse，wewill把each GREASE 占bitsymbolmapbecomedifferent GREASE value。
+//! - rustls not necessarilyfixedwillsend spec 里listallextension；herewill以 rustls actual `used` as allow, 
+//! onlypair交setreorder, and putnotcover's extensions by  rustls defaultorderchaseadd, ensure仍 is anvalidarrange. 
+//! - spec 里mayappearmultiple GREASE extension ( in realbrowser in themusually is different GREASE value). 
+//! as avoid"duplicateextensiontype"cause rustls refuse, wewill把each GREASE 占bitsymbolmapbecomedifferent GREASE value. 
 //!
-//! Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork，standard rustls 不support。
-//! currentstandard rustls versionexcluding ClientHelloCustomizer API，therefore此modulecode被temporary when disabled。
-//! if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork (如 vistone-rustls)。
+//! Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork, standard rustls 不support. 
+//! currentstandard rustls versionexcluding ClientHelloCustomizer API, therefore此modulecode被temporary when disabled. 
+//! if neededuse此Features, needusesupport ClientHelloCustomizer rustls fork (如 vistone-rustls). 
 
-// temporary when disabledwholemodule，becausestandard rustls 不support ClientHelloCustomizer API
-// if neededenabled，needusesupport该 API rustls fork
-// whenusesupport ClientHelloCustomizer rustls fork when ，canceldown面comment并enabledmutualclosecode
+// temporary when disabledwholemodule, becausestandard rustls 不support ClientHelloCustomizer API
+// if neededenabled, needusesupport该 API rustls fork
+// whenusesupport ClientHelloCustomizer rustls fork when , canceldown面comment并enabledrelatedcode
 #![cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 
 #[cfg(feature = "rustls-client-hello-customizer")]
@@ -30,7 +30,7 @@ use rustls::client::{ClientHello, ClientHelloContext, ClientHelloCustomizer};
 use rustls::internal::msgs::enums::ExtensionType;
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// from `ClientHelloSpec` Calculate"expected's extensionsorder" (以 u16 represent)。
+/// from `ClientHelloSpec` Calculate"expected's extensionsorder" (以 u16 represent). 
 ///
 /// - deduplicate：sameextensiontypeonlypreserve第onceappear
 /// - GREASE：把duplicate GREASE 占bitsymbolmapbecomedifferent GREASE value
@@ -41,7 +41,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
  for ext in &spec.extensions {
  let mut id = ext.extension_id();
 
- // process GREASE：尽quantity给each GREASE allocatedifferentvalue，以symbol合"multiple GREASE extension"currentactual形state。
+ // process GREASE：尽quantity给each GREASE allocatedifferentvalue, 以symbol合"multiple GREASE extension"currentactual形state. 
  if is_grease_value(id) {
  for _ in 0..TLS_GREASE_VALUES.len() {
  let candidate = TLS_GREASE_VALUES[grease_cursor % TLS_GREASE_VALUES.len()];
@@ -62,7 +62,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
 }
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// will rustls current `used` 's extensionsorder， by  `desired` (from spec)reorder。
+/// will rustls current `used` 's extensionsorder,  by  `desired` (from spec)reorder. 
 ///
 /// rule：
 /// - onlypair `used` 里appear's extensionsreorder (交set)
@@ -88,7 +88,7 @@ fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<Ext
 }
 
 #[cfg(feature = "rustls-client-hello-customizer")]
-/// based on `ClientProfile` ClientHello extensionordercustomizeer。
+/// based on `ClientProfile` ClientHello extensionordercustomizeer. 
 #[derive(Debug)]
 pub struct ProfileClientHelloCustomizer {
  desired_extension_ids: Vec<u16>,

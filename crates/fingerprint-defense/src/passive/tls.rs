@@ -1,6 +1,6 @@
 //! TLS passivefingerprintidentify
 //!
-//! implement TLS ClientHello passiveanalysis and JA4 fingerprintGenerate。
+//! implement TLS ClientHello passiveanalysis and JA4 fingerprintGenerate. 
 
 use crate::passive::packet::Packet;
 

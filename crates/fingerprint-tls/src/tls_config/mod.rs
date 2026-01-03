@@ -1,6 +1,6 @@
 //! TLS configuration module
 //!
-//! providereal TLS Client Hello configuration，Corresponds to Go version's utls.ClientHelloID
+//! providereal TLS Client Hello configuration, Corresponds to Go version's utls.ClientHelloID
 //!
 //! ## Usage Example
 //!

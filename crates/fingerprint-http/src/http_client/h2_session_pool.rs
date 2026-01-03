@@ -1,6 +1,6 @@
 //! HTTP/2 sessionpool
 //!
-//! pool化 h2::client::SendRequest handle，implementtrue HTTP/2 multiplereuse
+//! pool化 h2::client::SendRequest handle, implementtrue HTTP/2 multiplereuse
 //! avoideach timerequest都reperform TLS and HTTP/2 handshake
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
@@ -20,11 +20,11 @@ use tokio::sync::Mutex as TokioMutex;
 use h2::client::SendRequest;
 
 /// HTTP/2 sessionpoolmanageer
-/// Fix: pool化 SendRequest handle，implementtrue multiplexreuse
+/// Fix: pool化 SendRequest handle, implementtrue multiplexreuse
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub struct H2SessionPool {
  /// sessionpool ( by  host:port group)
- /// eachsessionincluding SendRequest handle、backbackground taskhandle and finallywhen used between
+ /// eachsessionincluding SendRequest handle, backbackground taskhandle and finallywhen used between
  sessions: Arc<Mutex<HashMap<String, Arc<H2Session>>>>,
  /// positive in Createinsession (avoidsame key concurrentCreatecompetition)
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
@@ -38,7 +38,7 @@ struct H2Session {
  /// SendRequest handle ( for sendrequest)
  send_request: Arc<TokioMutex<SendRequest<bytes::Bytes>>>,
  /// backbackground taskhandle ( for manage h2_conn lifecycle)
- /// whenconnectioninvalid when ，taskwillend，wecandetect to 并removesession
+ /// whenconnectioninvalid when , taskwillend, wecandetect to 并removesession
  _background_task: tokio::task::JoinHandle<()>,
  /// finallywhen used between
  last_used: Arc<Mutex<Instant>>,
@@ -59,7 +59,7 @@ impl H2SessionPool {
 
  /// Get or Create HTTP/2 session
  /// return SendRequest handleclone
- /// create_session: Createnewsessionasyncfunction，return (SendRequest, Connection)
+ /// create_session: Createnewsessionasyncfunction, return (SendRequest, Connection)
  pub async fn get_or_create_session<Fut, IO>(
  &self,
  key: &str,
@@ -84,7 +84,7 @@ impl H2SessionPool {
  self.cleanup_expired_sessions(&mut sessions);
 
  // Checkwhether有availablesession
- // 先Checksessionwhether exists and valid，avoid in holdlock when performcomplexoperation
+ // 先Checksessionwhether exists and valid, avoid in holdlock when performcomplexoperation
  let session_valid = sessions.get(key).and_then(|session| {
  let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
@@ -123,7 +123,7 @@ impl H2SessionPool {
  // marker as positive in Create
  let (_tx, rx) = watch::channel(false);
  pending.insert(key.to_string(), rx.clone());
- // herewe稍microviolate一downprinciple，in order tologiccleardirectly in herereturn None representweneedpersonallyCreate
+ // herewe稍microviolate一downprinciple, in order tologiccleardirectly in herereturn None representweneedpersonallyCreate
  // butwewillpreserve tx in backcontinueuse
  None
  }
@@ -133,8 +133,8 @@ impl H2SessionPool {
  // waitoriginalCreatetaskcomplete
  let _ = rx.changed().await;
  // Createcompletebackrecursivecall以GetnewCreatesession
- // Note: due to Fut limit，herecannotdirectlyrecursive，weactualupshould in outsidelayerloop
- // butin order tocodeconcise，weheredirectlyjump to reChecklogic
+ // Note: due to Fut limit, herecannotdirectlyrecursive, weactualupshould in outsidelayerloop
+ // butin order tocodeconcise, weheredirectlyjump to reChecklogic
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 
@@ -157,7 +157,7 @@ impl H2SessionPool {
  if let Err(e) = h2_conn.await {
  eprintln!("warning: HTTP/2 connectionerror ({}): {:?}", key_clone, e);
  }
- // connectionalreadyclose，marker as invalid
+ // connectionalreadyclose, marker as invalid
  if let Ok(mut valid) = is_valid_clone.lock() {
  *valid = false;
  }
@@ -181,7 +181,7 @@ impl H2SessionPool {
  }
  if let Ok(mut pending) = self.pending_sessions.lock() {
  pending.remove(key);
- // here不needexplicitnotification，tx destroywillautomaticnotification rx
+ // here不needexplicitnotification, tx destroywillautomaticnotification rx
  }
  }
 
@@ -196,7 +196,7 @@ impl H2SessionPool {
  let is_valid = session.is_valid.lock().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
 
- // preservevalidsession， and notexpire， and backbackground task仍 in run
+ // preservevalidsession,  and notexpire,  and backbackground task仍 in run
  if is_valid && !is_finished {
  if let Ok(last_used) = session.last_used.lock() {
  now.duration_since(*last_used) < self.session_timeout

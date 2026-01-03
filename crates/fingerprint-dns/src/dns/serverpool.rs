@@ -1,6 +1,6 @@
 //! DNS serverpoolmodule
 //!
-//! manage DNS serverlist，include from localfileload/save and healthCheckFeatures
+//! manage DNS serverlist, include from localfileload/save and healthCheckFeatures
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -78,7 +78,7 @@ impl ServerStats {
 #[derive(Debug, Clone)]
 pub struct ServerPool {
  servers: Arc<Vec<String>>,
- /// serverperformancestatistics (only in run when use，不persistent化)
+ /// serverperformancestatistics (only in run when use, 不persistent化)
  stats: Arc<std::sync::RwLock<HashMap<String, ServerStats>>>,
 }
 
@@ -133,8 +133,8 @@ impl ServerPool {
  }
 
  /// slow eliminationserver (averageresponse when betweenexceedthresholdvalue or failure率overhigh)
- /// returnnewserverpool，non-blockingmainthread
- /// Fix: increase min_active_servers parameter，ensureat leastpreservespecifiedcountserver ( by performancesort)
+ /// returnnewserverpool, non-blockingmainthread
+ /// Fix: increase min_active_servers parameter, ensureat leastpreservespecifiedcountserver ( by performancesort)
  pub fn remove_slow_servers(
  &self,
  max_avg_response_time_ms: f64,
@@ -176,7 +176,7 @@ impl ServerPool {
 .map(|(s, _, _)| s.clone())
 .collect();
 
- // fault tolerance guarantee： if filterback剩downservertoo少， by performancesortforcepreserve top N
+ // fault tolerance guarantee： if filterback剩downservertoo少,  by performancesortforcepreserve top N
  if filtered.len() < min_active_servers && !scored_servers.is_empty() {
  //  by  failure率 (firstclosekey字) and response when between (secondclosekey字) 升sequencesort
  scored_servers.sort_by(|a, b| {
@@ -260,8 +260,8 @@ impl ServerPool {
  let json_content =
  serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
- // securityFix: originalchildpropertywrite，useunique temporaryfile名preventrace condition
- // useprocess ID ensuretemporaryfile名unique，avoidmultipleprocesssame when write when race condition
+ // securityFix: originalchildpropertywrite, useunique temporaryfile名preventrace condition
+ // useprocess ID ensuretemporaryfile名unique, avoidmultipleprocesssame when write when race condition
  let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
  fs::write(&temp_path, json_content)
 .map_err(|e| crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e)))?;
@@ -340,8 +340,8 @@ impl ServerPool {
  self.servers.is_empty()
  }
 
- /// healthCheck并incrementalsave：highconcurrenttest DNS server，每detect to 一batchavailableserverthenimmediatelysave
- /// in backbackground task in run，non-blockingmainthread
+ /// healthCheck并incrementalsave：highconcurrenttest DNS server, 每detect to 一batchavailableserverthenimmediatelysave
+ /// in backbackground task in run, non-blockingmainthread
  pub async fn health_check_and_save_incremental(
  &self,
  test_domain: &str,
@@ -397,7 +397,7 @@ impl ServerPool {
  let available_servers_for_progress = available_servers.clone();
  let processed_count_for_progress = processed_count.clone();
 
- // concurrenttestserver，streamstyleprocess
+ // concurrenttestserver, streamstyleprocess
  let mut test_tasks = stream::iter(servers_to_test)
 .map(move |(server_str, socket_addr)| {
  let test_domain = test_domain.clone();
@@ -424,7 +424,7 @@ impl ServerPool {
  // Checkwhethertruereturn了IPaddress
  let ip_count = lookup_result.iter().count();
  if ip_count > 0 {
- // querysuccess and return了IPaddress，serveravailable，immediatelyAdd to list
+ // querysuccess and return了IPaddress, serveravailable, immediatelyAdd to list
  let mut servers = match available_servers.lock() {
  Ok(guard) => guard,
  Err(e) => {
@@ -448,7 +448,7 @@ impl ServerPool {
 
  Some(server_str)
  } else {
- // querysuccessbutnoreturnIPaddress，serverunavailable
+ // querysuccessbutnoreturnIPaddress, serverunavailable
  None
  }
  }

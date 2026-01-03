@@ -1,13 +1,13 @@
 //! DNS configurationmanagemodule
 //!
-//! support from JSON、YAML、TOML formatconfigurationfileload DNS configuration
+//! support from JSON, YAML, TOML formatconfigurationfileload DNS configuration
 
 use crate::dns::types::{DNSConfig, DNSError};
 use std::fs;
 use std::path::Path;
 
 /// from configurationfileload DNS configuration
-/// automaticidentifyconfigurationfileformat (JSON、YAML、TOML)
+/// automaticidentifyconfigurationfileformat (JSON, YAML, TOML)
 pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
  let path = path.as_ref();
  let content = fs::read_to_string(path)?;

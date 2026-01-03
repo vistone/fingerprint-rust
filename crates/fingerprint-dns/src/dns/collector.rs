@@ -1,6 +1,6 @@
 //! DNS servercollectermodule
 //!
-//! collectavailable DNS server，include from public-dns.info Getpublic DNS serverlist
+//! collectavailable DNS server, include from public-dns.info Getpublic DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::DNSError;
@@ -41,7 +41,7 @@ impl ServerCollector {
  // readresponsetext
  let text = String::from_utf8_lossy(&response.body).to_string();
 
- // Parsetext，每executean IP address
+ // Parsetext, 每executean IP address
  let mut servers = Vec::new();
  for line in text.lines() {
  let line = line.trim();
@@ -87,12 +87,12 @@ impl ServerCollector {
  }
 
  /// Validate并Updateexistingfile in DNS server
- /// from fileloadallserver，performhealthCheck，onlypreserveavailableserver并save回file
+ /// from fileloadallserver, performhealthCheck, onlypreserveavailableserver并save回file
  ///
  /// # Parameters
- /// - `test_domain`: for testdomain，default as "google.com"
- /// - `test_timeout`: eachservertesttimeout duration，default as 3 seconds
- /// - `max_concurrency`: maximumconcurrenttestcount，default as 100
+ /// - `test_domain`: for testdomain, default as "google.com"
+ /// - `test_timeout`: eachservertesttimeout duration, default as 3 seconds
+ /// - `max_concurrency`: maximumconcurrenttestcount, default as 100
  pub async fn validate_and_update_file(
  test_domain: Option<&str>,
  test_timeout: Option<Duration>,
@@ -173,7 +173,7 @@ impl ServerCollector {
  }
 
  /// collectallavailable DNS server (pairshould Go BootstrapPoolInternal)
- /// from multiplesourcecollect，并 in savefrontperformhealthCheck，onlypreserveavailableserver
+ /// from multiplesourcecollect, 并 in savefrontperformhealthCheck, onlypreserveavailableserver
  pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
  // 先try from localfileload (pairshould Go loadDefault)
  let pool = ServerPool::load_default();
@@ -183,8 +183,8 @@ impl ServerCollector {
  " from localfileload了 {} DNS server (alreadythroughValidate，directlyuse)",
  pool.len()
  );
- // fileinserveralreadythroughValidate，directlyuse，不performcomprehensiveCheck
- // only in back台asyncdetect and slow eliminationnode，non-blockingmainthread
+ // fileinserveralreadythroughValidate, directlyuse, 不performcomprehensiveCheck
+ // only in back台asyncdetect and slow eliminationnode, non-blockingmainthread
  return pool;
  }
 
@@ -196,8 +196,8 @@ impl ServerCollector {
  let new_count = new_pool.len();
  eprintln!(" from networkcollect了 {} DNS server", new_count);
 
- // in savefrontperformhealthCheck，onlypreserveavailableserver
- // usehighconcurrentdetect，每detect to 一batchthenimmediatelysave，fastcompletenot long when betweenblocking
+ // in savefrontperformhealthCheck, onlypreserveavailableserver
+ // usehighconcurrentdetect, 每detect to 一batchthenimmediatelysave, fastcompletenot long when betweenblocking
  eprintln!("正 in highconcurrenttest DNS serveravailable性 (testwhichservercanreturn IP address)...");
  let test_timeout = Duration::from_secs(2); // decreasetimeout duration，speed updetect
  let max_concurrency = 500; // 大幅increaseconcurrentcount，speed updetectspeed
@@ -235,7 +235,7 @@ impl ServerCollector {
  }
  );
 
- // filealready in incrementalsaveprocess in Update了，directlyreturn
+ // filealready in incrementalsaveprocess in Update了, directlyreturn
  if valid_count > 0 {
  validated_pool
  } else {
@@ -264,8 +264,8 @@ fn is_valid_ip_address(s: &str) -> bool {
  if s.parse::<SocketAddr>().is_ok() {
  return true;
  }
- // alsomay is IPv6:port，butformatmorecomplex，needspecialprocess
- // simplifyprocess： if including []，tryParse
+ // alsomay is IPv6:port, butformatmorecomplex, needspecialprocess
+ // simplifyprocess： if including [], tryParse
  if s.starts_with('[') {
  return s.parse::<SocketAddr>().is_ok();
  }

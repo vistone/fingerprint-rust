@@ -1,4 +1,4 @@
-//! DNS moduletypedefine
+//! DNS moduletype definitions
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -82,7 +82,7 @@ impl DomainIPs {
 
  /// Checkwhether有new IP address ( and 另an DomainIPs compare)
  ///
- /// `self` is newParse IP set，`other` is beforesave IP set
+ /// `self` is newParse IP set, `other` is beforesave IP set
  /// If `self` in 有 `other` no IP, return true (discovernew IP)
  pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
  let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
@@ -143,22 +143,22 @@ pub struct DNSConfig {
  pub ipinfo_token: String,
  /// domainlist (required)
  pub domain_list: Vec<String>,
- /// storedirectory (optional，defaultcurrentdirectory)
+ /// storedirectory (optional, defaultcurrentdirectory)
  #[serde(default = "default_domain_ips_dir")]
  pub domain_ips_dir: String,
- /// Checkinterval (optional，default "2m")
+ /// Checkinterval (optional, default "2m")
  #[serde(default = "default_interval")]
  pub interval: String,
- /// DNS querymaximumconcurrentcount (optional，default 500)
+ /// DNS querymaximumconcurrentcount (optional, default 500)
  #[serde(default = "default_max_concurrency")]
  pub max_concurrency: usize,
- /// DNS querytimeout (optional，default "4s")
+ /// DNS querytimeout (optional, default "4s")
  #[serde(default = "default_dns_timeout")]
  pub dns_timeout: String,
- /// HTTP Request timeout (optional，default "20s")
+ /// HTTP Request timeout (optional, default "20s")
  #[serde(default = "default_http_timeout")]
  pub http_timeout: String,
- /// IP infoGetmaximumconcurrentcount (optional，default 50)
+ /// IP infoGetmaximumconcurrentcount (optional, default 50)
  #[serde(default = "default_max_ip_fetch_conc")]
  pub max_ip_fetch_conc: usize,
 }
@@ -188,7 +188,7 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
- /// Create a new DNS configuration (conveniencemethod，candirectlyusestring字面quantity)
+ /// Create a new DNS configuration (conveniencemethod, candirectlyusestring字面quantity)
  ///
  /// # Examples
  /// ```

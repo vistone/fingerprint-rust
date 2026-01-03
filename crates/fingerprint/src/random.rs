@@ -12,7 +12,7 @@ use fingerprint_headers::useragent::{
 };
 use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 
-/// fingerprintresult，includingfingerprint、User-Agent and standard HTTP Headers
+/// fingerprintresult, includingfingerprint, User-Agent and standard HTTP Headers
 #[derive(Debug, Clone)]
 pub struct FingerprintResult {
  /// TLS fingerprintconfiguration
@@ -45,7 +45,7 @@ pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
  get_random_fingerprint_with_os(None)
 }
 
-/// randomGetanfingerprint and pairshould User-Agent，并specifiedoperating system
+/// randomGetanfingerprint and pairshould User-Agent, 并specifiedoperating system
 /// If os as None, thenrandomly selectoperating system
 pub fn get_random_fingerprint_with_os(
  os: Option<OperatingSystem>,
@@ -108,7 +108,7 @@ pub fn get_random_fingerprint_by_browser(
  get_random_fingerprint_by_browser_with_os(browser_type, None)
 }
 
-/// Based onbrowsertyperandomGetfingerprint and User-Agent，并specifiedoperating system
+/// Based onbrowsertyperandomGetfingerprint and User-Agent, 并specifiedoperating system
 pub fn get_random_fingerprint_by_browser_with_os(
  browser_type: &str,
  os: Option<OperatingSystem>,

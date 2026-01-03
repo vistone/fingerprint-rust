@@ -2,7 +2,7 @@
 //!
 //! target：
 //! - single entryBuild root store
-//! - single entryapplication verify_tls (optionaldisabledvalidate，only for debug/inside网)
+//! - single entryapplication verify_tls (optionaldisabledvalidate, only for debug/inside网)
 //! - single entryconfiguration ALPN
 
 #![cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
@@ -13,7 +13,7 @@ use std::sync::Arc;
 use fingerprint_profiles::profiles::ClientProfile;
 
 // Note: ProfileClientHelloCustomizer needsupport ClientHelloCustomizer rustls fork
-// current被disabled，becausestandard rustls excluding ClientHelloCustomizer API
+// current被disabled, becausestandard rustls excluding ClientHelloCustomizer API
 #[cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
 
@@ -30,7 +30,7 @@ pub fn build_root_store() -> rustls::RootCertStore {
  root_store
 }
 
-/// 若 verify_tls=false，thensafeinstall"acceptallcertificate" verifier (dangerousFeatures，only for debug)
+/// 若 verify_tls=false, thensafeinstall"acceptallcertificate" verifier (dangerousFeatures, only for debug)
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
  if verify_tls {
@@ -93,7 +93,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
  }
 }
 
-/// Build rustls::ClientConfig，并settings ALPN/verify_tls，andBased on fingerprintmatchcipher suite。
+/// Build rustls::ClientConfig, 并settings ALPN/verify_tls, andBased on fingerprintmatchcipher suite. 
 pub fn build_client_config(
  verify_tls: bool,
  alpn_protocols: Vec<Vec<u8>>,
@@ -101,7 +101,7 @@ pub fn build_client_config(
 ) -> rustls::ClientConfig {
  let root_store = build_root_store();
 
- // defaultconfiguration ( if unable toBased on profile match，thenback to securitydefaultvalue)
+ // defaultconfiguration ( if unable toBased on profile match, thenback to securitydefaultvalue)
  let builder = rustls::ClientConfig::builder()
 .with_safe_defaults()
 .with_root_certificates(root_store)
@@ -160,10 +160,10 @@ pub fn build_client_config(
  cfg.alpn_protocols = alpn_protocols;
  apply_verify_tls(&mut cfg, verify_tls);
 
- // optional： in send ClientHello before by fingerprint spec reorderextensionencodingorder (needmatch套 rustls fork)。
- // Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork，standard rustls 不support。
- // current被disabled，becausestandard rustls excluding ClientHelloCustomizer API。
- // if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork 并enabledcorresponding feature。
+ // optional： in send ClientHello before by fingerprint spec reorderextensionencodingorder (needmatch套 rustls fork). 
+ // Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork, standard rustls 不support. 
+ // current被disabled, becausestandard rustls excluding ClientHelloCustomizer API. 
+ // if neededuse此Features, needusesupport ClientHelloCustomizer rustls fork 并enabledcorresponding feature. 
  #[cfg(false)] // 暂 when disabled，becausestandard rustls 不support
  if let Some(profile) = profile {
  if let Some(customizer) = ProfileClientHelloCustomizer::try_from_profile(profile) {

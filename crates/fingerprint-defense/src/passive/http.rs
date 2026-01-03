@@ -1,6 +1,6 @@
 //! HTTP passivefingerprintidentify
 //!
-//! implement HTTP request/responsepassivefingerprintidentify。
+//! implement HTTP request/responsepassivefingerprintidentify. 
 
 use crate::passive::packet::Packet;
 use std::collections::HashMap;
@@ -147,7 +147,7 @@ impl HttpAnalyzer {
 
  /// Parse HTTP request
  fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
- // limitParsecountdataquantity，preventoversizedpackagecauseinsidememory exhausted
+ // limitParsecountdataquantity, preventoversizedpackagecauseinsidememory exhausted
  let limit = 8192; // 8KB enoughregularrequest
  let parse_data = if data.len() > limit {
  &data[..limit]

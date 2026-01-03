@@ -1,6 +1,6 @@
-//! systemupdowntext
+//! system context
 //!
-//! definesystemlevelprotectionupdowntextinfo，includenetworkentity、 when between、protocol etc.。
+//! definesystem-level protectionupdowntextinfo, includenetworkentity,  when between, protocol etc.. 
 
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
@@ -102,14 +102,14 @@ impl std::fmt::Display for ProtocolType {
  }
 }
 
-/// systemupdowntext
+/// system context
 ///
-/// representsystemlevelprotectionupdowntextinfo，includingnetworktrafficcompletemetadata。
+/// representsystem-level protectionupdowntextinfo, includingnetwork trafficcompletemetadata. 
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneedconsidercompletesystemupdowntext，而not onlyonly is singleservice or port：
-/// - networkentitycompleteinfo (source/target IP、port)
+/// system-level protectionneedconsidercompletesystem context, 而not onlyonly is singleservice or port：
+/// - complete network entity information (source/target IP, port)
 /// - protocoltype and direction
 /// - when between戳 and network interfaceinterface
 /// - countpacketlevelinfo
@@ -164,7 +164,7 @@ pub struct SystemContext {
 }
 
 impl SystemContext {
- /// Create a newsystemupdowntext
+ /// Create a newsystem context
  pub fn new(source_ip: IpAddr, target_ip: IpAddr, protocol: ProtocolType) -> Self {
  Self {
  source_ip,
@@ -179,7 +179,7 @@ impl SystemContext {
  }
  }
 
- /// Createbringportsystemupdowntext
+ /// Createbringportsystem context
  pub fn with_ports(
  source_ip: IpAddr,
  target_ip: IpAddr,

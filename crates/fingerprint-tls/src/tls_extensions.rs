@@ -1,6 +1,6 @@
 //! TLS extensionmodule
 //!
-//! implementeach种 TLS extension，Corresponds to Go version's tls.TLSExtension
+//! implementeach种 TLS extension, Corresponds to Go version's tls.TLSExtension
 //!
 //! reference：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
 
@@ -44,7 +44,7 @@ pub trait TLSExtension: std::fmt::Debug + Any {
  /// Getextension ID
  fn extension_id(&self) -> ExtensionID;
 
- /// convert to Any trait object， for towarddowntransform
+ /// convert to Any trait object,  for towarddowntransform
  fn as_any(&self) -> &dyn Any;
 }
 
@@ -178,7 +178,7 @@ impl TLSExtension for SNIExtension {
 
 impl TLSExtensionWriter for SNIExtension {
  fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
- // SNI Write is no-op，because SNI 不should被fingerprint化， is usercontrol的
+ // SNI Write is no-op, because SNI 不should被fingerprint化,  is usercontrol的
  Ok(buf.len())
  }
 }

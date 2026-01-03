@@ -1,7 +1,7 @@
 //! JA3/JA3S TLS fingerprintimplement
 //!
-//! JA3 is Salesforce opensend TLS clientfingerprintidentifymethod，alreadybecomeexecute业standard。
-//! JA3S is pairshouldserverendfingerprint。
+//! JA3 is Salesforce opensend TLS clientfingerprintidentifymethod, alreadybecomeexecute业standard. 
+//! JA3S is pairshouldserverendfingerprint. 
 //!
 //! ## reference
 //! - paper: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
@@ -88,7 +88,7 @@ impl JA3 {
 .cloned()
 .collect();
 
- // convert tocomma-separated decimalstring (JA3 usedecimal，is nothexadecimal)
+ // convert tocomma-separated decimalstring (JA3 usedecimal, is nothexadecimal)
  let ciphers_str = filtered_ciphers
 .iter()
 .map(|c| c.to_string())
@@ -143,7 +143,7 @@ impl JA3 {
 
  /// from ClientHello originalbeginningcountdataGenerate JA3
  ///
- /// this isanconvenientmethod， for from complete ClientHello message in Extract并Generate JA3
+ /// this isanconvenientmethod,  for from complete ClientHello message in Extract并Generate JA3
  pub fn from_client_hello(client_hello: &crate::signature::ClientHelloSignature) -> Self {
  // Convertelliptic curve CurveID as u16
  let curves: Vec<u16> = client_hello

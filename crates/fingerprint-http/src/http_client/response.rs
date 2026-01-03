@@ -78,7 +78,7 @@ impl HttpResponse {
  return Err("countdatatoo short，unable toincluding headers endmarker".to_string());
  }
 
- // use saturating_sub preventdown溢，butneed额outsideCheckedgeboundary
+ // use saturating_sub preventdown溢, butneed额outsideCheckedgeboundary
  let max_i = data.len().saturating_sub(3);
  for i in 0..max_i {
  // securityCheck：ensure不willexceedboundaryaccess

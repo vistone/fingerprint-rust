@@ -1,38 +1,38 @@
 //! # fingerprint-core
 //!
-//! **systemlevelprotectioncoreabstractlayer**
+//! **system-level protection core abstract layer**
 //!
-//! from **singleserviceprotection**improve to **systemlevelprotection**，providesystemlevelcoreabstract and interface。
+//! from **single service protection**improve to **system-level protection**, provides system-level core abstractions and interface. 
 //!
-//! ## corefixedbit
+//! ## core positioning
 //!
-//! `fingerprint-core` is systemlevelprotectioncore，alloutside部componentall revolve aroundthiscore展open：
+//! `fingerprint-core` is system-level protectioncore, all external components revolve around this core：
 //!
-//! - **systemlevelabstract**: systemupdowntext、networktraffic、protectiondecision etc.
-//! - **offense and defenseunifiedinterface**: fingerprintabstract、analysisinterface、protectioninterface etc.
-//! - **coretype and tool**: typedefine、metadata、toolfunction etc.
+//! - **system-level abstractions**: system context, network traffic, protection decision etc.
+//! - **offense and defense unified interface**: fingerprint abstractions, analysis interface, protection interface etc.
+//! - **core types and utilities**: type definitions, metadata, utility functions etc.
 //!
-//! ## coreFeatures
+//! ## Core Features
 //!
-//! ### systemlevelabstract
+//! ### system-level abstractions
 //!
-//! - **systemupdowntext** (`SystemContext`): networkentitycompleteinfo (IP、port、protocol、direction etc.)
-//! - **networktraffic** (`NetworkFlow`): systemlevelnetworktraffic，includingupdowntext and fingerprintinfo
-//! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotectionunifiedinterface
-//! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysisunifiedinterface
+//! - **system context** (`SystemContext`): complete network entity information (IP, port, protocol, direction etc.)
+//! - **network traffic** (`NetworkFlow`): systemlevelnetwork traffic, including context and fingerprint info
+//! - **systemprotection interface** (`SystemProtector`): system-level protectionunifiedinterface
+//! - **systemanalysis interface** (`SystemAnalyzer`): unified system-level analysis interface
 //!
-//! ### offense and defenseunifiedabstract
+//! ### offense and defense unified abstractions
 //!
-//! - **fingerprintabstract** (`Fingerprint` trait): support TLS、HTTP、TCP etc.multiplefingerprinttype
-//! - **fingerprintmetadata** (`FingerprintMetadata`): includingbrowser、operating system、confidence etc.info
+//! - **fingerprint abstractions** (`Fingerprint` trait): support TLS, HTTP, TCP etc.multiple fingerprint types
+//! - **fingerprintmetadata** (`FingerprintMetadata`): including browser, operating system, confidence etc.info
 //! - **TLS fingerprint** (`ClientHelloSignature`): TLS ClientHello signature
-//! - **HTTP fingerprint** (`HttpFingerprint`): HTTP requestfingerprint
-//! - **TCP fingerprint** (`TcpFingerprint`): TCP connectionfingerprint
+//! - **HTTP fingerprint** (`HttpFingerprint`): HTTP request fingerprint
+//! - **TCP fingerprint** (`TcpFingerprint`): TCP connection fingerprint
 //!
-//! ### coretype and tool
+//! ### core types and utilities
 //!
-//! - **typesystem**: `BrowserType`、`OperatingSystem` etc.coretype
-//! - **toolfunction**: GREASE process、randomly select etc.toolfunction
+//! - **type system**: `BrowserType`, `OperatingSystem` etc.coretype
+//! - **utility functions**: GREASE process, randomly select etc.utility functions
 
 pub mod database;
 pub mod dicttls;
@@ -53,13 +53,13 @@ pub mod version;
 
 // Re-export public API
 
-// fingerprintabstract
+// fingerprint abstractions
 pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison, FingerprintType};
 
 // metadata
 pub use metadata::FingerprintMetadata;
 
-// TLS mutualclose
+// TLS related
 pub use dicttls::*;
 pub use grease::{
  filter_grease_values, get_random_grease, is_grease_value, remove_grease_values,
@@ -71,34 +71,34 @@ pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
 
-// HTTP mutualclose
+// HTTP related
 pub use http::{Http2Settings, HttpFingerprint};
 
-// TCP mutualclose
+// TCP related
 pub use tcp::{TcpFingerprint, TcpProfile};
 
-// typesystem
+// type system
 pub use types::{
  BrowserType, OperatingSystem, OperatingSystems, UserAgentTemplate, OPERATING_SYSTEMS,
 };
 
-// toolfunction
+// utility functions
 pub use utils::{
  extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
  random_choice, random_choice_string,
 };
 
-// systemlevelabstract
+// system-level abstractions
 pub use system::{
  AnalysisDetails,
  FlowCharacteristics,
- // networktraffic
+ // network traffic
  NetworkFlow,
  ProtocolType,
  SystemAnalysisResult,
  // systemanalysis
  SystemAnalyzer,
- // systemupdowntext
+ // system context
  SystemContext,
  SystemProtectionDecision,
  SystemProtectionResult,

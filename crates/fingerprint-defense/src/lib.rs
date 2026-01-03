@@ -1,10 +1,10 @@
 //! # fingerprint-defense
 //!
-//! **systemlevelprotectionimplementlayer**，based on `fingerprint-core` systemlevelabstractBuild。
+//! **system-level protectionimplementlayer**, based on `fingerprint-core` system-level abstractionsBuild. 
 //!
-//! ## corefixedbit
+//! ## core positioning
 //!
-//! `fingerprint-defense` is `fingerprint-core` systemlevelprotectioninterfaceconcreteimplement。
+//! `fingerprint-defense` is `fingerprint-core` system-level protection interfaceconcreteimplement. 
 //!
 //! ## itemfrontalreadyimplementFeatures
 //!

@@ -1,6 +1,6 @@
 //! fingerprintmetadata
 //!
-//! definefingerprintmetadata，includebrowsertype、operating system、confidence etc.info.
+//! definefingerprintmetadata, includebrowsertype, operating system, confidence etc.info.
 
 use crate::types::{BrowserType, OperatingSystem};
 use chrono::{DateTime, Utc};
@@ -63,7 +63,7 @@ impl FingerprintMetadata {
  metadata
  }
 
- /// Updatesample (increasesamplecount，Updatefinallydiscover when between)
+ /// Updatesample (increasesamplecount, Updatefinallydiscover when between)
  pub fn update_sample(&mut self) {
  self.sample_count += 1;
  self.last_seen = Utc::now();
@@ -91,7 +91,7 @@ impl FingerprintMetadata {
  self.tags.contains(&tag.to_string())
  }
 
- /// settingscustomproperty (through tags store，format as "key:value")
+ /// settingscustomproperty (through tags store, format as "key:value")
  pub fn set(&mut self, key: &str, value: &str) {
  let tag = format!("{}:{}", key, value);
  // 先removeold same name key
@@ -99,7 +99,7 @@ impl FingerprintMetadata {
  self.add_tag(tag);
  }
 
- /// Getcustomproperty ( from tags in find，format as "key:value")
+ /// Getcustomproperty ( from tags in find, format as "key:value")
  pub fn get(&self, key: &str) -> Option<String> {
  let prefix = format!("{}:", key);
  self.tags

@@ -1,20 +1,20 @@
-//! systemlevelprotectioncoreabstract
+//! system-level protectioncoreabstract
 //!
-//! providesystemlevelprotectioncoreabstract and interface，includesystemupdowntext、networktraffic、protectiondecision etc.。
+//! providesystem-level protectioncoreabstract and interface, includesystem context, network traffic, protection decision etc.. 
 //!
 //! ## Core Concept
 //!
-//! from **singleserviceprotection**improve to **systemlevelprotection**：
-//! - from network interfacelevelintercept、analysis and protectionallnetworktraffic
-//! - not onlyonly is HTTP，stillinclude TCP、UDP、ICMP etc.allprotocol
-//! - systemleveldecision，canactual施firewallrule、trafficrate limit etc.systemlevelprotectionmeasure
+//! from **single service protection**improve to **system-level protection**：
+//! - from network interfacelevelintercept, analysis and protectionallnetwork traffic
+//! - not onlyonly is HTTP, stillinclude TCP, UDP, ICMP etc.allprotocol
+//! - systemleveldecision, canactual施firewallrule, trafficrate limit etc.system-level protectionmeasure
 //!
 //! ## modulestruct
 //!
-//! - `context`: systemupdowntext，includingnetworkentitycompleteinfo
-//! - `flow`: networktrafficabstract，representsystemlevelnetworktraffic
-//! - `protection`: systemlevelprotectioninterface and decision
-//! - `analysis`: systemlevelanalysisinterface and result
+//! - `context`: system context, includingcomplete network entity information
+//! - `flow`: network trafficabstract, representsystemlevelnetwork traffic
+//! - `protection`: system-level protection interface and decision
+//! - `analysis`: systemlevelanalysis interface and result
 //! - `stats`: systemlevelstatisticsinfo
 
 pub mod analysis;
@@ -28,7 +28,7 @@ pub use context::{ProtocolType, SystemContext, TrafficDirection};
 pub use flow::{FlowCharacteristics, NetworkFlow};
 pub use protection::{SystemProtectionDecision, SystemProtectionResult, SystemProtector};
 
-// Note: NetworkFlow and SystemAnalysisResult implement了 Clone，
-// butdue toincluding Box<dyn Fingerprint>，Clone when fingerprints fieldwill被清empty
+// Note: NetworkFlow and SystemAnalysisResult implement了 Clone, 
+// butdue toincluding Box<dyn Fingerprint>, Clone when fingerprints fieldwill被清empty
 pub use analysis::{AnalysisDetails, SystemAnalysisResult, SystemAnalyzer, ThreatType};
 pub use stats::SystemProtectionStats;

@@ -1,6 +1,6 @@
 //! fingerprintconsistencyChecker
 //!
-//! crossValidate TCP、TLS and HTTP layercountdata，detectdeceivebehavior and abnormal机er人。
+//! crossValidate TCP, TLS and HTTP layercountdata, detectdeceivebehavior and abnormal机er人. 
 
 use fingerprint_core::fingerprint::FingerprintType;
 use fingerprint_core::ja4::ConsistencyReport;
@@ -113,7 +113,7 @@ impl ConsistencyAnalyzer {
 
  // Check ALPN consistency
  if ja4.contains("h2") && ja4h.contains("11") {
- // TLS negotiate了 h2，butactualsend了 HTTP/1.1
+ // TLS negotiate了 h2, butactualsend了 HTTP/1.1
  report.add_discrepancy(
  "TLS handshakenegotiate了 h2，butactualrequestuse了 HTTP/1.1".to_string(),
  30,

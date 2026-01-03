@@ -165,7 +165,7 @@ impl ConnectionPoolManager {
  connection_leak_timeout: Duration::from_secs(300),
 
  // provide Dialer functionfromCreate TCP connection
- // Note: hereunable todirectlyaccess config.profile，because dialer is closepackage
+ // Note: hereunable todirectlyaccess config.profile, because dialer is closepackage
  // TCP Profile should in Createconnection poolbeforethenapplication to config in 
  dialer: Some(Box::new(move |_protocol| {
  use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
@@ -175,7 +175,7 @@ impl ConnectionPoolManager {
 .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
 .collect();
 
- // priorityuse IPv4，avoid in "none IPv6 route"environment in appear `Network is unreachable`。
+ // priorityuse IPv4, avoid in "none IPv6 route"environment in appear `Network is unreachable`. 
  let mut v4 = Vec::new();
  let mut v6 = Vec::new();
  for a in addrs {
@@ -187,7 +187,7 @@ impl ConnectionPoolManager {
 
  let mut last_err: Option<std::io::Error> = None;
  for addr in v4.into_iter().chain(v6.into_iter()) {
- // Note: heretemporary when usestandardconnection，TCP Profile should in Createconnection pool when throughothermethodapplication
+ // Note: heretemporary when usestandardconnection, TCP Profile should in Createconnection pool when throughothermethodapplication
  // TODO: support in connection pool in application TCP Profile
  match TcpStream::connect_timeout(&addr, connect_timeout) {
  Ok(s) => return Ok(ConnectionType::Tcp(s)),
@@ -250,7 +250,7 @@ impl ConnectionPoolManager {
  /// cleanupempty闲connection
  #[cfg(feature = "connection-pool")]
  pub fn cleanup_idle(&self) {
- // netconnpool willautomaticcleanup，hereonly is provideinterface
+ // netconnpool willautomaticcleanup, hereonly is provideinterface
  if let Ok(pools) = self.pools.lock() {
  println!("connection poolstatus: {} 端点", pools.len());
  }
@@ -316,7 +316,7 @@ mod tests {
  #[test]
  fn test_pool_manager_creation() {
  let manager = ConnectionPoolManager::default();
- // connection poolFeaturesnotenabled when ，no needCheckinside部status
+ // connection poolFeaturesnotenabled when , no needCheckinside部status
  assert_eq!(manager.get_stats().len(), 0);
  }
 
@@ -344,7 +344,7 @@ mod pool_tests {
 
  // Getanconnection
  let conn_result = pool.get();
- // maywillfailure ( if unable toconnection)，but不should panic
+ // maywillfailure ( if unable toconnection), but不should panic
  if let Ok(_conn) = conn_result {
  println!("successGetconnection");
  }

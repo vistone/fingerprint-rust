@@ -1,13 +1,13 @@
 //! IO auxiliary：read HTTP/1.x response bytes
 //!
-//! destination：avoidonly靠 `read_to_end()` (dependconnectionclose)causeblocking/waitissue。
+//! destination：avoidonly靠 `read_to_end()` (dependconnectionclose)causeblocking/waitissue. 
 //! currentimplementwill：
 //! - read first to `\r\n\r\n` Getresponseheader
 //! - 若有 `Content-Length`：read to complete body backreturn
 //! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (none trailer commonscenario)backreturn
 //! - otherwise：读 to EOF ( etc.equivalent toconnectionclose)
 //!
-//! same when providemaximumresponsesizeprotect，preventinsidesavebe overwhelmed。
+//! same when providemaximumresponsesizeprotect, preventinsidesavebe overwhelmed. 
 
 use std::io;
 use std::io::Read;
@@ -104,8 +104,8 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
  if let Some(end) = headers_end {
  let body = &buf[end..];
  if find_subsequence(body, b"0\r\n\r\n").is_some() {
- // here不tryprecisedeterminebitendbitplace (trailer situationcomparecomplex)，
- // as long as读 to endflagcanreturn，hand overbackcontinueParseprocess。
+ // here不tryprecisedeterminebitendbitplace (trailer situationcomparecomplex), 
+ // as long as读 to endflagcanreturn, hand overbackcontinueParseprocess. 
  break;
  }
  }

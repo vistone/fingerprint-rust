@@ -1,12 +1,12 @@
 //! TLS metadatastoremodule
 //!
-//! in Build ClientHelloSpec when saveextensionmetadata (SNI、ALPN etc.)
+//! in Build ClientHelloSpec when saveextensionmetadata (SNI, ALPN etc.)
 //! this waycan in Extractsignature when Getcompleteinfo
 
 use std::collections::HashMap;
 
 /// TLS extensionmetadata
-/// storeextensioninside部countdata， for backcontinueExtract
+/// storeextensioninside部countdata,  for backcontinueExtract
 #[derive(Debug, Clone, Default)]
 pub struct ExtensionMetadata {
  /// SNI value ( if exists)

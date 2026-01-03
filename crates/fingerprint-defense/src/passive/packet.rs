@@ -1,6 +1,6 @@
 //! countpacketParsemodule
 //!
-//! providebottomlayercountpacketParseFeatures。
+//! providebottomlayercountpacketParseFeatures. 
 
 use bytes::Bytes;
 use std::net::IpAddr;
@@ -93,7 +93,7 @@ impl PacketParser {
 
  let ihl = (raw_packet[0] & 0x0F) as usize;
  
- // securityCheck：IHL mustat least as 5 (20 bytes)，at most as 15 (60 bytes)
+ // securityCheck：IHL mustat least as 5 (20 bytes), at most as 15 (60 bytes)
  if ihl < 5 || ihl > 15 {
  return Err(PacketError::Other("invalid IHL value".to_string()));
  }
@@ -173,16 +173,16 @@ impl PacketParser {
  return Err(PacketError::InvalidVersion);
  }
 
- // loadlength (16bit，bytes 4-5)
+ // loadlength (16bit, bytes 4-5)
  let payload_length = u16::from_be_bytes([raw_packet[4], raw_packet[5]]) as usize;
 
- // nextheader (protocoltype，bytes 6)
+ // nextheader (protocoltype, bytes 6)
  let next_header = raw_packet[6];
 
- // jumpcountlimit (TTL，bytes 7)
+ // jumpcountlimit (TTL, bytes 7)
  let hop_limit = raw_packet[7];
 
- // sourceaddress (128bit，bytes 8-23)
+ // sourceaddress (128bit, bytes 8-23)
  let src_ip = IpAddr::from([
  raw_packet[8],
  raw_packet[9],
@@ -202,7 +202,7 @@ impl PacketParser {
  raw_packet[23],
  ]);
 
- // targetaddress (128bit，bytes 24-39)
+ // targetaddress (128bit, bytes 24-39)
  let dst_ip = IpAddr::from([
  raw_packet[24],
  raw_packet[25],
@@ -272,13 +272,13 @@ impl PacketParser {
  let _length = u16::from_be_bytes([data[4], data[5]]);
  let _checksum = u16::from_be_bytes([data[6], data[7]]);
 
- // UDP no TCP headerstruct，return None
+ // UDP no TCP headerstruct, return None
  Ok((src_port, dst_port, None))
  }
 
  /// Parse ICMP header
  fn parse_icmp(_data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
- // ICMP noportgeneral念，return 0
+ // ICMP noportgeneral念, return 0
  // ICMP type and code in data[0] and data[1]
  Ok((0, 0, None))
  }
@@ -299,7 +299,7 @@ impl PacketParser {
  };
  let data_offset = ((data[12] >> 4) & 0x0F) as usize;
  
- // securityCheck：data_offset mustat least as 5 (20 bytes)，at most as 15 (60 bytes)
+ // securityCheck：data_offset mustat least as 5 (20 bytes), at most as 15 (60 bytes)
  if data_offset < 5 || data_offset > 15 {
  return Err(PacketError::Other("invalid TCP data offset".to_string()));
  }
@@ -336,7 +336,7 @@ impl PacketParser {
  }
  let length = data[offset + 1] as usize;
  
- // securityCheck：length mustat least as 2， and cannotcauseexceedboundary
+ // securityCheck：length mustat least as 2,  and cannotcauseexceedboundary
  if length < 2 || offset + length > data.len() || offset + length > header_len {
  break;
  }

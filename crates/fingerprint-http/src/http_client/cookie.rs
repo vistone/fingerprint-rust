@@ -1,6 +1,6 @@
 //! Cookie manageer
 //!
-//! for manage HTTP Cookie store、send and receive
+//! for manage HTTP Cookie store, send and receive
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -128,7 +128,7 @@ impl CookieStore {
  if let Ok(mut cookies) = self.cookies.lock() {
  let domain_cookies = cookies.entry(cookie.domain.clone()).or_default();
 
- // Checkwhetheralready existssame name Cookie， if existsthenUpdate
+ // Checkwhetheralready existssame name Cookie,  if existsthenUpdate
  if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
  domain_cookies[pos] = cookie;
  } else {
@@ -209,7 +209,7 @@ impl CookieStore {
  return None;
  }
 
- // filterpathmatch Cookie，并Check Secure property
+ // filterpathmatch Cookie, 并Check Secure property
  let matching_cookies: Vec<String> = cookies
 .iter()
 .filter(|c| {

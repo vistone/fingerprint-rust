@@ -1,6 +1,6 @@
 //! TLS configuration宏
 //!
-//! provide宏fromsimplifycommonconfigurationBuild，decreaseduplicatecode
+//! provide宏fromsimplifycommonconfigurationBuild, decreaseduplicatecode
 
 /// Create Chrome extensionlistauxiliary宏
 /// similar wreq-util 宏design

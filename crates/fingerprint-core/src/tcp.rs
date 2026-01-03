@@ -1,6 +1,6 @@
 //! TCP fingerprintcoretype
 //!
-//! define TCP fingerprintcorecountdatastruct。
+//! define TCP fingerprintcorecountdatastruct. 
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
@@ -76,12 +76,12 @@ impl TcpProfile {
 
  /// from User-Agent stringinferoperating system并Generates corresponding TCP Profile
  ///
- /// this isunifiedfingerprintGeneratecorefunction，ensurebrowserfingerprint and TCP fingerprintsync
+ /// this isunifiedfingerprintGeneratecorefunction, ensurebrowserfingerprint and TCP fingerprintsync
  pub fn from_user_agent(user_agent: &str) -> Self {
  use crate::types::OperatingSystem;
 
  // from User-Agent inferoperating system
- // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
+ // Note: iPhone/iPad User-Agent including "Mac OS X", need先Checkmovedevice
  let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
  // iOS device：use macOS TCP fingerprint (iOS based on macOS)
  OperatingSystem::MacOS14
@@ -252,7 +252,7 @@ impl Fingerprint for TcpFingerprint {
  }
 
  // TCP fingerprintsimilardegreejudge：allowcertain tolerance
- // heresimplifyprocess，actualshouldconsider TTL infervalue、Window Size 倍countclosesystem etc.
+ // heresimplifyprocess, actualshouldconsider TTL infervalue, Window Size 倍countclosesystem etc.
  self.hash() == other.hash()
  }
 

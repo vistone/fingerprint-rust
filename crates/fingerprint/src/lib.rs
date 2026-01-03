@@ -1,24 +1,24 @@
 //! # fingerprint
 //!
-//! anindependentbrowser TLS fingerprintlibrary， from golang versionmigrate而from。
+//! anindependentbrowser TLS fingerprintlibrary,  from golang versionmigrate而from. 
 //!
 //! ## Features
 //!
-//! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint (Chrome、Firefox、Safari、Opera、Edge)
-//! - ✅ **real TLS configuration**：complete TLS Client Hello Spec (cipher suite、elliptic curve、extension etc.)
+//! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint (Chrome, Firefox, Safari, Opera, Edge)
+//! - ✅ **real TLS configuration**：complete TLS Client Hello Spec (cipher suite, elliptic curve, extension etc.)
 //! - ✅ **JA4 fingerprintGenerate**：complete JA4 TLS clientfingerprintGenerate (sorted and unsorted version)
 //! - ✅ **fingerprintcompare**：supportfingerprintsimilardegreecompare and most佳matchfind
 //! - ✅ **GREASE process**：complete GREASE valuefilter and process
-//! - ✅ **mobilesupport**：iOS、Android mobilefingerprint
-//! - ✅ **HTTP/2 & HTTP/3**：complete HTTP/2 configuration，compatible HTTP/3
+//! - ✅ **mobilesupport**：iOS, Android mobilefingerprint
+//! - ✅ **HTTP/2 & HTTP/3**：complete HTTP/2 configuration, compatible HTTP/3
 //! - ✅ **User-Agent match**：automaticGeneratematch User-Agent
 //! - ✅ **standard HTTP Headers**：complete's standard HTTP requestheader
 //! - ✅ **globallanguagesupport**：30+ 种language Accept-Language
 //! - ✅ **operating systemrandom化**：randomly selectoperating system
-//! - ✅ **highperformance**：零allocateclosekeyoperation，concurrentsecurity
+//! - ✅ **highperformance**：零allocateclosekeyoperation, concurrentsecurity
 //! - ✅ **Rust standard**：strictfollow Rust languagestandard and best practice
 //! - ✅ **independentlibrary**：不dependother TLS clientlibrary
-//! - ✅ **codequalityquantity**：throughall Clippy Check，follow Rust best practice
+//! - ✅ **codequalityquantity**：throughall Clippy Check, follow Rust best practice
 
 #[cfg(feature = "export")]
 pub mod export;

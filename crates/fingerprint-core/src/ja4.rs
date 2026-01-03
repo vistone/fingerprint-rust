@@ -1,7 +1,7 @@
 //! JA4+ fingerprintseriesimplement
 //!
-//! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) etc.algorithmabstract and Calculatelogic。
-//! reference自 FoxIO JA4+ specification。
+//! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) etc.algorithmabstract and Calculatelogic. 
+//! reference自 FoxIO JA4+ specification. 
 
 use serde::{Deserialize, Serialize};
 
@@ -227,7 +227,7 @@ impl std::fmt::Display for JA4T {
 
 /// JA4S TLS serverfingerprint (JA4 style)
 /// 
-/// and JA3S similar，butuse SHA256 rather than MD5
+/// and JA3S similar, butuse SHA256 rather than MD5
 /// format: t_v_c_e (for example: t13d_1301_0000)
 /// 
 /// ## Examples
@@ -462,7 +462,7 @@ mod ja4s_tests {
 
 /// JA4L - lightweightlevelfingerprint (Light Version)
 ///
-/// simplify版 JA4，suitable for 资source受limitenvironment
+/// simplify版 JA4, suitable for 资source受limitenvironment
 /// - usemorefasthashalgorithm
 /// - decreaseCalculatecomplexdegree
 /// - moresmallinsidesaveusage
@@ -499,10 +499,10 @@ pub struct JA4L {
  /// extensioncount
  pub extension_count: usize,
  
- /// cipher suitesampling (front3，hexadecimal)
+ /// cipher suitesampling (front3, hexadecimal)
  pub cipher_sample: String,
  
- /// extensionsampling (front3，hexadecimal)
+ /// extensionsampling (front3, hexadecimal)
  pub extension_sample: String,
 }
 
@@ -613,7 +613,7 @@ impl JA4L {
  }
 
  /// estimatefingerprintCalculatebecomethis (mutualpairvalue)
- /// returnvalue：1-10，1 as mostlightweight，10 as most重
+ /// returnvalue：1-10, 1 as mostlightweight, 10 as most重
  pub fn computational_cost() -> u8 {
  2 // JA4L is lightweightlevel的，成本评分 as 2/10
  }

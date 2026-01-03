@@ -39,8 +39,8 @@ impl ClientHelloMessage {
  ///
  /// # Errors
  ///
- /// Ifunable toGetencryptionsecurityrandomcount ( in no `crypto` feature when ), willreturnerror。
- /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurityproperty。
+ /// Ifunable toGetencryptionsecurityrandomcount ( in no `crypto` feature when ), willreturnerror. 
+ /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurityproperty. 
  pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
  // use TLS 1.2 asclientversion (in order tocompatibleproperty)
  let client_version = spec.tls_vers_max.max(0x0303);
@@ -49,8 +49,8 @@ impl ClientHelloMessage {
  let mut random = Vec::with_capacity(32);
 
  // front 4 bytes: Unix when between戳
- // usecurrent when between， if Getfailurethenuse 0 (虽natural不toomayfailure)
- // fix 2038 year overflowissue：explicittruncatehighbit，ensure u32 rangeinside
+ // usecurrent when between,  if Getfailurethenuse 0 (虽natural不toomayfailure)
+ // fix 2038 year overflowissue：explicittruncatehighbit, ensure u32 rangeinside
  let timestamp = std::time::SystemTime::now()
 .duration_since(std::time::UNIX_EPOCH)
 .map(|d| (d.as_secs() & 0xFFFFFFFF) as u32) // explicittruncatehighbit，prevent 2038 year overflow
@@ -69,7 +69,7 @@ impl ClientHelloMessage {
  #[cfg(not(feature = "crypto"))]
  {
  // Ifno crypto feature, try from systemrandomcountsourceGetencryptionsecurityrandomcount
- // Ifunable toGet, directlyreturnerror，不allowuse不security降levelsolution
+ // Ifunable toGet, directlyreturnerror, 不allowuse不security降levelsolution
  use std::io::Read;
  let mut random_bytes = [0u8; 28];
 

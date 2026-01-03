@@ -3,7 +3,7 @@ fn main() {
  use bytes::Bytes;
  use chrono::Utc;
  use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
- // use fingerprint_core::Fingerprint; // notuse，alreadycomment
+ // use fingerprint_core::Fingerprint; // notuse, alreadycomment
  use fingerprint_defense::passive::consistency::ConsistencyAnalyzer;
  use fingerprint_defense::passive::http::HttpAnalyzer;
  use fingerprint_defense::passive::packet::{Packet, TcpHeader, TcpOption};

@@ -262,7 +262,7 @@ impl UserAgentGenerator {
  }
 
  /// Based on fingerprint name and specifiedoperating systemGet User-Agent
- /// If os as None, and need operating system information，will randomly select anoperating system
+ /// If os as None, and need operating system information, will randomly select anoperating system
  pub fn get_user_agent_with_os(
  &self,
  profile_name: &str,

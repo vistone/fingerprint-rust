@@ -5,7 +5,7 @@
 //! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
 //! - netconnpool role：only in Createnewsession when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
-//! - sessionestablishback，connectionlifecycleby H2Session backbackground task (Driver)manage
+//! - sessionestablishback, connectionlifecycleby H2Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -28,8 +28,8 @@ pub async fn send_http2_request_with_pool(
  use tokio_rustls::TlsConnector;
 
  // Note: connection poolinconnection in Create when maynoapplication TCP Profile
- // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbeforethenthrough generate_unified_fingerprint sync TCP Profile
- // herewestill from connection poolGetconnection，butnewCreateconnectionwillapplication TCP Profile ( if configuration了)
+ // in order toensure TCP fingerprintconsistency, wesuggest in Createconnection poolbeforethenthrough generate_unified_fingerprint sync TCP Profile
+ // herewestill from connection poolGetconnection, butnewCreateconnectionwillapplication TCP Profile ( if configuration了)
 
  // from connection poolGetconnection
  let pool = pool_manager.get_pool(host, port)?;
@@ -40,7 +40,7 @@ pub async fn send_http2_request_with_pool(
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
  // from Connection in Extract TcpStream
- // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection method
+ // PooledConnection implement了 Deref<Target = Connection>, candirectlyuse Connection method
  let tcp_stream = conn
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
@@ -154,7 +154,7 @@ pub async fn send_http2_request_with_pool(
  })
 .uri(uri)
 .version(Version::HTTP_2)
- // do notmanualAdd host header，h2 willautomatic from URI Extract
+ // do notmanualAdd host header, h2 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
  // Fix: Add Cookie to request ( if exists)
@@ -176,36 +176,36 @@ pub async fn send_http2_request_with_pool(
 .filter(|(k, _)| k.to_lowercase() != "host")
 .fold(http2_request, |builder, (k, v)| builder.header(k, v));
 
- // Fix: Buildrequest (h2 need Request<()>，thenthrough SendStream send body)
+ // Fix: Buildrequest (h2 need Request<()>, thenthrough SendStream send body)
  let http2_request = http2_request
 .body(())
 .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
 
  // sendrequest (Get SendStream for send body)
- // Fix: end_of_stream must as false，otherwisestreamwillimmediatelyclose，unable tosend body
+ // Fix: end_of_stream must as false, otherwisestreamwillimmediatelyclose, unable tosend body
  let has_body = request.body.is_some() && !request.body.as_ref().unwrap().is_empty();
  let (response, mut send_stream) = client
 .send_request(http2_request, false) // Fix: 改 as false，only in send完 body back才endstream
 .map_err(|e| HttpClientError::Http2Error(format!("sendrequestfailure: {}", e)))?;
 
- // releaselock，allowotherrequestreusesameansession
+ // releaselock, allowotherrequestreusesameansession
  drop(client);
 
  // Fix: through SendStream sendrequest体 ( if exists)
  if let Some(body) = &request.body {
  if !body.is_empty() {
- // send body countdata，end_of_stream = true representthis isfinallycountdata
+ // send body countdata, end_of_stream = true representthis isfinallycountdata
  send_stream
 .send_data(::bytes::Bytes::from(body.clone()), true)
 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
  } else {
- // empty body，sendemptycountdata并endstream
+ // empty body, sendemptycountdata并endstream
  send_stream
 .send_data(::bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
  }
  } else if !has_body {
- // no body，sendemptycountdata并endstream
+ // no body, sendemptycountdata并endstream
  send_stream
 .send_data(::bytes::Bytes::new(), true)
 .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
@@ -219,7 +219,7 @@ pub async fn send_http2_request_with_pool(
  // 先Extract status and headers
  let status_code = response.status().as_u16();
 
- // securityFix: Check HTTP/2 responseheadersize，prevent Header compressionbombattack
+ // securityFix: Check HTTP/2 responseheadersize, prevent Header compressionbombattack
  const MAX_HTTP2_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 7540 suggestminimumvalue)
  let total_header_size: usize = response
 .headers()
@@ -315,7 +315,7 @@ mod tests {
  )
 .await;
 
- // maywillfailure (networkissue)，but不should panic
+ // maywillfailure (networkissue), but不should panic
  if let Ok(response) = &result1 {
  assert_eq!(response.http_version, "HTTP/2");
  assert!(response.status_code > 0);
@@ -325,7 +325,7 @@ mod tests {
  return;
  }
 
- // waita smallsegment when between，ensuresessionalreadyestablish
+ // waita smallsegment when between, ensuresessionalreadyestablish
  tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
  println!("\n📡 sendsecond HTTP/2 request (shouldreusesession)...");

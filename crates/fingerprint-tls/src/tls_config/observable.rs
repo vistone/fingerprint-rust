@@ -13,7 +13,7 @@ use fingerprint_core::dicttls::supported_groups::CurveID;
 /// reference：Huginn Net Profiler TlsClientObserved
 #[derive(Debug, Clone, PartialEq)]
 pub struct TlsClientObserved {
- /// TLS version (stringrepresent，如 "13", "12")
+ /// TLS version (stringrepresent, 如 "13", "12")
  pub version: String,
  /// Server Name Indication
  pub sni: Option<String>,

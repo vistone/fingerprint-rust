@@ -1,6 +1,6 @@
-//! toolfunctionmodule
+//! utility functionsmodule
 //!
-//! providerandomly select、stringprocess etc.toolfunction
+//! providerandomly select, stringprocess etc.utility functions
 
 use rand::Rng;
 
@@ -59,11 +59,11 @@ pub fn extract_platform(user_agent: &str) -> String {
 
 /// from User-Agent in Extractoperating systemtype
 ///
-/// for unifiedfingerprintGenerate，ensurebrowserfingerprint and TCP fingerprintsync
+/// for unifiedfingerprintGenerate, ensurebrowserfingerprint and TCP fingerprintsync
 pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
  use crate::types::OperatingSystem;
 
- // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
+ // Note: iPhone/iPad User-Agent including "Mac OS X", need先Checkmovedevice
  if user_agent.contains("iPhone") || user_agent.contains("iPad") {
  // iOS device：use macOS TCP fingerprint (iOS based on macOS)
  OperatingSystem::MacOS14

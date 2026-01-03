@@ -163,7 +163,7 @@ pub fn safari_pseudo_header_order() -> Vec<String> {
 pub const CHROME_CONNECTION_FLOW: u32 = 15663105;
 
 /// Chrome Header Priority
-/// weight in HTTP/2 is 1-256， but in Rust we use u8 (0-255)
+/// weight in HTTP/2 is 1-256,  but in Rust we use u8 (0-255)
 /// actualwhen used needconvert to HTTP/2 weight value (weight = value + 1)
 pub fn chrome_header_priority() -> HTTP2PriorityParam {
  HTTP2PriorityParam::new(255, 0, false) // Corresponds to HTTP/2 weight = 256

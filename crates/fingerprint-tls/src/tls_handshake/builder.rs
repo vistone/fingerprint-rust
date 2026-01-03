@@ -11,7 +11,7 @@ pub struct TLSHandshakeBuilder;
 impl TLSHandshakeBuilder {
  /// Based on ClientHelloSpec Build TLS ClientHello record
  ///
- /// returncomplete TLS recordbytesstream，candirectlysend to server
+ /// returncomplete TLS recordbytesstream, candirectlysend to server
  pub fn build_client_hello(
  spec: &ClientHelloSpec,
  server_name: &str,

@@ -1,6 +1,6 @@
 //! DNS Parseermodule
 //!
-//! provideconcurrent DNS ParseFeatures，usecustom DNS serverlist
+//! provideconcurrent DNS ParseFeatures, usecustom DNS serverlist
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::{DNSError, DNSResult, DomainIPs, IPInfo};
@@ -20,7 +20,7 @@ pub struct DNSResolver {
  timeout: Duration,
  /// DNS serverpool
  server_pool: Arc<ServerPool>,
- /// Fix: cache resolver instance，avoidfrequentCreate and destroy
+ /// Fix: cache resolver instance, avoidfrequentCreate and destroy
  /// use Arc<Mutex<HashMap>> storeeach DNS server resolver
  resolver_cache:
  Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioAsyncResolver>>>>,
@@ -96,7 +96,7 @@ impl DNSResolver {
  self.resolve_with_hickory(domain, ipv6).await
  }
 
- /// use hickory-resolver perform DNS query，concurrentquerymultiple DNS server以Getallmay IP
+ /// use hickory-resolver perform DNS query, concurrentquerymultiple DNS server以Getallmay IP
  async fn resolve_with_hickory(
  &self,
  domain: &str,
@@ -113,8 +113,8 @@ impl DNSResolver {
  eprintln!("[DNS Resolver] serverpool总count: {}", servers.len());
 
  // useallserverconcurrentquery (不limitcount)
- // Go item ResolveDomain use pool.GetAllServers() Getallserver，concurrentquery
- // failureserverwill被ignore，successserverreturn IP will被collect并deduplicate
+ // Go item ResolveDomain use pool.GetAllServers() Getallserver, concurrentquery
+ // failureserverwill被ignore, successserverreturn IP will被collect并deduplicate
  eprintln!("[DNS Resolver] willqueryall {} server", servers.len());
 
  let servers_with_sockets: Vec<_> = servers
@@ -164,7 +164,7 @@ impl DNSResolver {
  );
 
  // concurrentquerymultiple DNS server
- // usetimeoutwrap，avoidsingle慢serverblockingwholequery
+ // usetimeoutwrap, avoidsingle慢serverblockingwholequery
  let server_pool = self.server_pool.clone();
  let query_timeout = self.timeout; // use resolver overalltimeout duration
  // Fix: shared resolver cache
@@ -182,9 +182,9 @@ impl DNSResolver {
  async move {
  let start_time = std::time::Instant::now();
 
- // usetimeoutwrapquery，avoidsingleserverblocking
+ // usetimeoutwrapquery, avoidsingleserverblocking
  let query_result = tokio::time::timeout(query_timeout, async {
- // Fix: reuse resolver instance，avoidfrequentCreate and destroy
+ // Fix: reuse resolver instance, avoidfrequentCreate and destroy
  // use server_str as key fromcache resolver
  let resolver = {
  let mut cache = resolver_cache.lock().unwrap_or_else(|e| {
@@ -223,7 +223,7 @@ impl DNSResolver {
  let mut ips = Vec::new();
  let mut record_count = 0usize;
 
- // traverse历allrecord，collectall IP address
+ // traverse历allrecord, collectall IP address
  for record in lookup.record_iter() {
  record_count += 1;
  if let Some(rdata) = record.data() {
@@ -243,7 +243,7 @@ impl DNSResolver {
  // recordsuccessresponse when between
  let response_time = start_time.elapsed();
  if !ips.is_empty() {
- // printdetailedlog，displayreturnall IP
+ // printdetailedlog, displayreturnall IP
  eprintln!("[DNS Query] ✅ server {} success，return {} IP (共 {} 条record)，耗 when: {:?}",
  server_str, ips.len(), record_count, response_time);
  if ips.len() > 1 {
@@ -262,9 +262,9 @@ impl DNSResolver {
  Ok(ips)
  }
  Ok(Err(_)) | Err(_) => {
- // recordfailure (queryfailure or timeout)，不printlog以decreaseoutput
+ // recordfailure (queryfailure or timeout), 不printlog以decreaseoutput
  let _ = server_pool.record_failure(&server_str);
- // singleserverfailure不impactwhole，returnemptyresult
+ // singleserverfailure不impactwhole, returnemptyresult
  Ok::<Vec<String>, DNSError>(Vec::new())
  }
  }
@@ -274,8 +274,8 @@ impl DNSResolver {
 
  eprintln!("[DNS Resolver] startconcurrentquery，concurrentcount: 50");
 
- // streamstylecollectresult，waitallserverresponse，collect尽maymultiple IP
- // for large numberserver，increaseoveralltimeout duration
+ // streamstylecollectresult, waitallserverresponse, collect尽maymultiple IP
+ // for large numberserver, increaseoveralltimeout duration
  let overall_timeout = Duration::from_secs(30); // overalltimeout 30 seconds，ensureallserver都有机willresponse
  let mut all_ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP 只willpreservean
  let mut query_tasks = query_tasks;
@@ -283,7 +283,7 @@ impl DNSResolver {
  let mut failure_count = 0usize;
  let mut total_ips_received = 0usize; // statistics收 to 总 IP count (deduplicatefront)
 
- // usetimeout and streamstyleprocess，collect尽maymultipleresult
+ // usetimeout and streamstyleprocess, collect尽maymultipleresult
  let timeout_future = tokio::time::sleep(overall_timeout);
  tokio::pin!(timeout_future);
  let start_time = std::time::Instant::now();
@@ -318,7 +318,7 @@ impl DNSResolver {
  ips_count, new_ips_count, ips_count - new_ips_count);
  }
 
- // regularprintprogress，displaydeduplicatestatistics
+ // regularprintprogress, displaydeduplicatestatistics
  if last_log_time.elapsed() >= log_interval {
  let duplicate_count = total_ips_received - all_ips.len();
  eprintln!("[DNS Resolver] progress: {}/{} servercomplete，success {} ，failure {} ",
@@ -336,7 +336,7 @@ impl DNSResolver {
  success_count + failure_count, total_servers, success_count, failure_count, all_ips.len());
  last_log_time = std::time::Instant::now();
  }
- // singlequeryfailure，continue
+ // singlequeryfailure, continue
  }
  None => {
  // allquerycomplete
@@ -369,7 +369,7 @@ impl DNSResolver {
  if total_ips_received > 0 { (duplicate_count as f64 / total_ips_received as f64) * 100.0 } else { 0.0 });
 
  // convert to IPInfo list
- // Note: all_ips is HashSet，alreadyautomaticdeduplicate，same IP onlywillpreservean
+ // Note: all_ips is HashSet, alreadyautomaticdeduplicate, same IP onlywillpreservean
  let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
  eprintln!(
@@ -405,7 +405,7 @@ impl DNSResolver {
  ip_infos.push(IPInfo::new(ip.to_string()));
  }
  _ => {
- // does not matchtype，skip
+ // does not matchtype, skip
  }
  }
  }

@@ -24,7 +24,7 @@ pub use supported_groups::*;
 /// Corresponds to Go version's tls.CurveID
 pub type CurveID = u16;
 
-/// in order to and Go versionkeepconsistent，providealias
+/// in order to and Go versionkeepconsistent, providealias
 /// Corresponds to Go version's tls.CurveP256
 pub const CURVE_P256: u16 = supported_groups::SECP256R1;
 /// Corresponds to Go version's tls.CurveP384

@@ -25,7 +25,7 @@ pub fn send_http3_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // Fix: useglobalsingleton Runtime，avoideach timerequest都Create a newrun when 
+ // Fix: useglobalsingleton Runtime, avoideach timerequest都Create a newrun when 
  RUNTIME.block_on(async { send_http3_request_async(host, port, path, request, config).await })
 }
 
@@ -56,7 +56,7 @@ async fn send_http3_request_async(
  let mut transport = TransportConfig::default();
 
  // connectionmigrate (Connection Migration) optimize
- // QUIC allow in IP toggle when keepconnection，thispairmobilesimulate至closeimportant
+ // QUIC allow in IP toggle when keepconnection, thispairmobilesimulate至closeimportant
  transport.initial_rtt(Duration::from_millis(100));
  transport.max_idle_timeout(Some(
  Duration::from_secs(60)
@@ -66,7 +66,7 @@ async fn send_http3_request_async(
  // increasekeep-alivefrequency以auxiliaryconnectionmigrateidentify
  transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
- // allowpairendmigrate (defaultalreadyopen，hereexplicitexplain其importantproperty)
+ // allowpairendmigrate (defaultalreadyopen, hereexplicitexplain其importantproperty)
  // transport.allow_peer_migration(true);
 
  // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)
@@ -79,7 +79,7 @@ async fn send_http3_request_async(
 
  client_config.transport_config(Arc::new(transport));
 
- // 2. DNS Parse (priority IPv4，avoid IPv4 endpoint connection IPv6 remote cause invalid remote address)
+ // 2. DNS Parse (priority IPv4, avoid IPv4 endpoint connection IPv6 remote cause invalid remote address)
  let addr_str = format!("{}:{}", host, port);
  let mut addrs: Vec<SocketAddr> = addr_str
 .to_socket_addrs()
@@ -170,7 +170,7 @@ async fn send_http3_request_async(
  }
 
  // Add headers
- // Note: do notmanualAdd host header，h3 willautomatic from URI Extract
+ // Note: do notmanualAdd host header, h3 willautomatic from URI Extract
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
@@ -180,7 +180,7 @@ async fn send_http3_request_async(
  }
  }
 
- // Fix: Buildrequest (h3 need Request<()>，thenthrough stream send body)
+ // Fix: Buildrequest (h3 need Request<()>, thenthrough stream send body)
  let http_request = http_request
 .body(())
 .map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
@@ -215,8 +215,8 @@ async fn send_http3_request_async(
  let status_code = response.status().as_u16();
  let headers = response.headers().clone();
 
- // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compressionbombattack
- // h3 crate 0.0.4 defaultlimitusuallylarger，weAdd额outsideCheck
+ // securityFix: Check HTTP/3 responseheadersize, prevent QPACK compressionbombattack
+ // h3 crate 0.0.4 defaultlimitusuallylarger, weAdd额outsideCheck
  const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 suggestminimumvalue)
  let total_header_size: usize = headers
 .iter()

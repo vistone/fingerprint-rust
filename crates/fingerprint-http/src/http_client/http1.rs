@@ -1,6 +1,6 @@
 //! HTTP/1.1 implement
 //!
-//! use netconnpool manage TCP connection，send HTTP/1.1 request
+//! use netconnpool manage TCP connection, send HTTP/1.1 request
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;

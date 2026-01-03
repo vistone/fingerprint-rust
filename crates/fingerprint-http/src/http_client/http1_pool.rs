@@ -4,8 +4,8 @@
 //! - HTTP/1.1 adopt netconnpool manage TCP connection pool
 //! - pool化pair象：TcpStream (裸 TCP connection)
 //! - reusemethod：serialreuse (anconnectionsame when betweencan onlyprocessanrequest)
-//! - protocollimit：HTTP/1.1 unable tomultiplereuse，needlarge numberconnectionsupportconcurrent
-//! - netconnpool negative责：connectionCreate、keepactive、故障detect and recycle
+//! - protocollimit：HTTP/1.1 unable tomultiplereuse, needlarge numberconnectionsupportconcurrent
+//! - netconnpool negative责：connectionCreate, keepactive, 故障detect and recycle
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;
@@ -34,7 +34,7 @@ pub fn send_http1_request_with_pool(
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
  // from Connection in Extract TcpStream
- // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection method
+ // PooledConnection implement了 Deref<Target = Connection>, candirectlyuse Connection method
  let tcp_stream = conn
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
@@ -103,7 +103,7 @@ mod tests {
  let result =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // maywillfailure (networkissue)，but不should panic
+ // maywillfailure (networkissue), but不should panic
  if let Ok(response) = result {
  println!("status code: {}", response.status_code);
  assert!(response.status_code > 0);

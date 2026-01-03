@@ -1,6 +1,6 @@
 //! passivefingerprintidentifymodule
 //!
-//! implement p0f stylepassivefingerprintidentify，include TCP、HTTP、TLS analysis。
+//! implement p0f stylepassivefingerprintidentify, include TCP, HTTP, TLS analysis. 
 
 pub mod consistency;
 pub mod http;
@@ -17,7 +17,7 @@ pub use packet::{Packet, PacketParser};
 pub use tcp::{TcpAnalyzer, TcpFeatures, TcpFingerprint};
 pub use tls::{TlsAnalyzer, TlsFingerprint};
 
-// use core insystemlevelabstract
+// use core insystem-level abstractions
 use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
 
 /// passiveanalysiser (multipleprotocol)
@@ -59,7 +59,7 @@ impl PassiveAnalyzer {
  result
  }
 
- /// analysiscountpacket并return NetworkFlow (newmethod， for systemlevelprotection)
+ /// analysiscountpacket并return NetworkFlow (newmethod,  for system-level protection)
  pub fn analyze_to_flow(&self, packet: &Packet) -> Result<NetworkFlow, PassiveError> {
  // 1. determineprotocoltype
  let protocol = match (
@@ -88,7 +88,7 @@ impl PassiveAnalyzer {
  context.timestamp = chrono::Utc::now();
  context.packet_size = packet.payload.len();
 
- // intelligentdirectionidentify： if is privateaddresssendtowardpublic network，usually is Outbound；reverse之 is Inbound
+ // intelligentdirectionidentify： if is privateaddresssendtowardpublic network, usually is Outbound；reverse之 is Inbound
  // herelogiccanBased ondeployenvironment (gateway vs finalend)furtherfine-tune
  let src_is_local = match packet.src_ip {
  std::net::IpAddr::V4(ip) => ip.is_loopback() || ip.is_private(),

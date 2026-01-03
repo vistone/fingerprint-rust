@@ -1,6 +1,6 @@
 //! fingerprint自learnmodule
 //!
-//! automatic from observe to traffic in learn and Updatefingerprintsignature。
+//! automatic from observe to traffic in learn and Updatefingerprintsignature. 
 
 use crate::database::FingerprintDatabase;
 use crate::passive::PassiveAnalysisResult;
@@ -58,7 +58,7 @@ impl SelfLearningAnalyzer {
 
  let key = format!("{}:{}", fp_type, fp_id);
 
- // protectionpoint：limitobservelistsize，preventinsidesaveburst (DoS protection)
+ // protectionpoint：limitobservelistsize, preventinsidesaveburst (DoS protection)
  const MAX_OBSERVATIONS: usize = 10000;
  if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
  // Ifreach to uplimit and  is new key, thenignore
@@ -69,7 +69,7 @@ impl SelfLearningAnalyzer {
  *count += 1;
 
  if *count >= self.learning_threshold {
- // reach to thresholdvalue，can in database in establishinitialstepentry
+ // reach to thresholdvalue, can in database in establishinitialstepentry
  // TODO: Extracttrait并store as pendingcoreallowsignature
  println!("[Learner] Detected stable unknown fingerprint: {}", key);
  }

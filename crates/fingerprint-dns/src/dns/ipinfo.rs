@@ -1,6 +1,6 @@
 //! IPInfo.io setbecomemodule
 //!
-//! from IPInfo.io API Get IP addressdetailedinfo (geographicbitplace、ISP etc.)
+//! from IPInfo.io API Get IP addressdetailedinfo (geographicbitplace, ISP etc.)
 
 use crate::dns::types::{DNSError, IPInfo};
 use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
@@ -20,8 +20,8 @@ impl IPInfoClient {
 
  /// Get IP addressdetailedinfo
  pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
- // securityFix: use HTTP Header pass token，而is not URL parameter
- // this waycanavoid token leak to log、errormessage、proxyserver etc.
+ // securityFix: use HTTP Header pass token, 而is not URL parameter
+ // this waycanavoid token leak to log, errormessage, proxyserver etc.
  let url = format!("https://ipinfo.io/{}", ip);
 
  // useiteminside部 HttpClient
@@ -73,7 +73,7 @@ impl IPInfoClient {
  }
 
  /// bulkGet IP addressinfo (concurrent)
- /// automaticdeduplicate，ensureeach IP onlyqueryonce
+ /// automaticdeduplicate, ensureeach IP onlyqueryonce
  pub async fn get_ip_infos(
  &self,
  ips: Vec<String>,
@@ -82,7 +82,7 @@ impl IPInfoClient {
  use futures::stream::{self, StreamExt};
  use std::collections::HashSet;
 
- // pair IP listdeduplicate，ensureeach IP onlyqueryonce
+ // pair IP listdeduplicate, ensureeach IP onlyqueryonce
  let unique_ips: Vec<String> = ips
 .into_iter()
 .collect::<HashSet<String>>()
