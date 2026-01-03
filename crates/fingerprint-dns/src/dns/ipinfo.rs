@@ -1,119 +1,119 @@
-//! IPInfo.io 集成模块
+//! IPInfo.io setbecomemodule
 //!
-//! 从 IPInfo.io API 获取 IP 地址的详细信息（地理位置、ISP 等）
+//! from IPInfo.io API Get IP addressdetailedinfo (geographicbitplace, ISP etc.)
 
 use crate::dns::types::{DNSError, IPInfo};
 use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
 use std::time::Duration;
 
-/// IPInfo.io 客户端
+/// IPInfo.io client
 pub struct IPInfoClient {
-    token: String,
-    timeout: Duration,
+ token: String,
+ timeout: Duration,
 }
 
 impl IPInfoClient {
-    /// 创建新的 IPInfo 客户端
-    pub fn new(token: String, timeout: Duration) -> Self {
-        Self { token, timeout }
-    }
+ /// Create a new IPInfo client
+ pub fn new(token: String, timeout: Duration) -> Self {
+ Self { token, timeout }
+ }
 
-    /// 获取 IP 地址的详细信息
-    pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
-        // 安全修复：使用 HTTP Header 传递 token，而不是 URL 参数
-        // 这样可以避免 token 泄露到日志、错误消息、代理服务器等
-        let url = format!("https://ipinfo.io/{}", ip);
+ /// Get IP addressdetailedinfo
+ pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
+ // securityFix: use HTTP Header pass token, 而is not URL parameter
+ // this waycanavoid token leak to log, errormessage, proxyserver etc.
+ let url = format!("https://ipinfo.io/{}", ip);
 
-        // 使用项目内部的 HttpClient
-        let config = HttpClientConfig {
-            connect_timeout: self.timeout,
-            read_timeout: self.timeout,
-            write_timeout: self.timeout,
-            ..Default::default()
-        };
-        let client = HttpClient::new(config);
+ // useiteminside部 HttpClient
+ let config = HttpClientConfig {
+ connect_timeout: self.timeout,
+ read_timeout: self.timeout,
+ write_timeout: self.timeout,
+..Default::default()
+ };
+ let client = HttpClient::new(config);
 
-        // 创建带有 Authorization header 的请求
-        use fingerprint_http::http_client::{HttpMethod, HttpRequest};
-        let request = HttpRequest::new(HttpMethod::Get, &url)
-            .with_header("Authorization", &format!("Bearer {}", self.token));
+ // Createbring有 Authorization header request
+ use fingerprint_http::http_client::{HttpMethod, HttpRequest};
+ let request = HttpRequest::new(HttpMethod::Get, &url)
+.with_header("Authorization", &format!("Bearer {}", self.token));
 
-        // 在异步上下文中执行同步的 HTTP 请求
-        let response = tokio::task::spawn_blocking({
-            let request = request.clone();
-            move || client.send_request(&request)
-        })
-        .await
-        .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
-        .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
+ // in asyncupdowntext in executesync HTTP request
+ let response = tokio::task::spawn_blocking({
+ let request = request.clone();
+ move || client.send_request(&request)
+ })
+.await
+.map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
+.map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
-        if !response.is_success() {
-            return Err(DNSError::IPInfo(format!(
-                "IPInfo API returned error: {}",
-                response.status_code
-            )));
-        }
+ if !response.is_success() {
+ return Err(DNSError::IPInfo(format!(
+ "IPInfo API returned error: {}",
+ response.status_code
+ )));
+ }
 
-        // 解析 JSON 响应
-        let body_str = String::from_utf8_lossy(&response.body);
-        let json: serde_json::Value = serde_json::from_str(&body_str)
-            .map_err(|e| DNSError::Http(format!("failed to parse JSON: {}", e)))?;
+ // Parse JSON response
+ let body_str = String::from_utf8_lossy(&response.body);
+ let json: serde_json::Value = serde_json::from_str(&body_str)
+.map_err(|e| DNSError::Http(format!("failed to parse JSON: {}", e)))?;
 
-        // 解析响应
-        Ok(IPInfo {
-            ip: json["ip"].as_str().unwrap_or(ip).to_string(),
-            hostname: json["hostname"].as_str().map(|s| s.to_string()),
-            city: json["city"].as_str().map(|s| s.to_string()),
-            region: json["region"].as_str().map(|s| s.to_string()),
-            country: json["country"].as_str().map(|s| s.to_string()),
-            loc: json["loc"].as_str().map(|s| s.to_string()),
-            org: json["org"].as_str().map(|s| s.to_string()),
-            timezone: json["timezone"].as_str().map(|s| s.to_string()),
-        })
-    }
+ // Parseresponse
+ Ok(IPInfo {
+ ip: json["ip"].as_str().unwrap_or(ip).to_string(),
+ hostname: json["hostname"].as_str().map(|s| s.to_string()),
+ city: json["city"].as_str().map(|s| s.to_string()),
+ region: json["region"].as_str().map(|s| s.to_string()),
+ country: json["country"].as_str().map(|s| s.to_string()),
+ loc: json["loc"].as_str().map(|s| s.to_string()),
+ org: json["org"].as_str().map(|s| s.to_string()),
+ timezone: json["timezone"].as_str().map(|s| s.to_string()),
+ })
+ }
 
-    /// 批量获取 IP 地址信息（并发）
-    /// 自动去重，确保每个 IP 只查询一次
-    pub async fn get_ip_infos(
-        &self,
-        ips: Vec<String>,
-        max_concurrency: usize,
-    ) -> Vec<(String, Result<IPInfo, DNSError>)> {
-        use futures::stream::{self, StreamExt};
-        use std::collections::HashSet;
+ /// bulkGet IP addressinfo (concurrent)
+ /// automaticdeduplicate, ensureeach IP onlyqueryonce
+ pub async fn get_ip_infos(
+ &self,
+ ips: Vec<String>,
+ max_concurrency: usize,
+ ) -> Vec<(String, Result<IPInfo, DNSError>)> {
+ use futures::stream::{self, StreamExt};
+ use std::collections::HashSet;
 
-        // 对 IP 列表去重，确保每个 IP 只查询一次
-        let unique_ips: Vec<String> = ips
-            .into_iter()
-            .collect::<HashSet<String>>()
-            .into_iter()
-            .collect();
+ // pair IP listdeduplicate, ensureeach IP onlyqueryonce
+ let unique_ips: Vec<String> = ips
+.into_iter()
+.collect::<HashSet<String>>()
+.into_iter()
+.collect();
 
-        let tasks = stream::iter(unique_ips)
-            .map(|ip| {
-                let client = &self;
-                async move {
-                    let result = client.get_ip_info(&ip).await;
-                    (ip, result)
-                }
-            })
-            .buffer_unordered(max_concurrency);
+ let tasks = stream::iter(unique_ips)
+.map(|ip| {
+ let client = &self;
+ async move {
+ let result = client.get_ip_info(&ip).await;
+ (ip, result)
+ }
+ })
+.buffer_unordered(max_concurrency);
 
-        tasks.collect().await
-    }
+ tasks.collect().await
+ }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::*;
+ use super::*;
 
-    #[tokio::test]
-    #[ignore] // 需要真实的 token，默认跳过
-    async fn test_get_ip_info() {
-        let _client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
+ #[tokio::test]
+ #[ignore] // needreal token，defaultskip
+ async fn test_get_ip_info() {
+ let _client = IPInfoClient::new("test-token".to_string(), Duration::from_secs(20));
 
-        // 这个测试需要真实的 token
-        // let result = client.get_ip_info("8.8.8.8").await;
-        // assert!(result.is_ok());
-    }
+ // thistestneedreal token
+ // let result = client.get_ip_info("8.8.8.8").await;
+ // assert!(result.is_ok());
+ }
 }

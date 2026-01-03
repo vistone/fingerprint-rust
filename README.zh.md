@@ -1,6 +1,6 @@
 # 🦀 fingerprint-rust
 
-**Languages**: [English](README.md) | [中文](README.zh.md)
+**语言选择**: [English](README.md) | [中文](README.zh.md)
 
 [![Rust](https://img.shields.io/badge/rust-1.92.0%2B-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
