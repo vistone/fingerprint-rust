@@ -1,7 +1,7 @@
 //! JA3/JA3S TLS fingerprintimplement
 //!
-//! JA3 is Salesforce open发 TLS clientfingerprintidentifymethod，alreadybecome行业standard。
-//! JA3S is pair应server端fingerprint。
+//! JA3 is Salesforce open 发 TLS clientfingerprint identifymethod，alreadybecome row 业standard。
+//! JA3S is pair should server endfingerprint。
 //!
 //! ## reference
 //! - paper: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
@@ -23,7 +23,7 @@ use serde::{Deserialize, Serialize};
 /// &[0, 10, 11, 13],
 /// &[23, 24, 25],
 /// &[0],
-/// );
+///);
 /// assert!(!ja3.fingerprint.is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -40,10 +40,10 @@ pub struct JA3 {
  /// elliptic curvelist (comma-separated decimal)
  pub elliptic_curves: String,
  
- /// elliptic curve点formatlist (comma-separated decimal)
+ /// elliptic curve point formatlist (comma-separated decimal)
  pub ec_point_formats: String,
  
- /// complete JA3 string ( for Calculatehash)
+ /// complete JA3 string (for Calculatehash)
  pub ja3_string: String,
  
  /// JA3 fingerprint (MD5 hash)
@@ -58,7 +58,7 @@ impl JA3 {
  /// - `ciphers`: cipher suitelist (hexadecimalvalue)
  /// - `extensions`: extensionlist (hexadecimalvalue)
  /// - `elliptic_curves`: elliptic curvelist (hexadecimalvalue)
- /// - `ec_point_formats`: elliptic curve点formatlist (hexadecimalvalue)
+ /// - `ec_point_formats`: elliptic curve point formatlist (hexadecimalvalue)
  ///
  /// # Returns
  /// JA3 fingerprintstruct
@@ -68,23 +68,23 @@ impl JA3 {
  extensions: &[u16],
  elliptic_curves: &[u16],
  ec_point_formats: &[u8],
- ) -> Self {
- // filter GREASE value ( if need)
+) -> Self {
+ // filter GREASE value (if need)
  let filtered_ciphers: Vec<u16> = ciphers
 .iter()
-.filter(|&&c| !crate::grease::is_grease_value(c))
+.filter(|&&c|!crate::grease::is_grease_value(c))
 .cloned()
 .collect();
 
  let filtered_extensions: Vec<u16> = extensions
 .iter()
-.filter(|&&e| !crate::grease::is_grease_value(e))
+.filter(|&&e|!crate::grease::is_grease_value(e))
 .cloned()
 .collect();
 
  let filtered_curves: Vec<u16> = elliptic_curves
 .iter()
-.filter(|&&c| !crate::grease::is_grease_value(c))
+.filter(|&&c|!crate::grease::is_grease_value(c))
 .cloned()
 .collect();
 
@@ -117,7 +117,7 @@ impl JA3 {
  let ja3_string = format!(
  "{},{},{},{},{}",
  ssl_version, ciphers_str, extensions_str, curves_str, formats_str
- );
+);
 
  // Calculate MD5 hash
  let fingerprint = Self::md5_hash(&ja3_string);
@@ -141,9 +141,9 @@ impl JA3 {
  format!("{:x}", digest)
  }
 
- /// from ClientHello 原beginningcountdataGenerate JA3
+ /// from ClientHello original beginningcountdataGenerate JA3
  ///
- /// this isan便捷method， for from complete ClientHello message in Extract并Generate JA3
+ /// this isan便捷method， for from complete ClientHello message in Extract and Generate JA3
  pub fn from_client_hello(client_hello: &crate::signature::ClientHelloSignature) -> Self {
  // Convertelliptic curve CurveID as u16
  let curves: Vec<u16> = client_hello
@@ -158,7 +158,7 @@ impl JA3 {
  &client_hello.extensions,
  &curves,
  &client_hello.elliptic_curve_point_formats,
- )
+)
  }
 }
 
@@ -184,13 +184,13 @@ pub struct JA3S {
  /// SSL/TLS version (decimal)
  pub ssl_version: u16,
  
- /// select's cipher suites (decimal)
+ /// select 's cipher suites (decimal)
  pub cipher: u16,
  
  /// extensionlist (comma-separated decimal)
  pub extensions: String,
  
- /// complete JA3S string ( for Calculatehash)
+ /// complete JA3S string (for Calculatehash)
  pub ja3s_string: String,
  
  /// JA3S fingerprint (MD5 hash)
@@ -202,13 +202,13 @@ impl JA3S {
  ///
  /// # Parameters
  /// - `ssl_version`: TLS version
- /// - `cipher`: serverselect's cipher suites
+ /// - `cipher`: server select 's cipher suites
  /// - `extensions`: serverreturn's extensionslist
  pub fn generate(ssl_version: u16, cipher: u16, extensions: &[u16]) -> Self {
  // filter GREASE value
  let filtered_extensions: Vec<u16> = extensions
 .iter()
-.filter(|&&e| !crate::grease::is_grease_value(e))
+.filter(|&&e|!crate::grease::is_grease_value(e))
 .cloned()
 .collect();
 
@@ -262,7 +262,7 @@ mod tests {
  &[0, 10, 11, 13, 16, 23],
  &[23, 24, 25],
  &[0],
- );
+);
 
  assert!(!ja3.fingerprint.is_empty());
  assert_eq!(ja3.fingerprint.len(), 32); // MD5 hashlength
@@ -278,9 +278,9 @@ mod tests {
  &[0x0a0a, 0, 10], // including GREASE
  &[0x0a0a, 23], // including GREASE
  &[0],
- );
+);
 
- // GREASE valueshould被filter掉
+ // GREASE valueshould by filter掉
  assert!(!ja3.ciphers.contains("2570")); // 0x0a0a = 2570
  assert!(!ja3.extensions.contains("2570"));
  }
@@ -321,7 +321,7 @@ mod tests {
 
  #[test]
  fn test_ja3_known_fingerprint() {
- // testanalready知 JA3 fingerprint
+ // testanalready know JA3 fingerprint
  // this isansimplify Chrome ClientHello
  let ja3 = JA3::generate(
  771, // TLS 1.2
@@ -329,7 +329,7 @@ mod tests {
  &[0, 10, 11],
  &[23, 24],
  &[0],
- );
+);
 
  // Validate JA3 stringformatcorrect
  assert!(ja3.ja3_string.contains("771,"));

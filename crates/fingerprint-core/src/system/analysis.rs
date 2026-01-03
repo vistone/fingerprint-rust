@@ -1,6 +1,6 @@
-//! systemlevelanalysisinterface
+//! system levelanalysisinterface
 //!
-//! definesystemlevelanalysisinterface and resulttype。
+//! definesystem levelanalysisinterface and resulttype。
 
 use super::flow::NetworkFlow;
 use crate::fingerprint::Fingerprint;
@@ -10,13 +10,13 @@ use crate::fingerprint::Fingerprint;
 /// representdetect to threattype。
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ThreatType {
- /// not知fingerprint
+ /// not know fingerprint
  UnknownFingerprint,
 
  /// suspiciousbehavior
  SuspiciousBehavior,
 
- /// already知attack
+ /// already know attack
  KnownAttack,
 
  /// abnormaltrafficpattern
@@ -39,9 +39,9 @@ impl ThreatType {
  /// convert tostring
  pub fn as_str(&self) -> &'static str {
  match self {
- Self::UnknownFingerprint => "not知fingerprint",
+ Self::UnknownFingerprint => "not know fingerprint",
  Self::SuspiciousBehavior => "suspiciousbehavior",
- Self::KnownAttack => "already知attack",
+ Self::KnownAttack => "already know attack",
  Self::AbnormalTrafficPattern => "abnormaltrafficpattern",
  Self::MaliciousIP => "maliciousIP",
  Self::DDoS => "DDoSattack",
@@ -93,7 +93,7 @@ pub struct AnalysisDetails {
 }
 
 impl AnalysisDetails {
- /// Create a newanalysisdetails
+ /// create a new analysisdetails
  pub fn new() -> Self {
  Self::default()
  }
@@ -114,7 +114,7 @@ impl AnalysisDetails {
  }
 }
 
-/// systemlevelanalysisresult
+/// system levelanalysisresult
 ///
 /// includinganalysisresult、threattype、risk score etc.info。
 pub struct SystemAnalysisResult {
@@ -140,7 +140,7 @@ pub struct SystemAnalysisResult {
 }
 
 impl SystemAnalysisResult {
- /// Create a newanalysisresult
+ /// create a new analysisresult
  pub fn new() -> Self {
  Self {
  fingerprints: Vec::new(),
@@ -151,7 +151,7 @@ impl SystemAnalysisResult {
  }
  }
 
- /// Createsecurityresult (无threat)
+ /// Createsecurityresult (no threat)
  pub fn safe() -> Self {
  Self {
  fingerprints: Vec::new(),
@@ -167,14 +167,14 @@ impl SystemAnalysisResult {
  self.fingerprints.push(fingerprint);
  }
 
- /// Getallfingerprintreference
+ /// Get all fingerprintreference
  pub fn fingerprints(&self) -> &[Box<dyn Fingerprint>] {
  &self.fingerprints
  }
 
  /// Addthreattype
  pub fn add_threat_type(&mut self, threat_type: ThreatType) {
- if !self.threat_types.contains(&threat_type) {
+ if!self.threat_types.contains(&threat_type) {
  self.threat_types.push(threat_type);
  // Based onthreattypeUpdaterisk score
  self.update_risk_score();
@@ -186,7 +186,7 @@ impl SystemAnalysisResult {
  if self.threat_types.is_empty() {
  self.risk_score = 0.0;
  } else {
- // use最highseverityasrisk score
+ // use highestseverityasrisk score
  self.risk_score = self
 .threat_types
 .iter()
@@ -197,7 +197,7 @@ impl SystemAnalysisResult {
 
  /// judgewhether existsthreat
  pub fn has_threats(&self) -> bool {
- !self.threat_types.is_empty() && self.risk_score > 0.0
+!self.threat_types.is_empty() && self.risk_score > 0.0
  }
 
  /// judgewhether as highrisk
@@ -228,7 +228,7 @@ impl std::fmt::Debug for SystemAnalysisResult {
 // Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for SystemAnalysisResult {
  fn clone(&self) -> Self {
- // Note: fingerprints cannot Clone，so新instance from emptyliststart
+ // Note: fingerprints cannot Clone，so new instance from emptyliststart
  Self {
  fingerprints: Vec::new(), // cannot Clone trait object
  risk_score: self.risk_score,
@@ -239,21 +239,21 @@ impl Clone for SystemAnalysisResult {
  }
 }
 
-/// systemlevelanalysisinterface
+/// system levelanalysisinterface
 ///
-/// allsystemlevelanalysiser都shouldimplementthis trait。
+/// all system levelanalysiser all shouldimplementthis trait。
 ///
 /// ## Core Concept
 ///
-/// systemlevelanalysis from **systemperspective**analysisnetworktraffic：
-/// - not onlyonly is singleprotocolParse，而 is 综合analysis
-/// - considersystemwholebehaviorpattern
-/// - detectsystemlevelthreat (DDoS、scan、abnormaltraffic etc.)
+/// system levelanalysis from **system perspective**analysisnetworktraffic：
+/// - not onlyonly is singleprotocol parsed ， and is 综合analysis
+/// - considersystem wholebehaviorpattern
+/// - detectsystem levelthreat (DDoS、scan、abnormaltraffic etc.)
 ///
 /// ## Implementation Example
 ///
 /// ```rust
-/// use fingerprint_core::system::{SystemAnalyzer, NetworkFlow, SystemAnalysisResult};
+/// use fingerprint_core::system ::{SystemAnalyzer, NetworkFlow, SystemAnalysisResult};
 ///
 /// struct MySystemAnalyzer;
 ///
@@ -273,18 +273,18 @@ pub trait SystemAnalyzer: Send + Sync {
  ///
  /// # Parameters
  ///
- /// - `flow`: 要analysisnetworktraffic
+ /// - `flow`: need analysisnetworktraffic
  ///
  /// # Returns
  ///
- /// systemlevelanalysisresult，includingfingerprint、threattype、risk score etc.info
+ /// system levelanalysisresult，includingfingerprint、threattype、risk score etc.info
  fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult;
 
  /// bulkanalysismultipletraffic
  ///
  /// # Parameters
  ///
- /// - `flows`: 要analysisnetworktrafficlist
+ /// - `flows`: need analysisnetworktrafficlist
  ///
  /// # Returns
  ///

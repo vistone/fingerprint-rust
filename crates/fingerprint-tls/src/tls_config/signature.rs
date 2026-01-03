@@ -8,7 +8,7 @@ use crate::tls_config::version::TlsVersion;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
 /// TLS ClientHello signature
-/// including from ClientHello message in Extractallclosekeyinfo
+/// including from ClientHello message in Extract all closekeyinfo
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
  /// TLS version
@@ -19,7 +19,7 @@ pub struct ClientHelloSignature {
  pub extensions: Vec<u16>,
  /// elliptic curvelist
  pub elliptic_curves: Vec<CurveID>,
- /// elliptic curve点format
+ /// elliptic curve point format
  pub elliptic_curve_point_formats: Vec<u8>,
  /// signaturealgorithmlist
  pub signature_algorithms: Vec<u16>,
@@ -30,7 +30,7 @@ pub struct ClientHelloSignature {
 }
 
 impl ClientHelloSignature {
- /// Create a newsignature
+ /// create a new signature
  pub fn new() -> Self {
  Self {
  version: TlsVersion::V1_2, // default TLS 1.2
@@ -69,14 +69,14 @@ impl ClientHelloSignature {
 .any(|&v| is_grease_value(v))
  }
 
- /// compare twosignaturewhethersimilar (ignore GREASE value)
+ /// compare twosignaturewhether similar (ignore GREASE value)
  ///
  /// # Parameters
- /// * `other` - 要compare另ansignature
+ /// * `other` - need compare另ansignature
  ///
  /// # Returns
- /// * `true` if signaturesimilar (ignore GREASE backsame)，`false` otherwise
- pub fn similar_to(&self, other: &Self) -> bool {
+ /// * `true` if signature similar (ignore GREASE backsame)，`false` otherwise
+ pub fn similar _to(&self, other: &Self) -> bool {
  self.version == other.version
  && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
  && self.extensions_without_grease() == other.extensions_without_grease()
@@ -88,7 +88,7 @@ impl ClientHelloSignature {
  && self.alpn == other.alpn
  }
 
- /// Calculatesignaturehashvalue ( for fastcompare)
+ /// Calculatesignaturehashvalue (for fastcompare)
  /// usefilter GREASE backvalue
  pub fn hash(&self) -> u64 {
  use std::collections::hash_map::DefaultHasher;
@@ -118,7 +118,7 @@ mod tests {
  use super::*;
 
  #[test]
- fn test_similar_to() {
+ fn test_ similar _to() {
  let mut sig1 = ClientHelloSignature::new();
  sig1.version = TlsVersion::V1_2;
  sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // including GREASE
@@ -133,8 +133,8 @@ mod tests {
  assert_eq!(
  sig1.cipher_suites_without_grease(),
  sig2.cipher_suites_without_grease()
- );
- assert!(sig1.similar_to(&sig2));
+);
+ assert!(sig1. similar _to(&sig2));
  }
 
  #[test]

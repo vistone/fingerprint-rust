@@ -1,11 +1,11 @@
-//! p0f signatureParseer (detailedimplement)
+//! p0f signature parsed er (detailedimplement)
 //!
-//! completeimplement p0f.fp formatParse，supportallfield and pattern。
+//! completeimplement p0f.fp format parsed ，support all field and pattern。
 
 use crate::passive::tcp::TcpSignature;
 use thiserror::Error;
 
-/// p0f TCP signature (complete版)
+/// p0f TCP signature (complete version)
 #[derive(Debug, Clone)]
 pub struct P0fTcpSignature {
  /// signature ID
@@ -14,7 +14,7 @@ pub struct P0fTcpSignature {
  /// taginfo
  pub label: SignatureLabel,
 
- /// systemtypelimit (optional)
+ /// system typelimit (optional)
  pub sys: Option<Vec<SystemType>>,
 
  /// TTL pattern
@@ -23,11 +23,11 @@ pub struct P0fTcpSignature {
  /// initialbeginning TTL value
  pub initial_ttl: u8,
 
- /// windowsizepattern
- pub window_mode: WindowMode,
+ /// window sizepattern
+ pub window _mode: WindowMode,
 
- /// windowsizevaluepattern
- pub window_value: WindowSizePattern,
+ /// window sizevaluepattern
+ pub window _value: WindowSizePattern,
 
  /// MSS pattern
  pub mss_pattern: MssPattern,
@@ -48,10 +48,10 @@ pub struct SignatureLabel {
  /// matchtype：s (specific) or g (generic)
  pub match_type: MatchType,
 
- /// systemtype：unix, win, ! (application)
+ /// system type：unix, win,! (application)
  pub sys_type: SystemType,
 
- /// operating systemname
+ /// operating system name
  pub os: String,
 
  /// versioninfo
@@ -65,12 +65,12 @@ pub enum MatchType {
  Generic, // g
 }
 
-/// systemtype
+/// system type
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SystemType {
  Unix, // unix
  Windows, // win
- Application, // !
+ Application, //!
 }
 
 /// TTL pattern
@@ -82,12 +82,12 @@ pub enum TtlPattern {
  Value(u8),
 }
 
-/// windowsizepattern
+/// window sizepattern
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowMode {
  /// pattern 0: fixedvalue
  Fixed,
- /// pattern 1: 倍count
+ /// pattern 1: times count
  Multiple,
  /// pattern 2: 模count
  Modulo,
@@ -95,14 +95,14 @@ pub enum WindowMode {
  Random,
 }
 
-/// windowsizevaluepattern
+/// window sizevaluepattern
 #[derive(Debug, Clone, PartialEq)]
 pub enum WindowSizePattern {
  /// wildcard *
  Wildcard,
  /// concretevalue
  Value(u16),
- /// 倍countpattern：m*N
+ /// times countpattern：m*N
  Multiple(u16),
  /// 模countpattern：%N
  Modulo(u16),
@@ -111,11 +111,11 @@ pub enum WindowSizePattern {
 /// MSS pattern
 #[derive(Debug, Clone, PartialEq)]
 pub enum MssPattern {
- /// 无 MSS
+ /// no MSS
  None,
  /// fixedvalue：mss,1460
  Fixed(u16),
- /// 倍countpattern：mss*20,10 (20倍count+10)
+ /// times countpattern：mss*20,10 (20 times count+10)
  Multiple { multiplier: u16, offset: u16 },
 }
 
@@ -142,73 +142,73 @@ pub struct IpFlags {
  pub id_minus: bool,
 }
 
-/// p0f Parseerror
+/// p0f parsed error
 #[derive(Debug, Error)]
-pub enum P0fParseError {
+pub enum P0f parsed Error {
  #[error("invalidtagformat: {0}")]
  InvalidLabel(String),
 
  #[error("invalidsignatureformat: {0}")]
  InvalidSignature(String),
 
- #[error("Parseerror: {0}")]
- Parse(String),
+ #[error(" parsed error: {0}")]
+ parsed (String),
 }
 
-/// Parse p0f TCP signature
-pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0fParseError> {
- // Parsetag
+/// parsed p0f TCP signature
+pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0f parsed Error> {
+ // parsed tag
  let label_info = parse_label(label)?;
 
- // Parsesignature：format as [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[TCPoptions]:[IPflag]:[other]
+ // parsed signature：format as [ttl]:[initialbeginningttl]:[ window pattern]:[ window value]:[TCPoptions]:[IPflag]:[other]
  let parts: Vec<&str> = sig.split(':').collect();
  if parts.len() < 7 {
- return Err(P0fParseError::InvalidSignature(format!(
+ return Err(P0f parsed Error::InvalidSignature(format!(
  "signaturepartialcountinsufficient: expected7，actual{}",
  parts.len()
- )));
+)));
  }
 
- // Parse TTL pattern
+ // parsed TTL pattern
  let ttl_pattern =
  if parts[0] == "*" {
  TtlPattern::Wildcard
  } else {
  TtlPattern::Value(parts[0].parse().map_err(|_| {
- P0fParseError::InvalidSignature(format!("invalid TTL: {}", parts[0]))
+ P0f parsed Error::InvalidSignature(format!("invalid TTL: {}", parts[0]))
  })?)
  };
 
- // Parseinitialbeginning TTL
+ // parsed initialbeginning TTL
  let initial_ttl = parts[1]
 .parse()
-.map_err(|_| P0fParseError::InvalidSignature(format!("invalidinitialbeginning TTL: {}", parts[1])))?;
+.map_err(|_| P0f parsed Error::InvalidSignature(format!("invalidinitialbeginning TTL: {}", parts[1])))?;
 
- // Parsewindowsizepattern
- let window_mode = match parts[2] {
+ // parsed window sizepattern
+ let window _mode = match parts[2] {
  "0" => WindowMode::Fixed,
  "1" => WindowMode::Multiple,
  "2" => WindowMode::Modulo,
  "3" => WindowMode::Random,
  _ => {
- return Err(P0fParseError::InvalidSignature(format!(
- "invalidwindowpattern: {}",
+ return Err(P0f parsed Error::InvalidSignature(format!(
+ "invalid window pattern: {}",
  parts[2]
- )))
+)))
  }
  };
 
- // Parsewindowsizevaluepattern
- let window_value = parse_window_size_pattern(parts[3])?;
+ // parsed window sizevaluepattern
+ let window _value = parse_ window _size_pattern(parts[3])?;
 
- // Parse MSS pattern and TCP options
- // p0f format: [ttl]:[initialbeginningttl]:[windowpattern]:[windowvalue]:[MSSpattern]:[optionsorder]:[IPflag]:[other]
+ // parsed MSS pattern and TCP options
+ // p0f format: [ttl]:[initialbeginningttl]:[ window pattern]:[ window value]:[MSSpattern]:[optionsorder]:[IPflag]:[other]
  // so parts[4] is MSS pattern，parts[5] is optionsorder
  let mss_str = parts[4];
  let options_str = if parts.len() > 5 { parts[5] } else { "" };
 
- // merge MSS pattern and optionsorderperformParse
- let full_options_str = if !options_str.is_empty() {
+ // merge MSS pattern and optionsorder perform parsed 
+ let full_options_str = if!options_str.is_empty() {
  format!("{}:{}", mss_str, options_str)
  } else {
  mss_str.to_string()
@@ -216,7 +216,7 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
 
  let (mss_pattern, options_order) = parse_tcp_options(&full_options_str)?;
 
- // Parse IP flag
+ // parsed IP flag
  let ip_flags = if parts.len() > 6 {
  parse_ip_flags(parts[6])?
  } else {
@@ -237,11 +237,11 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
  Ok(P0fTcpSignature {
  id: format!("tcp-{}", label.replace(':', "-")),
  label: label_info,
- sys: None, // will in back续Parse sys field when settings
+ sys: None, // will in back续 parsed sys field when settings
  ttl_pattern,
  initial_ttl,
- window_mode,
- window_value,
+ window _mode,
+ window _value,
  mss_pattern,
  options_order,
  ip_flags,
@@ -249,25 +249,25 @@ pub fn parse_tcp_signature(label: &str, sig: &str) -> Result<P0fTcpSignature, P0
  })
 }
 
-/// Parsetag
-fn parse_label(label: &str) -> Result<SignatureLabel, P0fParseError> {
+/// parsed tag
+fn parse_label(label: &str) -> Result<SignatureLabel, P0f parsed Error> {
  // format: s:unix:Linux:3.11 and newer
  let parts: Vec<&str> = label.split(':').collect();
  if parts.len() < 4 {
- return Err(P0fParseError::InvalidLabel(format!(
+ return Err(P0f parsed Error::InvalidLabel(format!(
  "tagpartialcountinsufficient: expected4，actual{}",
  parts.len()
- )));
+)));
  }
 
  let match_type = match parts[0] {
  "s" => MatchType::Specific,
  "g" => MatchType::Generic,
  _ => {
- return Err(P0fParseError::InvalidLabel(format!(
+ return Err(P0f parsed Error::InvalidLabel(format!(
  "invalidmatchtype: {}",
  parts[0]
- )))
+)))
  }
  };
 
@@ -276,10 +276,10 @@ fn parse_label(label: &str) -> Result<SignatureLabel, P0fParseError> {
  "win" => SystemType::Windows,
  "!" => SystemType::Application,
  _ => {
- return Err(P0fParseError::InvalidLabel(format!(
- "invalidsystemtype: {}",
+ return Err(P0f parsed Error::InvalidLabel(format!(
+ "invalidsystem type: {}",
  parts[1]
- )))
+)))
  }
  };
 
@@ -287,21 +287,21 @@ fn parse_label(label: &str) -> Result<SignatureLabel, P0fParseError> {
  match_type,
  sys_type,
  os: parts[2].to_string(),
- version: parts[3..].join(":"), // versionmayincluding冒号
+ version: parts[3..].join(":"), // versionmayincluding冒 number 
  })
 }
 
-/// Parsewindowsizepattern
-fn parse_window_size_pattern(pattern: &str) -> Result<WindowSizePattern, P0fParseError> {
+/// parsed window sizepattern
+fn parse_ window _size_pattern(pattern: &str) -> Result<WindowSizePattern, P0f parsed Error> {
  if pattern == "*" {
  return Ok(WindowSizePattern::Wildcard);
  }
 
- // Check倍countpattern：m*N
+ // Check times countpattern：m*N
  if let Some(pos) = pattern.find('*') {
  let multiplier = pattern[pos + 1..]
 .parse()
-.map_err(|_| P0fParseError::InvalidSignature(format!("invalidwindow倍count: {}", pattern)))?;
+.map_err(|_| P0f parsed Error::InvalidSignature(format!("invalid window times count: {}", pattern)))?;
  return Ok(WindowSizePattern::Multiple(multiplier));
  }
 
@@ -309,19 +309,19 @@ fn parse_window_size_pattern(pattern: &str) -> Result<WindowSizePattern, P0fPars
  if let Some(stripped) = pattern.strip_prefix('%') {
  let modulo = stripped
 .parse()
-.map_err(|_| P0fParseError::InvalidSignature(format!("invalidwindow模count: {}", pattern)))?;
+.map_err(|_| P0f parsed Error::InvalidSignature(format!("invalid window 模count: {}", pattern)))?;
  return Ok(WindowSizePattern::Modulo(modulo));
  }
 
  // fixedvalue
  let value = pattern
 .parse()
-.map_err(|_| P0fParseError::InvalidSignature(format!("invalidwindowsize: {}", pattern)))?;
+.map_err(|_| P0f parsed Error::InvalidSignature(format!("invalid window size: {}", pattern)))?;
  Ok(WindowSizePattern::Value(value))
 }
 
-/// Parse TCP options
-fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType>), P0fParseError> {
+/// parsed TCP options
+fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType>), P0f parsed Error> {
  let mut mss_pattern = MssPattern::None;
  let mut options_order = Vec::new();
 
@@ -333,14 +333,14 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  return Ok((mss_pattern, options_order));
  }
 
- // Parse MSS pattern (firstpartial)
+ // parsed MSS pattern (firstpartial)
  // formatmay is: mss*20,10 or mss,1460
  let mss_part = parts[0];
  if mss_part.contains("mss") {
  mss_pattern = parse_mss_pattern(mss_part)?;
  }
 
- // Parseoptionsorder
+ // parsed optionsorder
  // formatmay is: mss*20,10:mss,sok,ts,nop,ws
  // or 者: mss,1460:mss,sok,ts,nop,ws
  // secondpartial is optionsorder
@@ -355,49 +355,49 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  "nop" => TcpOptionType::Nop,
  "eol" => TcpOptionType::End,
  _ => {
- // tryParse as count字
+ // try parsed as count字
  if let Ok(num) = opt_str.parse::<u8>() {
  TcpOptionType::Other(num)
  } else {
- continue; // skipnot知options
+ continue; // skipnot know options
  }
  }
  };
  options_order.push(opt);
  }
  } else {
- // Ifnosecondpartial, mayoptionsorder就 in firstpartial ( in MSS patternafter)
+ // Ifnosecondpartial, mayoptionsorder just in firstpartial (in MSS patternafter)
  // format: mss*20,10 or mss,1460
- // thissituationdown，optionsordermay不 exists， or 者need from other地方Extract
- // 暂 when 不processthissituation
+ // thissituationdown，optionsordermay not exists， or 者need from other地方Extract
+ // temporary when not processthissituation
  }
 
  Ok((mss_pattern, options_order))
 }
 
-/// Parse MSS pattern
-fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
+/// parsed MSS pattern
+fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0f parsed Error> {
  // format: mss*20,10 or mss,1460
  if let Some(pos) = mss_str.find('*') {
- // 倍countpattern: mss*20,10
+ // times countpattern: mss*20,10
  let after_star = &mss_str[pos + 1..];
  let parts: Vec<&str> = after_star.split(',').collect();
  if parts.len() >= 2 {
  let multiplier = parts[0].parse().map_err(|_| {
- P0fParseError::InvalidSignature(format!("invalid MSS 倍count: {}", parts[0]))
+ P0f parsed Error::InvalidSignature(format!("invalid MSS times count: {}", parts[0]))
  })?;
  let offset = parts[1].parse().map_err(|_| {
- P0fParseError::InvalidSignature(format!("invalid MSS offset: {}", parts[1]))
+ P0f parsed Error::InvalidSignature(format!("invalid MSS offset: {}", parts[1]))
  })?;
  return Ok(MssPattern::Multiple { multiplier, offset });
  }
  }
 
  // fixedvaluepattern: mss,1460
- // findfirst逗号backcount字
+ // findfirst逗 number backcount字
  if let Some(pos) = mss_str.find(',') {
  let value_str = &mss_str[pos + 1..];
- // maystill有more逗号，只取firstcount字partial
+ // maystill have more逗 number ， only 取firstcount字partial
  let value_part = value_str.split(',').next().unwrap_or(value_str);
  if let Ok(value) = value_part.parse::<u16>() {
  return Ok(MssPattern::Fixed(value));
@@ -407,8 +407,8 @@ fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
  Ok(MssPattern::None)
 }
 
-/// Parse IP flag
-fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0fParseError> {
+/// parsed IP flag
+fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0f parsed Error> {
  let mut df = false;
  let mut id_plus = false;
  let mut id_minus = false;
@@ -420,7 +420,7 @@ fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0fParseError> {
  "id-" => id_minus = true,
  "" => continue,
  _ => {
- // ignorenot知flag
+ // ignore not know flag
  }
  }
  }
@@ -432,10 +432,10 @@ fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0fParseError> {
  })
 }
 
-/// will P0fTcpSignature convert to TcpSignature ( for match)
+/// will P0fTcpSignature convert to TcpSignature (for match)
 impl From<P0fTcpSignature> for TcpSignature {
  fn from(p0f_sig: P0fTcpSignature) -> Self {
- // from MSS patternExtractfixedvalue ( if may)
+ // from MSS patternExtractfixedvalue (if may)
  let mss = match &p0f_sig.mss_pattern {
  MssPattern::Fixed(v) => Some(*v),
  MssPattern::Multiple { multiplier, offset } => {
@@ -448,15 +448,15 @@ impl From<P0fTcpSignature> for TcpSignature {
  MssPattern::None => None,
  };
 
- // from optionsorder in Extract Window Scale ( if exists)
- let window_scale = if p0f_sig.options_order.contains(&TcpOptionType::WindowScale) {
+ // from optionsorder in Extract Window Scale (if exists)
+ let window _scale = if p0f_sig.options_order.contains(&TcpOptionType::WindowScale) {
  Some(7) // defaultvalue，actualshould from countpacket in Extract
  } else {
  None
  };
 
- // from windowvaluepatternExtractfixedvalue ( if may)
- let window_size = match &p0f_sig.window_value {
+ // from window valuepatternExtractfixedvalue (if may)
+ let window _size = match &p0f_sig. window _value {
  WindowSizePattern::Value(v) => *v,
  _ => 0, // wildcard or otherpattern
  };
@@ -464,9 +464,9 @@ impl From<P0fTcpSignature> for TcpSignature {
  TcpSignature {
  id: p0f_sig.id,
  ttl: p0f_sig.initial_ttl,
- window_size,
+ window _size,
  mss,
- window_scale,
+ window _scale,
  os_type: Some(p0f_sig.label.os.clone()),
  confidence: if p0f_sig.label.match_type == MatchType::Specific {
  0.9

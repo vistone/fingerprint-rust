@@ -1,6 +1,6 @@
 //! configurationexportmodule
 //!
-//! will ClientHelloSpec export as JSON format，so that供otherlanguage (如 Go uTLS)use。
+//! will ClientHelloSpec export as JSON format，so that供otherlanguage (such as Go uTLS)use。
 
 #[cfg(feature = "export")]
 use fingerprint_tls::tls_config::ClientHelloSpec;
@@ -33,7 +33,7 @@ pub struct ExportKeyShare {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum ExportExtension {
- SNI, // onlytype，nocountdata (由clientrun when decide)
+ SNI, // onlytype，nocountdata (由client runtime decide)
  StatusRequest,
  SupportedCurves(Vec<u16>),
  SupportedPoints(Vec<u8>),
@@ -50,7 +50,7 @@ pub enum ExportExtension {
  CompressCertificate(Vec<u16>),
  PreSharedKey,
  GREASE(u16),
- Padding { padding_len: usize, will_pad: bool },
+ Padding { padding_len: usize, will _pad: bool },
  ECH(u16),
  Unknown(u16),
 }
@@ -74,7 +74,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
 .extensions
 .iter()
 .map(|ext| {
- // use as_any perform向downtransform
+ // use as_any perform 向downtransform
  let any_ext = ext.as_any();
 
  if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {
@@ -101,7 +101,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
  // SignatureScheme is u16
  return ExportExtension::SignatureAlgorithms(
  e.supported_signature_algorithms.clone(),
- );
+);
  }
 
  if let Some(e) = any_ext.downcast_ref::<ALPNExtension>() {
@@ -176,7 +176,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
  if let Some(e) = any_ext.downcast_ref::<UtlsPaddingExtension>() {
  return ExportExtension::Padding {
  padding_len: e.padding_len,
- will_pad: e.will_pad,
+ will _pad: e. will _pad,
  };
  }
 

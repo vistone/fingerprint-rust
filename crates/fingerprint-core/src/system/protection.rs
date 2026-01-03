@@ -1,17 +1,17 @@
-//! systemlevelprotectioninterface
+//! system levelprotectioninterface
 //!
-//! definesystemlevelprotectioninterface and decisiontype。
+//! definesystem levelprotectioninterface and decisiontype。
 
 use super::flow::NetworkFlow;
 use super::stats::SystemProtectionStats;
 use std::time::Duration;
 
-/// systemlevelprotectiondecision
+/// system levelprotectiondecision
 ///
-/// representsystemlevelprotectionsystempairnetworktrafficmakedecision。
+/// representsystem levelprotectionsystem pairnetworktrafficmakedecision。
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemProtectionDecision {
- /// allowthrough
+ /// all ow through
  Allow,
 
  /// blocktraffic
@@ -22,14 +22,14 @@ pub enum SystemProtectionDecision {
 
  /// rate limit
  RateLimit {
- /// 每secondsmaximumcountpacketcount
+ /// each secondsmaximumcountpacketcount
  max_packets_per_second: u64,
 
- /// rate limitcontinuous when between
+ /// rate limit continuous when between
  duration: Duration,
  },
 
- /// recordbut不block
+ /// recordbut not block
  Log {
  /// recordreason
  reason: String,
@@ -40,8 +40,8 @@ pub enum SystemProtectionDecision {
 }
 
 impl SystemProtectionDecision {
- /// judgewhether as allow
- pub fn is_allow(&self) -> bool {
+ /// judgewhether as all ow 
+ pub fn is_ all ow (&self) -> bool {
  matches!(self, Self::Allow)
  }
 
@@ -58,16 +58,16 @@ impl SystemProtectionDecision {
  /// Getdecisiondescribe
  pub fn description(&self) -> String {
  match self {
- Self::Allow => "allowthrough".to_string(),
+ Self::Allow => " all ow through".to_string(),
  Self::Deny { reason } => format!("block: {}", reason),
  Self::RateLimit {
  max_packets_per_second,
  duration,
  } => {
  format!(
- "rate limit: {} 包/seconds, continuous when between: {:?}",
+ "rate limit: {} package /seconds, continuous when between: {:?}",
  max_packets_per_second, duration
- )
+)
  }
  Self::Log { reason } => format!("record: {}", reason),
  Self::RequiresAnalysis => "needfurtheranalysis".to_string(),
@@ -75,9 +75,9 @@ impl SystemProtectionDecision {
  }
 }
 
-/// systemlevelprotectionresult
+/// system levelprotectionresult
 ///
-/// includingprotectiondecision and 相closemetadata。
+/// includingprotectiondecision and phase closemetadata。
 #[derive(Debug, Clone)]
 pub struct SystemProtectionResult {
  /// protectiondecision
@@ -101,7 +101,7 @@ pub struct SystemProtectionResult {
 }
 
 impl SystemProtectionResult {
- /// Create a newprotectionresult
+ /// create a new protectionresult
  pub fn new(decision: SystemProtectionDecision) -> Self {
  Self {
  decision,
@@ -112,8 +112,8 @@ impl SystemProtectionResult {
  }
  }
 
- /// Createallowdecision
- pub fn allow() -> Self {
+ /// Create all ow decision
+ pub fn all ow () -> Self {
  Self {
  decision: SystemProtectionDecision::Allow,
  risk_score: 0.0,
@@ -151,32 +151,32 @@ impl SystemProtectionResult {
  }
 }
 
-/// systemlevelprotectioninterface
+/// system levelprotectioninterface
 ///
-/// allsystemlevelprotectioner都shouldimplementthis trait。
+/// all system levelprotectioner all shouldimplementthis trait。
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotection from **systemperspective**makeprotectiondecision：
-/// - not onlyonly is singleserviceprotection，而 is 整systemprotection
-/// - can实施systemlevelmeasure (blacklist、rate limit、防火墙rule etc.)
-/// - needconsidersystemwholesecuritystatus
+/// system levelprotection from **system perspective**makeprotectiondecision：
+/// - not onlyonly is singleserviceprotection， and is 整system protection
+/// - can实施system levelmeasure (blacklist、rate limit、防火墙rule etc.)
+/// - needconsidersystem wholesecuritystatus
 ///
 /// ## Implementation Example
 ///
 /// ```rust
-/// use fingerprint_core::system::{SystemProtector, NetworkFlow, SystemProtectionResult, SystemProtectionStats};
+/// use fingerprint_core::system ::{SystemProtector, NetworkFlow, SystemProtectionResult, SystemProtectionStats};
 ///
 /// struct MySystemProtector;
 ///
 /// impl SystemProtector for MySystemProtector {
 /// fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult {
 /// // implementprotectionlogic
-/// SystemProtectionResult::allow()
+/// SystemProtectionResult:: all ow ()
 /// }
 ///
 /// fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult) {
-/// // Updatesystemstatus
+/// // Updatesystem status
 /// }
 ///
 /// fn get_stats(&self) -> SystemProtectionStats {
@@ -186,20 +186,20 @@ impl SystemProtectionResult {
 /// }
 /// ```
 pub trait SystemProtector: Send {
- /// analysisnetworktraffic并makeprotectiondecision
+ /// analysisnetworktraffic and makeprotectiondecision
  ///
  /// # Parameters
  ///
- /// - `flow`: 要analysisnetworktraffic
+ /// - `flow`: need analysisnetworktraffic
  ///
  /// # Returns
  ///
- /// systemlevelprotectionresult，includingdecision、risk score、confidence etc.info
+ /// system levelprotectionresult，includingdecision、risk score、confidence etc.info
  fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult;
 
- /// Updatesystemstatus
+ /// Updatesystem status
  ///
- /// in makeprotectiondecisionback，canBased onresultUpdatesystemstatus (如Updateblacklist、statisticsinfo etc.)。
+ /// in makeprotectiondecisionback，canBased onresultUpdatesystem status (such as Updateblacklist、statisticsinfo etc.)。
  ///
  /// # Parameters
  ///
@@ -207,11 +207,11 @@ pub trait SystemProtector: Send {
  /// - `result`: protectiondecisionresult
  fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult);
 
- /// Getsystemstatisticsinfo
+ /// Getsystem statisticsinfo
  ///
  /// # Returns
  ///
- /// systemlevelprotectionstatisticsinfo
+ /// system levelprotectionstatisticsinfo
  fn get_stats(&self) -> SystemProtectionStats;
 }
 
@@ -221,22 +221,22 @@ mod tests {
 
  #[test]
  fn test_protection_decision() {
- let allow = SystemProtectionDecision::Allow;
- assert!(allow.is_allow());
- assert!(!allow.is_deny());
+ let all ow = SystemProtectionDecision::Allow;
+ assert!(all ow.is_ all ow ());
+ assert!(! all ow.is_deny());
 
  let deny = SystemProtectionDecision::Deny {
  reason: "maliciousIP".to_string(),
  };
  assert!(deny.is_deny());
- assert!(!deny.is_allow());
+ assert!(!deny.is_ all ow ());
  }
 
  #[test]
  fn test_protection_result() {
- let allow = SystemProtectionResult::allow();
- assert!(allow.decision.is_allow());
- assert_eq!(allow.risk_score, 0.0);
+ let all ow = SystemProtectionResult:: all ow ();
+ assert!(all ow.decision.is_ all ow ());
+ assert_eq!(all ow.risk_score, 0.0);
 
  let deny = SystemProtectionResult::deny("test".to_string(), 0.9);
  assert!(deny.decision.is_deny());

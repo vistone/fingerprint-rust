@@ -29,7 +29,7 @@ pub const VERSION_TLS13: u16 = 0x0304;
 /// compressionmethodconstant
 pub const COMPRESSION_NONE: u8 = 0x00;
 
-/// 点formatconstant
+/// point formatconstant
 pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0x00;
 
 /// PSK patternconstant
@@ -47,7 +47,7 @@ pub type CipherSuiteID = u16;
 /// TLS Client Hello configuration
 /// Corresponds to Go version's tls.ClientHelloSpec
 ///
-/// Note: due toextension is trait pair象，Clone implementwillCreate a newextensioninstance
+/// Note: due toextension is trait pairobject，Clone implement will create a new extensioninstance
 #[derive(Debug)]
 pub struct ClientHelloSpec {
  /// cipher suitelist
@@ -65,13 +65,13 @@ pub struct ClientHelloSpec {
  /// TLS versionmaximumvalue
  /// Corresponds to Go version's TLSVersMax uint16
  pub tls_vers_max: u16,
- /// extensionmetadata ( for store SNI、ALPN etc.countdata)
+ /// extensionmetadata (for store SNI、ALPN etc.countdata)
  /// reference：Huginn Net Profiler design
  pub metadata: Option<crate::tls_config::metadata::SpecMetadata>,
 }
 
 impl ClientHelloSpec {
- /// Create a new ClientHelloSpec
+ /// create a new ClientHelloSpec
  /// Corresponds to Go version's ClientHelloSpec{} 零value
  pub fn new() -> Self {
  Self {
@@ -100,7 +100,7 @@ impl ClientHelloSpec {
  /// Create Chrome 133 fingerprint ClientHelloSpec
  /// Corresponds to Go version's Chrome_133 SpecFactory
  ///
- /// use Builder patterncan更灵活地Build：
+ /// use Builder patterncan more 灵活地Build：
  /// ```rust,no_run
  /// use fingerprint_tls::tls_config::ClientHelloSpecBuilder;
  /// let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
@@ -122,7 +122,7 @@ impl ClientHelloSpec {
  spec
  }
 
- /// Create Chrome 133 fingerprint ClientHelloSpec (旧implement，preserve for compatible)
+ /// Create Chrome 133 fingerprint ClientHelloSpec (old implement，preserve for compatible)
  #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
  pub fn chrome_133_old() -> Self {
  let mut spec = Self::new();
@@ -233,7 +233,7 @@ impl ClientHelloSpec {
  for ext in &self.extensions {
  let any_ext = ext.as_any();
  if let Some(sni) = any_ext.downcast_ref::<SNIExtension>() {
- if !sni.server_name.is_empty() {
+ if!sni.server_name.is_empty() {
  has_sni = true;
  }
  } else if let Some(alpn_ext) = any_ext.downcast_ref::<ALPNExtension>() {
@@ -253,7 +253,7 @@ impl ClientHelloSpec {
  &extensions,
  alpn,
  &sig_algs,
- )
+)
  }
 
  pub fn ja4_string(&self) -> String {

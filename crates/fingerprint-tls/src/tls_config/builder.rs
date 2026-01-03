@@ -1,6 +1,6 @@
 //! ClientHelloSpec Builder module
 //!
-//! provide Builder pattern来Build ClientHelloSpec，使codeclearer、typesecurity
+//! provide Builder pattern from Build ClientHelloSpec，使codeclearer、typesecurity
 
 use crate::tls_config::spec::{
  ClientHelloSpec, CERT_COMPRESSION_BROTLI, POINT_FORMAT_UNCOMPRESSED, PSK_MODE_DHE,
@@ -36,7 +36,7 @@ pub struct ClientHelloSpecBuilder {
 }
 
 impl ClientHelloSpecBuilder {
- /// Create a new Builder
+ /// create a new Builder
  pub fn new() -> Self {
  Self::default()
  }
@@ -91,7 +91,7 @@ impl ClientHelloSpecBuilder {
  }
 
  /// Chrome 136 defaultcipher suite
- /// in 136 version in ，Chrome furtheroptimize了encryptionsuiteweight，completelypriorityconsidermodern AEAD suite
+ /// in 136 version in ，Chrome furtheroptimizeencryptionsuiteweight，completelypriorityconsidermodern AEAD suite
  pub fn chrome_136_cipher_suites() -> Vec<u16> {
  vec![
  GREASE_CS,
@@ -104,7 +104,7 @@ impl ClientHelloSpecBuilder {
  cs::TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
  cs::TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256,
  cs::TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256,
- // 136 version in 大多countplatformupalreadyalmost不再首选these旧suite
+ // 136 version in 大 many countplatformupalreadyalmost not in 首选these old suite
  cs::TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
  cs::TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
  cs::TLS_RSA_WITH_AES_128_GCM_SHA256,
@@ -137,7 +137,7 @@ impl ClientHelloSpecBuilder {
  }
 
  /// Chrome defaultsignaturealgorithm
- /// returnstaticreference，avoid不必要inside存allocate
+ /// returnstaticreference， avoid not 必 need inside存 all ocate
  pub fn chrome_signature_algorithms() -> &'static [u16] {
  &[
  ECDSA_WITH_P256_AND_SHA256,
@@ -161,7 +161,7 @@ impl ClientHelloSpecBuilder {
  pub fn chrome_133_extensions() -> (
  Vec<Box<dyn TLSExtension>>,
  crate::tls_config::metadata::SpecMetadata,
- ) {
+) {
  let mut metadata = crate::tls_config::metadata::SpecMetadata::new();
 
  // settings ALPN
@@ -176,7 +176,7 @@ impl ClientHelloSpecBuilder {
  CURVE_P384,
  ]);
 
- // settingselliptic curve点format
+ // settingselliptic curve point format
  metadata.set_elliptic_curve_point_formats(vec![POINT_FORMAT_UNCOMPRESSED]);
 
  // settingssignaturealgorithm
@@ -206,11 +206,11 @@ impl ClientHelloSpecBuilder {
 .iter()
 .map(|s| s.to_string())
 .collect(),
- )),
+)),
  Box::new(StatusRequestExtension),
  Box::new(SignatureAlgorithmsExtension::new(
  Self::chrome_signature_algorithms().to_vec(),
- )),
+)),
  Box::new(SCTExtension),
  Box::new(KeyShareExtension::new(vec![
  KeyShare {
@@ -249,10 +249,10 @@ impl ClientHelloSpecBuilder {
  pub fn chrome_136_extensions() -> (
  Vec<Box<dyn TLSExtension>>,
  crate::tls_config::metadata::SpecMetadata,
- ) {
+) {
  let (mut extensions, mut metadata) = Self::chrome_133_extensions();
 
- // 针pair 136 fine-tune：ensure ALPN including h3 并put firstbit (Chrome 136 强化了pair h3 support)
+ // 针pair 136 fine-tune：ensure ALPN including h3 and put firstbit (Chrome 136 强izepair h3 support)
  let alpn_protocols = vec!["h3".to_string(), "h2".to_string(), "http/1.1".to_string()];
  metadata.set_alpn(alpn_protocols.clone());
 
@@ -271,7 +271,7 @@ impl ClientHelloSpecBuilder {
  pub fn chrome_103_extensions() -> (
  Vec<Box<dyn TLSExtension>>,
  crate::tls_config::metadata::SpecMetadata,
- ) {
+) {
  let mut metadata = crate::tls_config::metadata::SpecMetadata::new();
 
  // settings ALPN
@@ -280,7 +280,7 @@ impl ClientHelloSpecBuilder {
  // settingselliptic curve (excluding X25519MLKEM768)
  metadata.set_elliptic_curves(vec![GREASE_SG, X25519, CURVE_P256, CURVE_P384]);
 
- // settingselliptic curve点format
+ // settingselliptic curve point format
  metadata.set_elliptic_curve_point_formats(vec![POINT_FORMAT_UNCOMPRESSED]);
 
  // settingssignaturealgorithm
@@ -306,11 +306,11 @@ impl ClientHelloSpecBuilder {
 .iter()
 .map(|s| s.to_string())
 .collect(),
- )),
+)),
  Box::new(StatusRequestExtension),
  Box::new(SignatureAlgorithmsExtension::new(
  Self::chrome_signature_algorithms().to_vec(),
- )),
+)),
  Box::new(SCTExtension),
  Box::new(KeyShareExtension::new(vec![
  KeyShare {

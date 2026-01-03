@@ -16,23 +16,23 @@
 //! ## Usage
 //!
 //! ```rust
-//! use fingerprint_core::database::{FingerprintDatabase, FingerprintEntry, FingerprintType, ThreatLevel};
+//! use fingerprint_core::database::{FingerprintDatabase, FingerprintEn try, FingerprintType, ThreatLevel};
 //!
 //! // Create database
 //! let mut db = FingerprintDatabase::new();
 //!
 //! // Add fingerprint
-//! let entry = FingerprintEntry::new(
+//! let en try = FingerprintEn try ::new(
 //! FingerprintType::JA3,
 //! "d8321312332df7ff".to_string(),
 //! Some("Chrome 119".to_string()),
 //! ThreatLevel::Safe,
-//! );
-//! db.add(entry);
+//!);
+//! db.add(en try);
 //!
 //! // Query fingerprint
-//! if let Some(entry) = db.get_ja3("d8321312332df7ff") {
-//! println!("Found: {} - Threat level: {}", entry.client_info.unwrap(), entry.threat_level);
+//! if let Some(en try) = db.get_ja3("d8321312332df7ff") {
+//! println!("Found: {} - Threat level: {}", en try.client_info.unwrap(), en try.threat_level);
 //! }
 //! ```
 
@@ -113,9 +113,9 @@ impl fmt::Display for ThreatLevel {
  }
 }
 
-/// Fingerprint database entry
+/// Fingerprint database en try 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct FingerprintEntry {
+pub struct FingerprintEn try {
  /// Type of fingerprint
  pub fingerprint_type: FingerprintType,
  /// Fingerprint value (hash string)
@@ -136,14 +136,14 @@ pub struct FingerprintEntry {
  pub observation_count: u64,
 }
 
-impl FingerprintEntry {
- /// Create a new fingerprint entry
+impl FingerprintEn try {
+ /// create a new fingerprint en try 
  pub fn new(
  fingerprint_type: FingerprintType,
  fingerprint: String,
  client_info: Option<String>,
  threat_level: ThreatLevel,
- ) -> Self {
+) -> Self {
  let now = Utc::now();
  Self {
  fingerprint_type,
@@ -158,9 +158,9 @@ impl FingerprintEntry {
  }
  }
 
- /// Add a tag to this entry
+ /// Add a tag to this en try 
  pub fn add_tag(&mut self, tag: String) {
- if !self.tags.contains(&tag) {
+ if!self.tags.contains(&tag) {
  self.tags.push(tag);
  }
  }
@@ -176,12 +176,12 @@ impl FingerprintEntry {
  self.threat_description = Some(description);
  }
 
- /// Check if entry is a threat
+ /// Check if en try is a threat
  pub fn is_threat(&self) -> bool {
  matches!(
  self.threat_level,
  ThreatLevel::Suspicious | ThreatLevel::Malicious
- )
+)
  }
 }
 
@@ -191,33 +191,33 @@ impl FingerprintEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FingerprintDatabase {
  /// JA3 fingerprints (TLS Client - MD5)
- ja3: HashMap<String, FingerprintEntry>,
+ ja3: HashMap<String, FingerprintEn try >,
  /// JA3S fingerprints (TLS Server - MD5)
- ja3s: HashMap<String, FingerprintEntry>,
+ ja3s: HashMap<String, FingerprintEn try >,
  /// JA4 fingerprints (TLS Client - SHA256)
- ja4: HashMap<String, FingerprintEntry>,
+ ja4: HashMap<String, FingerprintEn try >,
  /// JA4S fingerprints (TLS Server - SHA256)
- ja4s: HashMap<String, FingerprintEntry>,
+ ja4s: HashMap<String, FingerprintEn try >,
  /// JA4H fingerprints (HTTP)
- ja4h: HashMap<String, FingerprintEntry>,
+ ja4h: HashMap<String, FingerprintEn try >,
  /// JA4L fingerprints (Lightweight)
- ja4l: HashMap<String, FingerprintEntry>,
+ ja4l: HashMap<String, FingerprintEn try >,
  /// JA4SSH fingerprints (SSH - JA4 style)
- ja4ssh: HashMap<String, FingerprintEntry>,
+ ja4ssh: HashMap<String, FingerprintEn try >,
  /// JA4T fingerprints (TCP)
- ja4t: HashMap<String, FingerprintEntry>,
+ ja4t: HashMap<String, FingerprintEn try >,
  /// HASSH fingerprints (SSH Client - MD5)
- hassh: HashMap<String, FingerprintEntry>,
+ hassh: HashMap<String, FingerprintEn try >,
  /// HASSH Server fingerprints (SSH Server - MD5)
- hassh_server: HashMap<String, FingerprintEntry>,
+ hassh_server: HashMap<String, FingerprintEn try >,
  /// JARM fingerprints (Active TLS Server)
- jarm: HashMap<String, FingerprintEntry>,
+ jarm: HashMap<String, FingerprintEn try >,
  /// p0f fingerprints (TCP/IP passive)
- p0f: HashMap<String, FingerprintEntry>,
+ p0f: HashMap<String, FingerprintEn try >,
 }
 
 impl FingerprintDatabase {
- /// Create a new empty fingerprint database
+ /// create a new empty fingerprint database
  pub fn new() -> Self {
  Self {
  ja3: HashMap::new(),
@@ -235,70 +235,70 @@ impl FingerprintDatabase {
  }
  }
 
- /// Add a fingerprint entry to the database
- pub fn add(&mut self, entry: FingerprintEntry) {
- let map = self.get_map_mut(entry.fingerprint_type);
+ /// Add a fingerprint en try to the database
+ pub fn add(&mut self, en try : FingerprintEn try) {
+ let map = self.get_map_mut(en try.fingerprint_type);
  
- // If entry already exists, update observation count
- if let Some(existing) = map.get_mut(&entry.fingerprint) {
+ // If en try already exists, update observation count
+ if let Some(existing) = map.get_mut(&en try.fingerprint) {
  existing.record_observation();
  } else {
- map.insert(entry.fingerprint.clone(), entry);
+ map.insert(en try.fingerprint.clone(), en try);
  }
  }
 
- /// Get a fingerprint entry by type and fingerprint value
- pub fn get(&self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<&FingerprintEntry> {
+ /// Get a fingerprint en try by type and fingerprint value
+ pub fn get(&self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<&FingerprintEn try > {
  let map = self.get_map(fingerprint_type);
  map.get(fingerprint)
  }
 
- /// Get a mutable reference to a fingerprint entry
- pub fn get_mut(&mut self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<&mut FingerprintEntry> {
+ /// Get a mutable reference to a fingerprint en try 
+ pub fn get_mut(&mut self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<&mut FingerprintEn try > {
  let map = self.get_map_mut(fingerprint_type);
  map.get_mut(fingerprint)
  }
 
- /// Remove a fingerprint entry
- pub fn remove(&mut self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<FingerprintEntry> {
+ /// Remove a fingerprint en try 
+ pub fn remove(&mut self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<FingerprintEn try > {
  let map = self.get_map_mut(fingerprint_type);
  map.remove(fingerprint)
  }
 
- /// Get JA3 fingerprint entry
- pub fn get_ja3(&self, fingerprint: &str) -> Option<&FingerprintEntry> {
+ /// Get JA3 fingerprint en try 
+ pub fn get_ja3(&self, fingerprint: &str) -> Option<&FingerprintEn try > {
  self.ja3.get(fingerprint)
  }
 
- /// Get JA4 fingerprint entry
- pub fn get_ja4(&self, fingerprint: &str) -> Option<&FingerprintEntry> {
+ /// Get JA4 fingerprint en try 
+ pub fn get_ja4(&self, fingerprint: &str) -> Option<&FingerprintEn try > {
  self.ja4.get(fingerprint)
  }
 
- /// Get HASSH fingerprint entry
- pub fn get_hassh(&self, fingerprint: &str) -> Option<&FingerprintEntry> {
+ /// Get HASSH fingerprint en try 
+ pub fn get_hassh(&self, fingerprint: &str) -> Option<&FingerprintEn try > {
  self.hassh.get(fingerprint)
  }
 
- /// Get JARM fingerprint entry
- pub fn get_jarm(&self, fingerprint: &str) -> Option<&FingerprintEntry> {
+ /// Get JARM fingerprint en try 
+ pub fn get_jarm(&self, fingerprint: &str) -> Option<&FingerprintEn try > {
  self.jarm.get(fingerprint)
  }
 
  /// Get all entries for a specific fingerprint type
- pub fn get_all(&self, fingerprint_type: FingerprintType) -> Vec<&FingerprintEntry> {
+ pub fn get_ all (&self, fingerprint_type: FingerprintType) -> Vec<&FingerprintEn try > {
  let map = self.get_map(fingerprint_type);
  map.values().collect()
  }
 
  /// Get all threat entries (Suspicious or Malicious)
- pub fn get_threats(&self) -> Vec<&FingerprintEntry> {
+ pub fn get_threats(&self) -> Vec<&FingerprintEn try > {
  let mut threats = Vec::new();
  
- for map in self.all_maps() {
- for entry in map.values() {
- if entry.is_threat() {
- threats.push(entry);
+ for map in self. all _maps() {
+ for en try in map.values() {
+ if en try.is_threat() {
+ threats.push(en try);
  }
  }
  }
@@ -307,13 +307,13 @@ impl FingerprintDatabase {
  }
 
  /// Get entries with specific tags
- pub fn find_by_tag(&self, tag: &str) -> Vec<&FingerprintEntry> {
+ pub fn find_by_tag(&self, tag: &str) -> Vec<&FingerprintEn try > {
  let mut results = Vec::new();
  
- for map in self.all_maps() {
- for entry in map.values() {
- if entry.tags.contains(&tag.to_string()) {
- results.push(entry);
+ for map in self. all _maps() {
+ for en try in map.values() {
+ if en try.tags.contains(&tag.to_string()) {
+ results.push(en try);
  }
  }
  }
@@ -360,7 +360,7 @@ impl FingerprintDatabase {
  }
 
  /// Get the appropriate map for a fingerprint type
- fn get_map(&self, fingerprint_type: FingerprintType) -> &HashMap<String, FingerprintEntry> {
+ fn get_map(&self, fingerprint_type: FingerprintType) -> &HashMap<String, FingerprintEn try > {
  match fingerprint_type {
  FingerprintType::JA3 => &self.ja3,
  FingerprintType::JA3S => &self.ja3s,
@@ -378,7 +378,7 @@ impl FingerprintDatabase {
  }
 
  /// Get mutable reference to the appropriate map
- fn get_map_mut(&mut self, fingerprint_type: FingerprintType) -> &mut HashMap<String, FingerprintEntry> {
+ fn get_map_mut(&mut self, fingerprint_type: FingerprintType) -> &mut HashMap<String, FingerprintEn try > {
  match fingerprint_type {
  FingerprintType::JA3 => &mut self.ja3,
  FingerprintType::JA3S => &mut self.ja3s,
@@ -396,7 +396,7 @@ impl FingerprintDatabase {
  }
 
  /// Get all maps as a vector
- fn all_maps(&self) -> Vec<&HashMap<String, FingerprintEntry>> {
+ fn all _maps(&self) -> Vec<&HashMap<String, FingerprintEn try >> {
  vec![
  &self.ja3,
  &self.ja3s,
@@ -442,7 +442,7 @@ impl fmt::Display for DatabaseStats {
  self.hassh_count,
  self.jarm_count,
  self.threat_count
- )
+)
  }
 }
 
@@ -451,74 +451,74 @@ mod tests {
  use super::*;
 
  #[test]
- fn test_fingerprint_entry_creation() {
- let entry = FingerprintEntry::new(
+ fn test_fingerprint_en try _creation() {
+ let en try = FingerprintEn try ::new(
  FingerprintType::JA3,
  "d8321312332df7ff".to_string(),
  Some("Chrome 119".to_string()),
  ThreatLevel::Safe,
- );
+);
 
- assert_eq!(entry.fingerprint_type, FingerprintType::JA3);
- assert_eq!(entry.fingerprint, "d8321312332df7ff");
- assert_eq!(entry.client_info, Some("Chrome 119".to_string()));
- assert_eq!(entry.threat_level, ThreatLevel::Safe);
- assert_eq!(entry.observation_count, 1);
- assert!(!entry.is_threat());
+ assert_eq!(en try.fingerprint_type, FingerprintType::JA3);
+ assert_eq!(en try.fingerprint, "d8321312332df7ff");
+ assert_eq!(en try.client_info, Some("Chrome 119".to_string()));
+ assert_eq!(en try.threat_level, ThreatLevel::Safe);
+ assert_eq!(en try.observation_count, 1);
+ assert!(!en try.is_threat());
  }
 
  #[test]
- fn test_fingerprint_entry_tags() {
- let mut entry = FingerprintEntry::new(
+ fn test_fingerprint_en try _tags() {
+ let mut en try = FingerprintEn try ::new(
  FingerprintType::JA4,
  "t13d1516h2".to_string(),
  Some("Firefox 120".to_string()),
  ThreatLevel::Safe,
- );
+);
 
- entry.add_tag("browser".to_string());
- entry.add_tag("desktop".to_string());
- entry.add_tag("browser".to_string()); // Duplicate
+ en try.add_tag("browser".to_string());
+ en try.add_tag("desktop".to_string());
+ en try.add_tag("browser".to_string()); // Duplicate
 
- assert_eq!(entry.tags.len(), 2);
- assert!(entry.tags.contains(&"browser".to_string()));
- assert!(entry.tags.contains(&"desktop".to_string()));
+ assert_eq!(en try.tags.len(), 2);
+ assert!(en try.tags.contains(&"browser".to_string()));
+ assert!(en try.tags.contains(&"desktop".to_string()));
  }
 
  #[test]
- fn test_fingerprint_entry_threat() {
- let mut entry = FingerprintEntry::new(
+ fn test_fingerprint_en try _threat() {
+ let mut en try = FingerprintEn try ::new(
  FingerprintType::JARM,
  "27d40d40d29d40d1dc42d43d00041d".to_string(),
  Some("Botnet C2".to_string()),
  ThreatLevel::Malicious,
- );
+);
 
- assert!(entry.is_threat());
- entry.set_threat_description("Known botnet command & control server".to_string());
+ assert!(en try.is_threat());
+ en try.set_threat_description("Known botnet command & control server".to_string());
  assert_eq!(
- entry.threat_description,
+ en try.threat_description,
  Some("Known botnet command & control server".to_string())
- );
+);
  }
 
  #[test]
- fn test_fingerprint_entry_observation() {
- let mut entry = FingerprintEntry::new(
+ fn test_fingerprint_en try _observation() {
+ let mut en try = FingerprintEn try ::new(
  FingerprintType::JA3,
  "abc123".to_string(),
  None,
  ThreatLevel::Unknown,
- );
+);
 
- assert_eq!(entry.observation_count, 1);
- let first_seen = entry.first_seen;
+ assert_eq!(en try.observation_count, 1);
+ let first_seen = en try.first_seen;
 
  std::thread::sleep(std::time::Duration::from_millis(10));
- entry.record_observation();
+ en try.record_observation();
 
- assert_eq!(entry.observation_count, 2);
- assert!(entry.last_seen > first_seen);
+ assert_eq!(en try.observation_count, 2);
+ assert!(en try.last_seen > first_seen);
  }
 
  #[test]
@@ -531,14 +531,14 @@ mod tests {
  fn test_database_add_and_get() {
  let mut db = FingerprintDatabase::new();
 
- let entry = FingerprintEntry::new(
+ let en try = FingerprintEn try ::new(
  FingerprintType::JA3,
  "test_fingerprint".to_string(),
  Some("Test Client".to_string()),
  ThreatLevel::Safe,
- );
+);
 
- db.add(entry);
+ db.add(en try);
 
  assert_eq!(db.total_entries(), 1);
  let retrieved = db.get_ja3("test_fingerprint");
@@ -550,22 +550,22 @@ mod tests {
  fn test_database_duplicate_adds() {
  let mut db = FingerprintDatabase::new();
 
- let entry1 = FingerprintEntry::new(
+ let en try 1 = FingerprintEn try ::new(
  FingerprintType::JA4,
  "duplicate_fp".to_string(),
  Some("Client 1".to_string()),
  ThreatLevel::Safe,
- );
+);
 
- let entry2 = FingerprintEntry::new(
+ let en try 2 = FingerprintEn try ::new(
  FingerprintType::JA4,
  "duplicate_fp".to_string(),
  Some("Client 2".to_string()),
  ThreatLevel::Safe,
- );
+);
 
- db.add(entry1);
- db.add(entry2);
+ db.add(en try 1);
+ db.add(en try 2);
 
  assert_eq!(db.total_entries(), 1); // Should not create duplicate
  let retrieved = db.get_ja4("duplicate_fp").unwrap();
@@ -576,14 +576,14 @@ mod tests {
  fn test_database_remove() {
  let mut db = FingerprintDatabase::new();
 
- let entry = FingerprintEntry::new(
+ let en try = FingerprintEn try ::new(
  FingerprintType::HASSH,
  "to_remove".to_string(),
  None,
  ThreatLevel::Unknown,
- );
+);
 
- db.add(entry);
+ db.add(en try);
  assert_eq!(db.total_entries(), 1);
 
  let removed = db.remove(FingerprintType::HASSH, "to_remove");
@@ -595,26 +595,26 @@ mod tests {
  fn test_database_get_threats() {
  let mut db = FingerprintDatabase::new();
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JA3,
  "safe1".to_string(),
  None,
  ThreatLevel::Safe,
- ));
+));
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JA3,
  "suspicious1".to_string(),
  None,
  ThreatLevel::Suspicious,
- ));
+));
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JARM,
  "malicious1".to_string(),
  None,
  ThreatLevel::Malicious,
- ));
+));
 
  let threats = db.get_threats();
  assert_eq!(threats.len(), 2);
@@ -624,65 +624,65 @@ mod tests {
  fn test_database_find_by_tag() {
  let mut db = FingerprintDatabase::new();
 
- let mut entry1 = FingerprintEntry::new(
+ let mut en try 1 = FingerprintEn try ::new(
  FingerprintType::JA3,
  "fp1".to_string(),
  None,
  ThreatLevel::Safe,
- );
- entry1.add_tag("browser".to_string());
- db.add(entry1);
+);
+ en try 1.add_tag("browser".to_string());
+ db.add(en try 1);
 
- let mut entry2 = FingerprintEntry::new(
+ let mut en try 2 = FingerprintEn try ::new(
  FingerprintType::JA4,
  "fp2".to_string(),
  None,
  ThreatLevel::Safe,
- );
- entry2.add_tag("browser".to_string());
- entry2.add_tag("mobile".to_string());
- db.add(entry2);
+);
+ en try 2.add_tag("browser".to_string());
+ en try 2.add_tag(" mobile ".to_string());
+ db.add(en try 2);
 
- let mut entry3 = FingerprintEntry::new(
+ let mut en try 3 = FingerprintEn try ::new(
  FingerprintType::HASSH,
  "fp3".to_string(),
  None,
  ThreatLevel::Safe,
- );
- entry3.add_tag("ssh".to_string());
- db.add(entry3);
+);
+ en try 3.add_tag("ssh".to_string());
+ db.add(en try 3);
 
  let browser_entries = db.find_by_tag("browser");
  assert_eq!(browser_entries.len(), 2);
 
- let mobile_entries = db.find_by_tag("mobile");
- assert_eq!(mobile_entries.len(), 1);
+ let mobile _entries = db.find_by_tag(" mobile ");
+ assert_eq!(mobile _entries.len(), 1);
  }
 
  #[test]
  fn test_database_stats() {
  let mut db = FingerprintDatabase::new();
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JA3,
  "ja3_1".to_string(),
  None,
  ThreatLevel::Safe,
- ));
+));
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JA4,
  "ja4_1".to_string(),
  None,
  ThreatLevel::Safe,
- ));
+));
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JA4,
  "ja4_2".to_string(),
  None,
  ThreatLevel::Malicious,
- ));
+));
 
  let stats = db.stats();
  assert_eq!(stats.total_entries, 3);
@@ -695,12 +695,12 @@ mod tests {
  fn test_database_json_serialization() {
  let mut db = FingerprintDatabase::new();
 
- db.add(FingerprintEntry::new(
+ db.add(FingerprintEn try ::new(
  FingerprintType::JA3,
  "test123".to_string(),
  Some("Test".to_string()),
  ThreatLevel::Safe,
- ));
+));
 
  let json = db.to_json();
  assert!(json.is_ok());

@@ -85,7 +85,7 @@ pub fn chrome_http2_settings() -> (HTTP2Settings, Vec<u16>) {
 pub fn firefox_http2_settings() -> (HTTP2Settings, Vec<u16>) {
  let mut settings = HashMap::new();
 
- // Firefox HTTP/2 Settings ( and Chrome slightly different)
+ // Firefox HTTP/2 Settings (and Chrome slightly different)
  settings.insert(HTTP2SettingID::HeaderTableSize.as_u16(), 65536);
  settings.insert(HTTP2SettingID::EnablePush.as_u16(), 0);
  settings.insert(HTTP2SettingID::MaxConcurrentStreams.as_u16(), 1000);
@@ -164,7 +164,7 @@ pub const CHROME_CONNECTION_FLOW: u32 = 15663105;
 
 /// Chrome Header Priority
 /// weight in HTTP/2 is 1-256， but in Rust we use u8 (0-255)
-/// actualwhen used needconvert to HTTP/2 weight value (weight = value + 1)
+/// actual when used needconvert to HTTP/2 weight value (weight = value + 1)
 pub fn chrome_header_priority() -> HTTP2PriorityParam {
  HTTP2PriorityParam::new(255, 0, false) // Corresponds to HTTP/2 weight = 256
 }
@@ -175,7 +175,7 @@ pub fn chrome_header_order() -> Vec<String> {
  "Host".to_string(),
  "Connection".to_string(),
  "sec-ch-ua".to_string(),
- "sec-ch-ua-mobile".to_string(),
+ "sec-ch-ua- mobile ".to_string(),
  "sec-ch-ua-platform".to_string(),
  "Upgrade-Insecure-Requests".to_string(),
  "User-Agent".to_string(),

@@ -22,11 +22,11 @@ pub enum ProxyType {
 pub struct ProxyConfig {
  /// proxytype
  pub proxy_type: ProxyType,
- /// proxyserveraddress
+ /// proxyserver address
  pub host: String,
  /// proxyserverport
  pub port: u16,
- /// user名 (optional)
+ /// user name (optional)
  pub username: Option<String>,
  /// cipher (optional)
  pub password: Option<String>,
@@ -84,16 +84,16 @@ fn connect_http_proxy(
  // connection to proxyserver
  let proxy_addr = format!("{}:{}", proxy.host, proxy.port);
  let mut stream = TcpStream::connect(&proxy_addr)
-.map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxyfailure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxy failure: {}", e)))?;
 
  // send CONNECT request
  let connect_request = format!(
  "CONNECT {}:{} HTTP/1.1\r\nHost: {}:{}\r\n\r\n",
  target_host, target_port, target_host, target_port
- );
+);
 
  stream
-.write_all(connect_request.as_bytes())
+.write_ all (connect_request.as_bytes())
 .map_err(HttpClientError::Io)?;
 
  // readresponse
@@ -103,11 +103,11 @@ fn connect_http_proxy(
  let response = String::from_utf8_lossy(&buffer[..n]);
 
  // Checkresponsewhethersuccess
- if !response.contains("200") {
+ if!response.contains("200") {
  return Err(HttpClientError::ConnectionFailed(format!(
  "proxyConnection failed: {}",
- response.lines().next().unwrap_or("not知error")
- )));
+ response.lines().next().unwrap_or("not know error")
+)));
  }
 
  Ok(stream)
@@ -122,30 +122,30 @@ fn connect_socks5_proxy(
  // connection to proxyserver
  let proxy_addr = format!("{}:{}", proxy.host, proxy.port);
  let mut stream = TcpStream::connect(&proxy_addr)
-.map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxyfailure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("connectionproxy failure: {}", e)))?;
 
  // SOCKS5 handshake
  // 1. sendauthenticationmethod
  let auth_methods = if proxy.username.is_some() {
- vec![0x05, 0x02, 0x00, 0x02] // version5，2method：无authentication and user名cipherauthentication
+ vec![0x05, 0x02, 0x00, 0x02] // version5，2method： no authentication and user namecipherauthentication
  } else {
- vec![0x05, 0x01, 0x00] // version5，1method：无authentication
+ vec![0x05, 0x01, 0x00] // version5，1method： no authentication
  };
 
  stream
-.write_all(&auth_methods)
+.write_ all (&auth_methods)
 .map_err(HttpClientError::Io)?;
 
- // 2. readserverselectmethod
+ // 2. readserver select method
  let mut response = [0u8; 2];
  stream
 .read_exact(&mut response)
 .map_err(HttpClientError::Io)?;
 
- if response[0] != 0x05 {
+ if response[0]!= 0x05 {
  return Err(HttpClientError::ConnectionFailed(
  "invalid SOCKS5 version".to_string(),
- ));
+));
  }
 
  // 3. if needauthentication
@@ -158,7 +158,7 @@ fn connect_socks5_proxy(
  auth_request.extend_from_slice(password.as_bytes());
 
  stream
-.write_all(&auth_request)
+.write_ all (&auth_request)
 .map_err(HttpClientError::Io)?;
 
  let mut auth_response = [0u8; 2];
@@ -166,21 +166,21 @@ fn connect_socks5_proxy(
 .read_exact(&mut auth_response)
 .map_err(HttpClientError::Io)?;
 
- if auth_response[1] != 0x00 {
+ if auth_response[1]!= 0x00 {
  return Err(HttpClientError::ConnectionFailed(
- "SOCKS5 authenticationfailure".to_string(),
- ));
+ "SOCKS5 authentication failure".to_string(),
+));
  }
  } else {
  return Err(HttpClientError::ConnectionFailed(
  "proxyneedauthenticationbutnotprovide凭data".to_string(),
- ));
+));
  }
- } else if response[1] != 0x00 {
+ } else if response[1]!= 0x00 {
  return Err(HttpClientError::ConnectionFailed(format!(
- "不supportauthenticationmethod: {}",
+ " not supportauthenticationmethod: {}",
  response[1]
- )));
+)));
  }
 
  // 4. sendconnectionrequest
@@ -196,7 +196,7 @@ fn connect_socks5_proxy(
  connect_request.push((target_port & 0xff) as u8);
 
  stream
-.write_all(&connect_request)
+.write_ all (&connect_request)
 .map_err(HttpClientError::Io)?;
 
  // 5. readconnectionresponse
@@ -205,14 +205,14 @@ fn connect_socks5_proxy(
 .read_exact(&mut connect_response[..4])
 .map_err(HttpClientError::Io)?;
 
- if connect_response[1] != 0x00 {
+ if connect_response[1]!= 0x00 {
  return Err(HttpClientError::ConnectionFailed(format!(
  "SOCKS5 Connection failed，error码: {}",
  connect_response[1]
- )));
+)));
  }
 
- // readremainingaddressinfo
+ // readremaining addressinfo
  match connect_response[3] {
  0x01 => {
  // IPv4
@@ -234,8 +234,8 @@ fn connect_socks5_proxy(
  }
  _ => {
  return Err(HttpClientError::ConnectionFailed(
- "不supportaddresstype".to_string(),
- ));
+ " not support addresstype".to_string(),
+));
  }
  }
 

@@ -1,6 +1,6 @@
 //! toolfunctionmodule
 //!
-//! providerandomly select、stringprocess etc.toolfunction
+//! providerandomly select 、stringprocess etc.toolfunction
 
 use rand::Rng;
 
@@ -20,13 +20,13 @@ pub fn random_choice_string(items: &[&str]) -> Option<String> {
  random_choice(items).map(|s| s.to_string())
 }
 
-/// from User-Agent in Extract Chrome version号
+/// from User-Agent in Extract Chrome version number 
 pub fn extract_chrome_version(user_agent: &str) -> String {
- // find "Chrome/" back面version号
+ // find "Chrome/" back面version number 
  if let Some(start) = user_agent.find("Chrome/") {
  let version_start = start + 7; // "Chrome/".len()
  if let Some(end) =
- user_agent[version_start..].find(|c: char| !c.is_ascii_digit() && c != '.')
+ user_agent[version_start..].find(|c: char|!c.is_ascii_digit() && c!= '.')
  {
  return user_agent[version_start..version_start + end].to_string();
  }
@@ -57,13 +57,13 @@ pub fn extract_platform(user_agent: &str) -> String {
  r#""Windows""#.to_string() // defaultplatform
 }
 
-/// from User-Agent in Extractoperating systemtype
+/// from User-Agent in Extractoperating system type
 ///
 /// for unifiedfingerprintGenerate，ensurebrowserfingerprint and TCP fingerprintsync
 pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
  use crate::types::OperatingSystem;
 
- // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
+ // Note: iPhone/iPad User-Agent including "Mac OS X"，need first Checkmovedevice
  if user_agent.contains("iPhone") || user_agent.contains("iPad") {
  // iOS device：use macOS TCP fingerprint (iOS based on macOS)
  OperatingSystem::MacOS14
@@ -102,14 +102,14 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
  (
  "safari".to_string(),
  name_lower.contains("ios") || name_lower.contains("ipad"),
- )
+)
  } else if name_lower.starts_with("opera_") {
  ("opera".to_string(), false)
  } else if name_lower.contains("ios")
  || name_lower.contains("android")
- || name_lower.contains("mobile")
+ || name_lower.contains(" mobile ")
  {
- // mobileapplicationfingerprint
+ // mobile applicationfingerprint
  if name_lower.contains("ios") {
  ("safari".to_string(), true)
  } else {
@@ -121,12 +121,12 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
 }
 
 /// judgewhether as mobile profile
-pub fn is_mobile_profile(profile_name: &str) -> bool {
+pub fn is_ mobile _profile(profile_name: &str) -> bool {
  let name = profile_name.to_lowercase();
  name.contains("ios")
  || name.contains("android")
  || name.contains("ipad")
- || name.contains("mobile")
+ || name.contains(" mobile ")
 }
 
 #[cfg(test)]
@@ -166,21 +166,21 @@ mod tests {
  assert_eq!(
  infer_browser_from_profile_name("chrome_120"),
  ("chrome".to_string(), false)
- );
+);
  assert_eq!(
  infer_browser_from_profile_name("firefox_133"),
  ("firefox".to_string(), false)
- );
+);
  assert_eq!(
  infer_browser_from_profile_name("safari_ios_17_0"),
  ("safari".to_string(), true)
- );
+);
  }
 
  #[test]
- fn test_is_mobile_profile() {
- assert!(is_mobile_profile("safari_ios_17_0"));
- assert!(is_mobile_profile("okhttp4_android_13"));
- assert!(!is_mobile_profile("chrome_120"));
+ fn test_is_ mobile _profile() {
+ assert!(is_ mobile _profile("safari_ios_17_0"));
+ assert!(is_ mobile _profile("okhttp4_android_13"));
+ assert!(!is_ mobile _profile("chrome_120"));
  }
 }

@@ -1,51 +1,51 @@
 //! HTTP/3 sessionpool
 //!
-//! pool化 h3::client::SendRequest handle，implementtrue HTTP/3 multiplereuse
-//! avoideach timerequest都reperform QUIC handshake and HTTP/3 connectionestablish
+//! poolize h3::client::SendRequest handle，implementtrue HTTP/3 multiplereuse
+//! avoid each time request all re perform QUIC handshake and HTTP/3 connectionestablish
 
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use super::Result;
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use std::collections::HashMap;
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use std::sync::{Arc, Mutex};
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use std::time::{Duration, Instant};
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use tokio::sync::watch;
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use tokio::sync::Mutex as TokioMutex;
 
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use h3::client::SendRequest;
 
 /// HTTP/3 sessionpoolmanageer
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 pub struct H3SessionPool {
- /// sessionpool ( by  host:port group)
+ /// sessionpool (by host:port group)
  sessions: Arc<Mutex<HashMap<String, Arc<H3Session>>>>,
- /// 正 in Createinsession (avoidcompetition)
+ /// correct in Createinsession (avoid competition)
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
  /// sessiontimeout duration (default 5 minutes)
  session_timeout: Duration,
 }
 
 /// HTTP/3 session
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 struct H3Session {
- /// SendRequest handle ( for sendrequest)
+ /// SendRequest handle (for sendrequest)
  send_request: Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>,
- /// backbackground taskhandle ( for manage h3 connectiondriver)
+ /// backbackground taskhandle (for manage h3 connectiondriver)
  _background_task: tokio::task::JoinHandle<()>,
- /// finallywhen used between
+ /// fin all y when used between
  last_used: Arc<Mutex<Instant>>,
  /// connectionwhethervalid
  is_valid: Arc<Mutex<bool>>,
 }
 
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 impl H3SessionPool {
- /// Create a newsessionpool
+ /// create a new sessionpool
  pub fn new(session_timeout: Duration) -> Self {
  Self {
  sessions: Arc::new(Mutex::new(HashMap::new())),
@@ -59,19 +59,19 @@ impl H3SessionPool {
  &self,
  key: &str,
  create_session: Fut,
- ) -> Result<Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>>
+) -> Result<Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>>
  where
  Fut: std::future::Future<
  Output = Result<(
  h3::client::Connection<h3_quinn::Connection, bytes::Bytes>,
  SendRequest<h3_quinn::OpenStreams, bytes::Bytes>,
- )>,
+)>,
  >,
  {
  // try from pool in Get
  {
  let mut sessions = self.sessions.lock().unwrap_or_else(|e| {
- eprintln!("warning: H3 sessionpoollockfailure: {}", e);
+ eprintln!("warning: H3 sessionpoollock failure: {}", e);
  drop(e.into_inner());
  self.sessions.lock().expect("unable toGet H3 sessionpoollock")
  });
@@ -81,7 +81,7 @@ impl H3SessionPool {
  let session_valid = sessions.get(key).and_then(|session| {
  let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
- if is_valid && !is_finished {
+ if is_valid &&!is_finished {
  Some(session.send_request.clone())
  } else {
  None
@@ -89,7 +89,7 @@ impl H3SessionPool {
  });
 
  if let Some(send_request) = session_valid {
- // Updatefinallywhen used between
+ // Updatefin all y when used between
  if let Some(session) = sessions.get(key) {
  if let Ok(mut last_used) = session.last_used.lock() {
  *last_used = Instant::now();
@@ -103,7 +103,7 @@ impl H3SessionPool {
  }
  }
 
- // Checkwhether正 in Create in (Race Condition Fix)
+ // Checkwhether correct in Create in (Race Condition Fix)
  let rx = {
  let mut pending = self
 .pending_sessions
@@ -123,10 +123,10 @@ impl H3SessionPool {
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 
- // Create新session
+ // Create new session
  let result = create_session.await;
 
- // 无论successfailure，都 from pending in remove
+ // no 论success failure， all from pending in remove
  if let Ok(mut pending) = self.pending_sessions.lock() {
  pending.remove(key);
  }
@@ -176,7 +176,7 @@ impl H3SessionPool {
  let is_valid = session.is_valid.lock().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
 
- if is_valid && !is_finished {
+ if is_valid &&!is_finished {
  if let Ok(last_used) = session.last_used.lock() {
  now.duration_since(*last_used) < self.session_timeout
  } else {
@@ -201,7 +201,7 @@ impl H3SessionPool {
  }
 }
 
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 impl Default for H3SessionPool {
  fn default() -> Self {
  Self::new(Duration::from_secs(300))

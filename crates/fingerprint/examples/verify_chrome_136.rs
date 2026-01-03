@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  let first_suites: Vec<u16> = spec
 .cipher_suites
 .iter()
-.filter(|&&s| !fingerprint_tls::tls_config::is_grease_value(s))
+.filter(|&&s|!fingerprint_tls::tls_config::is_grease_value(s))
 .take(5)
 .cloned()
 .collect();
@@ -52,7 +52,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  println!(" ✅ successGenerate ClientHello: {} bytes", client_hello.len());
 
  // simpleCheck ALPN whether in bytesstream in (h3, h2, http/1.1)
- if client_hello.windows(2).any(|w| w == b"h3") && client_hello.windows(2).any(|w| w == b"h2") {
+ if client_hello. window s(2).any(|w| w == b"h3") && client_hello. window s(2).any(|w| w == b"h2") {
  println!(" ✅ bytesstream in including h3 and h2 identifier");
  }
 

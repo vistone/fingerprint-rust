@@ -15,12 +15,12 @@ use std::sync::Arc;
 async fn main() {
  println!("🚀 Advanced Fingerprinting & Learner Verification\n");
 
- #[allow(clippy::arc_with_non_send_sync)] // in Examplescode in use，不needcrossthread
- let db = Arc::new(FingerprintDatabase::open("advanced.db").expect("Failed to open DB"));
+ #[ all ow (clippy::arc_with_non_send_sync)] // in Examplescode in use， not needcrossthread
+ let db = Arc::new(FingerprintDatabase:: open ("advanced.db").expect("Failed to open DB"));
  let analyzer = Arc::new(PassiveAnalyzer::new().expect("Failed to create analyzer"));
  let learner = SelfLearningAnalyzer::new(db.clone());
 
- // 1. simulatean HTTP/2 connectionfront奏 and SETTINGS frame
+ // 1. simulate an HTTP/2 connectionfront奏 and SETTINGS frame
  println!("1️⃣ simulate HTTP/2 handshaketrait:");
  let h2_preface = b"PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n";
  let h2_settings = vec![
@@ -48,7 +48,7 @@ async fn main() {
  tcp_header: Some(TcpHeader {
  seq: 1,
  ack: None,
- window: 65535,
+ window : 65535,
  flags: 0x02,
  options: vec![],
  }),
@@ -56,21 +56,21 @@ async fn main() {
 
  let result = analyzer.analyze(&packet);
  if let Some(http) = &result.http {
- println!(" ✅ HTTP Parsesuccess (Version: {})", http.id());
+ println!(" ✅ HTTP parsed success (Version: {})", http.id());
  if let Some(settings) = &http.h2_settings {
  println!(" ✅ H2 SETTINGS capture: {:?}", settings);
  }
  }
 
- // 2. simulate自learnprocess
+ // 2. simulate 自learnprocess
  println!("\n2️⃣ 自learnmechanismValidate:");
  for i in 1..=12 {
  learner.process_result(&result);
  if i == 5 {
- println!("... observenot知fingerprint 5 次");
+ println!("... observenot know fingerprint 5 times ");
  }
  if i == 10 {
- println!("... observenot知fingerprint 10 次 (triggerlearning thresholdvalue)");
+ println!("... observenot know fingerprint 10 times (triggerlearning thresholdvalue)");
  }
  }
 

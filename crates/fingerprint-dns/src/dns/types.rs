@@ -5,11 +5,11 @@ use std::collections::HashSet;
 
 /// IP addressdetailedinfo (Corresponds to Go version's IPInfo struct)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_ all = "camelCase")]
 pub struct IPInfo {
  /// IP address
  pub ip: String,
- /// host名 (optional)
+ /// host name (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub hostname: Option<String>,
  /// 城市 (optional)
@@ -20,7 +20,7 @@ pub struct IPInfo {
  pub region: Option<String>,
  /// 国家code (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
- pub country: Option<String>,
+ pub coun try : Option<String>,
  /// geographic坐标 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub loc: Option<String>,
@@ -40,7 +40,7 @@ impl IPInfo {
  hostname: None,
  city: None,
  region: None,
- country: None,
+ coun try : None,
  loc: None,
  org: None,
  timezone: None,
@@ -68,8 +68,8 @@ impl DomainIPs {
  }
  }
 
- /// Getall IP address (IPv4 + IPv6)
- pub fn all_ips(&self) -> Vec<String> {
+ /// Get all IP address (IPv4 + IPv6)
+ pub fn all _ips(&self) -> Vec<String> {
  let mut ips = Vec::new();
  for info in &self.ipv4 {
  ips.push(info.ip.clone());
@@ -80,15 +80,15 @@ impl DomainIPs {
  ips
  }
 
- /// Checkwhether有new IP address ( and 另an DomainIPs compare)
+ /// Checkwhether have new IP address (and 另an DomainIPs compare)
  ///
- /// `self` is 新Parse IP set，`other` is beforesave IP set
- /// If `self` in 有 `other` no IP, return true (discovernew IP)
+ /// `self` is new parsed IP set，`other` is beforesave IP set
+ /// If `self` in have `other` no IP, return true (dis cover new IP)
  pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
- let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
- let other_ips: HashSet<String> = other.all_ips().into_iter().collect();
+ let self_ips: HashSet<String> = self. all _ips().into_iter().collect();
+ let other_ips: HashSet<String> = other. all _ips().into_iter().collect();
 
- // Check self is否有 other no IP
+ // Check self is否 have other no IP
  self_ips.difference(&other_ips).next().is_some()
  }
 }
@@ -99,12 +99,12 @@ impl Default for DomainIPs {
  }
 }
 
-/// DNS Parseresult
+/// DNS parsed result
 #[derive(Debug, Clone)]
 pub struct DNSResult {
  /// domain
  pub domain: String,
- /// Parse to IP address (IPv4 and IPv6)
+ /// parsed to IP address (IPv4 and IPv6)
  pub ips: DomainIPs,
 }
 
@@ -113,7 +113,7 @@ pub struct DNSResult {
 pub enum DNSError {
  #[error("configurationerror: {0}")]
  Config(String),
- #[error("DNS Parseerror: {0}")]
+ #[error("DNS parsed error: {0}")]
  Resolver(String),
  #[error("IPInfo error: {0}")]
  IPInfo(String),
@@ -125,19 +125,19 @@ pub enum DNSError {
  Json(#[from] serde_json::Error),
  #[error("YAML error: {0}")]
  Yaml(String),
- #[error("TOML Parseerror: {0}")]
+ #[error("TOML parsed error: {0}")]
  Toml(#[from] toml::de::Error),
  #[error("HTTP error: {0}")]
  Http(String),
  #[error("TOML serializeerror: {0}")]
  TomlSerialize(String),
- #[error("inside部error: {0}")]
+ #[error("inside part error: {0}")]
  Internal(String),
 }
 
 /// DNS configurationstruct (Corresponds to Go version's Config struct)
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "camelCase")]
+#[serde(rename_ all = "camelCase")]
 pub struct DNSConfig {
  /// IPInfo.io API Token (required)
  pub ipinfo_token: String,
@@ -188,7 +188,7 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
- /// Create a new DNS configuration (便利method，candirectlyusestring字面量)
+ /// create a new DNS configuration (便利method，candirectlyusestring字面量)
  ///
  /// # Examples
  /// ```
@@ -197,7 +197,7 @@ impl DNSConfig {
  /// let config = DNSConfig::new(
  /// "your-token",
  /// &["google.com", "github.com"], // candirectlyuse &str
- /// );
+ ///);
  /// ```
  pub fn new<S: AsRef<str>>(ipinfo_token: &str, domain_list: &[S]) -> Self {
  Self {

@@ -36,12 +36,12 @@ impl TLSHandshakeType {
 pub struct TLSHandshake {
  /// messagetype
  pub msg_type: TLSHandshakeType,
- /// message体
+ /// message body 
  pub body: Vec<u8>,
 }
 
 impl TLSHandshake {
- /// Create a newhandshakemessage
+ /// create a new handshakemessage
  pub fn new(msg_type: TLSHandshakeType, body: Vec<u8>) -> Self {
  Self { msg_type, body }
  }
@@ -70,10 +70,10 @@ impl TLSHandshake {
  bytes
  }
 
- /// from bytesstreamParse
+ /// from bytesstream parsed 
  pub fn from_bytes(data: &[u8]) -> Result<(Self, usize), String> {
  if data.len() < 4 {
- return Err("countdatatoo short，unable toParsehandshakemessage".to_string());
+ return Err("countdatatoo short，unable to parsed handshakemessage".to_string());
  }
 
  let msg_type = match data[0] {
@@ -87,7 +87,7 @@ impl TLSHandshake {
  15 => TLSHandshakeType::CertificateVerify,
  16 => TLSHandshakeType::ClientKeyExchange,
  20 => TLSHandshakeType::Finished,
- _ => return Err(format!("not知handshaketype: {}", data[0])),
+ _ => return Err(format!("not know handshaketype: {}", data[0])),
  };
 
  // 3 byteslength
@@ -96,10 +96,10 @@ impl TLSHandshake {
 
  if data.len() < 4 + length {
  return Err(format!(
- "countdata不complete，need {} bytes，actualonly {} bytes",
+ "countdata not complete，need {} bytes，actualonly {} bytes",
  4 + length,
  data.len()
- ));
+));
  }
 
  let body = data[4..4 + length].to_vec();

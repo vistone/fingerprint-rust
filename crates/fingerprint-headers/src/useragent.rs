@@ -13,7 +13,7 @@ pub struct UserAgentGenerator {
 }
 
 impl UserAgentGenerator {
- /// Create a new User-Agent Generator
+ /// create a new User-Agent Generator
  pub fn new() -> Self {
  let mut gen = Self {
  templates: HashMap::new(),
@@ -54,8 +54,8 @@ impl UserAgentGenerator {
  template.to_string(),
  false,
  true,
- ),
- );
+),
+);
  }
 
  // Firefox User-Agent templates
@@ -63,51 +63,51 @@ impl UserAgentGenerator {
  (
  "102",
  "Mozilla/5.0 (%s; rv:102.0) Gecko/20100101 Firefox/102.0",
- ),
+),
  (
  "104",
  "Mozilla/5.0 (%s; rv:104.0) Gecko/20100101 Firefox/104.0",
- ),
+),
  (
  "105",
  "Mozilla/5.0 (%s; rv:105.0) Gecko/20100101 Firefox/105.0",
- ),
+),
  (
  "106",
  "Mozilla/5.0 (%s; rv:106.0) Gecko/20100101 Firefox/106.0",
- ),
+),
  (
  "108",
  "Mozilla/5.0 (%s; rv:108.0) Gecko/20100101 Firefox/108.0",
- ),
+),
  (
  "110",
  "Mozilla/5.0 (%s; rv:110.0) Gecko/20100101 Firefox/110.0",
- ),
+),
  (
  "117",
  "Mozilla/5.0 (%s; rv:117.0) Gecko/20100101 Firefox/117.0",
- ),
+),
  (
  "120",
  "Mozilla/5.0 (%s; rv:120.0) Gecko/20100101 Firefox/120.0",
- ),
+),
  (
  "123",
  "Mozilla/5.0 (%s; rv:123.0) Gecko/20100101 Firefox/123.0",
- ),
+),
  (
  "132",
  "Mozilla/5.0 (%s; rv:132.0) Gecko/20100101 Firefox/132.0",
- ),
+),
  (
  "133",
  "Mozilla/5.0 (%s; rv:133.0) Gecko/20100101 Firefox/133.0",
- ),
+),
  (
  "135",
  "Mozilla/5.0 (%s; rv:135.0) Gecko/20100101 Firefox/135.0",
- ),
+),
  ];
 
  for (version, template) in firefox_templates {
@@ -119,8 +119,8 @@ impl UserAgentGenerator {
  template.to_string(),
  false,
  true,
- ),
- );
+),
+);
  }
 
  // Safari User-Agent templates
@@ -143,10 +143,10 @@ impl UserAgentGenerator {
  BrowserType::Safari,
  key.to_string(),
  template.to_string(),
- *mobile,
- !mobile, // mobile does not need OS information
- ),
- );
+ * mobile,
+! mobile, // mobile does not need OS information
+),
+);
  }
 
  // Opera User-Agent templates
@@ -165,15 +165,15 @@ impl UserAgentGenerator {
  template.to_string(),
  false,
  true,
- ),
- );
+),
+);
  }
 
  // mobile and custom fingerprint User-Agent templates
  // iOS applicationfingerprint
  let ios_app_templates: &[(&str, &str)] = &[
- ("zalando_ios_mobile", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
- ("nike_ios_mobile", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
+ ("zalando_ios_ mobile ", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
+ ("nike_ios_ mobile ", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
  ("mms_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
  ("mms_ios_2", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
  ("mms_ios_3", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
@@ -191,14 +191,14 @@ impl UserAgentGenerator {
  template.to_string(),
  true,
  false, // iOS mobile does not need OS placeholder
- ),
- );
+),
+);
  }
 
  // Android applicationfingerprint
  let android_app_templates: &[(&str, &str)] = &[
- ("zalando_android_mobile", "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
- ("nike_android_mobile", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("zalando_android_ mobile ", "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("nike_android_ mobile ", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
  ("mesh_android", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
  ("mesh_android_2", "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
  ("confirmed_android", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
@@ -214,8 +214,8 @@ impl UserAgentGenerator {
  template.to_string(),
  true,
  false, // Android mobile does not need OS placeholder
- ),
- );
+),
+);
  }
 
  // OkHttp4 Android fingerprint
@@ -238,8 +238,8 @@ impl UserAgentGenerator {
  template.to_string(),
  true,
  false, // Android mobile does not need OS placeholder
- ),
- );
+),
+);
  }
 
  // Cloudflare Custom
@@ -251,30 +251,30 @@ impl UserAgentGenerator {
  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
  false,
  false, // fixed User-Agent, does not need OS placeholder
- ),
- );
+),
+);
  }
 
  /// Based on fingerprint nameGet User-Agent
- /// If fingerprintneed operating system information, will randomly select anoperating system
+ /// If fingerprintneed operating system information, will randomly select anoperating system 
  pub fn get_user_agent(&self, profile_name: &str) -> Result<String, String> {
  self.get_user_agent_with_os(profile_name, None)
  }
 
- /// Based on fingerprint name and specifiedoperating systemGet User-Agent
- /// If os as None, and need operating system information，will randomly select anoperating system
+ /// Based on fingerprint name and specifiedoperating system Get User-Agent
+ /// If os as None, and need operating system information， will randomly select anoperating system 
  pub fn get_user_agent_with_os(
  &self,
  profile_name: &str,
  os: Option<OperatingSystem>,
- ) -> Result<String, String> {
+) -> Result<String, String> {
  if profile_name.is_empty() {
  return Err("profile name cannot be empty".to_string());
  }
 
  if let Some(template) = self.templates.get(profile_name) {
  // Ifdoes not need OS information, directlyreturn templates
- if !template.os_required {
+ if!template.os_required {
  return Ok(template.template.clone());
  }
 
@@ -282,7 +282,7 @@ impl UserAgentGenerator {
  let os_str = match os {
  Some(os) => os.as_str(),
  None => {
- // randomly selectoperating system
+ // randomly select operating system 
  random_os().as_str()
  }
  };
@@ -299,10 +299,10 @@ impl UserAgentGenerator {
  &self,
  profile_name: &str,
  os: Option<OperatingSystem>,
- ) -> Result<String, String> {
+) -> Result<String, String> {
  let profile_name_lower = profile_name.to_lowercase();
 
- // Parsebrowsertype and version
+ // parsed browsertype and version
  let (browser, version) = if profile_name_lower.starts_with("chrome_") {
  let version = profile_name_lower
 .strip_prefix("chrome_")
@@ -338,23 +338,23 @@ impl UserAgentGenerator {
  BrowserType::Chrome => Ok(format!(
  "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36",
  os_str, version
- )),
+)),
  BrowserType::Firefox => Ok(format!(
  "Mozilla/5.0 ({}; rv:{}.0) Gecko/20100101 Firefox/{}.0",
  os_str, version, version
- )),
+)),
  BrowserType::Safari => Ok(format!(
  "Mozilla/5.0 ({}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{} Safari/605.1.15",
  os_str, version
- )),
+)),
  BrowserType::Opera => Ok(format!(
  "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36 OPR/{}.0.0.0",
  os_str, version, version
- )),
+)),
  BrowserType::Edge => Ok(format!(
  "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36 Edg/{}.0.0.0",
  os_str, version, version
- )),
+)),
  }
  }
 }
@@ -372,7 +372,7 @@ fn get_default_generator() -> &'static UserAgentGenerator {
  DEFAULT_GENERATOR.get_or_init(UserAgentGenerator::new)
 }
 
-/// randomly select anoperating system
+/// randomly select anoperating system 
 pub fn random_os() -> OperatingSystem {
  random_choice(OPERATING_SYSTEMS).unwrap_or(OperatingSystem::Windows10)
 }
@@ -382,7 +382,7 @@ pub fn get_user_agent_by_profile_name(profile_name: &str) -> Result<String, Stri
  get_default_generator().get_user_agent(profile_name)
 }
 
-/// as specified ClientProfile and operating systemGet User-Agent
+/// as specified ClientProfile and operating system Get User-Agent
 pub fn get_user_agent_by_profile_name_with_os(
  profile_name: &str,
  os: OperatingSystem,

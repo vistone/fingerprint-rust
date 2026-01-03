@@ -13,7 +13,7 @@ use std::fmt;
 pub enum Ja4Fingerprint {
  /// sortversion (ja4)
  Sorted(String),
- /// notsortversion (ja4_o，原beginningorder)
+ /// notsortversion (ja4_o， original beginningorder)
  Unsorted(String),
 }
 
@@ -44,12 +44,12 @@ impl Ja4Fingerprint {
  }
 }
 
-/// JA4 原beginningfingerprint (completeversion，sort/notsort)
+/// JA4 original beginningfingerprint (completeversion，sort/notsort)
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ja4RawFingerprint {
  /// sortversion (ja4_r)
  Sorted(String),
- /// notsortversion (ja4_ro，原beginningorder)
+ /// notsortversion (ja4_ro， original beginningorder)
  Unsorted(String),
 }
 
@@ -86,13 +86,13 @@ impl Ja4RawFingerprint {
 pub struct Ja4Payload {
  /// JA4_a: TLS version + SNI + cipher suitecount + extensioncount + ALPN
  pub ja4_a: String,
- /// JA4_b: cipher suite (原beginningstring)
+ /// JA4_b: cipher suite (original beginningstring)
  pub ja4_b: String,
- /// JA4_c: extension + signaturealgorithm (原beginningstring)
+ /// JA4_c: extension + signaturealgorithm (original beginningstring)
  pub ja4_c: String,
  /// JA4 fingerprint (hash，sort/notsort)
  pub full: Ja4Fingerprint,
- /// JA4 原beginningfingerprint (complete，sort/notsort)
+ /// JA4 original beginningfingerprint (complete，sort/notsort)
  pub raw: Ja4RawFingerprint,
 }
 
@@ -118,16 +118,16 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
 /// Generate 12 characterhash (SHA256 front 12character)
 ///
 /// SHA256 hashalwaysproduce 64hexadecimalcharacter，sofront 12characteralways exists。
-/// 此function for JA4 fingerprintGenerate。
+/// this function for JA4 fingerprintGenerate。
 pub fn hash12(input: &str) -> String {
  let hash = Sha256::digest(input.as_bytes());
  let hash_hex = format!("{:x}", hash);
  // SHA256 hashalways 64hexadecimalcharacter，sofront 12characteralways exists
- // use get() methodsecurity地Getslice，avoid潜 in panic
+ // use get() methodsecurity地Getslice， avoid 潜 in panic
  hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
 }
 
-/// TLS ClientHello signature ( for JA4 Generate)
+/// TLS ClientHello signature (for JA4 Generate)
 #[derive(Debug, Clone)]
 pub struct Ja4Signature {
  /// TLS version
@@ -150,13 +150,13 @@ impl Ja4Signature {
  self.generate_ja4_with_order(false)
  }
 
- /// Generate JA4 fingerprint (原beginningorderversion)
+ /// Generate JA4 fingerprint (original beginningorderversion)
  pub fn generate_ja4_original(&self) -> Ja4Payload {
  self.generate_ja4_with_order(true)
  }
 
  /// Generate JA4 fingerprint (specifiedorder)
- /// original_order: true representnotsort (原beginningorder)，false representsort
+ /// original_order: true representnotsort (original beginningorder)，false representsort
  fn generate_ja4_with_order(&self, original_order: bool) -> Ja4Payload {
  // filter GREASE value
  let filtered_ciphers = filter_grease_values(&self.cipher_suites);
@@ -169,13 +169,13 @@ impl Ja4Signature {
  // TLS version
  let tls_version_str = format!("{}", self.version);
 
- // SNI indicateer：'d' if exists SNI，'i' if 不 exists
+ // SNI indicateer：'d' if exists SNI，'i' if not exists
  let sni_indicator = if self.sni.is_some() { "d" } else { "i" };
 
- // cipher suitecount (2-bitdecimal，maximum 99)- use原beginningcount (filterfront)
+ // cipher suitecount (2-bitdecimal，maximum 99)- use original beginningcount (filterfront)
  let cipher_count = format!("{:02}", self.cipher_suites.len().min(99));
 
- // extensioncount (2-bitdecimal，maximum 99)- use原beginningcount (filterfront)
+ // extensioncount (2-bitdecimal，maximum 99)- use original beginningcount (filterfront)
  let extension_count = format!("{:02}", self.extensions.len().min(99));
 
  // ALPN first and lastcharacter
@@ -187,11 +187,11 @@ impl Ja4Signature {
  // JA4_a format：protocol + version + sni + cipher_count + extension_count + alpn_first + alpn_last
  let ja4_a = format!(
  "{protocol}{tls_version_str}{sni_indicator}{cipher_count}{extension_count}{alpn_first}{alpn_last}"
- );
+);
 
- // JA4_b: cipher suite (sort or 原beginningorder，comma-separated，4-bithexadecimal)- filter GREASE
+ // JA4_b: cipher suite (sort or original beginningorder，comma-separated，4-bithexadecimal)- filter GREASE
  let mut ciphers_for_b = filtered_ciphers;
- if !original_order {
+ if!original_order {
  ciphers_for_b.sort_unstable();
  }
  let ja4_b_raw = ciphers_for_b
@@ -200,13 +200,13 @@ impl Ja4Signature {
 .collect::<Vec<String>>()
 .join(",");
 
- // JA4_c: extension (sort or 原beginningorder，comma-separated，4-bithexadecimal)+ "_" + signaturealgorithm
+ // JA4_c: extension (sort or original beginningorder，comma-separated，4-bithexadecimal)+ "_" + signaturealgorithm
  let mut extensions_for_c = filtered_extensions;
 
- // for sortversion：remove SNI (0x0000) and ALPN (0x0010) 并sort
- // for 原beginningversion：preserve SNI/ALPN 并keep原beginningorder
- if !original_order {
- extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010);
+ // for sortversion：remove SNI (0x0000) and ALPN (0x0010) and sort
+ // for original beginningversion：preserve SNI/ALPN and keep original beginningorder
+ if!original_order {
+ extensions_for_c.retain(|ext| *ext!= 0x0000 && *ext!= 0x0010);
  extensions_for_c.sort_unstable();
  }
 
@@ -216,14 +216,14 @@ impl Ja4Signature {
 .collect::<Vec<String>>()
 .join(",");
 
- // signaturealgorithm不sort (Based onspecification)，butfilter GREASE
+ // signaturealgorithm not sort (Based onspecification)，butfilter GREASE
  let sig_algs_str = filtered_sig_algs
 .iter()
 .map(|s| format!("{s:04x}"))
 .collect::<Vec<String>>()
 .join(",");
 
- // Based onspecification， if nosignaturealgorithm，string不below划线ending
+ // Based onspecification， if nosignaturealgorithm，string not below划线ending
  let ja4_c_raw = if sig_algs_str.is_empty() {
  extensions_str
  } else if extensions_str.is_empty() {
@@ -239,7 +239,7 @@ impl Ja4Signature {
  // JA4 hash：ja4_a + "_" + ja4_b_hash + "_" + ja4_c_hash
  let ja4_hashed = format!("{ja4_a}_{ja4_b_hash}_{ja4_c_hash}");
 
- // JA4 原beginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
+ // JA4 original beginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
  let ja4_raw_full = format!("{ja4_a}_{ja4_b_raw}_{ja4_c_raw}");
 
  // Based onorderCreatecorrespondingenumvariant

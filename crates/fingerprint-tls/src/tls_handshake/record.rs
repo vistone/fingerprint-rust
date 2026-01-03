@@ -31,14 +31,14 @@ impl TLSRecordType {
 pub struct TLSRecord {
  /// inside容type
  pub content_type: TLSRecordType,
- /// protocolversion (usually is TLS 1.0 = 0x0301， for compatible性)
+ /// protocolversion (usu all y is TLS 1.0 = 0x0301， for compatible property)
  pub version: u16,
  /// countdatainside容
  pub fragment: Vec<u8>,
 }
 
 impl TLSRecord {
- /// Create a new TLS record
+ /// create a new TLS record
  pub fn new(content_type: TLSRecordType, version: u16, fragment: Vec<u8>) -> Self {
  Self {
  content_type,
@@ -72,10 +72,10 @@ impl TLSRecord {
  bytes
  }
 
- /// from bytesstreamParse
+ /// from bytesstream parsed 
  pub fn from_bytes(data: &[u8]) -> Result<(Self, usize), String> {
  if data.len() < 5 {
- return Err("countdatatoo short，unable toParse TLS record".to_string());
+ return Err("countdatatoo short，unable to parsed TLS record".to_string());
  }
 
  let content_type = match data[0] {
@@ -83,7 +83,7 @@ impl TLSRecord {
  21 => TLSRecordType::Alert,
  22 => TLSRecordType::Handshake,
  23 => TLSRecordType::ApplicationData,
- _ => return Err(format!("not知inside容type: {}", data[0])),
+ _ => return Err(format!("not know inside容type: {}", data[0])),
  };
 
  let version = u16::from_be_bytes([data[1], data[2]]);
@@ -91,10 +91,10 @@ impl TLSRecord {
 
  if data.len() < 5 + length {
  return Err(format!(
- "countdata不complete，need {} bytes，actualonly {} bytes",
+ "countdata not complete，need {} bytes，actualonly {} bytes",
  5 + length,
  data.len()
- ));
+));
  }
 
  let fragment = data[5..5 + length].to_vec();

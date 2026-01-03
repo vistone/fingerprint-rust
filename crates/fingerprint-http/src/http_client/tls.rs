@@ -2,12 +2,12 @@
 //!
 //! useofficial rustls asbottomlayer TLS implement
 //! through ClientHelloCustomizer applicationbrowserfingerprint (Chrome、Firefox、Safari etc.)
-//! simulatemarket maturebrowser TLS fingerprint，不customselffingerprint
+//! simulate market maturebrowser TLS fingerprint， not customselffingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
 use std::net::TcpStream;
-#[allow(unused_imports)]
+#[ all ow (unused_imports)]
 use std::sync::Arc;
 
 /// TLS connectioner
@@ -32,8 +32,8 @@ impl Default for TlsConnector {
 /// send HTTPS request
 ///
 /// useofficial rustls asbottomlayer TLS implement
-/// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
-/// simulatemarket maturebrowser TLS fingerprint (Chrome、Firefox、Safari etc.)
+/// Ifconfiguration ClientProfile, will through ClientHelloCustomizer applicationbrowserfingerprint
+/// simulate market maturebrowser TLS fingerprint (Chrome、Firefox、Safari etc.)
 pub fn send_https_request(
  host: &str,
  port: u16,
@@ -41,7 +41,7 @@ pub fn send_https_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // use rustls， if configuration了 profile，willautomaticthrough ClientHelloCustomizer applicationbrowserfingerprint
+ // use rustls， if configuration profile， will automaticthrough ClientHelloCustomizer applicationbrowserfingerprint
 
  // establish TCP connection
  let addr = format!("{}:{}", host, port);
@@ -68,17 +68,17 @@ pub fn send_https_request(
  config.verify_tls,
  Vec::new(),
  config.profile.as_ref(),
- );
+);
 
- let server_name = ServerName::try_from(host)
+ let server_name = ServerName:: try _from(host)
 .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
  let conn = rustls::ClientConnection::new(Arc::new(tls_config), server_name)
-.map_err(|e| HttpClientError::TlsError(format!("TLS connectionCreatefailure: {}", e)))?;
+.map_err(|e| HttpClientError::TlsError(format!("TLS connectionCreate failure: {}", e)))?;
 
  let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
- // Fix: Add Cookie to request ( if exists)
+ // Fix: Add Cookie to request (if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -87,14 +87,14 @@ pub fn send_https_request(
  host,
  path,
  true, // HTTPS is securityconnection
- );
+);
  }
 
  // send HTTP request
  let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
  let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
  tls_stream
-.write_all(&http_request)
+.write_ all (&http_request)
 .map_err(HttpClientError::Io)?;
  tls_stream.flush().map_err(HttpClientError::Io)?;
 
@@ -102,10 +102,10 @@ pub fn send_https_request(
  let buffer = super::io::read_http1_response_bytes(
  &mut tls_stream,
  super::io::DEFAULT_MAX_RESPONSE_BYTES,
- )
+)
 .map_err(HttpClientError::Io)?;
 
- // Parseresponse
+ // parsed response
  HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
  }
 
@@ -113,15 +113,15 @@ pub fn send_https_request(
  {
  Err(HttpClientError::TlsError(
  "needenabled rustls-tls Features".to_string(),
- ))
+))
  }
 }
 
 /// useconnection poolsend HTTPS (HTTP/1.1 over TLS)request
 ///
-/// explain：
-/// - this is“connection pool + TLS”syncimplement (面向 `kh.google.com` 这类 https 站点)
-/// - 目front只 for 回归test and `HttpClient` https+pool path
+/// explain ：
+/// - this is“connection pool + TLS”syncimplement (面向 `kh.google.com` this 类 https 站 point)
+/// - item front only for 回归test and `HttpClient` https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(
  host: &str,
@@ -138,13 +138,13 @@ pub fn send_https_request_with_pool(
 .get_tcp()
 .map_err(|e| HttpClientError::ConnectionFailed(format!("Failed to get connection from pool: {:?}", e)))?;
 
- // PooledConnection implement了 Deref<Target = Connection>，candirectlyuse Connection method
+ // PooledConnection implement Deref<Target = Connection>，candirectlyuse Connection method
  let tcp_stream = conn
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
- // keep conn lifecyclecover整request；同 when 用 clone 得 to available std::net::TcpStream
- let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
+ // keep conn lifecycle cover 整request；同 when 用 clone 得 to available std::net::TcpStream
+ let tcp_stream = tcp_stream. try _clone().map_err(HttpClientError::Io)?;
 
  tcp_stream
 .set_read_timeout(Some(config.read_timeout))
@@ -163,15 +163,15 @@ pub fn send_https_request_with_pool(
  config.verify_tls,
  Vec::new(),
  config.profile.as_ref(),
- );
- let server_name = ServerName::try_from(host)
+);
+ let server_name = ServerName:: try _from(host)
 .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
  let conn_tls = rustls::ClientConnection::new(Arc::new(tls_config), server_name)
-.map_err(|e| HttpClientError::TlsError(format!("TLS connectionCreatefailure: {}", e)))?;
+.map_err(|e| HttpClientError::TlsError(format!("TLS connectionCreate failure: {}", e)))?;
 
  let mut tls_stream = rustls::StreamOwned::new(conn_tls, tcp_stream);
 
- // Fix: Add Cookie to request ( if exists)
+ // Fix: Add Cookie to request (if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -180,20 +180,20 @@ pub fn send_https_request_with_pool(
  host,
  path,
  true, // HTTPS is securityconnection
- );
+);
  }
 
  let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
  let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
  tls_stream
-.write_all(&http_request)
+.write_ all (&http_request)
 .map_err(HttpClientError::Io)?;
  tls_stream.flush().map_err(HttpClientError::Io)?;
 
  let buffer = super::io::read_http1_response_bytes(
  &mut tls_stream,
  super::io::DEFAULT_MAX_RESPONSE_BYTES,
- )
+)
 .map_err(HttpClientError::Io)?;
 
  HttpResponse::parse(&buffer).map_err(HttpClientError::InvalidResponse)
@@ -201,10 +201,10 @@ pub fn send_https_request_with_pool(
 
  #[cfg(not(feature = "rustls-tls"))]
  {
- let _ = conn; // keep for symmetry
+ let _ = conn; // keep for symme try 
  Err(HttpClientError::TlsError(
  "needenabled rustls-tls Features".to_string(),
- ))
+))
  }
 }
 
@@ -214,7 +214,7 @@ mod tests {
  use crate::http_client::request::HttpMethod;
 
  #[test]
- #[ignore] // neednetworkconnection
+ #[ ignore ] // neednetworkconnection
  fn test_send_https_request() {
  let request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get")
 .with_user_agent("TestClient/1.0");
@@ -222,7 +222,7 @@ mod tests {
  let config = HttpClientConfig::default();
  let response = send_https_request("httpbin.org", 443, "/get", &request, &config).unwrap();
 
- // outside部servicemaywill短暂return 429/503 etc.；heremainValidate“能establish TLS + 能Parseresponse”。
+ // outside part servicemay will 短 temporary return 429/503 etc.；heremainValidate“能establish TLS + 能 parsed response”。
  assert!(response.status_code > 0);
  }
 }

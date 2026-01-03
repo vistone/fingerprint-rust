@@ -7,12 +7,12 @@ use std::fs;
 use std::path::Path;
 
 /// from configurationfileload DNS configuration
-/// automaticidentifyconfigurationfileformat (JSON、YAML、TOML)
+/// automatic identifyconfigurationfileformat (JSON、YAML、TOML)
 pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
  let path = path.as_ref();
  let content = fs::read_to_string(path)?;
 
- // Based onfileextension名selectParseer
+ // Based onfileextension name select parsed er
  let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
  Some("json") => serde_json::from_str(&content).map_err(DNSError::Json)?,
  Some("yaml") | Some("yml") => {
@@ -21,12 +21,12 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
  }
  Some("toml") => toml::from_str(&content)?,
  _ => {
- // try by  JSON Parse
+ // try by JSON parsed 
  serde_json::from_str(&content).map_err(|_| {
  DNSError::Config(format!(
  "unsupported config format: {:?}. Supported: json, yaml, toml",
  path.extension()
- ))
+))
  })?
  }
  };
@@ -46,7 +46,7 @@ mod tests {
  #[test]
  fn test_load_json_config() {
  let temp_dir = PathBuf::from("/tmp/test_dns_config");
- fs::create_dir_all(&temp_dir).ok();
+ fs::create_dir_ all (&temp_dir).ok();
  let config_path = temp_dir.join("config.json");
 
  let json_content = r#"{

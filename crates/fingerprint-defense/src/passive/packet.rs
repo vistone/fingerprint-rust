@@ -1,6 +1,6 @@
-//! countpacketParsemodule
+//! countpacket parsed module
 //!
-//! providebottomlayercountpacketParseFeatures。
+//! providebottomlayercountpacket parsed Features。
 
 use bytes::Bytes;
 use std::net::IpAddr;
@@ -35,21 +35,21 @@ pub struct Packet {
  /// countpacketload
  pub payload: Bytes,
 
- /// TCP headerinfo ( if 有)
+ /// TCP headerinfo (if have)
  pub tcp_header: Option<TcpHeader>,
 }
 
 /// TCP headerinfo
 #[derive(Debug, Clone)]
 pub struct TcpHeader {
- /// 序列号
+ /// 序列 number 
  pub seq: u32,
 
- /// confirm号
+ /// confirm number 
  pub ack: Option<u32>,
 
- /// windowsize
- pub window: u16,
+ /// window size
+ pub window : u16,
 
  /// TCP flag
  pub flags: u8,
@@ -65,13 +65,13 @@ pub struct TcpOption {
  pub data: Vec<u8>,
 }
 
-/// countpacketParseer
-pub struct PacketParser;
+/// countpacket parsed er
+pub struct Packet parsed r;
 
-impl PacketParser {
- /// from 原beginningcountpacketParse
+impl Packet parsed r {
+ /// from original beginningcountpacket parsed 
  pub fn parse(raw_packet: &[u8]) -> Result<Packet, PacketError> {
- // Parse IP header
+ // parsed IP header
  if raw_packet.len() < 20 {
  return Err(PacketError::TooShort);
  }
@@ -85,7 +85,7 @@ impl PacketParser {
  }
  }
 
- /// Parse IPv4 countpacket
+ /// parsed IPv4 countpacket
  fn parse_ipv4(raw_packet: &[u8]) -> Result<Packet, PacketError> {
  if raw_packet.len() < 20 {
  return Err(PacketError::TooShort);
@@ -126,7 +126,7 @@ impl PacketParser {
 
  let payload = Bytes::copy_from_slice(&raw_packet[header_len..]);
 
- // Based onprotocoltypeParse
+ // Based onprotocoltype parsed 
  let (src_port, dst_port, tcp_header) = match protocol {
  6 => {
  // TCP
@@ -160,7 +160,7 @@ impl PacketParser {
  })
  }
 
- /// Parse IPv6 countpacket
+ /// parsed IPv6 countpacket
  fn parse_ipv6(raw_packet: &[u8]) -> Result<Packet, PacketError> {
  if raw_packet.len() < 40 {
  return Err(PacketError::TooShort);
@@ -169,7 +169,7 @@ impl PacketParser {
  // IPv6 headerfixed 40 bytes
  // version(4bit) + traffic类别(8bit) + streamtag(20bit) = front 4 bytes
  let version = (raw_packet[0] >> 4) & 0x0F;
- if version != 6 {
+ if version!= 6 {
  return Err(PacketError::InvalidVersion);
  }
 
@@ -182,7 +182,7 @@ impl PacketParser {
  // 跳countlimit (TTL，bytes 7)
  let hop_limit = raw_packet[7];
 
- // sourceaddress (128bit，bytes 8-23)
+ // source address (128bit，bytes 8-23)
  let src_ip = IpAddr::from([
  raw_packet[8],
  raw_packet[9],
@@ -202,7 +202,7 @@ impl PacketParser {
  raw_packet[23],
  ]);
 
- // targetaddress (128bit，bytes 24-39)
+ // target address (128bit，bytes 24-39)
  let dst_ip = IpAddr::from([
  raw_packet[24],
  raw_packet[25],
@@ -222,12 +222,12 @@ impl PacketParser {
  raw_packet[39],
  ]);
 
- // loadcountdata ( from bytes 40 start)
+ // loadcountdata (from bytes 40 start)
  let payload_start = 40;
  let payload_end = (payload_start + payload_length).min(raw_packet.len());
  let payload = Bytes::copy_from_slice(&raw_packet[payload_start..payload_end]);
 
- // Based onnextheaderprotocolParse
+ // Based onnextheaderprotocol parsed 
  let (src_port, dst_port, tcp_header) = match next_header {
  6 => {
  // TCP over IPv6
@@ -261,7 +261,7 @@ impl PacketParser {
  })
  }
 
- /// Parse UDP header
+ /// parsed UDP header
  fn parse_udp(data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
  if data.len() < 8 {
  return Err(PacketError::TooShort);
@@ -276,14 +276,14 @@ impl PacketParser {
  Ok((src_port, dst_port, None))
  }
 
- /// Parse ICMP header
+ /// parsed ICMP header
  fn parse_icmp(_data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
  // ICMP noport概念，return 0
  // ICMP type and code in data[0] and data[1]
  Ok((0, 0, None))
  }
 
- /// Parse TCP header
+ /// parsed TCP header
  fn parse_tcp(data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
  if data.len() < 20 {
  return Err(PacketError::TooShort);
@@ -292,7 +292,7 @@ impl PacketParser {
  let src_port = u16::from_be_bytes([data[0], data[1]]);
  let dst_port = u16::from_be_bytes([data[2], data[3]]);
  let seq = u32::from_be_bytes([data[4], data[5], data[6], data[7]]);
- let ack = if data[13] & 0x10 != 0 {
+ let ack = if data[13] & 0x10!= 0 {
  Some(u32::from_be_bytes([data[8], data[9], data[10], data[11]]))
  } else {
  None
@@ -307,11 +307,11 @@ impl PacketParser {
  let flags = data[13];
  let window = u16::from_be_bytes([data[14], data[15]]);
 
- // Parse TCP options
+ // parsed TCP options
  let mut options = Vec::new();
  let header_len = data_offset * 4;
  
- // securityCheck：ensure不will越boundaryaccess
+ // securityCheck：ensure not will 越boundaryaccess
  if header_len > data.len() {
  return Err(PacketError::TooShort);
  }
@@ -362,7 +362,7 @@ impl PacketParser {
  }
 }
 
-/// countpacketParseerror
+/// countpacket parsed error
 #[derive(Debug, thiserror::Error)]
 pub enum PacketError {
  #[error("countpackettoo short")]
@@ -396,19 +396,19 @@ mod security_tests {
  packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
  packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
  
- let result = PacketParser::parse(&packet);
+ let result = Packet parsed r::parse(&packet);
  assert!(result.is_err(), "shouldrefuse IHL = 0 countpacket");
  }
 
  #[test]
- fn test_invalid_ihl_small() {
+ fn test_invalid_ihl_sm all () {
  // IHL = 4 (invalid, must be at least 5)
  let mut packet = vec![0x00; 20];
  packet[0] = 0x44; // Version 4, IHL 4
  packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
  packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
  
- let result = PacketParser::parse(&packet);
+ let result = Packet parsed r::parse(&packet);
  assert!(result.is_err(), "shouldrefuse IHL < 5 countpacket");
  }
 
@@ -420,7 +420,7 @@ mod security_tests {
  packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
  packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
  
- let result = PacketParser::parse(&packet);
+ let result = Packet parsed r::parse(&packet);
  assert!(result.is_err(), "shouldrefuse header_len exceed packet lengthcountpacket");
  }
 
@@ -434,8 +434,8 @@ mod security_tests {
  packet[12..16].copy_from_slice(&[192, 168, 1, 1]); // src IP
  packet[16..20].copy_from_slice(&[192, 168, 1, 2]); // dst IP
  
- let result = PacketParser::parse(&packet);
- assert!(result.is_ok(), "validminimum IPv4 countpacketshouldParsesuccess");
+ let result = Packet parsed r::parse(&packet);
+ assert!(result.is_ok(), "validminimum IPv4 countpacketshould parsed success");
  }
 
  #[test]
@@ -454,12 +454,12 @@ mod security_tests {
  packet[22..24].copy_from_slice(&[0x00, 0x50]); // dst port 80
  packet[32] = 0x00; // Data offset = 0 (invalid)
  
- let result = PacketParser::parse(&packet);
+ let result = Packet parsed r::parse(&packet);
  assert!(result.is_err(), "shouldrefuse data_offset = 0 TCP countpacket");
  }
 
  #[test]
- fn test_invalid_tcp_data_offset_small() {
+ fn test_invalid_tcp_data_offset_sm all () {
  // Create a valid IPv4 packet with TCP
  let mut packet = vec![0x00; 40];
  packet[0] = 0x45; // Version 4, IHL 5
@@ -470,7 +470,7 @@ mod security_tests {
  // TCP header - set data offset to 4 (invalid, must be at least 5)
  packet[32] = 0x40; // Data offset = 4
  
- let result = PacketParser::parse(&packet);
+ let result = Packet parsed r::parse(&packet);
  assert!(result.is_err(), "shouldrefuse data_offset < 5 TCP countpacket");
  }
 
@@ -489,8 +489,8 @@ mod security_tests {
  packet[32] = 0x50; // Data offset = 5 (20 bytes)
  packet[33] = 0x02; // SYN flag
  
- let result = PacketParser::parse(&packet);
- assert!(result.is_ok(), "valid TCP countpacketshouldParsesuccess");
+ let result = Packet parsed r::parse(&packet);
+ assert!(result.is_ok(), "valid TCP countpacketshould parsed success");
  
  let p = result.unwrap();
  assert_eq!(p.src_port, 80);
@@ -503,8 +503,8 @@ mod security_tests {
  // Packet shorter than minimum IPv4 header
  let packet = vec![0x45; 10];
  
- let result = PacketParser::parse(&packet);
- assert!(result.is_err(), "too shortcountpacketshould被refuse");
+ let result = Packet parsed r::parse(&packet);
+ assert!(result.is_err(), "too shortcountpacketshould by refuse");
  }
 
  #[test]
@@ -513,7 +513,7 @@ mod security_tests {
  let mut packet = vec![0x00; 20];
  packet[0] = 0x35; // Version 3, IHL 5
  
- let result = PacketParser::parse(&packet);
- assert!(result.is_err(), "invalid IP versionshould被refuse");
+ let result = Packet parsed r::parse(&packet);
+ assert!(result.is_err(), "invalid IP versionshould by refuse");
  }
 }

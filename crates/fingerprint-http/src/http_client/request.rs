@@ -38,7 +38,7 @@ pub struct HttpRequest {
  pub body: Option<Vec<u8>>,
 }
 
-/// auxiliaryfunction： as requestAdd Cookie ( if exists)
+/// assist function： as requestAdd Cookie (if exists)
 pub fn add_cookies_to_request(
  request: &mut HttpRequest,
  cookie_store: &super::cookie::CookieStore,
@@ -52,7 +52,7 @@ pub fn add_cookies_to_request(
 }
 
 impl HttpRequest {
- /// Create a newrequest
+ /// create a new request
  pub fn new(method: HttpMethod, url: &str) -> Self {
  Self {
  method,
@@ -84,13 +84,13 @@ impl HttpRequest {
  self
  }
 
- /// settingsrequest体
+ /// settingsrequest body 
  pub fn with_body(mut self, body: Vec<u8>) -> Self {
  self.body = Some(body);
  self
  }
 
- /// settings JSON request体
+ /// settings JSON request body 
  pub fn with_json_body(mut self, json: &str) -> Self {
  self.headers
 .insert("Content-Type".to_string(), "application/json".to_string());
@@ -100,8 +100,8 @@ impl HttpRequest {
 
  /// Build HTTP/1.1 requeststring
  ///
- /// Note: 该methodwill把 body when作 UTF-8 textconcatenate to string in ，**不适 for binary body**。
- /// if neededsendbinarycountdata，请use `build_http1_request_bytes`。
+ /// Note: 该method will 把 body when 作 UTF-8 textconcatenate to string in ，** not 适 for binary body**。
+ /// if neededsendbinarycountdata， please use `build_http1_request_bytes`。
  pub fn build_http1_request(&self, host: &str, path: &str) -> String {
  // securityclean：prevent CRLF 注入
  let safe_method = self.method.as_str().replace(['\r', '\n'], "");
@@ -115,7 +115,7 @@ impl HttpRequest {
 
  // Addother headers
  for (key, value) in &self.headers {
- if key.to_lowercase() != "host" {
+ if key.to_lowercase()!= "host" {
  // securitycleanup Key and Value
  let safe_key = key.replace(['\r', '\n'], "");
  let safe_value = value.replace(['\r', '\n'], "");
@@ -123,16 +123,16 @@ impl HttpRequest {
  }
  }
 
- // Content-Length ( if 有 body)
+ // Content-Length (if have body)
  if let Some(ref body) = self.body {
  request.push_str(&format!("Content-Length: {}\r\n", body.len()));
  }
 
  // Connection: close (HTTP/1.1)
- if !self
+ if!self
 .headers
 .keys()
-.any(|k| k.eq_ignore_ascii_case("connection"))
+.any(|k| k.eq_ ignore _ascii_case("connection"))
  {
  request.push_str("Connection: close\r\n");
  }
@@ -154,7 +154,7 @@ impl HttpRequest {
  host: &str,
  path: &str,
  header_order: Option<&[String]>,
- ) -> Vec<u8> {
+) -> Vec<u8> {
  // securityclean
  let safe_method = self.method.as_str().replace(['\r', '\n'], "");
  let safe_path = path.replace(['\r', '\n'], "");
@@ -162,7 +162,7 @@ impl HttpRequest {
 
  let mut head = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
- // useorderedlist ( if provide)
+ // useorderedlist (if provide)
  let ordered_headers = if let Some(order) = header_order {
  let mut h = HTTPHeaders::new();
  for (k, v) in &self.headers {
@@ -177,9 +177,9 @@ impl HttpRequest {
  };
 
  // Host header
- if !ordered_headers
+ if!ordered_headers
 .iter()
-.any(|(k, _)| k.eq_ignore_ascii_case("host"))
+.any(|(k, _)| k.eq_ ignore _ascii_case("host"))
  {
  head.push_str(&format!("Host: {}\r\n", safe_host));
  }
@@ -198,10 +198,10 @@ impl HttpRequest {
  }
 
  // Connection: close
- if !self
+ if!self
 .headers
 .keys()
-.any(|k| k.eq_ignore_ascii_case("connection"))
+.any(|k| k.eq_ ignore _ascii_case("connection"))
  {
  head.push_str("Connection: close\r\n");
  }
@@ -216,7 +216,7 @@ impl HttpRequest {
  out
  }
 
- /// random化 Header size写 (simulate某些specificfingerprint or avoid WAF trait)
+ /// randomize Header case (simulate 某些specificfingerprint or avoid WAF trait)
  pub fn with_randomized_header_case(&mut self) {
  let mut new_headers = HashMap::new();
  for (key, value) in self.headers.drain() {

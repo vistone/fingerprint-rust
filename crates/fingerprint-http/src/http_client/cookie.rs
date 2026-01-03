@@ -29,7 +29,7 @@ pub enum SameSite {
 }
 
 impl Cookie {
- /// Create a new Cookie
+ /// create a new Cookie
  pub fn new(name: String, value: String, domain: String) -> Self {
  Self {
  name,
@@ -57,16 +57,16 @@ impl Cookie {
  format!("{}={}", self.name, self.value)
  }
 
- /// from Set-Cookie headerParse
+ /// from Set-Cookie header parsed 
  pub fn parse_set_cookie(header: &str, domain: String) -> Option<Self> {
  let parts: Vec<&str> = header.split(';').collect();
  if parts.is_empty() {
  return None;
  }
 
- // Parse name=value
+ // parsed name=value
  let name_value: Vec<&str> = parts[0].split('=').collect();
- if name_value.len() != 2 {
+ if name_value.len()!= 2 {
  return None;
  }
 
@@ -74,9 +74,9 @@ impl Cookie {
  name_value[0].trim().to_string(),
  name_value[1].trim().to_string(),
  domain,
- );
+);
 
- // Parseotherproperty
+ // parsed otherproperty
  for part in &parts[1..] {
  let part = part.trim();
  if part.to_lowercase().starts_with("domain=") {
@@ -86,7 +86,7 @@ impl Cookie {
  } else if part.to_lowercase().starts_with("max-age=") {
  if let Ok(secs) = part[8..].parse::<u64>() {
  cookie.max_age = Some(Duration::from_secs(secs));
- // 让 Max-Age true生效：convert to绝pair expires 以reuse is_expired()
+ // 让 Max-Age true生效：convert to绝pair expires to reuse is_expired()
  cookie.expires = Some(SystemTime::now() + Duration::from_secs(secs));
  }
  } else if part.to_lowercase() == "secure" {
@@ -111,12 +111,12 @@ impl Cookie {
 /// Cookie store
 #[derive(Debug, Clone)]
 pub struct CookieStore {
- ///  by domainstore Cookie
+ /// by domainstore Cookie
  cookies: Arc<Mutex<HashMap<String, Vec<Cookie>>>>,
 }
 
 impl CookieStore {
- /// Create a new Cookie store
+ /// create a new Cookie store
  pub fn new() -> Self {
  Self {
  cookies: Arc::new(Mutex::new(HashMap::new())),
@@ -126,16 +126,16 @@ impl CookieStore {
  /// Add Cookie
  pub fn add_cookie(&self, cookie: Cookie) {
  if let Ok(mut cookies) = self.cookies.lock() {
- let domain_cookies = cookies.entry(cookie.domain.clone()).or_default();
+ let domain_cookies = cookies.en try (cookie.domain.clone()).or_default();
 
- // Checkwhetheralready existssame name Cookie， if exists则Update
+ // Checkwhetheralready existssame name Cookie， if exists then Update
  if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
  domain_cookies[pos] = cookie;
  } else {
  domain_cookies.push(cookie);
  }
  } else {
- eprintln!("warning: Cookie storelockfailure，unable toAdd Cookie");
+ eprintln!("warning: Cookie storelock failure，unable toAdd Cookie");
  }
  }
 
@@ -146,16 +146,16 @@ impl CookieStore {
  }
  }
 
- /// Getspecifieddomainallvalid Cookie
+ /// Getspecifieddomain all valid Cookie
  ///
- /// Based on RFC 6265 specificationperformdomainmatch：
- /// - Cookie domain property (如 `.example.com`)shouldmatch `example.com` 及其allchilddomain
+ /// Based on RFC 6265 specification perform domainmatch：
+ /// - Cookie domain property (such as `.example.com`)shouldmatch `example.com` 及 its all childdomain
  /// - `example.com` Cookie shouldmatch `example.com` and `*.example.com`
  pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
  let cookies = match self.cookies.lock() {
  Ok(c) => c,
  Err(e) => {
- eprintln!("warning: Cookie storelockfailure: {}", e);
+ eprintln!("warning: Cookie storelock failure: {}", e);
  return Vec::new();
  }
  };
@@ -170,11 +170,11 @@ impl CookieStore {
  // completelymatch
  true
  } else if let Some(base) = cookie_domain_lower.strip_prefix('.') {
- // Cookie domain 以. openheader (如.example.com)
+ // Cookie domain to. open header (such as.example.com)
  // shouldmatch example.com and all *.example.com
  domain_lower == base || domain_lower.ends_with(&format!(".{}", base))
  } else {
- // Cookie domain not. openheader (如 example.com)
+ // Cookie domain not. open header (such as example.com)
  // shouldmatch example.com and all *.example.com
  domain_lower == cookie_domain_lower
  || domain_lower.ends_with(&format!(".{}", cookie_domain_lower))
@@ -182,7 +182,7 @@ impl CookieStore {
 
  if matches {
  for cookie in domain_cookies {
- if !cookie.is_expired() {
+ if!cookie.is_expired() {
  result.push(cookie.clone());
  }
  }
@@ -197,28 +197,28 @@ impl CookieStore {
  /// # Parameters
  /// - `domain`: requestdomain
  /// - `path`: requestpath
- /// - `is_secure`: whether as HTTPS connection ( for Secure Cookie Check)
+ /// - `is_secure`: whether as HTTPS connection (for Secure Cookie Check)
  pub fn generate_cookie_header(
  &self,
  domain: &str,
  path: &str,
  is_secure: bool,
- ) -> Option<String> {
+) -> Option<String> {
  let cookies = self.get_cookies_for_domain(domain);
  if cookies.is_empty() {
  return None;
  }
 
- // filterpathmatch Cookie，并Check Secure property
+ // filterpathmatch Cookie， and Check Secure property
  let matching_cookies: Vec<String> = cookies
 .iter()
 .filter(|c| {
  // pathmatch
- if !path.starts_with(&c.path) {
+ if!path.starts_with(&c.path) {
  return false;
  }
  // securityFix: Secure Cookie can only in HTTPS connectionupsend
- if c.secure && !is_secure {
+ if c.secure &&!is_secure {
  return false;
  }
  true
@@ -240,8 +240,8 @@ impl CookieStore {
  }
  }
 
- /// clearall Cookie
- pub fn clear_all(&self) {
+ /// clear all Cookie
+ pub fn clear_ all (&self) {
  if let Ok(mut cookies) = self.cookies.lock() {
  cookies.clear();
  }
@@ -251,12 +251,12 @@ impl CookieStore {
  pub fn cleanup_expired(&self) {
  if let Ok(mut cookies) = self.cookies.lock() {
  for domain_cookies in cookies.values_mut() {
- domain_cookies.retain(|c| !c.is_expired());
+ domain_cookies.retain(|c|!c.is_expired());
  }
  }
  }
 
- /// Getall Cookie count
+ /// Get all Cookie count
  pub fn count(&self) -> usize {
  self.cookies
 .lock()
@@ -281,7 +281,7 @@ mod tests {
  "session".to_string(),
  "abc123".to_string(),
  "example.com".to_string(),
- );
+);
  assert_eq!(cookie.name, "session");
  assert_eq!(cookie.value, "abc123");
  assert_eq!(cookie.domain, "example.com");
@@ -293,7 +293,7 @@ mod tests {
  "session".to_string(),
  "abc123".to_string(),
  "example.com".to_string(),
- );
+);
  assert_eq!(cookie.to_header_value(), "session=abc123");
  }
 
@@ -314,7 +314,7 @@ mod tests {
  "session".to_string(),
  "abc123".to_string(),
  "example.com".to_string(),
- );
+);
  store.add_cookie(cookie);
 
  let cookies = store.get_cookies_for_domain("example.com");
@@ -329,12 +329,12 @@ mod tests {
  "session".to_string(),
  "abc123".to_string(),
  "example.com".to_string(),
- ));
+));
  store.add_cookie(Cookie::new(
  "token".to_string(),
  "xyz789".to_string(),
  "example.com".to_string(),
- ));
+));
 
  let header = store
 .generate_cookie_header("example.com", "/", true)

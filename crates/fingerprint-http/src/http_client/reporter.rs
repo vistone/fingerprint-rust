@@ -32,7 +32,7 @@ pub struct ReportSummary {
 }
 
 impl ValidationReport {
- /// Create新report
+ /// Create new report
  pub fn new(title: String) -> Self {
  #[cfg(feature = "reporter")]
  let generated_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -85,13 +85,13 @@ impl ValidationReport {
 
  // digest
  md.push_str("## 📊 testdigest\n\n");
- md.push_str(&format!("- **总testcount**: {}\n", self.summary.total_tests));
+ md.push_str(&format!("- ** total testcount**: {}\n", self.summary.total_tests));
  md.push_str(&format!("- **through**: {} ✅\n", self.summary.passed));
- md.push_str(&format!("- **failure**: {} ❌\n", self.summary.failed));
+ md.push_str(&format!("- ** failure**: {} ❌\n", self.summary.failed));
  md.push_str(&format!(
- "- **success率**: {:.2}%\n\n",
+ "- **success rate **: {:.2}%\n\n",
  self.summary.success_rate
- ));
+));
  md.push_str("---\n\n");
 
  // eachsection
@@ -114,10 +114,10 @@ impl ValidationReport {
 
  // digest
  text.push_str("testdigest:\n");
- text.push_str(&format!(" 总testcount: {}\n", self.summary.total_tests));
+ text.push_str(&format!(" total testcount: {}\n", self.summary.total_tests));
  text.push_str(&format!(" through: {}\n", self.summary.passed));
  text.push_str(&format!(" failure: {}\n", self.summary.failed));
- text.push_str(&format!(" success率: {:.2}%\n\n", self.summary.success_rate));
+ text.push_str(&format!(" success rate : {:.2}%\n\n", self.summary.success_rate));
  text.push_str(&"=".repeat(70));
  text.push_str("\n\n");
 
@@ -137,14 +137,14 @@ impl ValidationReport {
  };
 
  let mut file = File::create(filename)?;
- file.write_all(content.as_bytes())?;
+ file.write_ all (content.as_bytes())?;
 
  Ok(())
  }
 }
 
 impl ReportSection {
- /// Create新section
+ /// Create new section
  pub fn new(title: String) -> Self {
  Self {
  title,
@@ -153,7 +153,7 @@ impl ReportSection {
  }
  }
 
- /// Addinside容行
+ /// Addinside容 row 
  pub fn add_line(&mut self, line: String) {
  self.content.push(line);
  }
@@ -176,7 +176,7 @@ impl ReportSection {
  md.push_str(line);
  md.push('\n');
  }
- if !self.content.is_empty() {
+ if!self.content.is_empty() {
  md.push('\n');
  }
 
@@ -201,7 +201,7 @@ impl ReportSection {
  for line in &self.content {
  text.push_str(&format!("{} {}\n", indent_str, line));
  }
- if !self.content.is_empty() {
+ if!self.content.is_empty() {
  text.push('\n');
  }
 
@@ -251,8 +251,8 @@ mod tests {
 
  let md = report.to_markdown();
  assert!(md.contains("# Test Report"));
- // Checksuccess率field exists (不强制requirepreciseformat)
- assert!(md.contains("success率") || md.contains("Success"));
+ // Checksuccess rate field exists (not 强制requirepreciseformat)
+ assert!(md.contains("success rate ") || md.contains("Success"));
  assert!(md.contains("90."));
  }
 }

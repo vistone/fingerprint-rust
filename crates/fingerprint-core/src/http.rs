@@ -19,7 +19,7 @@ pub struct HttpFingerprint {
  /// HTTP header
  pub headers: HashMap<String, String>,
 
- /// HTTP/2 settings ( if 有)
+ /// HTTP/2 settings (if have)
  pub http2_settings: Option<Http2Settings>,
 
  /// metadata
@@ -39,7 +39,7 @@ pub struct Http2Settings {
  pub max_concurrent_streams: u32,
 
  /// Initial Window Size
- pub initial_window_size: u32,
+ pub initial_ window _size: u32,
 
  /// Max Frame Size
  pub max_frame_size: u32,
@@ -49,7 +49,7 @@ pub struct Http2Settings {
 }
 
 impl HttpFingerprint {
- /// Create a new HTTP fingerprint
+ /// create a new HTTP fingerprint
  pub fn new(user_agent: String, headers: HashMap<String, String>) -> Self {
  let id = Self::calculate_id(&user_agent, &headers);
  Self {
@@ -67,7 +67,7 @@ impl HttpFingerprint {
  let mut hasher = Sha256::new();
  hasher.update(user_agent.as_bytes());
 
- // pair headers performsortbackhash
+ // pair headers perform sortbackhash
  let mut header_vec: Vec<_> = headers.iter().collect();
  header_vec.sort_by_key(|(k, _)| *k);
  for (k, v) in header_vec {
@@ -109,7 +109,7 @@ impl Fingerprint for HttpFingerprint {
  let mut hasher = DefaultHasher::new();
  self.user_agent.hash(&mut hasher);
 
- // pair headers performsortbackhash
+ // pair headers perform sortbackhash
  let mut header_vec: Vec<_> = self.headers.iter().collect();
  header_vec.sort_by_key(|(k, _)| *k);
  for (k, v) in header_vec {
@@ -121,7 +121,7 @@ impl Fingerprint for HttpFingerprint {
  settings.header_table_size.hash(&mut hasher);
  settings.enable_push.hash(&mut hasher);
  settings.max_concurrent_streams.hash(&mut hasher);
- settings.initial_window_size.hash(&mut hasher);
+ settings.initial_ window _size.hash(&mut hasher);
  settings.max_frame_size.hash(&mut hasher);
  settings.max_header_list_size.hash(&mut hasher);
  }
@@ -129,12 +129,12 @@ impl Fingerprint for HttpFingerprint {
  hasher.finish()
  }
 
- fn similar_to(&self, other: &dyn Fingerprint) -> bool {
- if other.fingerprint_type() != FingerprintType::Http {
+ fn similar _to(&self, other: &dyn Fingerprint) -> bool {
+ if other.fingerprint_type()!= FingerprintType::Http {
  return false;
  }
 
- // tryconvert to HttpFingerprint
+ // try convert to HttpFingerprint
  // Note: hereneedtypeConvert，butdue to trait limit，wecan onlycomparehashvalue
  self.hash() == other.hash()
  }
@@ -167,7 +167,7 @@ mod tests {
  headers2.insert("Accept".to_string(), "text/html".to_string());
  let fp2 = HttpFingerprint::new("Mozilla/5.0".to_string(), headers2);
 
- // sameinputshouldproducesame的hash
+ // sameinputshouldproducesame hash
  assert_eq!(fp1.hash(), fp2.hash());
  }
 }

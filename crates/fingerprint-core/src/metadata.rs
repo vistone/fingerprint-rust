@@ -1,6 +1,6 @@
 //! fingerprintmetadata
 //!
-//! definefingerprintmetadata，includebrowsertype、operating system、confidence etc.info.
+//! definefingerprintmetadata，includebrowsertype、operating system 、confidence etc.info.
 
 use crate::types::{BrowserType, OperatingSystem};
 use chrono::{DateTime, Utc};
@@ -8,13 +8,13 @@ use serde::{Deserialize, Serialize};
 
 /// fingerprintmetadata
 ///
-/// includingallfingerprinttype共用metadatainfo
+/// including all fingerprinttype共用metadatainfo
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FingerprintMetadata {
  /// browsertype
  pub browser_type: Option<BrowserType>,
 
- /// operating systemtype
+ /// operating system type
  pub os_type: Option<OperatingSystem>,
 
  /// confidence (0.0 - 1.0)
@@ -23,10 +23,10 @@ pub struct FingerprintMetadata {
  /// samplecount
  pub sample_count: u64,
 
- /// 首次discover when between
+ /// 首 times dis cover when between
  pub first_seen: DateTime<Utc>,
 
- /// finallydiscover when between
+ /// fin all ydis cover when between
  pub last_seen: DateTime<Utc>,
 
  /// tag
@@ -37,7 +37,7 @@ pub struct FingerprintMetadata {
 }
 
 impl FingerprintMetadata {
- /// Create a newmetadata
+ /// create a new metadata
  pub fn new() -> Self {
  let now = Utc::now();
  Self {
@@ -52,18 +52,18 @@ impl FingerprintMetadata {
  }
  }
 
- /// Createbringbrowser and operating systemmetadata
+ /// Createbringbrowser and operating system metadata
  pub fn with_browser_os(
  browser_type: Option<BrowserType>,
  os_type: Option<OperatingSystem>,
- ) -> Self {
+) -> Self {
  let mut metadata = Self::new();
  metadata.browser_type = browser_type;
  metadata.os_type = os_type;
  metadata
  }
 
- /// Updatesample (increasesamplecount，Updatefinallydiscover when between)
+ /// Updatesample (increasesamplecount，Updatefin all ydis cover when between)
  pub fn update_sample(&mut self) {
  self.sample_count += 1;
  self.last_seen = Utc::now();
@@ -76,14 +76,14 @@ impl FingerprintMetadata {
 
  /// Addtag
  pub fn add_tag(&mut self, tag: String) {
- if !self.tags.contains(&tag) {
+ if!self.tags.contains(&tag) {
  self.tags.push(tag);
  }
  }
 
  /// removetag
  pub fn remove_tag(&mut self, tag: &str) {
- self.tags.retain(|t| t != tag);
+ self.tags.retain(|t| t!= tag);
  }
 
  /// Checkwhetherincludingtag
@@ -94,12 +94,12 @@ impl FingerprintMetadata {
  /// settingscustomproperty (through tags store，format as "key:value")
  pub fn set(&mut self, key: &str, value: &str) {
  let tag = format!("{}:{}", key, value);
- // 先removeold same name key
- self.tags.retain(|t| !t.starts_with(&format!("{}:", key)));
+ // first removeold same name key
+ self.tags.retain(|t|!t.starts_with(&format!("{}:", key)));
  self.add_tag(tag);
  }
 
- /// Getcustomproperty ( from tags in find，format as "key:value")
+ /// Getcustomproperty (from tags in find，format as "key:value")
  pub fn get(&self, key: &str) -> Option<String> {
  let prefix = format!("{}:", key);
  self.tags
@@ -134,7 +134,7 @@ mod tests {
  let metadata = FingerprintMetadata::with_browser_os(
  Some(BrowserType::Chrome),
  Some(OperatingSystem::Windows10),
- );
+);
  assert_eq!(metadata.browser_type, Some(BrowserType::Chrome));
  assert_eq!(metadata.os_type, Some(OperatingSystem::Windows10));
  }

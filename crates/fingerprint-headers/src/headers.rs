@@ -5,10 +5,10 @@
 use fingerprint_core::types::BrowserType;
 use fingerprint_core::utils::{extract_chrome_version, extract_platform, random_choice_string};
 
-/// globallanguagelist (by usefrequency sort)
+/// glob all anguagelist (by use frequency sort)
 pub static LANGUAGES: &[&str] = &[
  "en-US,en;q=0.9", // English (US)
- "zh-CN,zh;q=0.9,en;q=0.8", // Chinese (简体)
+ "zh-CN,zh;q=0.9,en;q=0.8", // Chinese (Simplified)
  "es-ES,es;q=0.9,en;q=0.8", // Spanish
  "fr-FR,fr;q=0.9,en;q=0.8", // French
  "de-DE,de;q=0.9,en;q=0.8", // German
@@ -35,8 +35,8 @@ pub static LANGUAGES: &[&str] = &[
  "no-NO,no;q=0.9,en;q=0.8", // Norwegian
  "he-IL,he;q=0.9,en;q=0.8", // Hebrew
  "uk-UA,uk;q=0.9,en;q=0.8", // Ukrainian
- "pt-PT,pt;q=0.9,en;q=0.8", // Portuguese (葡萄牙)
- "zh-TW,zh;q=0.9,en;q=0.8", // Chinese (繁体)
+ "pt-PT,pt;q=0.9,en;q=0.8", // Portuguese (Portugal)
+ "zh-TW,zh;q=0.9,en;q=0.8", // Chinese (Traditional)
 ];
 
 /// standard HTTP requestheader
@@ -44,7 +44,7 @@ pub static LANGUAGES: &[&str] = &[
 pub struct HTTPHeaders {
  /// Accept header
  pub accept: String,
- /// Accept-Language header (supportgloballanguage)
+ /// Accept-Language header (supportglob all anguage)
  pub accept_language: String,
  /// Accept-Encoding header
  pub accept_encoding: String,
@@ -61,17 +61,17 @@ pub struct HTTPHeaders {
  /// Sec-CH-UA header
  pub sec_ch_ua: String,
  /// Sec-CH-UA-Mobile header
- pub sec_ch_ua_mobile: String,
+ pub sec_ch_ua_ mobile : String,
  /// Sec-CH-UA-Platform header
  pub sec_ch_ua_platform: String,
  /// Upgrade-Insecure-Requests header
  pub upgrade_insecure_requests: String,
- /// usercustom headers (如 Cookie、Authorization、X-API-Key etc.)
+ /// usercustom headers (such as Cookie、Authorization、X-API-Key etc.)
  pub custom: std::collections::HashMap<String, String>,
 }
 
 impl HTTPHeaders {
- /// Create a new HTTPHeaders
+ /// create a new HTTPHeaders
  pub fn new() -> Self {
  Self {
  accept: String::new(),
@@ -83,17 +83,17 @@ impl HTTPHeaders {
  sec_fetch_user: String::new(),
  sec_fetch_dest: String::new(),
  sec_ch_ua: String::new(),
- sec_ch_ua_mobile: String::new(),
+ sec_ch_ua_ mobile : String::new(),
  sec_ch_ua_platform: String::new(),
  upgrade_insecure_requests: String::new(),
  custom: std::collections::HashMap::new(),
  }
  }
 
- /// clone HTTPHeaders pair象，returnannew副本
+ /// clone HTTPHeaders pairobject，returnannewcopy
  ///
- /// Note: 此methodname and standardlibrary `Clone::clone` different，以avoidnamingconflict
- #[allow(clippy::should_implement_trait)]
+ /// Note: this methodname and standardlibrary `Clone::clone` different，to avoid namingconflict
+ #[ all ow (clippy::should_implement_trait)]
  pub fn clone(&self) -> Self {
  Self {
  accept: self.accept.clone(),
@@ -105,15 +105,15 @@ impl HTTPHeaders {
  sec_fetch_user: self.sec_fetch_user.clone(),
  sec_fetch_dest: self.sec_fetch_dest.clone(),
  sec_ch_ua: self.sec_ch_ua.clone(),
- sec_ch_ua_mobile: self.sec_ch_ua_mobile.clone(),
+ sec_ch_ua_ mobile : self.sec_ch_ua_ mobile.clone(),
  sec_ch_ua_platform: self.sec_ch_ua_platform.clone(),
  upgrade_insecure_requests: self.upgrade_insecure_requests.clone(),
  custom: self.custom.clone(),
  }
  }
 
- /// settingsusercustom header (systemwillautomaticmerge to to_map() in )
- /// this isrecommendmethod，settingsbackcall to_map() canautomaticincludingcustom headers
+ /// settingsusercustom header (system will automaticmerge to to_map() in)
+ /// this isrecommendmethod，settingsbackc all to_map() canautomaticincludingcustom headers
  /// Examples：result.headers.set("Cookie", "session_id=abc123")
  pub fn set(&mut self, key: &str, value: &str) {
  if value.is_empty() {
@@ -123,7 +123,7 @@ impl HTTPHeaders {
  }
  }
 
- /// bulksettingsusercustom headers (systemwillautomaticmerge to to_map() in )
+ /// bulksettingsusercustom headers (system will automaticmerge to to_map() in)
  /// Examples：result.headers.set_headers(&[("Cookie", "session_id=abc123"), ("X-API-Key", "key")])
  pub fn set_headers(&mut self, custom_headers: &[(&str, &str)]) {
  for (key, value) in custom_headers {
@@ -132,77 +132,77 @@ impl HTTPHeaders {
  }
 
  /// will HTTPHeaders convert to HashMap
- /// systemwillautomaticmerge Custom inusercustom headers (如 Cookie、Authorization、X-API-Key etc.)
+ /// system will automaticmerge Custom inusercustom headers (such as Cookie、Authorization、X-API-Key etc.)
  pub fn to_map(&self) -> std::collections::HashMap<String, String> {
  self.to_map_with_custom(&[])
  }
 
- /// will HTTPHeaders convert to HashMap，并mergeusercustom headers
- /// custom_headers: usercustom headers (如 session、cookie、apikey etc.)
- /// usercustom headers priority更high，willcoversystemGenerate headers
+ /// will HTTPHeaders convert to HashMap， and merge usercustom headers
+ /// custom_headers: usercustom headers (such as session、cookie、apikey etc.)
+ /// usercustom headers priority higher， will cover system Generate headers
  pub fn to_map_with_custom(
  &self,
  custom_headers: &[(&str, &str)],
- ) -> std::collections::HashMap<String, String> {
+) -> std::collections::HashMap<String, String> {
  let mut headers = std::collections::HashMap::new();
 
- // 先AddsystemGenerate's standard headers
- if !self.accept.is_empty() {
+ // First addsystem Generate's standard headers
+ if!self.accept.is_empty() {
  headers.insert("Accept".to_string(), self.accept.clone());
  }
- if !self.accept_language.is_empty() {
+ if!self.accept_language.is_empty() {
  headers.insert("Accept-Language".to_string(), self.accept_language.clone());
  }
- if !self.accept_encoding.is_empty() {
+ if!self.accept_encoding.is_empty() {
  headers.insert("Accept-Encoding".to_string(), self.accept_encoding.clone());
  }
- if !self.user_agent.is_empty() {
+ if!self.user_agent.is_empty() {
  headers.insert("User-Agent".to_string(), self.user_agent.clone());
  }
- if !self.sec_fetch_site.is_empty() {
+ if!self.sec_fetch_site.is_empty() {
  headers.insert("Sec-Fetch-Site".to_string(), self.sec_fetch_site.clone());
  }
- if !self.sec_fetch_mode.is_empty() {
+ if!self.sec_fetch_mode.is_empty() {
  headers.insert("Sec-Fetch-Mode".to_string(), self.sec_fetch_mode.clone());
  }
- if !self.sec_fetch_user.is_empty() {
+ if!self.sec_fetch_user.is_empty() {
  headers.insert("Sec-Fetch-User".to_string(), self.sec_fetch_user.clone());
  }
- if !self.sec_fetch_dest.is_empty() {
+ if!self.sec_fetch_dest.is_empty() {
  headers.insert("Sec-Fetch-Dest".to_string(), self.sec_fetch_dest.clone());
  }
- if !self.sec_ch_ua.is_empty() {
+ if!self.sec_ch_ua.is_empty() {
  headers.insert("Sec-CH-UA".to_string(), self.sec_ch_ua.clone());
  }
- if !self.sec_ch_ua_mobile.is_empty() {
+ if!self.sec_ch_ua_ mobile.is_empty() {
  headers.insert(
  "Sec-CH-UA-Mobile".to_string(),
- self.sec_ch_ua_mobile.clone(),
- );
+ self.sec_ch_ua_ mobile.clone(),
+);
  }
- if !self.sec_ch_ua_platform.is_empty() {
+ if!self.sec_ch_ua_platform.is_empty() {
  headers.insert(
  "Sec-CH-UA-Platform".to_string(),
  self.sec_ch_ua_platform.clone(),
- );
+);
  }
- if !self.upgrade_insecure_requests.is_empty() {
+ if!self.upgrade_insecure_requests.is_empty() {
  headers.insert(
  "Upgrade-Insecure-Requests".to_string(),
  self.upgrade_insecure_requests.clone(),
- );
+);
  }
 
  // merge HTTPHeaders in Custom headers
  for (key, value) in &self.custom {
- if !value.is_empty() {
+ if!value.is_empty() {
  headers.insert(key.clone(), value.clone());
  }
  }
 
- // merge传入 custom_headers (priority最high，willcoverallalready有 headers)
+ // merge传入 custom_headers (priority highest， will cover all already have headers)
  for (key, value) in custom_headers {
- if !value.is_empty() {
+ if!value.is_empty() {
  headers.insert((*key).to_string(), (*value).to_string());
  }
  }
@@ -216,11 +216,11 @@ impl HTTPHeaders {
  let mut result = Vec::with_capacity(map.len());
  let mut used = std::collections::HashSet::new();
 
- // 1. 先 by specified order orderAdd
+ // 1. first by specified order orderAdd
  for key in order {
- // find map is否 existsmatch key (ignoresize写performmatch，butpreserve order insize写)
+ // find map is否 existsmatch key (ignore case perform match， but preserve order incase)
  for (m_key, m_val) in &map {
- if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
+ if m_key.eq_ ignore _ascii_case(key) &&!used.contains(m_key) {
  result.push((key.clone(), m_val.clone()));
  used.insert(m_key.clone());
  break;
@@ -228,9 +228,9 @@ impl HTTPHeaders {
  }
  }
 
- // 2. Add剩down and 不再 order in headers
+ // 2. Add remaining and not in order in headers
  for (m_key, m_val) in map {
- if !used.contains(&m_key) {
+ if!used.contains(&m_key) {
  result.push((m_key, m_val));
  }
  }
@@ -254,7 +254,7 @@ pub fn random_language() -> String {
 pub fn generate_headers(
  browser_type: BrowserType,
  user_agent: &str,
- is_mobile: bool,
+ is_ mobile : bool,
 ) -> HTTPHeaders {
  let user_agent = if user_agent.is_empty() {
  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36"
@@ -275,28 +275,28 @@ pub fn generate_headers(
  headers.sec_fetch_dest = "document".to_string();
  headers.upgrade_insecure_requests = "1".to_string();
 
- if is_mobile {
+ if is_ mobile {
  headers.sec_ch_ua =
  r#""Not(A:Brand";v="99", "Google Chrome";v="135", "Chromium";v="135""#
 .to_string();
- headers.sec_ch_ua_mobile = "?1".to_string();
+ headers.sec_ch_ua_ mobile = "?1".to_string();
  headers.sec_ch_ua_platform = r#""Android""#.to_string();
  } else {
  let chrome_version = extract_chrome_version(user_agent);
  headers.sec_ch_ua = format!(
  r#""Not(A:Brand";v="99", "Google Chrome";v="{}", "Chromium";v="{}""#,
  chrome_version, chrome_version
- );
- headers.sec_ch_ua_mobile = "?0".to_string();
+);
+ headers.sec_ch_ua_ mobile = "?0".to_string();
  headers.sec_ch_ua_platform = extract_platform(user_agent);
  }
  }
  BrowserType::Firefox => {
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
  headers.accept_encoding = "gzip, deflate, br".to_string();
- // Firefox 不use Sec-Fetch-* headers (旧version)
- // 新version Firefox use，butformatdifferent
- if is_mobile {
+ // Firefox not use Sec-Fetch-* headers (old version)
+ // new version Firefox use， but format different
+ if is_ mobile {
  headers.sec_fetch_site = "none".to_string();
  headers.sec_fetch_mode = "navigate".to_string();
  headers.sec_fetch_user = "?1".to_string();
@@ -307,7 +307,7 @@ pub fn generate_headers(
  headers.accept =
  "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8".to_string();
  headers.accept_encoding = "gzip, deflate, br".to_string();
- if !is_mobile {
+ if!is_ mobile {
  headers.sec_fetch_site = "none".to_string();
  headers.sec_fetch_mode = "navigate".to_string();
  headers.sec_fetch_user = "?1".to_string();
@@ -315,7 +315,7 @@ pub fn generate_headers(
  }
  }
  BrowserType::Opera => {
- // Opera use Chrome inside核，headers similar Chrome
+ // Opera use Chrome core，headers similar Chrome
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
  headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
  headers.sec_fetch_site = "none".to_string();
@@ -324,20 +324,20 @@ pub fn generate_headers(
  headers.sec_fetch_dest = "document".to_string();
  headers.upgrade_insecure_requests = "1".to_string();
 
- if is_mobile {
+ if is_ mobile {
  headers.sec_ch_ua =
  r#""Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8""#.to_string();
- headers.sec_ch_ua_mobile = "?1".to_string();
+ headers.sec_ch_ua_ mobile = "?1".to_string();
  headers.sec_ch_ua_platform = r#""Android""#.to_string();
  } else {
  headers.sec_ch_ua =
  r#""Opera";v="91", "Chromium";v="105", "Not A(Brand";v="8""#.to_string();
- headers.sec_ch_ua_mobile = "?0".to_string();
+ headers.sec_ch_ua_ mobile = "?0".to_string();
  headers.sec_ch_ua_platform = extract_platform(user_agent);
  }
  }
  BrowserType::Edge => {
- // Edge use Chrome inside核
+ // Edge use Chrome core
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
  headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
  headers.sec_fetch_site = "none".to_string();
@@ -381,7 +381,7 @@ mod tests {
  assert_eq!(
  headers.custom.get("Cookie"),
  Some(&"session_id=abc123".to_string())
- );
+);
  }
 
  #[test]

@@ -1,22 +1,22 @@
 //! HTTP/3 with Connection Pool
 //!
-//! architectureexplain：
+//! architecture explain ：
 //! - HTTP/3 adoptsessionpool (H3SessionPool)implement QUIC sessionreuse
-//! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
+//! - poolizepairobject：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
 //! - reusemethod：concurrentmultiplereuse (an QUIC connectioncan when processmultiple Stream)
-//! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，no need netconnpool
+//! - QUIC Features：protocol本身includingconnection migrate and statusmanage，no need netconnpool
 //! - sessionestablishback，connectionlifecycle由 H3Session backbackground task (Driver)manage
 
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use std::sync::Arc;
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 use std::time::Duration;
 
 /// useconnection poolsend HTTP/3 request
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 pub async fn send_http3_request_with_pool(
  host: &str,
  port: u16,
@@ -36,17 +36,17 @@ pub async fn send_http3_request_with_pool(
  // Get or Createsession
  let send_request_mutex = session_pool
 .get_or_create_session(&key, async {
- // Parsetargetaddress
+ // parsed target address
  use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
  let addr = format!("{}:{}", host, port);
  let mut addrs: Vec<SocketAddr> = addr
 .to_socket_addrs()
-.map_err(|e| HttpClientError::ConnectionFailed(format!("DNS Parsefailure: {}", e)))?
+.map_err(|e| HttpClientError::ConnectionFailed(format!("DNS parsed failure: {}", e)))?
 .collect();
  if addrs.is_empty() {
  return Err(HttpClientError::ConnectionFailed(
- "DNS Parse无result".to_string(),
- ));
+ "DNS parsed no result".to_string(),
+));
  }
  addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 priority
  let remote_addr = addrs[0];
@@ -56,24 +56,24 @@ pub async fn send_http3_request_with_pool(
  config.verify_tls,
  vec![b"h3".to_vec()],
  config.profile.as_ref(),
- );
+);
 
  let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
 
- // optimizetransferconfiguration以improveperformance
+ // optimize transferconfiguration to improve perform ance 
  let mut transport_config = quinn::TransportConfig::default();
  transport_config.initial_rtt(Duration::from_millis(100));
  transport_config.max_idle_timeout(Some(
- quinn::IdleTimeout::try_from(std::time::Duration::from_secs(60))
-.map_err(|e| HttpClientError::Http3Error(format!("configurationtimeoutfailure: {}", e)))?,
- ));
+ quinn::IdleTimeout:: try _from(std::time::Duration::from_secs(60))
+.map_err(|e| HttpClientError::Http3Error(format!("configurationtimeout failure: {}", e)))?,
+));
  transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
- // 增大receivewindow以improve吞吐量
- transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
- transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
+ // 增大receive window to improve throughput量
+ transport_config.stream_receive_ window ((1024 * 1024u32).into()); // 1MB
+ transport_config.receive_ window ((10 * 1024 * 1024u32).into()); // 10MB
 
- // allowmoreconcurrentstream
+ // all ow moreconcurrentstream
  transport_config.max_concurrent_bidi_streams(100u32.into());
  transport_config.max_concurrent_uni_streams(100u32.into());
 
@@ -102,13 +102,13 @@ pub async fn send_http3_request_with_pool(
 
  let (driver, send_request) = h3::client::new(quinn_conn)
 .await
-.map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 handshakefailure: {}", e)))?;
+.map_err(|e| HttpClientError::Http3Error(format!("HTTP/3 handshake failure: {}", e)))?;
 
  Ok((driver, send_request))
  })
 .await?;
 
- // Get并排他性地use SendRequest
+ // Get and 排他 property地use SendRequest
  let mut send_request = send_request_mutex.lock().await;
 
  // Build HTTP/3 request
@@ -128,10 +128,10 @@ pub async fn send_http3_request_with_pool(
  })
 .uri(uri)
 .version(Version::HTTP_3)
- // do notmanualAdd host header，h3 willautomatic from URI Extract
+ // do notmanualAdd host header，h3 will automatic from URI Extract
 .header("user-agent", &config.user_agent);
 
- // Fix: Add Cookie to request ( if exists)
+ // Fix: Add Cookie to request (if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -140,30 +140,30 @@ pub async fn send_http3_request_with_pool(
  host,
  path,
  true, // HTTPS is securityconnection
- );
+);
  }
 
  let http3_request = request_with_cookies
 .headers
 .iter()
  // skip host header
-.filter(|(k, _)| k.to_lowercase() != "host")
+.filter(|(k, _)| k.to_lowercase()!= "host")
 .fold(http3_request, |builder, (k, v)| builder.header(k, v));
 
  // Fix: Buildrequest (h3 need Request<()>，thenthrough stream send body)
  let http3_request = http3_request
 .body(())
-.map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
+.map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequest failure: {}", e)))?;
 
  // sendrequest
  let mut stream = send_request
 .send_request(http3_request)
 .await
-.map_err(|e| HttpClientError::Http3Error(format!("sendrequestfailure: {}", e)))?;
+.map_err(|e| HttpClientError::Http3Error(format!("sendrequest failure: {}", e)))?;
 
- // Fix: through stream sendrequest体 ( if exists)
+ // Fix: through stream sendrequest body (if exists)
  if let Some(body) = &request.body {
- if !body.is_empty() {
+ if!body.is_empty() {
  stream
 .send_data(bytes::Bytes::from(body.clone()))
 .await
@@ -174,15 +174,15 @@ pub async fn send_http3_request_with_pool(
  stream
 .finish()
 .await
-.map_err(|e| HttpClientError::Http3Error(format!("completerequestfailure: {}", e)))?;
+.map_err(|e| HttpClientError::Http3Error(format!("completerequest failure: {}", e)))?;
 
  // receiveresponse
  let response = stream
 .recv_response()
 .await
-.map_err(|e| HttpClientError::Http3Error(format!("receiveresponsefailure: {}", e)))?;
+.map_err(|e| HttpClientError::Http3Error(format!("receiveresponse failure: {}", e)))?;
 
- // readresponse体
+ // readresponse body 
  let mut body_data = Vec::new();
 
  // securitylimit：prevent HTTP/3 responsebody too largecauseinsidememory exhausted
@@ -201,7 +201,7 @@ pub async fn send_http3_request_with_pool(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/3 responsebody too large (>{} bytes)",
  MAX_HTTP3_BODY_SIZE
- )));
+)));
  }
 
  let mut chunk_bytes = vec![0u8; chunk_len];
@@ -209,7 +209,7 @@ pub async fn send_http3_request_with_pool(
  body_data.extend_from_slice(&chunk_bytes);
  }
 
- // Parseresponse
+ // parsed response
  let status_code = response.status().as_u16();
 
  // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compressionbombattack
@@ -223,7 +223,7 @@ pub async fn send_http3_request_with_pool(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/3 responseheadertoo large (>{} bytes)",
  MAX_HTTP3_HEADER_SIZE
- )));
+)));
  }
 
  let status_text = http::StatusCode::from_u16(status_code)
@@ -248,14 +248,14 @@ pub async fn send_http3_request_with_pool(
 }
 
 #[cfg(test)]
-#[cfg(all(feature = "connection-pool", feature = "http3"))]
+#[cfg(all (feature = "connection-pool", feature = "http3"))]
 mod tests {
  use super::*;
  use crate::http_client::pool::PoolManagerConfig;
  use crate::http_client::request::HttpMethod;
 
  #[tokio::test]
- #[ignore] // neednetworkconnection and HTTP/3 support
+ #[ ignore ] // neednetworkconnection and HTTP/3 support
  async fn test_http3_with_pool() {
  let user_agent = "TestClient/1.0".to_string();
  let config = HttpClientConfig {
@@ -275,10 +275,10 @@ mod tests {
  &request,
  &config,
  &pool_manager,
- )
+)
 .await;
 
- // maywillfailure (networkissue or server不support HTTP/3)，but不should panic
+ // may will failure (networkissue or server not support HTTP/3)，but not should panic
  if let Ok(response) = result {
  assert_eq!(response.http_version, "HTTP/3");
  }

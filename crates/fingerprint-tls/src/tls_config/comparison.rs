@@ -12,13 +12,13 @@ use crate::tls_config::spec::ClientHelloSpec;
 pub enum FingerprintMatch {
  /// completelymatch (include GREASE value)
  Exact,
- /// similarmatch (ignore GREASE valuebacksame)
+ /// similar match (ignore GREASE valuebacksame)
  Similar,
  /// does not match
  None,
 }
 
-/// compare two ClientHelloSpec similar度
+/// compare two ClientHelloSpec similar degree 
 ///
 /// # Parameters
 /// * `spec1` - first ClientHelloSpec
@@ -41,7 +41,7 @@ pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> Finger
  compare_signatures(&sig1, &sig2)
 }
 
-/// compare twosignaturesimilar度
+/// compare twosignature similar degree 
 ///
 /// # Parameters
 /// * `sig1` - firstsignature
@@ -58,22 +58,22 @@ pub fn compare_signatures(
  return FingerprintMatch::Exact;
  }
 
- // similarmatch (ignore GREASE)
- if sig1.similar_to(sig2) {
+ // similar match (ignore GREASE)
+ if sig1. similar _to(sig2) {
  return FingerprintMatch::Similar;
  }
 
  FingerprintMatch::None
 }
 
-/// find and 给定signature最similarfingerprintconfiguration
+/// find and 给定signature most similar fingerprintconfiguration
 ///
 /// # Parameters
-/// * `signature` - 要matchsignature
+/// * `signature` - need matchsignature
 /// * `specs` - 候选 ClientHelloSpec list
 ///
 /// # Returns
-/// * `Option<usize>` - 最similarconfigurationindex， if no找 to 则return None
+/// * `Option<usize>` - most similar configurationindex， if no找 to then return None
 pub fn find_best_match(
  signature: &ClientHelloSignature,
  specs: &[ClientHelloSpec],
@@ -109,12 +109,12 @@ mod tests {
  let spec1 = ClientHelloSpec::chrome_133();
  let spec2 = ClientHelloSpec::chrome_133();
  let result = compare_specs(&spec1, &spec2);
- // due toset成了random GREASE，两次Generate spec in GREASE valueupmaydifferent，
+ // due toset成random GREASE，两 times Generate spec in GREASE valueupmay different，
  // thereforeresultshould is Similar (ignore GREASE backsame)
  assert!(matches!(
  result,
  FingerprintMatch::Exact | FingerprintMatch::Similar
- ));
+));
  }
 
  #[test]
@@ -126,6 +126,6 @@ mod tests {
  ClientHelloSpec::firefox_133(),
  ];
  let best = find_best_match(&signature, &specs);
- assert_eq!(best, Some(1)); // chrome_133 should is 最match的
+ assert_eq!(best, Some(1)); // chrome_133 should is most match 
  }
 }

@@ -1,7 +1,7 @@
 //! TLS extensiontypeconstant
 //!
-//! 来source：https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
-//! finallyUpdate：March 2023
+//! from source：https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
+//! fin all yUpdate：March 2023
 
 /// TLS extensiontypeconstant
 /// Corresponds to Go version's tls.Extension* constant
@@ -24,7 +24,7 @@ pub mod extension_types {
  pub const EXT_TYPE_COMPRESS_CERTIFICATE: u16 = 27;
  pub const EXT_TYPE_ECH: u16 = 0xfe0d;
 
- // 非 IANA allocate's extensions
+ // 非 IANA all ocate's extensions
  pub const EXT_TYPE_APPLICATION_SETTINGS: u16 = 17513;
  pub const EXT_TYPE_APPLICATION_SETTINGS_NEW: u16 = 17613;
 }
@@ -38,7 +38,7 @@ pub mod compression {
 
 pub use compression::*;
 
-/// 点formatconstant
+/// point formatconstant
 pub mod point_formats {
  pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0;
 }

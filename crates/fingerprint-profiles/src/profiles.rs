@@ -20,9 +20,9 @@ pub type ClientHelloSpecFactory = fn() -> Result<ClientHelloSpec, String>;
 /// Corresponds to Go version's tls.ClientHelloID
 #[derive(Debug, Clone)]
 pub struct ClientHelloID {
- /// Client name (如 "Chrome", "Firefox", "Safari")
+ /// Client name (such as "Chrome", "Firefox", "Safari")
  pub client: String,
- /// Version version号 (如 "135", "133")
+ /// Version version number (such as "135", "133")
  pub version: String,
  /// SpecFactory for Generate ClientHelloSpec
  pub spec_factory: ClientHelloSpecFactory,
@@ -64,7 +64,7 @@ impl std::hash::Hash for ClientHelloID {
 }
 
 /// Client Profile configuration
-/// including TLS fingerprintallconfigurationinfo
+/// including TLS fingerprint all configurationinfo
 /// Corresponds to Go version's ClientProfile struct
 #[derive(Debug, Clone)]
 pub struct ClientProfile {
@@ -89,9 +89,9 @@ pub struct ClientProfile {
 }
 
 impl ClientProfile {
- /// Create a new ClientProfile
+ /// create a new ClientProfile
  /// Corresponds to Go version's NewClientProfile function
- #[allow(clippy::too_many_arguments)] // constructfunctionneedall必要parameter
+ #[ all ow (clippy::too_many_arguments)] // constructfunctionneed all 必 need parameter
  pub fn new(
  client_hello_id: ClientHelloID,
  settings: HTTP2Settings,
@@ -102,7 +102,7 @@ impl ClientProfile {
  header_priority: Option<HTTP2PriorityParam>,
  tcp_profile: Option<TcpProfile>,
  header_order: Vec<String>,
- ) -> Self {
+) -> Self {
  Self {
  client_hello_id,
  settings,
@@ -126,10 +126,10 @@ impl ClientProfile {
  /// this isunifiedfingerprintGeneratecoremethod，ensurebrowserfingerprint and TCP fingerprintsync
  ///
  /// # Parameters
- /// - `user_agent`: User-Agent string， for inferoperating system
+ /// - `user_agent`: User-Agent string， for inferoperating system 
  ///
  /// # Returns
- /// returnannew ClientProfile，其 in tcp_profile alreadyBased on User-Agent settings
+ /// returnannew ClientProfile， its in tcp_profile alreadyBased on User-Agent settings
  pub fn with_synced_tcp_profile(self, user_agent: &str) -> Self {
  use fingerprint_core::tcp::TcpProfile;
  let tcp_profile = TcpProfile::from_user_agent(user_agent);
@@ -139,13 +139,13 @@ impl ClientProfile {
  }
  }
 
- /// Based onoperating systemtypeautomaticGeneratematch TCP Profile
+ /// Based onoperating system typeautomaticGeneratematch TCP Profile
  ///
  /// # Parameters
- /// - `os`: operating systemtype
+ /// - `os`: operating system type
  ///
  /// # Returns
- /// returnannew ClientProfile，其 in tcp_profile alreadyBased onoperating systemsettings
+ /// returnannew ClientProfile， its in tcp_profile alreadyBased onoperating system settings
  pub fn with_tcp_profile_for_os(self, os: fingerprint_core::types::OperatingSystem) -> Self {
  use fingerprint_core::tcp::TcpProfile;
  let tcp_profile = TcpProfile::for_os(os);
@@ -158,10 +158,10 @@ impl ClientProfile {
  /// Get or Generate TCP Profile
  ///
  /// If tcp_profile already exists, directlyreturn
- /// If不 exists, Based on User-Agent Generate
+ /// If not exists, Based on User-Agent Generate
  ///
  /// # Parameters
- /// - `user_agent`: User-Agent string， for inferoperating system ( if tcp_profile 不 exists)
+ /// - `user_agent`: User-Agent string， for inferoperating system (if tcp_profile not exists)
  ///
  /// # Returns
  /// TCP Profile reference
@@ -230,7 +230,7 @@ pub fn chrome_103() -> ClientProfile {
  "Chrome",
  "103",
  fingerprint_tls::tls_config::chrome_103_spec,
- ),
+),
  settings,
  settings_order,
  chrome_pseudo_header_order(),
@@ -239,23 +239,23 @@ pub fn chrome_103() -> ClientProfile {
  Some(chrome_header_priority()),
  None,
  chrome_header_order(),
- )
+)
 }
 
 /// Chrome 133 fingerprintconfiguration
 pub fn chrome_133() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  // defaultuse Windows TCP Profile (most commonbrowserenvironment)
- // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
+ // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() from sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
- ));
+));
  ClientProfile::new(
  ClientHelloID::new(
  "Chrome",
  "133",
  fingerprint_tls::tls_config::chrome_133_spec,
- ),
+),
  settings,
  settings_order,
  chrome_pseudo_header_order(),
@@ -264,23 +264,23 @@ pub fn chrome_133() -> ClientProfile {
  Some(chrome_header_priority()),
  default_tcp_profile,
  chrome_header_order(),
- )
+)
 }
 
 /// Firefox 133 fingerprintconfiguration
 pub fn firefox_133() -> ClientProfile {
  let (settings, settings_order) = firefox_http2_settings();
  // defaultuse Windows TCP Profile (most commonbrowserenvironment)
- // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
+ // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() from sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
- ));
+));
  ClientProfile::new(
  ClientHelloID::new(
  "Firefox",
  "133",
  fingerprint_tls::tls_config::firefox_133_spec,
- ),
+),
  settings,
  settings_order,
  firefox_pseudo_header_order(),
@@ -289,7 +289,7 @@ pub fn firefox_133() -> ClientProfile {
  None,
  default_tcp_profile,
  firefox_header_order(),
- )
+)
 }
 
 /// Chrome 136 fingerprintconfiguration
@@ -297,13 +297,13 @@ pub fn chrome_136() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
- ));
+));
  ClientProfile::new(
  ClientHelloID::new(
  "Chrome",
  "136",
  fingerprint_tls::tls_config::chrome_136_spec,
- ),
+),
  settings,
  settings_order,
  chrome_pseudo_header_order(),
@@ -312,23 +312,23 @@ pub fn chrome_136() -> ClientProfile {
  Some(chrome_header_priority()),
  default_tcp_profile,
  chrome_header_order(),
- )
+)
 }
 
 /// Chrome 135 fingerprintconfiguration (default)
 pub fn chrome_135() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  // defaultuse Windows TCP Profile (most commonbrowserenvironment)
- // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
+ // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() from sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
- ));
+));
  ClientProfile::new(
  ClientHelloID::new(
  "Chrome",
  "135",
  fingerprint_tls::tls_config::chrome_133_spec, // use 133 TLS struct
- ),
+),
  settings,
  settings_order,
  chrome_pseudo_header_order(),
@@ -337,23 +337,23 @@ pub fn chrome_135() -> ClientProfile {
  Some(chrome_header_priority()),
  default_tcp_profile,
  chrome_header_order(),
- )
+)
 }
 
 /// Firefox 135 fingerprintconfiguration
 pub fn firefox_135() -> ClientProfile {
  let (settings, settings_order) = firefox_http2_settings();
  // defaultuse Windows TCP Profile (most commonbrowserenvironment)
- // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
+ // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() from sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
- ));
+));
  ClientProfile::new(
  ClientHelloID::new(
  "Firefox",
  "135",
  fingerprint_tls::tls_config::firefox_133_spec,
- ),
+),
  settings,
  settings_order,
  firefox_pseudo_header_order(),
@@ -362,7 +362,7 @@ pub fn firefox_135() -> ClientProfile {
  None,
  default_tcp_profile,
  firefox_header_order(),
- )
+)
 }
 
 /// Safari 16.0 fingerprintconfiguration
@@ -374,7 +374,7 @@ pub fn safari_16_0() -> ClientProfile {
  "Safari",
  "16.0",
  fingerprint_tls::tls_config::safari_16_0_spec,
- ),
+),
  settings,
  settings_order,
  safari_pseudo_header_order(),
@@ -383,13 +383,13 @@ pub fn safari_16_0() -> ClientProfile {
  None,
  None,
  safari_header_order(),
- )
+)
 }
 
 /// Opera 91 fingerprintconfiguration
 /// Corresponds to Go version's Opera_91
 pub fn opera_91() -> ClientProfile {
- // Opera use Chrome inside核，configuration and Chrome same
+ // Opera use Chrome core，configuration and Chrome same
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
  ClientHelloID::new("Opera", "91", fingerprint_tls::tls_config::chrome_133_spec), // Opera use Chrome TLS configuration
@@ -401,13 +401,13 @@ pub fn opera_91() -> ClientProfile {
  Some(chrome_header_priority()),
  None,
  chrome_header_order(),
- )
+)
 }
 
 /// Edge 120 fingerprintconfiguration
-/// Edge use Chromium inside核，TLS fingerprint and Chrome same
+/// Edge use Chromium core，TLS fingerprint and Chrome same
 pub fn edge_120() -> ClientProfile {
- // Edge use Chrome inside核，configuration and Chrome same
+ // Edge use Chrome core，configuration and Chrome same
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
  ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge use Chrome TLS configuration
@@ -419,11 +419,11 @@ pub fn edge_120() -> ClientProfile {
  Some(chrome_header_priority()),
  None,
  chrome_header_order(),
- )
+)
 }
 
 /// Edge 124 fingerprintconfiguration
-/// Edge use Chromium inside核，TLS fingerprint and Chrome same
+/// Edge use Chromium core，TLS fingerprint and Chrome same
 pub fn edge_124() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
@@ -436,11 +436,11 @@ pub fn edge_124() -> ClientProfile {
  Some(chrome_header_priority()),
  None,
  chrome_header_order(),
- )
+)
 }
 
 /// Edge 133 fingerprintconfiguration
-/// Edge use Chromium inside核，TLS fingerprint and Chrome same
+/// Edge use Chromium core，TLS fingerprint and Chrome same
 pub fn edge_133() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
  ClientProfile::new(
@@ -453,10 +453,10 @@ pub fn edge_133() -> ClientProfile {
  Some(chrome_header_priority()),
  None,
  chrome_header_order(),
- )
+)
 }
 
-/// Initializeallfingerprintconfigurationmap表
+/// Initialize all fingerprintconfigurationmap表
 fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  let mut map = HashMap::new();
 
@@ -518,16 +518,16 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  map.insert("opera_90".to_string(), opera_91());
  map.insert("opera_91".to_string(), opera_91());
 
- // Edge series (use Chromium inside核，TLS fingerprint and Chrome same)
+ // Edge series (use Chromium core，TLS fingerprint and Chrome same)
  map.insert("edge_120".to_string(), edge_120());
  map.insert("edge_124".to_string(), edge_124());
  map.insert("edge_133".to_string(), edge_133());
 
  // mobile and customfingerprint
- map.insert("zalando_android_mobile".to_string(), chrome_133());
- map.insert("zalando_ios_mobile".to_string(), safari_16_0());
- map.insert("nike_ios_mobile".to_string(), safari_16_0());
- map.insert("nike_android_mobile".to_string(), chrome_133());
+ map.insert("zalando_android_ mobile ".to_string(), chrome_133());
+ map.insert("zalando_ios_ mobile ".to_string(), safari_16_0());
+ map.insert("nike_ios_ mobile ".to_string(), safari_16_0());
+ map.insert("nike_android_ mobile ".to_string(), chrome_133());
  map.insert("mms_ios".to_string(), safari_16_0());
  map.insert("mms_ios_2".to_string(), safari_16_0());
  map.insert("mms_ios_3".to_string(), safari_16_0());
@@ -561,10 +561,10 @@ pub fn mapped_tls_clients() -> &'static HashMap<String, ClientProfile> {
 /// Based on profile nameGet ClientProfile
 ///
 /// # Parameters
-/// - `profile_name`: fingerprintconfigurationname (如 "chrome_135", "firefox_133")
+/// - `profile_name`: fingerprintconfigurationname (such as "chrome_135", "firefox_133")
 ///
 /// # Returns
-/// returnpair应 ClientProfile， if 不 exists则returnerror
+/// returnpair should ClientProfile， if not exists then returnerror
 pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
  let clients = mapped_tls_clients();
  clients
@@ -578,11 +578,11 @@ pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
 /// Based on profile name and User-Agent Generatesyncbrowserfingerprint and TCP fingerprint
 ///
 /// # Parameters
-/// - `profile_name`: fingerprintconfigurationname (如 "chrome_135", "firefox_133")
+/// - `profile_name`: fingerprintconfigurationname (such as "chrome_135", "firefox_133")
 /// - `user_agent`: User-Agent string， for sync TCP fingerprint
 ///
 /// # Returns
-/// returnan ClientProfile，其 in tcp_profile alreadyBased on User-Agent sync
+/// returnan ClientProfile， its in tcp_profile alreadyBased on User-Agent sync
 ///
 /// # Examples
 /// ```rust
@@ -627,14 +627,14 @@ mod tests {
  #[test]
  fn test_unified_fingerprint_generation() {
  // test Windows User-Agent
- let windows_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
- let profile = generate_unified_fingerprint("chrome_135", windows_ua).unwrap();
+ let window s_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
+ let profile = generate_unified_fingerprint("chrome_135", window s_ua).unwrap();
 
  // Validate TCP Profile alreadysync
  assert!(profile.tcp_profile.is_some());
  let tcp_profile = profile.tcp_profile.unwrap();
  assert_eq!(tcp_profile.ttl, 128); // Windows TTL
- assert_eq!(tcp_profile.window_size, 64240); // Windows Window Size
+ assert_eq!(tcp_profile. window _size, 64240); // Windows Window Size
 
  // test Linux User-Agent
  let linux_ua = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
@@ -642,7 +642,7 @@ mod tests {
 
  let tcp_profile = profile.tcp_profile.unwrap();
  assert_eq!(tcp_profile.ttl, 64); // Linux TTL
- assert_eq!(tcp_profile.window_size, 65535); // Linux Window Size
+ assert_eq!(tcp_profile. window _size, 65535); // Linux Window Size
 
  // test macOS User-Agent
  let macos_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0_0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
@@ -650,15 +650,15 @@ mod tests {
 
  let tcp_profile = profile.tcp_profile.unwrap();
  assert_eq!(tcp_profile.ttl, 64); // macOS TTL
- assert_eq!(tcp_profile.window_size, 65535); // macOS Window Size
+ assert_eq!(tcp_profile. window _size, 65535); // macOS Window Size
  }
 
  #[test]
  fn test_with_synced_tcp_profile() {
  let profile = chrome_133();
- let windows_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36";
+ let window s_ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36";
 
- let synced_profile = profile.with_synced_tcp_profile(windows_ua);
+ let synced_profile = profile.with_synced_tcp_profile(window s_ua);
  assert!(synced_profile.tcp_profile.is_some());
  let tcp_profile = synced_profile.tcp_profile.unwrap();
  assert_eq!(tcp_profile.ttl, 128);
@@ -674,6 +674,6 @@ mod tests {
  assert!(synced_profile.tcp_profile.is_some());
  let tcp_profile = synced_profile.tcp_profile.unwrap();
  assert_eq!(tcp_profile.ttl, 64);
- assert_eq!(tcp_profile.window_size, 65535);
+ assert_eq!(tcp_profile. window _size, 65535);
  }
 }

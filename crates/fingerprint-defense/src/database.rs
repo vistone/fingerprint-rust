@@ -1,21 +1,21 @@
 //! fingerprintdatabaseimplement
 //!
-//! providefingerprintpersistent化store and queryFeatures。
+//! providefingerprintpersistentizestore and queryFeatures。
 
-use fingerprint_core::system::NetworkFlow;
+use fingerprint_core::system ::NetworkFlow;
 use rusqlite::{params, Connection, Result as SqliteResult};
 use serde_json;
 use std::path::Path;
 
-/// storefingerprintpair象
+/// storefingerprintpairobject
 pub struct FingerprintDatabase {
  conn: Connection,
 }
 
 impl FingerprintDatabase {
  /// open or Createdatabase
- pub fn open<P: AsRef<Path>>(path: P) -> Result<Self, String> {
- let conn = Connection::open(path).map_err(|e| e.to_string())?;
+ pub fn open <P: AsRef<Path>>(path: P) -> Result<Self, String> {
+ let conn = Connection:: open (path).map_err(|e| e.to_string())?;
  let db = Self { conn };
  db.init().map_err(|e| e.to_string())?;
  Ok(db)
@@ -32,9 +32,9 @@ impl FingerprintDatabase {
  timestamp DATETIME,
  consistency_score INTEGER,
  bot_detected BOOLEAN
- )",
+)",
  [],
- )?;
+)?;
 
  self.conn.execute(
  "CREATE TABLE IF NOT EXISTS fingerprints (
@@ -45,9 +45,9 @@ impl FingerprintDatabase {
  ja4_plus TEXT,
  metadata_json TEXT,
  FOREIGN KEY(flow_id) REFERENCES flows(id)
- )",
+)",
  [],
- )?;
+)?;
 
  Ok(())
  }
@@ -56,7 +56,7 @@ impl FingerprintDatabase {
  pub fn store_flow(&self, flow: &NetworkFlow, score: u8, bot: bool) -> Result<(), String> {
  self.conn.execute(
  "INSERT OR REPLACE INTO flows (id, source_ip, target_ip, protocol, timestamp, consistency_score, bot_detected)
- VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+ VALUES (?1,?2,?3,?4,?5,?6,?7)",
  params![
  flow.flow_id(),
  flow.context.source_ip.to_string(),
@@ -66,7 +66,7 @@ impl FingerprintDatabase {
  score,
  bot,
  ],
- ).map_err(|e| e.to_string())?;
+).map_err(|e| e.to_string())?;
 
  // storeeachlayerlevelfingerprint
  for fp in flow.fingerprints() {
@@ -84,9 +84,9 @@ impl FingerprintDatabase {
  self.conn
 .execute(
  "INSERT INTO fingerprints (flow_id, fp_type, fp_id, ja4_plus, metadata_json)
- VALUES (?1, ?2, ?3, ?4, ?5)",
+ VALUES (?1,?2,?3,?4,?5)",
  params![flow.flow_id(), fp_type, fp_id, ja4_plus, metadata_json],
- )
+)
 .map_err(|e| e.to_string())?;
  }
 
@@ -105,12 +105,12 @@ impl FingerprintDatabase {
  "SELECT COUNT(*) FROM flows WHERE bot_detected = 1",
  [],
  |r| r.get(0),
- )
+)
 .map_err(|e| e.to_string())?;
 
  Ok(format!(
  "Total Flows: {}, Bots Detected: {}",
  flow_count, bot_count
- ))
+))
  }
 }

@@ -11,10 +11,10 @@
 //! - Different cipher suites
 //! - Different TLS extensions
 //! - ALPN variations
-//! 2. Parse Server Hello responses (or capture errors/timeouts)
+//! 2. parsed Server Hello responses (or capture errors/timeouts)
 //! 3. Extract key features from each response:
 //! - TLS version
-//! - Cipher suite selected
+//! - Cipher suite select ed
 //! - TLS extensions present
 //! 4. Hash and combine features into 62-character fingerprint
 //!
@@ -52,14 +52,14 @@ pub struct JarmProbe {
 }
 
 impl JarmProbe {
- /// Create a new JARM probe with specified configuration
+ /// create a new JARM probe with specified configuration
  pub fn new(
  tls_version: TlsVersion,
  cipher_suites: Vec<u16>,
  extensions: Vec<u16>,
  alpn_protocols: Vec<String>,
  use_grease: bool,
- ) -> Self {
+) -> Self {
  Self {
  tls_version,
  cipher_suites,
@@ -75,88 +75,88 @@ impl JarmProbe {
  // Probe 1: TLS 1.2, ALL ciphers, ALL extensions, ALPN
  Self::new(
  TlsVersion::V1_2,
- Self::all_ciphers_tls12(),
- Self::all_extensions(),
+ Self:: all _ciphers_tls12(),
+ Self:: all _extensions(),
  vec!["h2".to_string(), "http/1.1".to_string()],
  false,
- ),
+),
  // Probe 2: TLS 1.2, ALL ciphers, ALL extensions, No ALPN
  Self::new(
  TlsVersion::V1_2,
- Self::all_ciphers_tls12(),
- Self::all_extensions(),
+ Self:: all _ciphers_tls12(),
+ Self:: all _extensions(),
  vec![],
  false,
- ),
+),
  // Probe 3: TLS 1.2, RARE ciphers, ALL extensions, ALPN
  Self::new(
  TlsVersion::V1_2,
  Self::rare_ciphers(),
- Self::all_extensions(),
+ Self:: all _extensions(),
  vec!["h2".to_string()],
  false,
- ),
+),
  // Probe 4: TLS 1.2, RARE ciphers, ALL extensions, No ALPN
  Self::new(
  TlsVersion::V1_2,
  Self::rare_ciphers(),
- Self::all_extensions(),
+ Self:: all _extensions(),
  vec![],
  false,
- ),
+),
  // Probe 5: TLS 1.1, ALL ciphers, No extensions
  Self::new(
  TlsVersion::V1_1,
- Self::all_ciphers_tls11(),
+ Self:: all _ciphers_tls11(),
  vec![],
  vec![],
  false,
- ),
+),
  // Probe 6: TLS 1.3, ALL ciphers, ALL extensions, ALPN
  Self::new(
  TlsVersion::V1_3,
- Self::all_ciphers_tls13(),
- Self::all_extensions(),
+ Self:: all _ciphers_tls13(),
+ Self:: all _extensions(),
  vec!["h2".to_string(), "http/1.1".to_string()],
  true,
- ),
+),
  // Probe 7: TLS 1.3, ALL ciphers, ALL extensions, No ALPN
  Self::new(
  TlsVersion::V1_3,
- Self::all_ciphers_tls13(),
- Self::all_extensions(),
+ Self:: all _ciphers_tls13(),
+ Self:: all _extensions(),
  vec![],
  true,
- ),
+),
  // Probe 8: TLS 1.3, RARE ciphers, ALL extensions, ALPN
  Self::new(
  TlsVersion::V1_3,
  Self::rare_ciphers_tls13(),
- Self::all_extensions(),
+ Self:: all _extensions(),
  vec!["h2".to_string()],
  true,
- ),
+),
  // Probe 9: TLS 1.3, RARE ciphers, ALL extensions, No ALPN
  Self::new(
  TlsVersion::V1_3,
  Self::rare_ciphers_tls13(),
- Self::all_extensions(),
+ Self:: all _extensions(),
  vec![],
  true,
- ),
+),
  // Probe 10: TLS 1.2, ALL ciphers, ALL extensions, ALPN (1.3 advertised)
  Self::new(
  TlsVersion::V1_2,
- Self::all_ciphers_tls12(),
- Self::all_extensions_with_supported_versions(),
+ Self:: all _ciphers_tls12(),
+ Self:: all _extensions_with_supported_versions(),
  vec!["h2".to_string()],
  false,
- ),
+),
  ]
  }
 
  /// Common TLS 1.2 cipher suites
- fn all_ciphers_tls12() -> Vec<u16> {
+ fn all _ciphers_tls12() -> Vec<u16> {
  vec![
  0x1301, 0x1302, 0x1303, 0x1304, 0x1305, // TLS 1.3 ciphers
  0xc02c, 0xc030, 0x009f, 0xcca9, 0xcca8, // ECDHE-RSA/ECDSA with AEAD
@@ -168,7 +168,7 @@ impl JarmProbe {
  }
 
  /// Common TLS 1.1 cipher suites (legacy)
- fn all_ciphers_tls11() -> Vec<u16> {
+ fn all _ciphers_tls11() -> Vec<u16> {
  vec![
  0xc014, 0xc00a, 0x0039, 0x0038, 0x0035, 0x0016, 0x0013, 0x000a, 0x0033, 0x0032,
  0x002f, 0x000d, 0x0005, 0x0004,
@@ -176,7 +176,7 @@ impl JarmProbe {
  }
 
  /// TLS 1.3 cipher suites
- fn all_ciphers_tls13() -> Vec<u16> {
+ fn all _ciphers_tls13() -> Vec<u16> {
  vec![
  0x1301, // TLS_AES_128_GCM_SHA256
  0x1302, // TLS_AES_256_GCM_SHA384
@@ -202,7 +202,7 @@ impl JarmProbe {
  }
 
  /// Standard TLS extensions
- fn all_extensions() -> Vec<u16> {
+ fn all _extensions() -> Vec<u16> {
  vec![
  0x0000, // server_name
  0x000b, // ec_point_formats
@@ -217,8 +217,8 @@ impl JarmProbe {
  }
 
  /// Extensions including supported_versions for TLS 1.3 downgrade detection
- fn all_extensions_with_supported_versions() -> Vec<u16> {
- let mut exts = Self::all_extensions();
+ fn all _extensions_with_supported_versions() -> Vec<u16> {
+ let mut exts = Self:: all _extensions();
  exts.push(0x002b); // supported_versions
  exts
  }
@@ -231,9 +231,9 @@ impl JarmProbe {
 pub struct JarmResponse {
  /// Whether the server responded (vs timeout/error)
  pub responded: bool,
- /// TLS version selected by server
+ /// TLS version select ed by server
  pub tls_version: Option<TlsVersion>,
- /// Cipher suite selected by server
+ /// Cipher suite select ed by server
  pub cipher_suite: Option<u16>,
  /// Extensions returned by server
  pub extensions: Vec<u16>,
@@ -259,7 +259,7 @@ impl JarmResponse {
  cipher_suite: u16,
  extensions: Vec<u16>,
  has_alpn: bool,
- ) -> Self {
+) -> Self {
  Self {
  responded: true,
  tls_version: Some(tls_version),
@@ -271,7 +271,7 @@ impl JarmResponse {
 
  /// Convert response to JARM component string (for hashing)
  fn to_component_string(&self) -> String {
- if !self.responded {
+ if!self.responded {
  return "|||".to_string();
  }
 
@@ -315,7 +315,7 @@ impl Jarm {
  ///
  /// JARM fingerprint or None if invalid input
  pub fn from_responses(responses: Vec<JarmResponse>) -> Option<Self> {
- if responses.len() != 10 {
+ if responses.len()!= 10 {
  return None;
  }
 
@@ -363,15 +363,15 @@ impl Jarm {
 
  /// Compute extension aggregation component
  fn compute_extension_component(responses: &[JarmResponse]) -> String {
- let mut all_extensions = Vec::new();
+ let mut all _extensions = Vec::new();
  for response in responses {
  if response.responded {
  for ext in &response.extensions {
- all_extensions.push(format!("{:04x}", ext));
+ all _extensions.push(format!("{:04x}", ext));
  }
  }
  }
- all_extensions.join(",")
+ all _extensions.join(",")
  }
 
  /// Get the fingerprint string
@@ -422,7 +422,7 @@ mod tests {
  vec![0x0000, 0x000b],
  vec!["h2".to_string()],
  false,
- );
+);
 
  assert_eq!(probe.tls_version, TlsVersion::V1_2);
  assert_eq!(probe.cipher_suites.len(), 2);
@@ -460,7 +460,7 @@ mod tests {
  0x1301,
  vec![0x0000, 0x000b, 0x002b],
  true,
- );
+);
 
  assert!(response.responded);
  assert_eq!(response.tls_version, Some(TlsVersion::V1_3));
@@ -486,7 +486,7 @@ mod tests {
  0x1301,
  vec![0x0000, 0x002b],
  true,
- ));
+));
  } else {
  responses.push(JarmResponse::no_response());
  }
@@ -497,7 +497,7 @@ mod tests {
 
  let jarm = jarm.unwrap();
  assert_eq!(jarm.fingerprint.len(), 62);
- assert!(jarm.fingerprint.chars().all(|c| c.is_ascii_hexdigit()));
+ assert!(jarm.fingerprint.chars(). all (|c| c.is_ascii_hexdigit()));
  }
 
  #[test]
@@ -527,7 +527,7 @@ mod tests {
  0x1301,
  vec![0x0000, 0x002b],
  true,
- ));
+));
  }
 
  // Create a fingerprint starting with Cloudflare pattern

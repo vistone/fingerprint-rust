@@ -1,11 +1,11 @@
 //! TLS supportgroup (elliptic curve)constant
 //!
-//! 来source：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
-//! finallyUpdate：March 2023
+//! from source：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
+//! fin all yUpdate：March 2023
 
 /// TLS supportgroupconstant
 /// Corresponds to Go version's tls.CurveID constant
-#[allow(clippy::module_inception)]
+#[ all ow (clippy::module_inception)]
 pub mod supported_groups {
  // elliptic curve
  pub const SECP256R1: u16 = 0x0017; // 23

@@ -1,12 +1,12 @@
-//! systemlevelstatisticsinfo
+//! system levelstatisticsinfo
 //!
-//! definesystemlevelprotectionstatisticsinfo。
+//! definesystem levelprotectionstatisticsinfo。
 
 use std::time::Instant;
 
-/// systemlevelprotectionstatisticsinfo
+/// system levelprotectionstatisticsinfo
 ///
-/// recordsystemlevelprotectionsystemrunstatisticsinfo。
+/// recordsystem levelprotectionsystem runstatisticsinfo。
 #[derive(Debug, Clone)]
 pub struct SystemProtectionStats {
  /// totalpacketcount
@@ -21,8 +21,8 @@ pub struct SystemProtectionStats {
  /// rate limitcountpacketcount
  pub rate_limited_packets: u64,
 
- /// allowthroughcountpacketcount
- pub allowed_packets: u64,
+ /// all ow throughcountpacketcount
+ pub all ow ed_packets: u64,
 
  /// detect to threatcount
  pub threat_detected: u64,
@@ -30,12 +30,12 @@ pub struct SystemProtectionStats {
  /// start when between
  pub start_time: Instant,
 
- /// finallyUpdate when between
+ /// fin all yUpdate when between
  pub last_update_time: Instant,
 }
 
 impl SystemProtectionStats {
- /// Create a newstatisticsinfo
+ /// create a new statisticsinfo
  pub fn new() -> Self {
  let now = Instant::now();
  Self {
@@ -43,7 +43,7 @@ impl SystemProtectionStats {
  analyzed_packets: 0,
  blocked_packets: 0,
  rate_limited_packets: 0,
- allowed_packets: 0,
+ all ow ed_packets: 0,
  threat_detected: 0,
  start_time: now,
  last_update_time: now,
@@ -74,9 +74,9 @@ impl SystemProtectionStats {
  self.last_update_time = Instant::now();
  }
 
- /// increaseallowthroughcountpacketcount
- pub fn increment_allowed(&mut self) {
- self.allowed_packets += 1;
+ /// increase all ow throughcountpacketcount
+ pub fn increment_ all ow ed(&mut self) {
+ self. all ow ed_packets += 1;
  self.last_update_time = Instant::now();
  }
 
@@ -86,12 +86,12 @@ impl SystemProtectionStats {
  self.last_update_time = Instant::now();
  }
 
- /// Getrun when between (seconds)
+ /// Get runtime between (seconds)
  pub fn uptime_seconds(&self) -> u64 {
  self.start_time.elapsed().as_secs()
  }
 
- /// Getcountpacketprocessrate (包/seconds)
+ /// Getcountpacketprocessrate (package /seconds)
  pub fn packets_per_second(&self) -> f64 {
  let uptime = self.uptime_seconds() as f64;
  if uptime > 0.0 {
@@ -101,7 +101,7 @@ impl SystemProtectionStats {
  }
  }
 
- /// Getanalysis率 (alreadyanalysis/total)
+ /// Getanalysis rate (alreadyanalysis/total)
  pub fn analysis_rate(&self) -> f64 {
  if self.total_packets > 0 {
  self.analyzed_packets as f64 / self.total_packets as f64
@@ -110,7 +110,7 @@ impl SystemProtectionStats {
  }
  }
 
- /// Getblock率 (alreadyblock/total)
+ /// Getblock rate (alreadyblock/total)
  pub fn block_rate(&self) -> f64 {
  if self.total_packets > 0 {
  self.blocked_packets as f64 / self.total_packets as f64
@@ -125,7 +125,7 @@ impl SystemProtectionStats {
  self.analyzed_packets = 0;
  self.blocked_packets = 0;
  self.rate_limited_packets = 0;
- self.allowed_packets = 0;
+ self. all ow ed_packets = 0;
  self.threat_detected = 0;
  self.start_time = Instant::now();
  self.last_update_time = Instant::now();

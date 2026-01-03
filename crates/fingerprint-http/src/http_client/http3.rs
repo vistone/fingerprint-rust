@@ -8,7 +8,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http3")]
 use quinn::{ClientConfig, Endpoint, TransportConfig};
 
-// Fix: useglobalsingleton Runtime avoidfrequentCreate
+// Fix: use globalsingleton Runtime avoid frequentCreate
 #[cfg(feature = "http3")]
 use once_cell::sync::Lazy;
 
@@ -25,7 +25,7 @@ pub fn send_http3_request(
  request: &HttpRequest,
  config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
- // Fix: useglobalsingleton Runtime，avoideach timerequest都Create a newrun when 
+ // Fix: use globalsingleton Runtime， avoid each time request all create a new runtime 
  RUNTIME.block_on(async { send_http3_request_async(host, port, path, request, config).await })
 }
 
@@ -48,53 +48,53 @@ async fn send_http3_request_async(
  config.verify_tls,
  vec![b"h3".to_vec()],
  config.profile.as_ref(),
- );
+);
 
  let mut client_config = ClientConfig::new(Arc::new(tls_config));
 
- // optimizetransferconfiguration以improveperformance and connectionmigratecapability
+ // optimize transferconfiguration to improve perform ance and connection migrate capability
  let mut transport = TransportConfig::default();
 
- // connectionmigrate (Connection Migration) optimize
- // QUIC allow in IP toggle when keepconnection，这pairmobilesimulate至closeimportant
+ // connection migrate (Connection Migration) optimize
+ // QUIC all ow IP switch while keeping connection， this for mobile simulate very important
  transport.initial_rtt(Duration::from_millis(100));
  transport.max_idle_timeout(Some(
  Duration::from_secs(60)
-.try_into()
-.map_err(|e| HttpClientError::ConnectionFailed(format!("configurationtimeoutfailure: {}", e)))?,
- ));
- // increase保活frequency以auxiliaryconnectionmigrateidentify
+. try _into()
+.map_err(|e| HttpClientError::ConnectionFailed(format!("configurationtimeout failure: {}", e)))?,
+));
+ // increase keep-alive frequency to assist connection migrate identify
  transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
- // allowpair端migrate (defaultalreadyopen，此处explicitexplain其important性)
- // transport.allow_peer_migration(true);
+ // all ow peer migrate (default already open ， here explicit ly explain its importance)
+ // transport. all ow _peer_migration(true);
 
- // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)
- transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome style)
- transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome style)
+ // simulate Chrome stream control window (Chrome usu all y uses larger window to improve throughput)
+ transport.stream_receive_ window ((6 * 1024 * 1024u32).into()); // 6MB (Chrome style)
+ transport.receive_ window ((15 * 1024 * 1024u32).into()); // 15MB (Chrome style)
 
- // allowmoreconcurrentstream
+ // all ow moreconcurrentstream
  transport.max_concurrent_bidi_streams(100u32.into());
  transport.max_concurrent_uni_streams(100u32.into());
 
  client_config.transport_config(Arc::new(transport));
 
- // 2. DNS Parse (priority IPv4，avoid IPv4 endpoint connection IPv6 remote cause invalid remote address)
+ // 2. DNS parsed (priority IPv4， avoid IPv4 endpoint connection IPv6 remote cause invalid remote address)
  let addr_str = format!("{}:{}", host, port);
  let mut addrs: Vec<SocketAddr> = addr_str
 .to_socket_addrs()
-.map_err(|e| HttpClientError::InvalidUrl(format!("DNS Parsefailure: {}", e)))?
+.map_err(|e| HttpClientError::InvalidUrl(format!("DNS parsed failure: {}", e)))?
 .collect();
  if addrs.is_empty() {
- return Err(HttpClientError::InvalidUrl("unable toParseaddress".to_string()));
+ return Err(HttpClientError::InvalidUrl("unable to parsed address".to_string()));
  }
  addrs.sort_by_key(|a| matches!(a.ip(), IpAddr::V6(_))); // IPv4 priority
 
- // 4. connection to server (Happy Eyeballs simplify版：looptryallParse to address)
- let mut connection_result = Err(HttpClientError::ConnectionFailed("无availableaddress".to_string()));
+ // 4. connection to server (Happy Eyeb all s simplified version： loop try all parsed addresses)
+ let mut connection_result = Err(HttpClientError::ConnectionFailed("no available address".to_string()));
 
  for remote_addr in addrs {
- // Create QUIC endpoint ( by  remote address族selectbind)
+ // Create QUIC endpoint (by remote address family select bind)
  let bind_addr = match remote_addr.ip() {
  IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
  IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
@@ -120,31 +120,31 @@ async fn send_http3_request_async(
  }
  Err(e) => {
  connection_result = Err(HttpClientError::ConnectionFailed(
- format!("HTTP/3 handshakefailure: {}", e),
- ));
+ format!("HTTP/3 handshake failure: {}", e),
+));
  }
  }
  }
  Err(e) => {
  connection_result = Err(HttpClientError::ConnectionFailed(format!(
- "QUIC handshakefailure: {}",
+ "QUIC handshake failure: {}",
  e
- )));
+)));
  }
  }
  }
  Err(e) => {
  connection_result = Err(HttpClientError::ConnectionFailed(format!(
- "QUIC connection发起failure: {}",
+ "QUIC connection initiation failure: {}",
  e
- )));
+)));
  }
  }
  }
 
  let (driver, mut send_request) = connection_result?;
 
- // in backdriverconnection：h3 0.0.4 driver need被continuous poll_close
+ // in background driver connection：h3 0.0.4 driver needs to be continuous ly poll_close
  tokio::spawn(async move {
  let mut driver = driver;
  let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
@@ -157,7 +157,7 @@ async fn send_http3_request_async(
 .uri(uri)
 .version(http::Version::HTTP_3);
 
- // Fix: Add Cookie to request ( if exists)
+ // Fix: Add Cookie to request (if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -166,16 +166,16 @@ async fn send_http3_request_async(
  host,
  path,
  true, // HTTPS is securityconnection
- );
+);
  }
 
  // Add headers
- // Note: do notmanualAdd host header，h3 willautomatic from URI Extract
+ // Note: do notmanualAdd host header，h3 will automatic from URI Extract
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
- // skip host header ( if userpassed in)
- if key.to_lowercase() != "host" {
+ // skip host header (if userpassed in)
+ if key.to_lowercase()!= "host" {
  http_request = http_request.header(key, value);
  }
  }
@@ -183,17 +183,17 @@ async fn send_http3_request_async(
  // Fix: Buildrequest (h3 need Request<()>，thenthrough stream send body)
  let http_request = http_request
 .body(())
-.map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
+.map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequest failure: {}", e)))?;
 
  // 7. sendrequest
  let mut stream = send_request
 .send_request(http_request)
 .await
-.map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequest failure: {}", e)))?;
 
- // Fix: through stream sendrequest体 ( if exists)
+ // Fix: through stream sendrequest body (if exists)
  if let Some(body) = &request.body {
- if !body.is_empty() {
+ if!body.is_empty() {
  stream
 .send_data(bytes::Bytes::from(body.clone()))
 .await
@@ -204,19 +204,19 @@ async fn send_http3_request_async(
  stream
 .finish()
 .await
-.map_err(|e| HttpClientError::ConnectionFailed(format!("endrequestfailure: {}", e)))?;
+.map_err(|e| HttpClientError::ConnectionFailed(format!("endrequest failure: {}", e)))?;
 
  // 8. receiveresponse
  let response = stream
 .recv_response()
 .await
-.map_err(|e| HttpClientError::InvalidResponse(format!("receiveresponsefailure: {}", e)))?;
+.map_err(|e| HttpClientError::InvalidResponse(format!("receiveresponse failure: {}", e)))?;
 
  let status_code = response.status().as_u16();
  let headers = response.headers().clone();
 
  // securityFix: Check HTTP/3 responseheadersize，prevent QPACK compressionbombattack
- // h3 crate 0.0.4 defaultlimitusuallylarger，weAdd额outsideCheck
+ // h3 crate 0.0.4 defaultlimitusu all y larger ，weAdd额outsideCheck
  const MAX_HTTP3_HEADER_SIZE: usize = 64 * 1024; // 64KB (RFC 9114 suggestminimumvalue)
  let total_header_size: usize = headers
 .iter()
@@ -226,7 +226,7 @@ async fn send_http3_request_async(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/3 responseheadertoo large (>{} bytes)",
  MAX_HTTP3_HEADER_SIZE
- )));
+)));
  }
 
  // receive body
@@ -249,7 +249,7 @@ async fn send_http3_request_async(
  return Err(HttpClientError::InvalidResponse(format!(
  "HTTP/3 responsebody too large (>{} bytes)",
  MAX_HTTP3_BODY_SIZE
- )));
+)));
  }
 
  let mut chunk_bytes = vec![0u8; chunk_len];
@@ -288,22 +288,22 @@ pub fn send_http3_request(
  _config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
  Err(HttpClientError::InvalidResponse(
- "HTTP/3 supportnotenabled，请use --features http3 compile".to_string(),
- ))
+ "HTTP/3 supportnotenabled， please use --features http3 compile".to_string(),
+))
 }
 
-#[cfg(all(test, feature = "http3"))]
+#[cfg(all (test, feature = "http3"))]
 mod tests {
- #[allow(unused_imports)]
+ #[ all ow (unused_imports)]
  use super::*;
 
  #[test]
- #[ignore]
+ #[ ignore ]
  fn test_http3_request() {
  let request = HttpRequest::new(
  crate::http_client::request::HttpMethod::Get,
  "https://quic.aiortc.org:443/",
- );
+);
 
  let config = HttpClientConfig::default();
 

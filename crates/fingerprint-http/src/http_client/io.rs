@@ -1,19 +1,19 @@
-//! IO auxiliary：read HTTP/1.x response bytes
+//! IO assist ：read HTTP/1.x response bytes
 //!
-//! destination：avoidonly靠 `read_to_end()` (dependconnectionclose)causeblocking/waitissue。
-//! currentimplementwill：
-//! - 先读 to `\r\n\r\n` Getresponseheader
-//! - 若有 `Content-Length`：read to complete body backreturn
-//! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (无 trailer commonscenario)backreturn
-//! - otherwise：读 to EOF ( etc.价于connectionclose)
+//! destination： avoid only靠 `read_to_end()` (dependconnectionclose)causeblocking/waitissue。
+//! currentimplement will ：
+//! - first 读 to `\r\n\r\n` Getresponseheader
+//! - 若 have `Content-Length`：read to complete body backreturn
+//! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (no trailer commonscenario)backreturn
+//! - otherwise：读 to EOF (etc.价于connectionclose)
 //!
-//! 同 when providemaximumresponsesizeprotect，preventinside存被打爆。
+//! 同 when providemaximumresponsesizeprotect，preventinside存 by 打爆。
 
 use std::io;
 use std::io::Read;
 
 pub const DEFAULT_MAX_RESPONSE_BYTES: usize = 16 * 1024 * 1024; // 16MiB
-/// maximumallow Content-Length value (100MB)
+/// maximum all ow Content-Length value (100MB)
 /// preventmaliciousserversendoversized Content-Length causeinsidememory exhausted
 pub const MAX_CONTENT_LENGTH: usize = 100 * 1024 * 1024; // 100MB
 
@@ -21,7 +21,7 @@ fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
  if needle.is_empty() {
  return Some(0);
  }
- haystack.windows(needle.len()).position(|w| w == needle)
+ haystack. window s(needle.len()).position(|w| w == needle)
 }
 
 fn parse_headers_for_length_and_chunked(header_bytes: &[u8]) -> (Option<usize>, bool) {
@@ -35,11 +35,11 @@ fn parse_headers_for_length_and_chunked(header_bytes: &[u8]) -> (Option<usize>, 
  None => continue,
  };
 
- if k.eq_ignore_ascii_case("content-length") {
+ if k.eq_ ignore _ascii_case("content-length") {
  if let Ok(n) = v.parse::<usize>() {
  content_length = Some(n);
  }
- } else if k.eq_ignore_ascii_case("transfer-encoding")
+ } else if k.eq_ ignore _ascii_case("transfer-encoding")
  && v.to_ascii_lowercase().contains("chunked")
  {
  is_chunked = true;
@@ -49,7 +49,7 @@ fn parse_headers_for_length_and_chunked(header_bytes: &[u8]) -> (Option<usize>, 
  (content_length, is_chunked)
 }
 
-/// read HTTP/1.x response原beginning bytes (headers + body)
+/// read HTTP/1.x response original beginning bytes (headers + body)
 pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> io::Result<Vec<u8>> {
  let mut buf: Vec<u8> = Vec::new();
  let mut tmp = [0u8; 8192];
@@ -69,17 +69,17 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
  return Err(io::Error::other(format!(
  "responsetoo large (>{} bytes)",
  max_bytes
- )));
+)));
  }
 
  let n = reader.read(&mut tmp)?;
  if n == 0 {
- // EOF：connectionclose ( or bottomlayer没morecountdata)
+ // EOF：connectionclose (or bottomlayer没morecountdata)
  break;
  }
  buf.extend_from_slice(&tmp[..n]);
 
- // Parse headers
+ // parsed headers
  if headers_end.is_none() {
  if let Some(pos) = find_subsequence(&buf, b"\r\n\r\n") {
  let end = pos + 4;
@@ -92,20 +92,20 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
  return Err(io::Error::other(format!(
  "Content-Length too large: {} bytes (maximum: {} bytes)",
  cl, MAX_CONTENT_LENGTH
- )));
+)));
  }
  target_len = Some(end.saturating_add(cl));
  }
  }
  }
 
- // chunked：common无 trailer endmarker
+ // chunked：common no trailer endmarker
  if is_chunked {
  if let Some(end) = headers_end {
  let body = &buf[end..];
  if find_subsequence(body, b"0\r\n\r\n").is_some() {
- // here不try精determinebitendbit置 (trailer situation较complex)，
- // as long as读 to endflagcanreturn，交给back续Parseprocess。
+ // here not try 精determinebitendbit置 (trailer situation较complex)，
+ // as long as读 to endflagcanreturn，交给back续 parsed process。
  break;
  }
  }

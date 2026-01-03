@@ -1,6 +1,6 @@
-//! p0f signaturedatabaseParse
+//! p0f signaturedatabase parsed 
 //!
-//! Parse p0f.fp formatsignaturedatabasefile。
+//! parsed p0f.fp formatsignaturedatabasefile。
 
 use crate::passive::p0f_parser;
 use crate::passive::tcp::TcpSignature;
@@ -40,7 +40,7 @@ impl P0fDatabase {
  Self::parse(&content)
  }
 
- /// Parse p0f databaseinside容
+ /// parsed p0f databaseinside容
  pub fn parse(content: &str) -> Result<Self, P0fError> {
  let mut db = Self {
  tcp_request: HashMap::new(),
@@ -55,7 +55,7 @@ impl P0fDatabase {
  for line in content.lines() {
  let line = line.trim();
 
- // skipempty行 and comment
+ // skipempty row and comment
  if line.is_empty() || line.starts_with('#') {
  continue;
  }
@@ -67,17 +67,17 @@ impl P0fDatabase {
  continue;
  }
 
- // Parse label
+ // parsed label
  if let Some(stripped) = line.strip_prefix("label = ") {
  current_label = Some(stripped.trim().to_string());
  continue;
  }
 
- // Parse sig
+ // parsed sig
  if let Some(stripped) = line.strip_prefix("sig = ") {
  let sig_value = stripped.trim().to_string();
 
- // If有 label and sig, tryParse
+ // If have label and sig, try parsed 
  if let Some(label) = &current_label {
  if let Some(section) = current_section {
  match section {
@@ -114,19 +114,19 @@ impl P0fDatabase {
  Ok(db)
  }
 
- /// Parse TCP signature (usedetailedParseer)
+ /// parsed TCP signature (usedetailed parsed er)
  fn parse_tcp_signature(label: &str, sig: &str) -> Result<TcpSignature, P0fError> {
- // usedetailedParseer
+ // usedetailed parsed er
  let p0f_sig = p0f_parser::parse_tcp_signature(label, sig)
-.map_err(|e| P0fError::Parse(e.to_string()))?;
+.map_err(|e| P0fError:: parsed (e.to_string()))?;
 
  // convert to TcpSignature
  Ok(p0f_sig.into())
  }
 
- /// Parse HTTP signature
+ /// parsed HTTP signature
  fn parse_http_signature(label: &str, _sig: &str) -> Result<P0fHttpSignature, P0fError> {
- // simplifyParse
+ // simplify parsed 
  Ok(P0fHttpSignature {
  id: format!("http-{}", label.replace(':', "-")),
  label: label.to_string(),
@@ -140,23 +140,23 @@ impl P0fDatabase {
  self.tcp_request.get(id)
  }
 
- /// Getall TCP requestsignature
- pub fn get_all_tcp_request(&self) -> Vec<&TcpSignature> {
+ /// Get all TCP requestsignature
+ pub fn get_ all _tcp_request(&self) -> Vec<&TcpSignature> {
  self.tcp_request.values().collect()
  }
 
- /// Getall TCP responsesignature
- pub fn get_all_tcp_response(&self) -> Vec<&TcpSignature> {
+ /// Get all TCP responsesignature
+ pub fn get_ all _tcp_response(&self) -> Vec<&TcpSignature> {
  self.tcp_response.values().collect()
  }
 
- /// Getall HTTP requestsignature
- pub fn get_all_http_request(&self) -> Vec<&P0fHttpSignature> {
+ /// Get all HTTP requestsignature
+ pub fn get_ all _http_request(&self) -> Vec<&P0fHttpSignature> {
  self.http_request.values().collect()
  }
 
- /// Getall HTTP responsesignature
- pub fn get_all_http_response(&self) -> Vec<&P0fHttpSignature> {
+ /// Get all HTTP responsesignature
+ pub fn get_ all _http_response(&self) -> Vec<&P0fHttpSignature> {
  self.http_response.values().collect()
  }
 
@@ -189,8 +189,8 @@ pub enum P0fError {
  #[error("invalidformat")]
  InvalidFormat,
 
- #[error("Parseerror: {0}")]
- Parse(String),
+ #[error(" parsed error: {0}")]
+ parsed (String),
 }
 
 #[cfg(test)]
@@ -198,9 +198,9 @@ mod tests {
  use super::*;
 
  #[test]
- fn test_print_all_p0f_data() {
+ fn test_print_ all _p0f_data() {
  println!("\n╔════════════════════════════════════════════════════════════════╗");
- println!("║ print p0f allcountdata ║");
+ println!("║ print p0f all countdata ║");
  println!("╚════════════════════════════════════════════════════════════════╝\n");
 
  // try from commonbit置load p0f database
@@ -224,7 +224,7 @@ mod tests {
  break;
  }
  Err(e) => {
- println!("❌ loadfailure: {}\n", e);
+ println!("❌ load failure: {}\n", e);
  }
  }
  }
@@ -232,11 +232,11 @@ mod tests {
 
  if db.is_none() {
  println!("⚠️ not找 to p0f databasefile");
- println!(" 请ensure p0f.fp file exists于belowbit置之一：");
+ println!(" please ensure p0f.fp file exists于belowbit置之一：");
  for path in &p0f_paths {
  println!(" - {}", path);
  }
- println!("\n or 者CreateanExamplesdatabaseperformtest");
+ println!("\n or 者CreateanExamplesdatabase perform test");
 
  // CreateanExamplesdatabase for demo
  println!("\n【CreateExamplesdatabase for demo】\n");
@@ -256,7 +256,7 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
  println!("✅ Usage Exampledatabase\n");
  }
  Err(e) => {
- println!("❌ ParseExamplesdatabasefailure: {}\n", e);
+ println!("❌ parsed Examplesdatabase failure: {}\n", e);
  return;
  }
  }
@@ -275,54 +275,54 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
  println!(" HTTP responsesignature: {} ", stats.http_response_count);
  println!();
 
- // printall TCP requestsignature
+ // print all TCP requestsignature
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
  println!("【TCP requestsignature】");
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
- let tcp_requests = db.get_all_tcp_request();
+ let tcp_requests = db.get_ all _tcp_request();
  println!("total: {} signature\n", tcp_requests.len());
 
  for (i, sig) in tcp_requests.iter().enumerate() {
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
  println!("signature #{}: {}", i + 1, sig.id);
- println!(" operating system: {:?}", sig.os_type);
+ println!(" operating system : {:?}", sig.os_type);
  println!(" TTL: {}", sig.ttl);
- println!(" windowsize: {}", sig.window_size);
+ println!(" window size: {}", sig. window _size);
  println!(" MSS: {:?}", sig.mss);
- println!(" Window Scale: {:?}", sig.window_scale);
+ println!(" Window Scale: {:?}", sig. window _scale);
  println!(" confidence: {:.2}", sig.confidence);
  println!(" samplecount: {}", sig.sample_count);
  println!();
  }
 
- // printall TCP responsesignature
+ // print all TCP responsesignature
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
  println!("【TCP responsesignature】");
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
- let tcp_responses = db.get_all_tcp_response();
+ let tcp_responses = db.get_ all _tcp_response();
  println!("total: {} signature\n", tcp_responses.len());
 
  for (i, sig) in tcp_responses.iter().enumerate() {
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
  println!("signature #{}: {}", i + 1, sig.id);
- println!(" operating system: {:?}", sig.os_type);
+ println!(" operating system : {:?}", sig.os_type);
  println!(" TTL: {}", sig.ttl);
- println!(" windowsize: {}", sig.window_size);
+ println!(" window size: {}", sig. window _size);
  println!(" MSS: {:?}", sig.mss);
- println!(" Window Scale: {:?}", sig.window_scale);
+ println!(" Window Scale: {:?}", sig. window _scale);
  println!(" confidence: {:.2}", sig.confidence);
  println!(" samplecount: {}", sig.sample_count);
  println!();
  }
 
- // printall HTTP requestsignature
+ // print all HTTP requestsignature
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
  println!("【HTTP requestsignature】");
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
- let http_requests = db.get_all_http_request();
+ let http_requests = db.get_ all _http_request();
  println!("total: {} signature\n", http_requests.len());
 
  for (i, sig) in http_requests.iter().enumerate() {
@@ -334,12 +334,12 @@ sig = *:64:0:*:mss*20,10:mss,sok,ts,nop,ws:df,id+:0
  println!();
  }
 
- // printall HTTP responsesignature
+ // print all HTTP responsesignature
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
  println!("【HTTP responsesignature】");
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
- let http_responses = db.get_all_http_response();
+ let http_responses = db.get_ all _http_response();
  println!("total: {} signature\n", http_responses.len());
 
  for (i, sig) in http_responses.iter().enumerate() {
