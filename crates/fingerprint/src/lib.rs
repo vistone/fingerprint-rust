@@ -1,6 +1,6 @@
 //! # fingerprint
 //!
-//! anindependentbrowser TLS fingerprint库， from golang versionmigrate而来。
+//! anindependentbrowser TLS fingerprintlibrary， from golang versionmigrate而来。
 //!
 //! ## Features
 //!
@@ -17,7 +17,7 @@
 //! - ✅ **operating systemrandom化**：randomly selectoperating system
 //! - ✅ **highperformance**：零allocateclosekeyoperation，concurrentsecurity
 //! - ✅ **Rust standard**：strictfollow Rust languagestandard and best practice
-//! - ✅ **independent库**：不dependother TLS client库
+//! - ✅ **independentlibrary**：不dependother TLS clientlibrary
 //! - ✅ **code质量**：throughall Clippy Check，follow Rust best practice
 
 #[cfg(feature = "export")]

@@ -4,7 +4,7 @@
 //! - HTTP/2 adoptsessionpool (H2SessionPool)implementtrue multiplexreuse
 //! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
-//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
+//! - netconnpool role：only in Create新session when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
 //! - sessionestablishback，connectionlifecycle由 H2Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]

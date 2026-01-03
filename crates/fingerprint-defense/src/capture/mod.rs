@@ -53,7 +53,7 @@ impl CaptureEngine {
  loop {
  match rx.next() {
  Ok(packet) => {
- // securityCheck：limitmaximumcountpacketsize以prevent DoS attack (65535 bytes = maximum IP 包)
+ // securityCheck：limitmaximumcountpacketsize以prevent DoS attack (65535 bytes = maximum IP package)
  const MAX_PACKET_SIZE: usize = 65535;
  if packet.len() > MAX_PACKET_SIZE {
  eprintln!("[Capture] countpackettoo large，alreadyignore: {} bytes", packet.len());
@@ -119,7 +119,7 @@ impl CaptureEngine {
  }
  Err(e) => {
  eprintln!("[Capture] readcountpacketerror: {}", e);
- // continueprocessnext包
+ // continueprocessnextpackage
  }
  }
  }

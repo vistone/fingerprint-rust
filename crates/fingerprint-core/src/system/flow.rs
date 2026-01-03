@@ -26,7 +26,7 @@ pub struct FlowCharacteristics {
  /// averagecountpacketsize
  pub avg_packet_size: f64,
 
- /// countpacketrate (包/seconds)
+ /// countpacketrate (package/seconds)
  pub packet_rate: f64,
 
  /// bytesrate (bytes/seconds)

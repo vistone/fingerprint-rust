@@ -167,7 +167,7 @@ impl PacketParser {
  }
 
  // IPv6 headerfixed 40 bytes
- // version(4bit) + traffic类别(8bit) + streamtag(20bit) = front 4 bytes
+ // version(4bit) + trafficclass别(8bit) + streamtag(20bit) = front 4 bytes
  let version = (raw_packet[0] >> 4) & 0x0F;
  if version != 6 {
  return Err(PacketError::InvalidVersion);

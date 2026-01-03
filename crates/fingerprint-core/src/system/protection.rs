@@ -159,7 +159,7 @@ impl SystemProtectionResult {
 ///
 /// systemlevelprotection from **systemperspective**makeprotectiondecision：
 /// - not onlyonly is singleserviceprotection，而 is 整systemprotection
-/// - can实施systemlevelmeasure (blacklist、rate limit、防火墙rule etc.)
+/// - can实施systemlevelmeasure (blacklist、rate limit、firewallrule etc.)
 /// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example

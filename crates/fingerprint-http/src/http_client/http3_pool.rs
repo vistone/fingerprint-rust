@@ -69,7 +69,7 @@ pub async fn send_http3_request_with_pool(
  ));
  transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
- // 增大receivewindow以improve吞吐量
+ // 增大receivewindow以improvethroughput
  transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
  transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 

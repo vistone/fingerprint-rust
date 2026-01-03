@@ -120,7 +120,7 @@ pub fn send_https_request(
 /// useconnection poolsend HTTPS (HTTP/1.1 over TLS)request
 ///
 /// explain：
-/// - this is“connection pool + TLS”syncimplement (面向 `kh.google.com` 这类 https 站点)
+/// - this is“connection pool + TLS”syncimplement (面向 `kh.google.com` 这class https 站点)
 /// - 目front只 for 回归test and `HttpClient` https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(

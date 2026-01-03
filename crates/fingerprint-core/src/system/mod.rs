@@ -7,7 +7,7 @@
 //! from **singleserviceprotection**improve to **systemlevelprotection**：
 //! - from network interfacelevel拦截、analysis and protectionallnetworktraffic
 //! - not onlyonly is HTTP，stillinclude TCP、UDP、ICMP etc.allprotocol
-//! - systemleveldecision，can实施防火墙rule、trafficrate limit etc.systemlevelprotectionmeasure
+//! - systemleveldecision，can实施firewallrule、trafficrate limit etc.systemlevelprotectionmeasure
 //!
 //! ## modulestruct
 //!

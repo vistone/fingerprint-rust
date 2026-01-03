@@ -175,7 +175,7 @@ impl Service {
  });
 
  // in back台threadstartservicemainloop (non-blockingmainthread)
- // use Arc wrapfield，candirectly in close包 in use
+ // use Arc wrapfield，candirectly in closepackage in use
  let config = self.config.clone();
  let resolver = self.resolver.clone();
  let ipinfo_client = self.ipinfo_client.clone();
@@ -310,7 +310,7 @@ impl Service {
  }
 }
 
-/// auxiliaryfunction：Parse并savealldomain IP info (can in close包 in use)
+/// auxiliaryfunction：Parse并savealldomain IP info (can in closepackage in use)
 async fn resolve_and_save_all_internal(
  resolver: &Arc<RwLock<DNSResolver>>,
  ipinfo_client: &Arc<IPInfoClient>,

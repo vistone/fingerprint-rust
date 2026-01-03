@@ -165,7 +165,7 @@ impl ConnectionPoolManager {
  connection_leak_timeout: Duration::from_secs(300),
 
  // provide Dialer function来Create TCP connection
- // Note: hereunable todirectlyaccess config.profile，because dialer is close包
+ // Note: hereunable todirectlyaccess config.profile，because dialer is closepackage
  // TCP Profile should in Createconnection poolbefore就application to config in 
  dialer: Some(Box::new(move |_protocol| {
  use std::net::{IpAddr, SocketAddr, ToSocketAddrs};

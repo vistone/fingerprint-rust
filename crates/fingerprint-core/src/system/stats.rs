@@ -91,7 +91,7 @@ impl SystemProtectionStats {
  self.start_time.elapsed().as_secs()
  }
 
- /// Getcountpacketprocessrate (包/seconds)
+ /// Getcountpacketprocessrate (package/seconds)
  pub fn packets_per_second(&self) -> f64 {
  let uptime = self.uptime_seconds() as f64;
  if uptime > 0.0 {

@@ -365,8 +365,8 @@ impl SSHKexInit {
  ///
  /// Note: this isanSimplified implementation，complete SSH protocolParseneed更complexstatus机
  pub fn parse(data: &[u8]) -> Result<Self, String> {
- // SSH protocolformatcomplex，hereprovidebasic框架
- // actualapplication in 应use专门 SSH protocolParse库
+ // SSH protocolformatcomplex，hereprovidebasicframework
+ // actualapplication in 应use专门 SSH protocolParselibrary
  
  if data.len() < 16 {
  return Err("countpackettoo short".to_string());

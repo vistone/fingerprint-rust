@@ -169,7 +169,7 @@ impl ServerPool {
  })
 .collect();
 
- // initial步filter符合条件server
+ // initial步filter符合conditionserver
  let mut filtered: Vec<String> = scored_servers
 .iter()
 .filter(|(_, avg, fail)| *avg <= max_avg_response_time_ms && *fail <= max_failure_rate)
@@ -261,7 +261,7 @@ impl ServerPool {
  serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
  // securityFix: 原child性write，useunique temporaryfile名preventrace condition
- // use进程 ID ensuretemporaryfile名unique，avoid多进程同 when write when race condition
+ // useprocess ID ensuretemporaryfile名unique，avoid多process同 when write when race condition
  let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
  fs::write(&temp_path, json_content)
 .map_err(|e| crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e)))?;
@@ -392,7 +392,7 @@ impl ServerPool {
  let processed_count: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
  let total_count = servers_to_test.len();
 
- // clone for close包inside部 and outside部use
+ // clone for closepackageinside部 and outside部use
  let available_servers_for_closure = available_servers.clone();
  let available_servers_for_progress = available_servers.clone();
  let processed_count_for_progress = processed_count.clone();

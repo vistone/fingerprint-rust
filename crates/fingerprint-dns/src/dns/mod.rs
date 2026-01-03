@@ -1,4 +1,4 @@
-//! DNS preParse库
+//! DNS preParselibrary
 //!
 //! provide DNS Parseservice，regularParsedomainlist，并set成 IPInfo.io Get IP geographicinfo。
 //!
@@ -10,7 +10,7 @@
 //! - ✅ **intelligentintervaladjust**：discovernew IP when high频detect，otherwise指countbackoff
 //! - ✅ **多formatoutput**：support JSON、YAML、TOML threeoutputformat
 //! - ✅ **原child性write**：usetemporaryfileensurecountdatasecurity
-//! - ✅ **易于set成**：providesimple Start/Stop interface，supportas库use
+//! - ✅ **易于set成**：providesimple Start/Stop interface，supportaslibraryuse
 
 mod collector;
 mod config;
