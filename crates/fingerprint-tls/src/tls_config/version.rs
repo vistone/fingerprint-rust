@@ -6,7 +6,7 @@
 use std::fmt;
 
 /// TLS versionenum
-/// includetraditional SSL version以supportcomplete JA4 specificationcompatible性
+/// includetraditional SSL version以supportcomplete JA4 specificationcompatibleproperty
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TlsVersion {
  /// TLS 1.3
@@ -56,7 +56,7 @@ impl TlsVersion {
  matches!(self, TlsVersion::V1_3)
  }
 
- /// Checkwhether as TLS 1.2 or 更highversion
+ /// Checkwhether as TLS 1.2 or morehighversion
  pub fn is_tls12_or_higher(self) -> bool {
  matches!(self, TlsVersion::V1_2 | TlsVersion::V1_3)
  }

@@ -89,7 +89,7 @@ pub enum WindowMode {
  Fixed,
  /// pattern 1: 倍count
  Multiple,
- /// pattern 2: 模count
+ /// pattern 2: modecount
  Modulo,
  /// pattern 3: random
  Random,
@@ -104,7 +104,7 @@ pub enum WindowSizePattern {
  Value(u16),
  /// 倍countpattern：m*N
  Multiple(u16),
- /// 模countpattern：%N
+ /// modecountpattern：%N
  Modulo(u16),
 }
 
@@ -305,7 +305,7 @@ fn parse_window_size_pattern(pattern: &str) -> Result<WindowSizePattern, P0fPars
  return Ok(WindowSizePattern::Multiple(multiplier));
  }
 
- // Check模countpattern：%N
+ // Checkmodecountpattern：%N
  if let Some(stripped) = pattern.strip_prefix('%') {
  let modulo = stripped
 .parse()
@@ -342,7 +342,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
 
  // Parseoptionsorder
  // formatmay is: mss*20,10:mss,sok,ts,nop,ws
- // or 者: mss,1460:mss,sok,ts,nop,ws
+ // or one who: mss,1460:mss,sok,ts,nop,ws
  // secondpartial is optionsorder
  if parts.len() > 1 {
  // secondpartialincludingoptionsorder
@@ -366,10 +366,10 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  options_order.push(opt);
  }
  } else {
- // Ifnosecondpartial, mayoptionsorder就 in firstpartial ( in MSS patternafter)
+ // Ifnosecondpartial, mayoptionsorderthen in firstpartial ( in MSS patternafter)
  // format: mss*20,10 or mss,1460
- // thissituationdown，optionsordermay不 exists， or 者need from other地方Extract
- // 暂 when 不processthissituation
+ // thissituationdown，optionsordermay不 exists， or one whoneed from other地方Extract
+ // temporary when 不processthissituation
  }
 
  Ok((mss_pattern, options_order))
@@ -394,10 +394,10 @@ fn parse_mss_pattern(mss_str: &str) -> Result<MssPattern, P0fParseError> {
  }
 
  // fixedvaluepattern: mss,1460
- // findfirst逗号backcount字
+ // findfirst逗numberbackcount字
  if let Some(pos) = mss_str.find(',') {
  let value_str = &mss_str[pos + 1..];
- // maystill有more逗号，只取firstcount字partial
+ // maystill有more逗number，onlygetfirstcount字partial
  let value_part = value_str.split(',').next().unwrap_or(value_str);
  if let Ok(value) = value_part.parse::<u16>() {
  return Ok(MssPattern::Fixed(value));

@@ -79,7 +79,7 @@ fn main() {
  }
  }
 
- // 2. simulatean伪造fingerprint机er人 (UA as Windows, but TCP trait as Linux)
+ // 2. simulateanforgedfingerprint机er人 (UA as Windows, but TCP trait as Linux)
  println!("\n2️⃣ simulatefingerprint错bitattack (User-Agent: Windows, TCP: Linux):");
  let packet_bot = Packet {
  timestamp: 0,

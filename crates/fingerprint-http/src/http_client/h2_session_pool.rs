@@ -42,7 +42,7 @@ struct H2Session {
  _background_task: tokio::task::JoinHandle<()>,
  /// finallywhen used between
  last_used: Arc<Mutex<Instant>>,
- /// connectionwhethervalid (由backbackground taskUpdate)
+ /// connectionwhethervalid (bybackbackground taskUpdate)
  is_valid: Arc<Mutex<bool>>,
 }
 
@@ -123,8 +123,8 @@ impl H2SessionPool {
  // marker as 正 in Create
  let (_tx, rx) = watch::channel(false);
  pending.insert(key.to_string(), rx.clone());
- // herewe稍微violate一downprinciple，in order tologic清晰directly in herereturn None representweneedpersonallyCreate
- // butwewillpreserve tx in back续use
+ // herewe稍microviolate一downprinciple，in order tologic清晰directly in herereturn None representweneedpersonallyCreate
+ // butwewillpreserve tx in backcontinueuse
  None
  }
  };
@@ -153,7 +153,7 @@ impl H2SessionPool {
 
  // startbackbackground taskmanageconnectionlifecycle
  let background_task = tokio::spawn(async move {
- // run h2_conn 直 to connectionclose
+ // run h2_conn direct to connectionclose
  if let Err(e) = h2_conn.await {
  eprintln!("warning: HTTP/2 connectionerror ({}): {:?}", key_clone, e);
  }

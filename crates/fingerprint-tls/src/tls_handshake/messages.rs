@@ -40,16 +40,16 @@ impl ClientHelloMessage {
  /// # Errors
  ///
  /// Ifunable toGetencryptionsecurityrandomcount ( in no `crypto` feature when ), willreturnerror。
- /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurity性。
+ /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurityproperty。
  pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
- // use TLS 1.2 asclientversion (in order tocompatible性)
+ // use TLS 1.2 asclientversion (in order tocompatibleproperty)
  let client_version = spec.tls_vers_max.max(0x0303);
 
  // Generaterandomcount (32 bytes)
  let mut random = Vec::with_capacity(32);
 
  // front 4 bytes: Unix when between戳
- // usecurrent when between， if Getfailure则use 0 (虽然不太mayfailure)
+ // usecurrent when between， if Getfailurethenuse 0 (虽natural不toomayfailure)
  // fix 2038 year overflowissue：explicittruncatehighbit，ensure u32 rangeinside
  let timestamp = std::time::SystemTime::now()
 .duration_since(std::time::UNIX_EPOCH)

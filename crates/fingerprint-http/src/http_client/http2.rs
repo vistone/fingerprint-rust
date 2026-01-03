@@ -305,7 +305,7 @@ mod tests {
 
  match send_http2_request("www.google.com", 443, "/", &request, &config) {
  Ok(response) => {
- // Google maywillredirect or 者return 200
+ // Google maywillredirect or one whoreturn 200
  println!("Status: {}", response.status_code);
  println!("Version: {}", response.http_version);
  }

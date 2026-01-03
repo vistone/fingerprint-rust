@@ -2,17 +2,17 @@
 //!
 //! **systemlevelprotectionimplementlayer**，based on `fingerprint-core` systemlevelabstractBuild。
 //!
-//! ## core定bit
+//! ## corefixedbit
 //!
 //! `fingerprint-defense` is `fingerprint-core` systemlevelprotectioninterfaceconcreteimplement。
 //!
-//! ## 目frontalreadyimplementFeatures
+//! ## itemfrontalreadyimplementFeatures
 //!
 //! - ✅ **passivefingerprintidentify** (`passive`): TCP/IP (p0f), HTTP, TLS passiveidentify
-//! - ✅ **crosslayerconsistency审计** (`consistency`): JA4+ consistencyvalidate
+//! - ✅ **crosslayerconsistency审calculate** (`consistency`): JA4+ consistencyvalidate
 //! - ✅ **fingerprintdatabase** (`database`): SQLite store and analysisfingerprinttrait
 //! - ✅ **learnmechanism** (`learner`): automaticdiscover and recordnot知fingerprint
-//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implement实 when network interface and pcap filecapture (nonesystemdepend)
+//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implementactual when network interface and pcap filecapture (nonesystemdepend)
 //!
 //! ## planinFeatures
 //!

@@ -1,6 +1,6 @@
 //! DNS Service module
 //!
-//! provide DNS Parseservice Start/Stop interface
+//! provide DNS Parse service Start/Stop interface
 
 use crate::dns::collector::ServerCollector;
 use crate::dns::config::load_config;
@@ -30,13 +30,13 @@ impl Service {
  pub fn new(config: DNSConfig) -> Result<Self, DNSError> {
  config.validate()?;
 
- // Parsetimeout duration
+ // Parse timeout duration
  let dns_timeout = parse_duration(&config.dns_timeout).unwrap_or(Duration::from_secs(4));
 
  // HTTP timeout duration
  let http_timeout = parse_duration(&config.http_timeout).unwrap_or(Duration::from_secs(20));
 
- // usedefault DNS serverCreate resolver (will in start when replace as collect to server)
+ // use default DNS server Create resolver (will in start when replace as collected server)
  let resolver = Arc::new(RwLock::new(DNSResolver::new(dns_timeout)));
  let ipinfo_client = Arc::new(IPInfoClient::new(config.ipinfo_token.clone(), http_timeout));
 
@@ -56,7 +56,7 @@ impl Service {
  ) -> Result<Self, DNSError> {
  config.validate()?;
 
- // Parsetimeout duration
+ // Parse timeout duration
  let dns_timeout = parse_duration(&config.dns_timeout).unwrap_or(Duration::from_secs(4));
 
  // HTTP timeout duration
@@ -85,7 +85,7 @@ impl Service {
  }
 
  /// startservice ( in back台threadrun，non-blockingmainthread)
- /// automaticmaintain DNS serverpool (dnsservernames.json)，no needmanual干pre
+ /// automaticmaintain DNS serverpool (dnsservernames.json)，no needmanualinterferepre
  pub async fn start(&self) -> Result<(), DNSError> {
  // Checkwhetheralready in run
  {
@@ -96,7 +96,7 @@ impl Service {
  *running = true;
  }
 
- // load/collect DNS serverpool (pair应 Go NewServerPool)
+ // load/collect DNS serverpool (pairshould Go NewServerPool)
  // priority from localfileload， if 不 exists or as empty，才 from networkcollect
  // collect_all alreadyprocess了：
  // - if file exists and is notempty：directlyuse，不performCheck
@@ -104,11 +104,11 @@ impl Service {
  let mut server_pool = ServerCollector::collect_all(Some(Duration::from_secs(30))).await;
  eprintln!("currentserverpool有 {} DNS server", server_pool.len());
 
- // Ifserverpool as empty, usedefaultserver
+ // Ifserverpool as empty, use defaultserver
  if server_pool.is_empty() {
- eprintln!("Warning: noavailable DNS server，usedefaultserver");
+ eprintln!("Warning: noavailable DNS server，use defaultserver");
  server_pool = ServerPool::default();
- eprintln!("usedefault DNS server: {} ", server_pool.len());
+ eprintln!("use default DNS server: {} ", server_pool.len());
  }
 
  // usethroughhealthCheckserverpoolUpdate resolver
@@ -144,7 +144,7 @@ impl Service {
  loop {
  tokio::time::sleep(cleanup_interval).await;
 
- // slow eliminationserver (pair应 Go item RemoveSlowServers)
+ // slow eliminationserver (pairshould Go item RemoveSlowServers)
  let old_count = server_pool_for_cleanup.len();
  let min_active_servers = 5; // productionenvironmentdownsuggestat leastpreserve 5serveras保bottom
  let optimized_pool = server_pool_for_cleanup.remove_slow_servers(
@@ -161,7 +161,7 @@ impl Service {
  removed_count, new_count
  );
 
- // Update resolver serverpool (pair应 Go itemdestinationUpdateserverpool)
+ // Update resolver serverpool (pairshould Go itemdestinationUpdateserverpool)
  let new_resolver = DNSResolver::with_server_pool(
  dns_timeout_for_cleanup,
  Arc::new(optimized_pool),
@@ -196,7 +196,7 @@ impl Service {
 
  // Createtemporary Service instance for call resolve_and_save_all
  // Note: resolve_and_save_all need &self，soweneedCreateanauxiliaryfunction
- // or 者directly in hereimplementParselogic
+ // or one whodirectly in hereimplementParselogic
 
  // dynamicintervaladjust
  let mut current_interval = base_interval;
@@ -220,7 +220,7 @@ impl Service {
  resolve_duration.as_secs_f64()
  );
 
- // intelligentintervaladjust：discovernew IP when high频detect，otherwise指countbackoff
+ // intelligentintervaladjust：discovernew IP when highfrequencydetect，otherwisepointcountbackoff
  if has_new_ips {
  current_interval = base_interval;
  last_has_new_ips = true;
@@ -230,11 +230,11 @@ impl Service {
  );
  } else {
  if last_has_new_ips {
- // before有new IP，现 in no了，逐步increaseinterval
+ // before有new IP，current in no了，逐stepincreaseinterval
  current_interval = base_interval;
  last_has_new_ips = false;
  } else {
- // 指countbackoff，but不exceed 10 倍basicinterval
+ // pointcountbackoff，but不exceed 10 倍basicinterval
  current_interval = (current_interval * 2).min(base_interval * 10);
  }
  eprintln!(
@@ -299,11 +299,11 @@ impl Service {
  /// settingsbasicexecuteinterval
  pub fn set_interval(&self, _interval: Duration) {
  // Note: dynamicadjustpatterndown，actualintervalwillBased onwhetherdiscovernewIP而change
- // thisfunctionmain for staticpattern，目front暂不support
+ // thisfunctionmain for staticpattern，itemfronttemporary不support
  }
 
  /// Parse并savealldomain IP info
- /// Note: 此method目frontnotdirectlyuse，actualuse的 is resolve_and_save_all_internal
+ /// Note: 此methoditemfrontnotdirectlyuse，actualuse的 is resolve_and_save_all_internal
  #[allow(dead_code)]
  async fn resolve_and_save_all(&self) -> Result<bool, DNSError> {
  resolve_and_save_all_internal(&self.resolver, &self.ipinfo_client, &self.config).await
@@ -356,11 +356,11 @@ async fn resolve_and_save_all_internal(
 .map(|e| e.ipv6.iter().map(|ip| ip.ip.clone()).collect())
 .unwrap_or_default();
 
- // 找出newdiscover IP (只querythese)
+ // 找出newdiscover IP (onlyquerythese)
  let new_ipv4: Vec<String> = all_ipv4.difference(&existing_ipv4).cloned().collect();
  let new_ipv6: Vec<String> = all_ipv6.difference(&existing_ipv6).cloned().collect();
 
- // Build最final domain_ips，先copyalready existscountdata
+ // Buildmostfinal domain_ips，先copyalready existscountdata
  let mut domain_ips = DomainIPs::new();
 
  // copyalready exists IPv4 info
@@ -381,7 +381,7 @@ async fn resolve_and_save_all_internal(
  }
  }
 
- // 只querynewdiscover IPv4 detailedinfo
+ // onlyquerynewdiscover IPv4 detailedinfo
  if !new_ipv4.is_empty() {
  eprintln!(
  "[DNS Service] discover {} new IPv4 address，正 in Getdetailedinfo...",
@@ -394,20 +394,20 @@ async fn resolve_and_save_all_internal(
  for (ip, ip_result) in ipv4_results {
  match ip_result {
  Ok(mut ip_info) => {
- // preserve原beginning IP (because IPInfo mayreturndifferentformat)
+ // preserveoriginalbeginning IP (because IPInfo mayreturndifferentformat)
  ip_info.ip = ip.clone();
  domain_ips.ipv4.push(ip_info);
  }
  Err(e) => {
  eprintln!("[DNS Service] Failed to get IP info for {}: {}", ip, e);
- // 即使failure，alsosavebasic IP info
+ // that is使failure，alsosavebasic IP info
  domain_ips.ipv4.push(IPInfo::new(ip));
  }
  }
  }
  }
 
- // 只querynewdiscover IPv6 detailedinfo
+ // onlyquerynewdiscover IPv6 detailedinfo
  if !new_ipv6.is_empty() {
  eprintln!(
  "[DNS Service] discover {} new IPv6 address，正 in Getdetailedinfo...",
@@ -436,7 +436,7 @@ async fn resolve_and_save_all_internal(
  has_new_ips = true;
  }
 
- // saveresult
+ // save result
  save_domain_ips(&domain, &domain_ips, &config.domain_ips_dir)?;
  }
  Err(e) => {

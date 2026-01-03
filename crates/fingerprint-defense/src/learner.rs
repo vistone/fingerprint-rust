@@ -15,7 +15,7 @@ pub struct SelfLearningAnalyzer {
  db: Arc<FingerprintDatabase>,
  /// not知fingerprintobservecounter (fp_id -> count)
  observations: DashMap<String, u64>,
- /// learning thresholdvalue (observe多少次back转入database)
+ /// learning thresholdvalue (observemultiple少timebackturn入database)
  learning_threshold: u64,
 }
 
@@ -33,7 +33,7 @@ impl SelfLearningAnalyzer {
  pub fn process_result(&self, result: &PassiveAnalysisResult) {
  // respectivelyprocesseachlayerlevelfingerprint
  if let Some(tls) = &result.tls {
- // TLS 目frontdirectlyobserve ID (JA4)
+ // TLS itemfrontdirectlyobserve ID (JA4)
  self.observe(tls.id(), "tls");
  }
 
@@ -58,10 +58,10 @@ impl SelfLearningAnalyzer {
 
  let key = format!("{}:{}", fp_type, fp_id);
 
- // protection点：limitobservelistsize，preventinside存撑爆 (DoS protection)
+ // protectionpoint：limitobservelistsize，preventinsidesave撑爆 (DoS protection)
  const MAX_OBSERVATIONS: usize = 10000;
  if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
- // If达 to up限 and  is new key, 则ignore
+ // Ifreach to uplimit and  is new key, thenignore
  return;
  }
 
@@ -69,8 +69,8 @@ impl SelfLearningAnalyzer {
  *count += 1;
 
  if *count >= self.learning_threshold {
- // 达 to 阈value，can in database in establishinitial步entry
- // TODO: Extracttrait并store as 待核准signature
+ // reach to thresholdvalue，can in database in establishinitialstepentry
+ // TODO: Extracttrait并store as pendingcore准signature
  println!("[Learner] Detected stable unknown fingerprint: {}", key);
  }
  }

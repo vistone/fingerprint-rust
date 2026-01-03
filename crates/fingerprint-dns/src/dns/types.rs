@@ -21,7 +21,7 @@ pub struct IPInfo {
  /// 国家code (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub country: Option<String>,
- /// geographic坐标 (optional)
+ /// geographic坐mark (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub loc: Option<String>,
  /// group织/ISP (optional)
@@ -188,7 +188,7 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
- /// Create a new DNS configuration (便利method，candirectlyusestring字面量)
+ /// Create a new DNS configuration (conveniencemethod，candirectlyusestring字面quantity)
  ///
  /// # Examples
  /// ```

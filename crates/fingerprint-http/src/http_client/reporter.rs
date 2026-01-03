@@ -153,7 +153,7 @@ impl ReportSection {
  }
  }
 
- /// Addinside容行
+ /// Addinside容execute
  pub fn add_line(&mut self, line: String) {
  self.content.push(line);
  }
@@ -251,7 +251,7 @@ mod tests {
 
  let md = report.to_markdown();
  assert!(md.contains("# Test Report"));
- // Checksuccess率field exists (不强制requirepreciseformat)
+ // Checksuccess率field exists (not mandatoryrequirepreciseformat)
  assert!(md.contains("success率") || md.contains("Success"));
  assert!(md.contains("90."));
  }

@@ -93,7 +93,7 @@ pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
  OperatingSystem::LinuxDebian,
 ];
 
-/// in order tokeep and Go versioncompatible性，providealias
+/// in order tokeep and Go versioncompatibleproperty，providealias
 pub type OperatingSystems = [OperatingSystem; 8];
 
 /// User-Agent templates

@@ -17,7 +17,7 @@ use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 pub struct FingerprintResult {
  /// TLS fingerprintconfiguration
  pub profile: ClientProfile,
- /// pair应 User-Agent
+ /// pairshould User-Agent
  pub user_agent: String,
  /// Client Hello ID ( and tls-client keepconsistent)
  pub hello_client_id: String,
@@ -39,14 +39,14 @@ impl std::fmt::Display for BrowserNotFoundError {
 
 impl std::error::Error for BrowserNotFoundError {}
 
-/// randomGetanfingerprint and pair应 User-Agent
+/// randomGetanfingerprint and pairshould User-Agent
 /// operating systemwill randomly select
 pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
  get_random_fingerprint_with_os(None)
 }
 
-/// randomGetanfingerprint and pair应 User-Agent，并specifiedoperating system
-/// If os as None, 则randomly selectoperating system
+/// randomGetanfingerprint and pairshould User-Agent，并specifiedoperating system
+/// If os as None, thenrandomly selectoperating system
 pub fn get_random_fingerprint_with_os(
  os: Option<OperatingSystem>,
 ) -> Result<FingerprintResult, String> {
@@ -75,7 +75,7 @@ pub fn get_random_fingerprint_with_os(
  ));
  }
 
- // Getpair应 User-Agent
+ // Getpairshould User-Agent
  let ua = match os {
  Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
  None => get_user_agent_by_profile_name(&random_name)?,
@@ -154,7 +154,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
  return Err(format!("profile {} is invalid (empty ClientHelloStr)", random_name).into());
  }
 
- // Getpair应 User-Agent
+ // Getpairshould User-Agent
  let ua = match os {
  Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
  None => get_user_agent_by_profile_name(&random_name)?,

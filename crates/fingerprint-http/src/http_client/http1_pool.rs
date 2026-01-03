@@ -5,7 +5,7 @@
 //! - pool化pair象：TcpStream (裸 TCP connection)
 //! - reusemethod：serialreuse (anconnectionsame when betweencan onlyprocessanrequest)
 //! - protocollimit：HTTP/1.1 unable tomultiplereuse，needlarge numberconnectionsupportconcurrent
-//! - netconnpool 负责：connectionCreate、keepactive、故障detect and 回收
+//! - netconnpool negative责：connectionCreate、keepactive、故障detect and 回收
 
 #[cfg(feature = "connection-pool")]
 use super::pool::ConnectionPoolManager;
@@ -121,7 +121,7 @@ mod tests {
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // second次request (shouldreuseconnection)
+ // secondtimerequest (shouldreuseconnection)
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 

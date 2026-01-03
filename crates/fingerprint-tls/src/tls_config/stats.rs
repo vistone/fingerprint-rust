@@ -10,7 +10,7 @@ use std::collections::HashMap;
 /// TLS fingerprintstatisticsinfo
 #[derive(Debug, Clone)]
 pub struct FingerprintStats {
- /// 总fingerprintcount
+ /// totalfingerprintcount
  pub total_fingerprints: usize,
  /// including GREASE fingerprintcount
  pub fingerprints_with_grease: usize,

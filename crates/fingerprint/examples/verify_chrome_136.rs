@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  }
  }
 
- // 3. Build实战bytesstream
+ // 3. Buildactual战bytesstream
  println!("\n3️⃣ ClientHello bytesstreamBuild:");
  let client_hello = TLSHandshakeBuilder::build_client_hello(&spec, "www.google.com")?;
  println!(" ✅ successGenerate ClientHello: {} bytes", client_hello.len());

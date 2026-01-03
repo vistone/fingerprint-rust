@@ -164,9 +164,9 @@ impl ConnectionPoolManager {
  health_check_timeout: Duration::from_secs(3),
  connection_leak_timeout: Duration::from_secs(300),
 
- // provide Dialer function来Create TCP connection
+ // provide Dialer functionfromCreate TCP connection
  // Note: hereunable todirectlyaccess config.profile，because dialer is closepackage
- // TCP Profile should in Createconnection poolbefore就application to config in 
+ // TCP Profile should in Createconnection poolbeforethenapplication to config in 
  dialer: Some(Box::new(move |_protocol| {
  use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
@@ -187,7 +187,7 @@ impl ConnectionPoolManager {
 
  let mut last_err: Option<std::io::Error> = None;
  for addr in v4.into_iter().chain(v6.into_iter()) {
- // Note: here暂 when usestandardconnection，TCP Profile should in Createconnection pool when throughothermethodapplication
+ // Note: heretemporary when usestandardconnection，TCP Profile should in Createconnection pool when throughothermethodapplication
  // TODO: support in connection pool in application TCP Profile
  match TcpStream::connect_timeout(&addr, connect_timeout) {
  Ok(s) => return Ok(ConnectionType::Tcp(s)),
@@ -250,7 +250,7 @@ impl ConnectionPoolManager {
  /// cleanupempty闲connection
  #[cfg(feature = "connection-pool")]
  pub fn cleanup_idle(&self) {
- // netconnpool willautomaticcleanup，here只 is provideinterface
+ // netconnpool willautomaticcleanup，hereonly is provideinterface
  if let Ok(pools) = self.pools.lock() {
  println!("connection poolstatus: {} 端点", pools.len());
  }

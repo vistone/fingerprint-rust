@@ -56,17 +56,17 @@ async fn send_http3_request_async(
  let mut transport = TransportConfig::default();
 
  // connectionmigrate (Connection Migration) optimize
- // QUIC allow in IP toggle when keepconnection，这pairmobilesimulate至closeimportant
+ // QUIC allow in IP toggle when keepconnection，thispairmobilesimulate至closeimportant
  transport.initial_rtt(Duration::from_millis(100));
  transport.max_idle_timeout(Some(
  Duration::from_secs(60)
 .try_into()
 .map_err(|e| HttpClientError::ConnectionFailed(format!("configurationtimeoutfailure: {}", e)))?,
  ));
- // increase保活frequency以auxiliaryconnectionmigrateidentify
+ // increasekeep-alivefrequency以auxiliaryconnectionmigrateidentify
  transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
- // allowpair端migrate (defaultalreadyopen，此处explicitexplain其important性)
+ // allowpairendmigrate (defaultalreadyopen，此处explicitexplain其importantproperty)
  // transport.allow_peer_migration(true);
 
  // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)

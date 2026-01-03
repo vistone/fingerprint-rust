@@ -42,10 +42,10 @@ pub struct Packet {
 /// TCP headerinfo
 #[derive(Debug, Clone)]
 pub struct TcpHeader {
- /// 序列号
+ /// sequence列number
  pub seq: u32,
 
- /// confirm号
+ /// confirmnumber
  pub ack: Option<u32>,
 
  /// windowsize
@@ -69,7 +69,7 @@ pub struct TcpOption {
 pub struct PacketParser;
 
 impl PacketParser {
- /// from 原beginningcountpacketParse
+ /// from originalbeginningcountpacketParse
  pub fn parse(raw_packet: &[u8]) -> Result<Packet, PacketError> {
  // Parse IP header
  if raw_packet.len() < 20 {
@@ -100,7 +100,7 @@ impl PacketParser {
  
  let header_len = ihl * 4;
  
- // securityCheck：ensurecountpacketenough长
+ // securityCheck：ensurecountpacketenoughlong
  if raw_packet.len() < header_len {
  return Err(PacketError::TooShort);
  }
@@ -278,7 +278,7 @@ impl PacketParser {
 
  /// Parse ICMP header
  fn parse_icmp(_data: &[u8]) -> Result<(u16, u16, Option<TcpHeader>), PacketError> {
- // ICMP noport概念，return 0
+ // ICMP noportgeneral念，return 0
  // ICMP type and code in data[0] and data[1]
  Ok((0, 0, None))
  }
@@ -311,7 +311,7 @@ impl PacketParser {
  let mut options = Vec::new();
  let header_len = data_offset * 4;
  
- // securityCheck：ensure不will越boundaryaccess
+ // securityCheck：ensure不willexceedboundaryaccess
  if header_len > data.len() {
  return Err(PacketError::TooShort);
  }
@@ -336,7 +336,7 @@ impl PacketParser {
  }
  let length = data[offset + 1] as usize;
  
- // securityCheck：length mustat least as 2， and cannotcause越boundary
+ // securityCheck：length mustat least as 2， and cannotcauseexceedboundary
  if length < 2 || offset + length > data.len() || offset + length > header_len {
  break;
  }

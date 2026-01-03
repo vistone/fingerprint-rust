@@ -120,8 +120,8 @@ pub fn send_https_request(
 /// useconnection poolsend HTTPS (HTTP/1.1 over TLS)request
 ///
 /// explain：
-/// - this is“connection pool + TLS”syncimplement (面向 `kh.google.com` 这class https 站点)
-/// - 目front只 for 回归test and `HttpClient` https+pool path
+/// - this is“connection pool + TLS”syncimplement (面toward `kh.google.com` thisclass https 站point)
+/// - itemfrontonly for 回归test and `HttpClient` https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(
  host: &str,
@@ -143,7 +143,7 @@ pub fn send_https_request_with_pool(
 .tcp_conn()
 .ok_or_else(|| HttpClientError::ConnectionFailed("Expected TCP connection but got UDP".to_string()))?;
 
- // keep conn lifecyclecover整request；同 when 用 clone 得 to available std::net::TcpStream
+ // keep conn lifecyclecoverwholerequest；same when 用 clone get to available std::net::TcpStream
  let tcp_stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
  tcp_stream
@@ -222,7 +222,7 @@ mod tests {
  let config = HttpClientConfig::default();
  let response = send_https_request("httpbin.org", 443, "/get", &request, &config).unwrap();
 
- // outside部servicemaywill短暂return 429/503 etc.；heremainValidate“能establish TLS + 能Parseresponse”。
+ // outside部servicemaywillshorttemporaryreturn 429/503 etc.；heremainValidate“canestablish TLS + canParseresponse”。
  assert!(response.status_code > 0);
  }
 }

@@ -39,7 +39,7 @@ pub trait Fingerprint: Send + Sync {
  /// Getfingerprinttype
  fn fingerprint_type(&self) -> FingerprintType;
 
- /// Getfingerprintuniqueidentifier符 (usually is hashvalue)
+ /// Getfingerprintuniqueidentifiersymbol (usually is hashvalue)
  fn id(&self) -> String;
 
  /// Getfingerprintmetadata
@@ -61,7 +61,7 @@ pub trait Fingerprint: Send + Sync {
 /// fingerprintcompareresult
 #[derive(Debug, Clone, PartialEq)]
 pub struct FingerprintComparison {
- /// similar度分count (0.0 - 1.0)
+ /// similardegreeminutecount (0.0 - 1.0)
  pub similarity: f64,
 
  /// whethermatch
@@ -121,11 +121,11 @@ impl FingerprintComparator {
  if f1.similar_to(f2) {
  FingerprintComparison::perfect_match()
  } else {
- // Calculatesimilar度 (based onhashvalue)
+ // Calculatesimilardegree (based onhashvalue)
  let h1 = f1.hash();
  let h2 = f2.hash();
 
- // simplesimilar度Calculate (based onhashvalue汉明distance)
+ // simplesimilardegreeCalculate (based onhashvalue汉cleardistance)
  let similarity = if h1 == h2 {
  1.0
  } else {

@@ -251,8 +251,8 @@ impl Fingerprint for TcpFingerprint {
  return false;
  }
 
- // TCP fingerprintsimilar度judge：allow一定容差
- // heresimplifyprocess，actualshouldconsider TTL infervalue、Window Size 倍countclose系 etc.
+ // TCP fingerprintsimilardegreejudge：allowcertain tolerance
+ // heresimplifyprocess，actualshouldconsider TTL infervalue、Window Size 倍countclosesystem etc.
  self.hash() == other.hash()
  }
 

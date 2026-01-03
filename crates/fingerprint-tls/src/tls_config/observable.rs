@@ -1,6 +1,6 @@
-//! TLS 可observe性module
+//! TLS 可observepropertymodule
 //!
-//! provide TLS ClientHello 可observe性countdataExtract
+//! provide TLS ClientHello 可observepropertycountdataExtract
 //! reference：Huginn Net Profiler TlsClientObserved design
 
 use crate::tls_config::extract::extract_signature;

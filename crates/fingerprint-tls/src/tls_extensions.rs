@@ -44,7 +44,7 @@ pub trait TLSExtension: std::fmt::Debug + Any {
  /// Getextension ID
  fn extension_id(&self) -> ExtensionID;
 
- /// convert to Any trait object， for 向downtransform
+ /// convert to Any trait object， for towarddowntransform
  fn as_any(&self) -> &dyn Any;
 }
 

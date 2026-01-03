@@ -1,17 +1,17 @@
 //! systemlevelprotectioncoreabstract
 //!
-//! providesystemlevelprotectioncoreabstract and interface，includesystemupdown文、networktraffic、protectiondecision etc.。
+//! providesystemlevelprotectioncoreabstract and interface，includesystemupdowntext、networktraffic、protectiondecision etc.。
 //!
 //! ## Core Concept
 //!
 //! from **singleserviceprotection**improve to **systemlevelprotection**：
 //! - from network interfacelevel拦截、analysis and protectionallnetworktraffic
 //! - not onlyonly is HTTP，stillinclude TCP、UDP、ICMP etc.allprotocol
-//! - systemleveldecision，can实施firewallrule、trafficrate limit etc.systemlevelprotectionmeasure
+//! - systemleveldecision，canactual施firewallrule、trafficrate limit etc.systemlevelprotectionmeasure
 //!
 //! ## modulestruct
 //!
-//! - `context`: systemupdown文，includingnetworkentitycompleteinfo
+//! - `context`: systemupdowntext，includingnetworkentitycompleteinfo
 //! - `flow`: networktrafficabstract，representsystemlevelnetworktraffic
 //! - `protection`: systemlevelprotectioninterface and decision
 //! - `analysis`: systemlevelanalysisinterface and result

@@ -4,11 +4,11 @@
 //!
 //! from **singleserviceprotection**improve to **systemlevelprotection**，providesystemlevelcoreabstract and interface。
 //!
-//! ## core定bit
+//! ## corefixedbit
 //!
 //! `fingerprint-core` is systemlevelprotectioncore，alloutside部component都围绕thiscore展open：
 //!
-//! - **systemlevelabstract**: systemupdown文、networktraffic、protectiondecision etc.
+//! - **systemlevelabstract**: systemupdowntext、networktraffic、protectiondecision etc.
 //! - **offense and defenseunifiedinterface**: fingerprintabstract、analysisinterface、protectioninterface etc.
 //! - **coretype and tool**: typedefine、metadata、toolfunction etc.
 //!
@@ -16,8 +16,8 @@
 //!
 //! ### systemlevelabstract
 //!
-//! - **systemupdown文** (`SystemContext`): networkentitycompleteinfo (IP、port、protocol、direction etc.)
-//! - **networktraffic** (`NetworkFlow`): systemlevelnetworktraffic，includingupdown文 and fingerprintinfo
+//! - **systemupdowntext** (`SystemContext`): networkentitycompleteinfo (IP、port、protocol、direction etc.)
+//! - **networktraffic** (`NetworkFlow`): systemlevelnetworktraffic，includingupdowntext and fingerprintinfo
 //! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotectionunifiedinterface
 //! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysisunifiedinterface
 //!
@@ -59,7 +59,7 @@ pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison,
 // metadata
 pub use metadata::FingerprintMetadata;
 
-// TLS 相close
+// TLS mutualclose
 pub use dicttls::*;
 pub use grease::{
  filter_grease_values, get_random_grease, is_grease_value, remove_grease_values,
@@ -71,10 +71,10 @@ pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
 
-// HTTP 相close
+// HTTP mutualclose
 pub use http::{Http2Settings, HttpFingerprint};
 
-// TCP 相close
+// TCP mutualclose
 pub use tcp::{TcpFingerprint, TcpProfile};
 
 // typesystem
@@ -98,7 +98,7 @@ pub use system::{
  SystemAnalysisResult,
  // systemanalysis
  SystemAnalyzer,
- // systemupdown文
+ // systemupdowntext
  SystemContext,
  SystemProtectionDecision,
  SystemProtectionResult,

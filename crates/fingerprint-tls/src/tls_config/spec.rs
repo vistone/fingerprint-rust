@@ -29,7 +29,7 @@ pub const VERSION_TLS13: u16 = 0x0304;
 /// compressionmethodconstant
 pub const COMPRESSION_NONE: u8 = 0x00;
 
-/// 点formatconstant
+/// pointformatconstant
 pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0x00;
 
 /// PSK patternconstant
@@ -100,7 +100,7 @@ impl ClientHelloSpec {
  /// Create Chrome 133 fingerprint ClientHelloSpec
  /// Corresponds to Go version's Chrome_133 SpecFactory
  ///
- /// use Builder patterncan更灵活地Build：
+ /// use Builder patterncanmore灵活地Build：
  /// ```rust,no_run
  /// use fingerprint_tls::tls_config::ClientHelloSpecBuilder;
  /// let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
@@ -122,7 +122,7 @@ impl ClientHelloSpec {
  spec
  }
 
- /// Create Chrome 133 fingerprint ClientHelloSpec (旧implement，preserve for compatible)
+ /// Create Chrome 133 fingerprint ClientHelloSpec (oldimplement，preserve for compatible)
  #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
  pub fn chrome_133_old() -> Self {
  let mut spec = Self::new();

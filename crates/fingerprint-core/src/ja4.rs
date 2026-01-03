@@ -462,10 +462,10 @@ mod ja4s_tests {
 
 /// JA4L - lightweightlevelfingerprint (Light Version)
 ///
-/// simplify版 JA4，适 for 资source受限environment
-/// - use更快hashalgorithm
-/// - decreaseCalculatecomplex度
-/// - 更小inside存usage
+/// simplify版 JA4，suitable for 资source受limitenvironment
+/// - usemorefasthashalgorithm
+/// - decreaseCalculatecomplexdegree
+/// - moresmallinsidesaveusage
 ///
 /// format: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
 ///
@@ -612,13 +612,13 @@ impl JA4L {
  }
  }
 
- /// estimatefingerprintCalculate成本 (相pairvalue)
- /// returnvalue：1-10，1 as 最lightweight，10 as 最重
+ /// estimatefingerprintCalculatebecomethis (mutualpairvalue)
+ /// returnvalue：1-10，1 as mostlightweight，10 as most重
  pub fn computational_cost() -> u8 {
  2 // JA4L is lightweightlevel的，成本评分 as 2/10
  }
 
- /// estimateinside存usage (bytes)
+ /// estimateinsidesaveusage (bytes)
  pub fn memory_footprint(&self) -> usize {
  std::mem::size_of::<Self>()
  + self.version.capacity()
@@ -692,7 +692,7 @@ mod ja4l_tests {
  let ja4l = JA4L::generate('t', "1.3", true, &[0x1301], &[0]);
  let footprint = ja4l.memory_footprint();
  
- // inside存usageshould很小
+ // insidesaveusageshouldverysmall
  assert!(footprint < 200); // 少于 200 bytes
  }
 }

@@ -20,9 +20,9 @@ pub fn random_choice_string(items: &[&str]) -> Option<String> {
  random_choice(items).map(|s| s.to_string())
 }
 
-/// from User-Agent in Extract Chrome version号
+/// from User-Agent in Extract Chrome versionnumber
 pub fn extract_chrome_version(user_agent: &str) -> String {
- // find "Chrome/" back面version号
+ // find "Chrome/" back面versionnumber
  if let Some(start) = user_agent.find("Chrome/") {
  let version_start = start + 7; // "Chrome/".len()
  if let Some(end) =
@@ -30,7 +30,7 @@ pub fn extract_chrome_version(user_agent: &str) -> String {
  {
  return user_agent[version_start..version_start + end].to_string();
  }
- // If没找 to endbit置, return to stringend尾
+ // If没找 to endbitplace, return to stringend尾
  return user_agent[version_start..]
 .split_whitespace()
 .next()

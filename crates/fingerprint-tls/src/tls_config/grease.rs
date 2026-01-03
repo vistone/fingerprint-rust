@@ -14,7 +14,7 @@ pub const TLS_GREASE_VALUES: [u16; 16] = [
 /// Checkanvaluewhether is GREASE value
 ///
 /// # Parameters
-/// * `value` - 要Check u16 value
+/// * `value` - needCheck u16 value
 ///
 /// # Returns
 /// * `true` if is GREASE value，`false` otherwise
@@ -33,7 +33,7 @@ pub fn is_grease_value(value: u16) -> bool {
 /// from u16 list in filter掉 GREASE value
 ///
 /// # Parameters
-/// * `values` - 要filter u16 valuelist
+/// * `values` - needfilter u16 valuelist
 ///
 /// # Returns
 /// * filterback Vec<u16>，excluding GREASE value
@@ -56,7 +56,7 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
 /// from u16 list in remove GREASE value (in-placemodify)
 ///
 /// # Parameters
-/// * `values` - 要modify u16 valuelist (mutablereference)
+/// * `values` - needmodify u16 valuelist (mutablereference)
 ///
 /// # Examples
 /// ```

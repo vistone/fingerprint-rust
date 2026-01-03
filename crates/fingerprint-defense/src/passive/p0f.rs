@@ -55,7 +55,7 @@ impl P0fDatabase {
  for line in content.lines() {
  let line = line.trim();
 
- // skipempty行 and comment
+ // skipemptyexecute and comment
  if line.is_empty() || line.starts_with('#') {
  continue;
  }
@@ -203,7 +203,7 @@ mod tests {
  println!("║ print p0f allcountdata ║");
  println!("╚════════════════════════════════════════════════════════════════╝\n");
 
- // try from commonbit置load p0f database
+ // try from commonbitplaceload p0f database
  let p0f_paths = vec![
  "p0f.fp",
  "/etc/p0f/p0f.fp",

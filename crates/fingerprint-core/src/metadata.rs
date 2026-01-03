@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 /// fingerprintmetadata
 ///
-/// includingallfingerprinttype共用metadatainfo
+/// includingallfingerprinttypesharedmetadatainfo
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FingerprintMetadata {
  /// browsertype
@@ -23,7 +23,7 @@ pub struct FingerprintMetadata {
  /// samplecount
  pub sample_count: u64,
 
- /// 首次discover when between
+ /// 首timediscover when between
  pub first_seen: DateTime<Utc>,
 
  /// finallydiscover when between
@@ -32,7 +32,7 @@ pub struct FingerprintMetadata {
  /// tag
  pub tags: Vec<String>,
 
- /// 备注
+ /// 备note
  pub notes: Option<String>,
 }
 

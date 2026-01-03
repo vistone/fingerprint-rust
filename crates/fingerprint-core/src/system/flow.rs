@@ -1,6 +1,6 @@
 //! networktrafficabstract
 //!
-//! definesystemlevelnetworktraffic，includingcompleteupdown文 and fingerprintinfo。
+//! definesystemlevelnetworktraffic，includingcompleteupdowntext and fingerprintinfo。
 
 use super::context::SystemContext;
 use crate::fingerprint::Fingerprint;
@@ -14,7 +14,7 @@ pub struct FlowCharacteristics {
  /// countpacketcount
  pub packet_count: u64,
 
- /// 总bytescount
+ /// totalbytescount
  pub total_bytes: u64,
 
  /// continuous when between
@@ -80,12 +80,12 @@ impl Default for FlowCharacteristics {
 
 /// networktraffic
 ///
-/// representsystemlevelnetworktraffic，includingcompleteupdown文、fingerprintinfo and trait。
+/// representsystemlevelnetworktraffic，includingcompleteupdowntext、fingerprintinfo and trait。
 ///
 /// ## Core Concept
 ///
 /// systemlevelprotectionneed from **networktraffic**perspectiveperformanalysis and protection，而is notonlyonlyfocussingleservice：
-/// - completesystemupdown文 (source/target、protocol、direction etc.)
+/// - completesystemupdowntext (source/target、protocol、direction etc.)
 /// - detect to fingerprintinfo (TLS、HTTP、TCP etc.)
 /// - trafficstatisticstrait and behaviorpattern
 ///
@@ -103,7 +103,7 @@ impl Default for FlowCharacteristics {
 /// let flow = NetworkFlow::new(ctx);
 /// ```
 pub struct NetworkFlow {
- /// systemupdown文
+ /// systemupdowntext
  pub context: SystemContext,
 
  /// detect to fingerprintlist ( if 有)
@@ -157,7 +157,7 @@ impl NetworkFlow {
  self.characteristics.update(packet_size);
  }
 
- /// Gettrafficuniqueidentifier符
+ /// Gettrafficuniqueidentifiersymbol
  pub fn flow_id(&self) -> String {
  self.context.flow_id()
  }
@@ -178,7 +178,7 @@ impl std::fmt::Debug for NetworkFlow {
 impl Clone for NetworkFlow {
  fn clone(&self) -> Self {
  // Note: fingerprints cannot Clone，sonewinstance from emptyliststart
- // this is合理的，becausefingerprintusually不should被copy，而 is throughreferenceshared
+ // this is合process的，becausefingerprintusually不should被copy，而 is throughreferenceshared
  Self {
  context: self.context.clone(),
  fingerprints: Vec::new(), // cannot Clone trait object

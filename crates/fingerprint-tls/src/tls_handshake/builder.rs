@@ -29,7 +29,7 @@ impl TLSHandshakeBuilder {
  let handshake_bytes = handshake.to_bytes();
 
  // 5. Create TLS record
- // use TLS 1.0 (0x0301) asrecordversion (in order tocompatible性)
+ // use TLS 1.0 (0x0301) asrecordversion (in order tocompatibleproperty)
  let record = TLSRecord::handshake(0x0301, handshake_bytes);
 
  // 6. serialize TLS record
@@ -125,7 +125,7 @@ mod tests {
  let bytes = result.unwrap();
  println!("\nGenerate Chrome 133 ClientHello: {} bytes", bytes.len());
 
- // Chrome 133 should有较多's cipher suites and extension
+ // Chrome 133 should有comparemultiple's cipher suites and extension
  assert!(bytes.len() > 200); // Chrome ClientHello usually很大
  }
 }

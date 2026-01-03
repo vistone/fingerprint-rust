@@ -11,7 +11,7 @@ use crate::tls_config::version::TlsVersion;
 /// from ClientHelloSpec in Extractsignatureinfo
 ///
 /// # Parameters
-/// * `spec` - 要Extractsignature ClientHelloSpec
+/// * `spec` - needExtractsignature ClientHelloSpec
 ///
 /// # Returns
 /// * `ClientHelloSignature` - Extractsignatureinfo
@@ -49,7 +49,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
  signature.sni = Some(sni.clone());
  }
 
- // Extract ALPN (取first)
+ // Extract ALPN (getfirst)
  if let Some(alpn) = metadata.get_first_alpn() {
  signature.alpn = Some(alpn);
  }
@@ -64,7 +64,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
  }
  }
 
- // Extractelliptic curve点format
+ // Extractelliptic curvepointformat
  if let Some(ext_meta) = metadata
 .extension_metadata
 .get(&fingerprint_core::dicttls::extensions::EXT_TYPE_EC_POINT_FORMATS)

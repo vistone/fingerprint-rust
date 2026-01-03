@@ -1,6 +1,6 @@
-//! IPInfo.io set成module
+//! IPInfo.io setbecomemodule
 //!
-//! from IPInfo.io API Get IP addressdetailedinfo (geographicbit置、ISP etc.)
+//! from IPInfo.io API Get IP addressdetailedinfo (geographicbitplace、ISP etc.)
 
 use crate::dns::types::{DNSError, IPInfo};
 use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
@@ -38,7 +38,7 @@ impl IPInfoClient {
  let request = HttpRequest::new(HttpMethod::Get, &url)
 .with_header("Authorization", &format!("Bearer {}", self.token));
 
- // in asyncupdown文 in executesync HTTP request
+ // in asyncupdowntext in executesync HTTP request
  let response = tokio::task::spawn_blocking({
  let request = request.clone();
  move || client.send_request(&request)
@@ -73,7 +73,7 @@ impl IPInfoClient {
  }
 
  /// bulkGet IP addressinfo (concurrent)
- /// automaticdeduplicate，ensureeach IP 只queryonce
+ /// automaticdeduplicate，ensureeach IP onlyqueryonce
  pub async fn get_ip_infos(
  &self,
  ips: Vec<String>,
@@ -82,7 +82,7 @@ impl IPInfoClient {
  use futures::stream::{self, StreamExt};
  use std::collections::HashSet;
 
- // pair IP listdeduplicate，ensureeach IP 只queryonce
+ // pair IP listdeduplicate，ensureeach IP onlyqueryonce
  let unique_ips: Vec<String> = ips
 .into_iter()
 .collect::<HashSet<String>>()

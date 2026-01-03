@@ -25,14 +25,14 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
  // 2. settings TCP options
  // Note: socket2 不directlysupportsettings Window Size、MSS、Window Scale
  // theseparameterneed in TCP handshake when through TCP optionssettings
- // butwecanthroughsettings socket options来impacttheseparameter
+ // butwecanthroughsettings socket optionsfromimpacttheseparameter
 
  // settings TCP_NODELAY (disabled Nagle algorithm，improveperformance)
  socket.set_nodelay(true)?;
 
  // 3. settingsreceivebuffersize (impact Window Size)
- // Window Size usually and receivebuffersize相close
- // Note: actual Window Size is in TCP handshake when negotiate的，here只 is settingsbuffer
+ // Window Size usually and receivebuffersizemutualclose
+ // Note: actual Window Size is in TCP handshake when negotiate的，hereonly is settingsbuffer
  let recv_buffer_size = tcp_profile.window_size as usize;
  socket.set_recv_buffer_size(recv_buffer_size)?;
 
@@ -209,7 +209,7 @@ mod tests {
  let _fd = stream.as_raw_fd();
 
  // tryGetreceivebuffersize (impact Window Size)
- // Note: 这need libc crate，butin order tosimplify，we暂 when comment掉
+ // Note: thisneed libc crate，butin order tosimplify，wetemporary when comment掉
  // actualValidateshoulduse tcpdump or wireshark packet captureanalysis
  println!(" 🔍 server端 TCP parameterdetect：");
  println!(" ⚠️ Note: TTL in service端unable todirectlydetect (transferprocess in will递减)");

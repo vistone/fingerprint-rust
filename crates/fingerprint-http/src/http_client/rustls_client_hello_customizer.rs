@@ -1,20 +1,20 @@
 //! rustls ClientHello customizeer (optional)
 //!
-//! 目front只做一件事：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**。
+//! itemfrontonlydo一件事：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**。
 //!
 //! explain：
-//! - rustls 并不一定willsend spec 里listallextension；herewill以 rustls actual `used` as 准，
-//! onlypair交setreorder，并把notcover's extensions by  rustls defaultorder追加，ensure仍 is anvalidarrange。
+//! - rustls 并不一fixedwillsend spec 里listallextension；herewill以 rustls actual `used` as 准，
+//! onlypair交setreorder，并把notcover's extensions by  rustls defaultorder追add，ensure仍 is anvalidarrange。
 //! - spec 里mayappearmultiple GREASE extension ( in realbrowser in themusually is different GREASE value)。
-//! as avoid"duplicateextensiontype"cause rustls refuse，wewill把each GREASE 占bit符map成different GREASE value。
+//! as avoid"duplicateextensiontype"cause rustls refuse，wewill把each GREASE 占bitsymbolmapbecomedifferent GREASE value。
 //!
 //! Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork，standard rustls 不support。
-//! currentstandard rustls versionexcluding ClientHelloCustomizer API，therefore此modulecode被暂 when disabled。
+//! currentstandard rustls versionexcluding ClientHelloCustomizer API，therefore此modulecode被temporary when disabled。
 //! if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork (如 vistone-rustls)。
 
-// 暂 when disabled整module，becausestandard rustls 不support ClientHelloCustomizer API
+// temporary when disabledwholemodule，becausestandard rustls 不support ClientHelloCustomizer API
 // if neededenabled，needusesupport该 API rustls fork
-// whenusesupport ClientHelloCustomizer rustls fork when ，canceldown面comment并enabled相closecode
+// whenusesupport ClientHelloCustomizer rustls fork when ，canceldown面comment并enabledmutualclosecode
 #![cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 
 #[cfg(feature = "rustls-client-hello-customizer")]
@@ -32,8 +32,8 @@ use rustls::internal::msgs::enums::ExtensionType;
 #[cfg(feature = "rustls-client-hello-customizer")]
 /// from `ClientHelloSpec` Calculate"expected's extensionsorder" (以 u16 represent)。
 ///
-/// - deduplicate：sameextensiontype只preserve第onceappear
-/// - GREASE：把duplicate GREASE 占bit符map成different GREASE value
+/// - deduplicate：sameextensiontypeonlypreserve第onceappear
+/// - GREASE：把duplicate GREASE 占bitsymbolmapbecomedifferent GREASE value
 fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
  let mut out: Vec<u16> = Vec::with_capacity(spec.extensions.len());
  let mut grease_cursor = 0usize;
@@ -41,7 +41,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
  for ext in &spec.extensions {
  let mut id = ext.extension_id();
 
- // process GREASE：尽量给each GREASE allocatedifferentvalue，以符合"多 GREASE extension"现实形态。
+ // process GREASE：尽quantity给each GREASE allocatedifferentvalue，以symbol合"multiple GREASE extension"currentactual形state。
  if is_grease_value(id) {
  for _ in 0..TLS_GREASE_VALUES.len() {
  let candidate = TLS_GREASE_VALUES[grease_cursor % TLS_GREASE_VALUES.len()];
@@ -65,9 +65,9 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
 /// will rustls current `used` 's extensionsorder， by  `desired` (from spec)reorder。
 ///
 /// rule：
-/// - 只pair `used` 里appear's extensionsreorder (交set)
+/// - onlypair `used` 里appear's extensionsreorder (交set)
 /// - `desired` 里duplicate/不 in `used` will被ignore
-/// - `used` 里notappear in `desired` 's extensionskeep原相pairorder并追加 to end尾
+/// - `used` 里notappear in `desired` 's extensionskeeporiginalmutualpairorder并追add to end尾
 fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<ExtensionType> {
  let mut out: Vec<ExtensionType> = Vec::with_capacity(used.len());
 

@@ -48,7 +48,7 @@ use std::io as std_io;
 use std::time::Duration;
 
 // Fix: useglobalsingleton Runtime avoidfrequentCreate ( for HTTP/2 and HTTP/3 connection poolscenario)
-// Note: 只 in connection-pool enabled when 才need，becauseonlyconnection poolscenario才needsyncwrapasynccode
+// Note: only in connection-pool enabled when 才need，becauseonlyconnection poolscenario才needsyncwrapasynccode
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -115,7 +115,7 @@ pub struct HttpClientConfig {
  pub read_timeout: Duration,
  /// writetimeout
  pub write_timeout: Duration,
- /// maximumredirect次count
+ /// maximumredirecttimecount
  pub max_redirects: usize,
  /// whetherValidate TLS certificate
  pub verify_tls: bool,
@@ -238,7 +238,7 @@ impl HttpClient {
  redirect_count: usize,
  visited_urls: &mut std::collections::HashSet<String>,
  ) -> Result<HttpResponse> {
- // Checkredirect次count
+ // Checkredirecttimecount
  if redirect_count >= self.config.max_redirects {
  return Err(HttpClientError::InvalidResponse(format!(
  "redirect次countexceedlimit: {}",
@@ -273,7 +273,7 @@ impl HttpClient {
  // processredirect
  if (300..400).contains(&response.status_code) {
  if let Some(location) = response.headers.get("location") {
- // Buildnew URL (may is 相pairpath or 绝pairpath)
+ // Buildnew URL (may is mutualpairpath or 绝pairpath)
  let redirect_url =
  if location.starts_with("http://") || location.starts_with("https://") {
  location.clone()
@@ -282,7 +282,7 @@ impl HttpClient {
  } else if location.starts_with('/') {
  format!("{}://{}:{}{}", scheme, host, port, location)
  } else {
- // 相pairpath
+ // mutualpairpath
  // Fix: correctprocesspathconcatenate，avoid双斜杠
  let base_path = if path.ends_with('/') {
  &path
@@ -309,7 +309,7 @@ impl HttpClient {
  request.method
  }
  _ => {
- // other 3xx status codekeep原method
+ // other 3xx status codekeeporiginalmethod
  request.method
  }
  };
@@ -329,10 +329,10 @@ impl HttpClient {
  // Parsenew URL domain and path ( for Cookie fieldfilter)
  let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
 
- // Fix: reBuildrequest，只including适 for newdomain Cookie
+ // Fix: reBuildrequest，onlyincludingsuitable for newdomain Cookie
  let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
 
- // copy非 Cookie headers，并Add Referer
+ // copynon Cookie headers，并Add Referer
  for (key, value) in &request.headers {
  if key.to_lowercase() != "cookie" {
  final_redirect_request = final_redirect_request.with_header(key, value);
@@ -342,7 +342,7 @@ impl HttpClient {
  final_redirect_request =
  final_redirect_request.with_header("Referer", &request.url);
 
- // Add适 for newdomain Cookie
+ // Addsuitable for newdomain Cookie
  if let Some(cookie_store) = &self.config.cookie_store {
  if let Some(cookie_header) = cookie_store.generate_cookie_header(
  &new_host,
@@ -499,7 +499,7 @@ impl HttpClient {
  #[cfg(feature = "http2")]
  if self.config.prefer_http2 {
  // Fix: useglobalsingleton Runtime
- // Note: here不做"automatic降level"，because pool scenariowe更希望by user偏好走specifiedprotocol
+ // Note: herenot do"automatic降level"，because pool scenariowemore希望by userpreference走specifiedprotocol
  // (test里alsowillstrictValidateversion)
  return SHARED_RUNTIME.block_on(async {
  http2_pool::send_http2_request_with_pool(
@@ -533,13 +533,13 @@ impl HttpClient {
  if self.config.prefer_http3 {
  // Ifopen了 HTTP/3, wetry它。
  // Iffailure, wemay希望降level，but HTTP/3 to TCP is differenttransferlayer，
- // usually if userexplicitrequire HTTP/3，failure就should报错。
- // butherein order to稳健性， if is becauseprotocolerror，wecan降level。
- // 暂 when keepsimple：directlyreturn。
+ // usually if userexplicitrequire HTTP/3，failurethenshould报错。
+ // butherein order tostable健property， if is becauseprotocolerror，wecan降level。
+ // temporary when keepsimple：directlyreturn。
  match http3::send_http3_request(host, port, path, request, &self.config) {
  Ok(resp) => return Ok(resp),
  Err(e) => {
- // Ifonlyonly is 偏好, cantry降level
+ // Ifonlyonly is preference, cantry降level
  // If is Connection failed, may is networkissue，alsomay is server不support
  eprintln!("warning: HTTP/3 failure，try降level: {}", e);
  }

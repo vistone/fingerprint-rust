@@ -90,7 +90,7 @@ impl HTTPHeaders {
  }
  }
 
- /// clone HTTPHeaders pair象，returnannew副本
+ /// clone HTTPHeaders pair象，returnannew副this
  ///
  /// Note: 此methodname and standardlibrary `Clone::clone` different，以avoidnamingconflict
  #[allow(clippy::should_implement_trait)]
@@ -139,7 +139,7 @@ impl HTTPHeaders {
 
  /// will HTTPHeaders convert to HashMap，并mergeusercustom headers
  /// custom_headers: usercustom headers (如 session、cookie、apikey etc.)
- /// usercustom headers priority更high，willcoversystemGenerate headers
+ /// usercustom headers prioritymorehigh，willcoversystemGenerate headers
  pub fn to_map_with_custom(
  &self,
  custom_headers: &[(&str, &str)],
@@ -200,7 +200,7 @@ impl HTTPHeaders {
  }
  }
 
- // merge传入 custom_headers (priority最high，willcoverallalready有 headers)
+ // mergepass in custom_headers (prioritymosthigh，willcoverallalready有 headers)
  for (key, value) in custom_headers {
  if !value.is_empty() {
  headers.insert((*key).to_string(), (*value).to_string());
@@ -228,7 +228,7 @@ impl HTTPHeaders {
  }
  }
 
- // 2. Add剩down and 不再 order in headers
+ // 2. Add剩down and no longer order in headers
  for (m_key, m_val) in map {
  if !used.contains(&m_key) {
  result.push((m_key, m_val));
@@ -294,7 +294,7 @@ pub fn generate_headers(
  BrowserType::Firefox => {
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
  headers.accept_encoding = "gzip, deflate, br".to_string();
- // Firefox 不use Sec-Fetch-* headers (旧version)
+ // Firefox 不use Sec-Fetch-* headers (oldversion)
  // newversion Firefox use，butformatdifferent
  if is_mobile {
  headers.sec_fetch_site = "none".to_string();
@@ -315,7 +315,7 @@ pub fn generate_headers(
  }
  }
  BrowserType::Opera => {
- // Opera use Chrome inside核，headers similar Chrome
+ // Opera use Chrome insidecore，headers similar Chrome
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
  headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
  headers.sec_fetch_site = "none".to_string();
@@ -337,7 +337,7 @@ pub fn generate_headers(
  }
  }
  BrowserType::Edge => {
- // Edge use Chrome inside核
+ // Edge use Chrome insidecore
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7".to_string();
  headers.accept_encoding = "gzip, deflate, br, zstd".to_string();
  headers.sec_fetch_site = "none".to_string();

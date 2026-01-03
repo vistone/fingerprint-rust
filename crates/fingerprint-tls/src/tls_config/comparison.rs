@@ -18,7 +18,7 @@ pub enum FingerprintMatch {
  None,
 }
 
-/// compare two ClientHelloSpec similar度
+/// compare two ClientHelloSpec similardegree
 ///
 /// # Parameters
 /// * `spec1` - first ClientHelloSpec
@@ -41,7 +41,7 @@ pub fn compare_specs(spec1: &ClientHelloSpec, spec2: &ClientHelloSpec) -> Finger
  compare_signatures(&sig1, &sig2)
 }
 
-/// compare twosignaturesimilar度
+/// compare twosignaturesimilardegree
 ///
 /// # Parameters
 /// * `sig1` - firstsignature
@@ -66,14 +66,14 @@ pub fn compare_signatures(
  FingerprintMatch::None
 }
 
-/// find and 给定signature最similarfingerprintconfiguration
+/// find and 给fixedsignaturemostsimilarfingerprintconfiguration
 ///
 /// # Parameters
-/// * `signature` - 要matchsignature
-/// * `specs` - 候选 ClientHelloSpec list
+/// * `signature` - needmatchsignature
+/// * `specs` - candidate ClientHelloSpec list
 ///
 /// # Returns
-/// * `Option<usize>` - 最similarconfigurationindex， if no找 to 则return None
+/// * `Option<usize>` - mostsimilarconfigurationindex， if no找 to thenreturn None
 pub fn find_best_match(
  signature: &ClientHelloSignature,
  specs: &[ClientHelloSpec],
@@ -109,7 +109,7 @@ mod tests {
  let spec1 = ClientHelloSpec::chrome_133();
  let spec2 = ClientHelloSpec::chrome_133();
  let result = compare_specs(&spec1, &spec2);
- // due toset成了random GREASE，两次Generate spec in GREASE valueupmaydifferent，
+ // due tosetbecome了random GREASE，两timeGenerate spec in GREASE valueupmaydifferent，
  // thereforeresultshould is Similar (ignore GREASE backsame)
  assert!(matches!(
  result,

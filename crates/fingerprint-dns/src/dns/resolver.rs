@@ -27,7 +27,7 @@ pub struct DNSResolver {
 }
 
 impl DNSResolver {
- /// Create a new DNS Parseer (usedefault DNS server)
+ /// Create a new DNS Parseer (use default DNS server)
  pub fn new(timeout: Duration) -> Self {
  Self {
  timeout,
@@ -164,7 +164,7 @@ impl DNSResolver {
  );
 
  // concurrentquerymultiple DNS server
- // usetimeoutwrap，avoidsingle慢serverblocking整query
+ // usetimeoutwrap，avoidsingle慢serverblockingwholequery
  let server_pool = self.server_pool.clone();
  let query_timeout = self.timeout; // use resolver overalltimeout duration
  // Fix: shared resolver cache
@@ -185,11 +185,11 @@ impl DNSResolver {
  // usetimeoutwrapquery，avoidsingleserverblocking
  let query_result = tokio::time::timeout(query_timeout, async {
  // Fix: reuse resolver instance，avoidfrequentCreate and destroy
- // use server_str as key 来cache resolver
+ // use server_str as key fromcache resolver
  let resolver = {
  let mut cache = resolver_cache.lock().unwrap_or_else(|e| {
  eprintln!("warning: resolver cachelockfailure: {}", e);
- // Iflockfailure, Createannewempty HashMap 并relock定
+ // Iflockfailure, Createannewempty HashMap 并relockfixed
  drop(e.into_inner());
  resolver_cache.lock().expect("unable toGet resolver cachelock")
  });
@@ -223,7 +223,7 @@ impl DNSResolver {
  let mut ips = Vec::new();
  let mut record_count = 0usize;
 
- // 遍历allrecord，collectall IP address
+ // traverse历allrecord，collectall IP address
  for record in lookup.record_iter() {
  record_count += 1;
  if let Some(rdata) = record.data() {
@@ -274,7 +274,7 @@ impl DNSResolver {
 
  eprintln!("[DNS Resolver] startconcurrentquery，concurrentcount: 50");
 
- // stream式collectresult，waitallserverresponse，collect尽may多 IP
+ // streamstylecollectresult，waitallserverresponse，collect尽maymultiple IP
  // for large numberserver，increaseoveralltimeout duration
  let overall_timeout = Duration::from_secs(30); // overalltimeout 30 seconds，ensureallserver都有机willresponse
  let mut all_ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP 只willpreservean
@@ -283,7 +283,7 @@ impl DNSResolver {
  let mut failure_count = 0usize;
  let mut total_ips_received = 0usize; // statistics收 to 总 IP count (deduplicatefront)
 
- // usetimeout and stream式process，collect尽may多result
+ // usetimeout and streamstyleprocess，collect尽maymultipleresult
  let timeout_future = tokio::time::sleep(overall_timeout);
  tokio::pin!(timeout_future);
  let start_time = std::time::Instant::now();
@@ -369,7 +369,7 @@ impl DNSResolver {
  if total_ips_received > 0 { (duplicate_count as f64 / total_ips_received as f64) * 100.0 } else { 0.0 });
 
  // convert to IPInfo list
- // Note: all_ips is HashSet，alreadyautomaticdeduplicate，same IP 只willpreservean
+ // Note: all_ips is HashSet，alreadyautomaticdeduplicate，same IP onlywillpreservean
  let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
  eprintln!(

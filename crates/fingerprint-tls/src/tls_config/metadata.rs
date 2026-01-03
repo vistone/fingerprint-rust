@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 /// TLS extensionmetadata
-/// storeextensioninside部countdata， for back续Extract
+/// storeextensioninside部countdata， for backcontinueExtract
 #[derive(Debug, Clone, Default)]
 pub struct ExtensionMetadata {
  /// SNI value ( if exists)
@@ -15,7 +15,7 @@ pub struct ExtensionMetadata {
  pub alpn: Option<Vec<String>>,
  /// elliptic curvelist ( if exists)
  pub elliptic_curves: Option<Vec<u16>>,
- /// elliptic curve点format ( if exists)
+ /// elliptic curvepointformat ( if exists)
  pub elliptic_curve_point_formats: Option<Vec<u8>>,
  /// signaturealgorithmlist ( if exists)
  pub signature_algorithms: Option<Vec<u16>>,
@@ -64,7 +64,7 @@ impl SpecMetadata {
  metadata.elliptic_curves = Some(curves);
  }
 
- /// settingselliptic curve点format
+ /// settingselliptic curvepointformat
  pub fn set_elliptic_curve_point_formats(&mut self, formats: Vec<u8>) {
  let metadata = self
 .extension_metadata

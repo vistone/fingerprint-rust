@@ -1,6 +1,6 @@
 //! configurationexportmodule
 //!
-//! will ClientHelloSpec export as JSON format，so that供otherlanguage (如 Go uTLS)use。
+//! will ClientHelloSpec export as JSON format，so thatprovideotherlanguage (如 Go uTLS)use。
 
 #[cfg(feature = "export")]
 use fingerprint_tls::tls_config::ClientHelloSpec;
@@ -74,7 +74,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
 .extensions
 .iter()
 .map(|ext| {
- // use as_any perform向downtransform
+ // use as_any performtowarddowntransform
  let any_ext = ext.as_any();
 
  if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {

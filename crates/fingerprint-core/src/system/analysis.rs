@@ -73,7 +73,7 @@ impl std::fmt::Display for ThreatType {
 
 /// analysisdetails
 ///
-/// includinganalysisdetailedinfo and 证data。
+/// includinganalysisdetailedinfo and verifydata。
 #[derive(Debug, Clone, Default)]
 pub struct AnalysisDetails {
  /// detect to fingerprinttype
@@ -186,7 +186,7 @@ impl SystemAnalysisResult {
  if self.threat_types.is_empty() {
  self.risk_score = 0.0;
  } else {
- // use最highseverityasrisk score
+ // usemosthighseverityasrisk score
  self.risk_score = self
 .threat_types
 .iter()
@@ -273,7 +273,7 @@ pub trait SystemAnalyzer: Send + Sync {
  ///
  /// # Parameters
  ///
- /// - `flow`: 要analysisnetworktraffic
+ /// - `flow`: needanalysisnetworktraffic
  ///
  /// # Returns
  ///
@@ -284,7 +284,7 @@ pub trait SystemAnalyzer: Send + Sync {
  ///
  /// # Parameters
  ///
- /// - `flows`: 要analysisnetworktrafficlist
+ /// - `flows`: needanalysisnetworktrafficlist
  ///
  /// # Returns
  ///

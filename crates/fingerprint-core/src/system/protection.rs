@@ -77,7 +77,7 @@ impl SystemProtectionDecision {
 
 /// systemlevelprotectionresult
 ///
-/// includingprotectiondecision and 相closemetadata。
+/// includingprotectiondecision and mutualclosemetadata。
 #[derive(Debug, Clone)]
 pub struct SystemProtectionResult {
  /// protectiondecision
@@ -96,7 +96,7 @@ pub struct SystemProtectionResult {
  /// decisionreason
  pub reason: String,
 
- /// suggestback续action
+ /// suggestbackcontinueaction
  pub suggested_actions: Vec<String>,
 }
 
@@ -158,8 +158,8 @@ impl SystemProtectionResult {
 /// ## Core Concept
 ///
 /// systemlevelprotection from **systemperspective**makeprotectiondecision：
-/// - not onlyonly is singleserviceprotection，而 is 整systemprotection
-/// - can实施systemlevelmeasure (blacklist、rate limit、firewallrule etc.)
+/// - not onlyonly is singleserviceprotection，而 is wholesystemprotection
+/// - canactual施systemlevelmeasure (blacklist、rate limit、firewallrule etc.)
 /// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example
@@ -190,7 +190,7 @@ pub trait SystemProtector: Send {
  ///
  /// # Parameters
  ///
- /// - `flow`: 要analysisnetworktraffic
+ /// - `flow`: needanalysisnetworktraffic
  ///
  /// # Returns
  ///

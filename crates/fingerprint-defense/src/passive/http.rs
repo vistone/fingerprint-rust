@@ -20,7 +20,7 @@ pub struct HttpFingerprint {
  /// matchsignature
  pub signature: Option<HttpSignature>,
 
- /// similar度
+ /// similardegree
  pub similarity: f64,
 
  /// User-Agent
@@ -29,7 +29,7 @@ pub struct HttpFingerprint {
  /// detect to browser
  pub browser: Option<String>,
 
- /// HTTP/2 特有trait
+ /// HTTP/2 special有trait
  pub h2_settings: Option<Vec<(u16, u32)>>,
  pub h2_window_update: Option<u32>,
 
@@ -147,7 +147,7 @@ impl HttpAnalyzer {
 
  /// Parse HTTP request
  fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
- // limitParsecountdata量，preventoversizedpackagecauseinsidememory exhausted
+ // limitParsecountdataquantity，preventoversizedpackagecauseinsidememory exhausted
  let limit = 8192; // 8KB enoughregularrequest
  let parse_data = if data.len() > limit {
  &data[..limit]
@@ -187,7 +187,7 @@ impl HttpAnalyzer {
  let mut cookie_count = 0;
  let mut has_referer = false;
 
- // limitParse Header 行count
+ // limitParse Header executecount
  for (i, line) in lines.enumerate() {
  if i > 100 || line.is_empty() {
  break;

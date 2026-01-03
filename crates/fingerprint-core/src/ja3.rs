@@ -1,7 +1,7 @@
 //! JA3/JA3S TLS fingerprintimplement
 //!
-//! JA3 is Salesforce open发 TLS clientfingerprintidentifymethod，alreadybecome行业standard。
-//! JA3S is pair应server端fingerprint。
+//! JA3 is Salesforce opensend TLS clientfingerprintidentifymethod，alreadybecomeexecute业standard。
+//! JA3S is pairshouldserverendfingerprint。
 //!
 //! ## reference
 //! - paper: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
@@ -40,7 +40,7 @@ pub struct JA3 {
  /// elliptic curvelist (comma-separated decimal)
  pub elliptic_curves: String,
  
- /// elliptic curve点formatlist (comma-separated decimal)
+ /// elliptic curvepointformatlist (comma-separated decimal)
  pub ec_point_formats: String,
  
  /// complete JA3 string ( for Calculatehash)
@@ -58,7 +58,7 @@ impl JA3 {
  /// - `ciphers`: cipher suitelist (hexadecimalvalue)
  /// - `extensions`: extensionlist (hexadecimalvalue)
  /// - `elliptic_curves`: elliptic curvelist (hexadecimalvalue)
- /// - `ec_point_formats`: elliptic curve点formatlist (hexadecimalvalue)
+ /// - `ec_point_formats`: elliptic curvepointformatlist (hexadecimalvalue)
  ///
  /// # Returns
  /// JA3 fingerprintstruct
@@ -141,9 +141,9 @@ impl JA3 {
  format!("{:x}", digest)
  }
 
- /// from ClientHello 原beginningcountdataGenerate JA3
+ /// from ClientHello originalbeginningcountdataGenerate JA3
  ///
- /// this isan便捷method， for from complete ClientHello message in Extract并Generate JA3
+ /// this isanconvenientmethod， for from complete ClientHello message in Extract并Generate JA3
  pub fn from_client_hello(client_hello: &crate::signature::ClientHelloSignature) -> Self {
  // Convertelliptic curve CurveID as u16
  let curves: Vec<u16> = client_hello

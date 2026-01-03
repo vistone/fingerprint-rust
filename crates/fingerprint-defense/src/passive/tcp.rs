@@ -32,13 +32,13 @@ pub struct TcpFingerprint {
  /// matchsignature
  pub signature: Option<TcpSignature>,
 
- /// similar度
+ /// similardegree
  pub similarity: f64,
 
  /// detect to operating system
  pub os: Option<String>,
 
- /// 原beginningtrait
+ /// originalbeginningtrait
  pub features: TcpFeatures,
 
  /// fingerprintmetadata
@@ -121,7 +121,7 @@ impl TcpAnalyzer {
  signatures: HashMap::new(),
  };
 
- // loaddefaultsignature
+ // load defaultsignature
  analyzer.load_default_signatures()?;
 
  Ok(analyzer)
@@ -142,7 +142,7 @@ impl TcpAnalyzer {
  Ok(())
  }
 
- /// loaddefaultsignature
+ /// load defaultsignature
  fn load_default_signatures(&mut self) -> Result<(), String> {
  // AddsomebasicsignatureasExamples
  // these is commonoperating systemsignature
@@ -328,7 +328,7 @@ impl TcpAnalyzer {
  }
  }
 
- /// Calculatesimilar度
+ /// Calculatesimilardegree
  fn calculate_similarity(&self, features: &TcpFeatures, signature: &TcpSignature) -> f64 {
  let mut score = 0.0;
  let mut total = 0.0;

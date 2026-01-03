@@ -1,6 +1,6 @@
 //! TLS extensiontypeconstant
 //!
-//! 来source：https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
+//! fromsource：https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
 //! finallyUpdate：March 2023
 
 /// TLS extensiontypeconstant
@@ -24,7 +24,7 @@ pub mod extension_types {
  pub const EXT_TYPE_COMPRESS_CERTIFICATE: u16 = 27;
  pub const EXT_TYPE_ECH: u16 = 0xfe0d;
 
- // 非 IANA allocate's extensions
+ // non IANA allocate's extensions
  pub const EXT_TYPE_APPLICATION_SETTINGS: u16 = 17513;
  pub const EXT_TYPE_APPLICATION_SETTINGS_NEW: u16 = 17613;
 }
@@ -38,7 +38,7 @@ pub mod compression {
 
 pub use compression::*;
 
-/// 点formatconstant
+/// pointformatconstant
 pub mod point_formats {
  pub const POINT_FORMAT_UNCOMPRESSED: u8 = 0;
 }

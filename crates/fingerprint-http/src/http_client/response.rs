@@ -35,7 +35,7 @@ impl HttpResponse {
  }
  }
 
- /// from 原beginningresponseParse (completeversion)
+ /// from originalbeginningresponseParse (completeversion)
  pub fn parse(raw_response: &[u8]) -> Result<Self, String> {
  let start = std::time::Instant::now();
 
@@ -49,7 +49,7 @@ impl HttpResponse {
  let header_str = String::from_utf8_lossy(header_bytes);
  let mut lines = header_str.lines();
 
- // 3. Parsestatus行: HTTP/1.1 200 OK
+ // 3. Parsestatusexecute: HTTP/1.1 200 OK
  let status_line = lines.next().ok_or("missingstatus行")?;
  let (http_version, status_code, status_text) = Self::parse_status_line(status_line)?;
 
@@ -71,7 +71,7 @@ impl HttpResponse {
  })
  }
 
- /// find headers endbit置 (\r\n\r\n)
+ /// find headers endbitplace (\r\n\r\n)
  fn find_headers_end(data: &[u8]) -> Result<(usize, usize), String> {
  // securityCheck：ensurecountdatalengthat least as 4 bytes
  if data.len() < 4 {
@@ -81,7 +81,7 @@ impl HttpResponse {
  // use saturating_sub preventdown溢，butneed额outsideCheckedgeboundary
  let max_i = data.len().saturating_sub(3);
  for i in 0..max_i {
- // securityCheck：ensure不will越boundaryaccess
+ // securityCheck：ensure不willexceedboundaryaccess
  if i + 4 <= data.len() && &data[i..i + 4] == b"\r\n\r\n" {
  return Ok((i, i + 4));
  }
@@ -89,7 +89,7 @@ impl HttpResponse {
  Err("not找 to headers endmarker".to_string())
  }
 
- /// Parsestatus行
+ /// Parsestatusexecute
  fn parse_status_line(line: &str) -> Result<(String, u16, String), String> {
  let parts: Vec<&str> = line.splitn(3, ' ').collect();
 
@@ -160,7 +160,7 @@ impl HttpResponse {
  let mut pos = 0;
 
  loop {
- // find chunk size 行end (\r\n)
+ // find chunk size executeend (\r\n)
  let size_line_end = data[pos..]
 .windows(2)
 .position(|w| w == b"\r\n")
@@ -189,7 +189,7 @@ impl HttpResponse {
  break;
  }
 
- // skip size 行 and \r\n
+ // skip size execute and \r\n
  pos += size_line_end + 2;
 
  // Checkwhether有enoughcountdata
@@ -338,7 +338,7 @@ mod tests {
 
  assert_eq!(response.status_code, 200);
  assert_eq!(response.status_text, "OK");
- // headers store when willconvert to小写
+ // headers store when willconvert tosmall写
  assert_eq!(
  response.get_header("content-type"),
  Some(&"text/html".to_string())
@@ -410,7 +410,7 @@ mod tests {
  encoder.write_all(data.as_bytes()).unwrap();
  let compressed = encoder.finish().unwrap();
 
- // willcompressioncountdata分block
+ // willcompressioncountdataminuteblock
  let chunk1 = &compressed[0..10];
  let chunk2 = &compressed[10..];
 

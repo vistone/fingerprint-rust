@@ -1,6 +1,6 @@
-//! systemupdown文
+//! systemupdowntext
 //!
-//! definesystemlevelprotectionupdown文info，includenetworkentity、 when between、protocol etc.。
+//! definesystemlevelprotectionupdowntextinfo，includenetworkentity、 when between、protocol etc.。
 
 use chrono::{DateTime, Utc};
 use std::net::IpAddr;
@@ -58,7 +58,7 @@ pub enum ProtocolType {
 }
 
 impl ProtocolType {
- /// from IP protocol号Create
+ /// from IP protocolnumberCreate
  pub fn from_ip_protocol(protocol: u8) -> Self {
  match protocol {
  6 => Self::Tcp,
@@ -68,7 +68,7 @@ impl ProtocolType {
  }
  }
 
- /// convert to IP protocol号
+ /// convert to IP protocolnumber
  pub fn to_ip_protocol(&self) -> u8 {
  match self {
  Self::Tcp => 6,
@@ -102,13 +102,13 @@ impl std::fmt::Display for ProtocolType {
  }
 }
 
-/// systemupdown文
+/// systemupdowntext
 ///
-/// representsystemlevelprotectionupdown文info，includingnetworktrafficcompletemetadata。
+/// representsystemlevelprotectionupdowntextinfo，includingnetworktrafficcompletemetadata。
 ///
 /// ## Core Concept
 ///
-/// systemlevelprotectionneedconsidercompletesystemupdown文，而not onlyonly is singleservice or port：
+/// systemlevelprotectionneedconsidercompletesystemupdowntext，而not onlyonly is singleservice or port：
 /// - networkentitycompleteinfo (source/target IP、port)
 /// - protocoltype and direction
 /// - when between戳 and network interfaceinterface
@@ -164,7 +164,7 @@ pub struct SystemContext {
 }
 
 impl SystemContext {
- /// Create a newsystemupdown文
+ /// Create a newsystemupdowntext
  pub fn new(source_ip: IpAddr, target_ip: IpAddr, protocol: ProtocolType) -> Self {
  Self {
  source_ip,
@@ -179,7 +179,7 @@ impl SystemContext {
  }
  }
 
- /// Createbringportsystemupdown文
+ /// Createbringportsystemupdowntext
  pub fn with_ports(
  source_ip: IpAddr,
  target_ip: IpAddr,
@@ -221,7 +221,7 @@ impl SystemContext {
  }
  }
 
- /// Gettrafficuniqueidentifier符 ( for 追踪)
+ /// Gettrafficuniqueidentifiersymbol ( for 追踪)
  pub fn flow_id(&self) -> String {
  format!(
  "{}:{}->{}:{}:{}",

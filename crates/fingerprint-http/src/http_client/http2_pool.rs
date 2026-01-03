@@ -5,7 +5,7 @@
 //! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
 //! - netconnpool role：only in Createnewsession when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
-//! - sessionestablishback，connectionlifecycle由 H2Session backbackground task (Driver)manage
+//! - sessionestablishback，connectionlifecycleby H2Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -28,7 +28,7 @@ pub async fn send_http2_request_with_pool(
  use tokio_rustls::TlsConnector;
 
  // Note: connection poolinconnection in Create when maynoapplication TCP Profile
- // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
+ // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbeforethenthrough generate_unified_fingerprint sync TCP Profile
  // herewestill from connection poolGetconnection，butnewCreateconnectionwillapplication TCP Profile ( if configuration了)
 
  // from connection poolGetconnection
@@ -134,7 +134,7 @@ pub async fn send_http2_request_with_pool(
 .await?;
 
  // from sessionpoolGet SendRequest is Arc<TokioMutex<SendRequest>>
- // needGetlock才能use
+ // needGetlock才canuse
  let mut client = send_request.lock().await;
 
  // Build HTTP/2 request
@@ -188,7 +188,7 @@ pub async fn send_http2_request_with_pool(
 .send_request(http2_request, false) // Fix: 改 as false，only in send完 body back才endstream
 .map_err(|e| HttpClientError::Http2Error(format!("sendrequestfailure: {}", e)))?;
 
- // releaselock，allowotherrequestreuse同ansession
+ // releaselock，allowotherrequestreusesameansession
  drop(client);
 
  // Fix: through SendStream sendrequest体 ( if exists)
@@ -325,7 +325,7 @@ mod tests {
  return;
  }
 
- // wait一小segment when between，ensuresessionalreadyestablish
+ // waita smallsegment when between，ensuresessionalreadyestablish
  tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
  println!("\n📡 sendsecond HTTP/2 request (shouldreusesession)...");
@@ -355,7 +355,7 @@ mod tests {
  let mut create_count = 0;
  let mut reuse_count = 0;
  for line in log_content.lines() {
- // simplestringmatch来Parse JSON log
+ // simplestringmatchfromParse JSON log
  if line.contains("\"message\"") {
  let location = if let Some(start) = line.find("\"location\":\"") {
  let end = line[start + 12..].find('"').unwrap_or(0);

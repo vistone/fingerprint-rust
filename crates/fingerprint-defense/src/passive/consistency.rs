@@ -22,7 +22,7 @@ impl ConsistencyAnalyzer {
 }
 
 impl ConsistencyAnalyzer {
- /// analysistrafficin多layerconsistency
+ /// analysistrafficinmultiplelayerconsistency
  pub fn analyze_flow(&self, flow: &NetworkFlow) -> ConsistencyReport {
  let mut report = ConsistencyReport::new();
 
@@ -97,7 +97,7 @@ impl ConsistencyAnalyzer {
  );
  }
 
- // 4. JA4+ seriescrossValidate (更深layerfingerprintconsistency)
+ // 4. JA4+ seriescrossValidate (more深layerfingerprintconsistency)
  if let (Some(tls), Some(http)) = (tls_fingerprints.first(), http_fingerprints.first()) {
  if let (Some(ja4), Some(ja4h)) =
  (tls.metadata().get("ja4"), http.metadata().get("ja4h"))

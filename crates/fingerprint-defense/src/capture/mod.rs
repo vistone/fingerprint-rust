@@ -1,6 +1,6 @@
 //! countpacketcapturemodule
 //!
-//! use纯 Rust implement from networkinterface or file实 when capturecountpacket (nonesystemdepend)。
+//! use纯 Rust implement from networkinterface or fileactual when capturecountpacket (nonesystemdepend)。
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
@@ -17,7 +17,7 @@ impl CaptureEngine {
  Self { analyzer }
  }
 
- /// from specifiednetwork interfacestart实 when capture
+ /// from specifiednetwork interfacestartactual when capture
  pub async fn start_live(&self, device_name: &str) -> Result<(), String> {
  // findspecifiednetworkinterface
  let interface = datalink::interfaces()
@@ -37,12 +37,12 @@ impl CaptureEngine {
  Ok(())
  }
 
- /// from networkinterfacecapturecountpacket (blocking式)
+ /// from networkinterfacecapturecountpacket (blockingstyle)
  fn capture_from_interface(
  interface: NetworkInterface,
  analyzer: Arc<PassiveAnalyzer>,
  ) -> Result<(), String> {
- // Createcountdata链路channel
+ // Createcountdatachainpathchannel
  let (_tx, mut rx) = match datalink::channel(&interface, Default::default()) {
  Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
  Ok(_) => return Err("不supportchanneltype".to_string()),

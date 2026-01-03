@@ -4,8 +4,8 @@
 //! - HTTP/3 adoptsessionpool (H3SessionPool)implement QUIC sessionreuse
 //! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
 //! - reusemethod：concurrentmultiplereuse (an QUIC connectioncan when processmultiple Stream)
-//! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，no need netconnpool
-//! - sessionestablishback，connectionlifecycle由 H3Session backbackground task (Driver)manage
+//! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage，no need netconnpool
+//! - sessionestablishback，connectionlifecycleby H3Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -108,7 +108,7 @@ pub async fn send_http3_request_with_pool(
  })
 .await?;
 
- // Get并排他性地use SendRequest
+ // Get并排他property地use SendRequest
  let mut send_request = send_request_mutex.lock().await;
 
  // Build HTTP/3 request

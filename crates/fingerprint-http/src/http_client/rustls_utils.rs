@@ -1,4 +1,4 @@
-//! rustls configurationtool (供 HTTP/1/2/3 reuse)
+//! rustls configurationtool (provide HTTP/1/2/3 reuse)
 //!
 //! target：
 //! - single entryBuild root store
@@ -30,7 +30,7 @@ pub fn build_root_store() -> rustls::RootCertStore {
  root_store
 }
 
-/// 若 verify_tls=false，则安装"acceptallcertificate" verifier (危险Features，only for debug)
+/// 若 verify_tls=false，thensafeinstall"acceptallcertificate" verifier (危险Features，only for debug)
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
  if verify_tls {
@@ -39,7 +39,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 
  // Note: rustls 0.21 API maydifferent
  // If verify_tls=false, use dangerous configurationacceptallcertificate
- // 这need rustls dangerous_configuration feature
+ // thisneed rustls dangerous_configuration feature
  #[cfg(feature = "dangerous_configuration")]
  {
  use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
@@ -88,7 +88,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
  #[cfg(not(feature = "dangerous_configuration"))]
  {
  // Ifno dangerous_configuration feature, ignore verify_tls=false settings
- // beginningfinalValidatecertificate (更security)
+ // beginningfinalValidatecertificate (moresecurity)
  eprintln!("warning: verify_tls=false need dangerous_configuration feature，alreadyignore");
  }
 }
@@ -101,7 +101,7 @@ pub fn build_client_config(
 ) -> rustls::ClientConfig {
  let root_store = build_root_store();
 
- // defaultconfiguration ( if unable toBased on profile match，则back to securitydefaultvalue)
+ // defaultconfiguration ( if unable toBased on profile match，thenback to securitydefaultvalue)
  let builder = rustls::ClientConfig::builder()
 .with_safe_defaults()
 .with_root_certificates(root_store)
@@ -109,7 +109,7 @@ pub fn build_client_config(
 
  let mut cfg = builder;
 
- // 强化fingerprint：matchspecific's cipher suites and TLS version
+ // strong化fingerprint：matchspecific's cipher suites and TLS version
  // FIXME: s.suite() as u16 fail on rustls 0.21. Restore this when fixed.
  /*
  if let Some(profile) = profile {
@@ -160,7 +160,7 @@ pub fn build_client_config(
  cfg.alpn_protocols = alpn_protocols;
  apply_verify_tls(&mut cfg, verify_tls);
 
- // optional： in send ClientHello before by fingerprint spec reorderextensionencodingorder (need配套 rustls fork)。
+ // optional： in send ClientHello before by fingerprint spec reorderextensionencodingorder (needmatch套 rustls fork)。
  // Note: 此Featuresneedsupport ClientHelloCustomizer rustls fork，standard rustls 不support。
  // current被disabled，becausestandard rustls excluding ClientHelloCustomizer API。
  // if neededuse此Features，needusesupport ClientHelloCustomizer rustls fork 并enabledcorresponding feature。

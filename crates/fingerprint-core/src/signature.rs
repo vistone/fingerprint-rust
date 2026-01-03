@@ -25,7 +25,7 @@ pub struct ClientHelloSignature {
  pub extensions: Vec<u16>,
  /// elliptic curvelist
  pub elliptic_curves: Vec<CurveID>,
- /// elliptic curve点format
+ /// elliptic curvepointformat
  pub elliptic_curve_point_formats: Vec<u8>,
  /// signaturealgorithmlist
  pub signature_algorithms: Vec<u16>,
@@ -109,7 +109,7 @@ impl ClientHelloSignature {
  /// compare twosignaturewhethersimilar (ignore GREASE value)
  ///
  /// # Parameters
- /// * `other` - 要compare另ansignature
+ /// * `other` - needcompare另ansignature
  ///
  /// # Returns
  /// * `true` if signaturesimilar (ignore GREASE backsame)，`false` otherwise
@@ -172,7 +172,7 @@ impl Fingerprint for ClientHelloSignature {
 
  // tryconvert to ClientHelloSignature
  // due to trait limit，wecan onlycomparehashvalue
- // actualuse in ，shouldthroughtypeConvert来compare
+ // actualuse in ，shouldthroughtypeConvertfromcompare
  self.hash() == other.hash()
  }
 
