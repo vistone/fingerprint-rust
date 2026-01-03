@@ -20,9 +20,9 @@ pub type ClientHelloSpecFactory = fn() -> Result<ClientHelloSpec, String>;
 /// Corresponds to Go version's tls.ClientHelloID
 #[derive(Debug, Clone)]
 pub struct ClientHelloID {
- /// Client name（如 "Chrome", "Firefox", "Safari"）
+ /// Client name (如 "Chrome", "Firefox", "Safari")
  pub client: String,
- /// Version version号（如 "135", "133"）
+ /// Version version号 (如 "135", "133")
  pub version: String,
  /// SpecFactory for Generate ClientHelloSpec
  pub spec_factory: ClientHelloSpecFactory,
@@ -37,12 +37,12 @@ impl ClientHelloID {
  }
  }
 
- /// convert tostringrepresent（Corresponds to Go version's Str()）
+ /// convert tostringrepresent (Corresponds to Go version's Str())
  pub fn str(&self) -> String {
  format!("{}-{}", self.client, self.version)
  }
 
- /// convert to ClientHelloSpec（Corresponds to Go version's ToSpec()）
+ /// convert to ClientHelloSpec (Corresponds to Go version's ToSpec())
  pub fn to_spec(&self) -> Result<ClientHelloSpec, String> {
  (self.spec_factory)()
  }
@@ -70,17 +70,17 @@ impl std::hash::Hash for ClientHelloID {
 pub struct ClientProfile {
  /// Client Hello ID
  pub client_hello_id: ClientHelloID,
- /// HTTP/2 Settings（Corresponds to Go version's map[http2.SettingID]uint32）
+ /// HTTP/2 Settings (Corresponds to Go version's map[http2.SettingID]uint32)
  pub settings: HTTP2Settings,
- /// Settings order（Corresponds to Go version's []http2.SettingID）
+ /// Settings order (Corresponds to Go version's []http2.SettingID)
  pub settings_order: Vec<u16>,
- /// Pseudo Header order（Corresponds to Go version's []string）
+ /// Pseudo Header order (Corresponds to Go version's []string)
  pub pseudo_header_order: Vec<String>,
- /// Connection Flow（Corresponds to Go version's uint32）
+ /// Connection Flow (Corresponds to Go version's uint32)
  pub connection_flow: u32,
- /// Priorities（Corresponds to Go version's []http2.Priority）
+ /// Priorities (Corresponds to Go version's []http2.Priority)
  pub priorities: Vec<String>,
- /// Header Priority（Corresponds to Go version's *http2.PriorityParam）
+ /// Header Priority (Corresponds to Go version's *http2.PriorityParam)
  pub header_priority: Option<HTTP2PriorityParam>,
  /// TCP Settings (Active Fingerprinting)
  pub tcp_profile: Option<TcpProfile>,
@@ -116,7 +116,7 @@ impl ClientProfile {
  }
  }
 
- /// Get Client Hello ID string（Corresponds to Go version's GetClientHelloStr()）
+ /// Get Client Hello ID string (Corresponds to Go version's GetClientHelloStr())
  pub fn get_client_hello_str(&self) -> String {
  self.client_hello_id.str()
  }
@@ -161,7 +161,7 @@ impl ClientProfile {
  /// If不 exists, Based on User-Agent Generate
  ///
  /// # Parameters
- /// - `user_agent`: User-Agent string， for inferoperating system（ if tcp_profile 不 exists）
+ /// - `user_agent`: User-Agent string， for inferoperating system ( if tcp_profile 不 exists)
  ///
  /// # Returns
  /// TCP Profile reference
@@ -173,12 +173,12 @@ impl ClientProfile {
  self.tcp_profile.as_ref().unwrap()
  }
 
- /// Get Settings（Corresponds to Go version's GetSettings()）
+ /// Get Settings (Corresponds to Go version's GetSettings())
  pub fn get_settings(&self) -> &HTTP2Settings {
  &self.settings
  }
 
- /// Get Settings Order（Corresponds to Go version's GetSettingsOrder()）
+ /// Get Settings Order (Corresponds to Go version's GetSettingsOrder())
  pub fn get_settings_order(&self) -> &[u16] {
  &self.settings_order
  }
@@ -198,12 +198,12 @@ impl ClientProfile {
  &self.priorities
  }
 
- /// Get Header Priority（Corresponds to Go version's GetHeaderPriority()）
+ /// Get Header Priority (Corresponds to Go version's GetHeaderPriority())
  pub fn get_header_priority(&self) -> Option<&HTTP2PriorityParam> {
  self.header_priority.as_ref()
  }
 
- /// Get ClientHelloSpec（Corresponds to Go version's GetClientHelloSpec()）
+ /// Get ClientHelloSpec (Corresponds to Go version's GetClientHelloSpec())
  /// this istrue TLS fingerprintconfiguration，can for actual TLS handshake
  pub fn get_client_hello_spec(&self) -> Result<ClientHelloSpec, String> {
  self.client_hello_id.to_spec()
@@ -216,7 +216,7 @@ impl ClientProfile {
  }
 }
 
-/// default Client Profile（Chrome 135）
+/// default Client Profile (Chrome 135)
 pub fn default_client_profile() -> ClientProfile {
  chrome_135()
 }
@@ -245,7 +245,7 @@ pub fn chrome_103() -> ClientProfile {
 /// Chrome 133 fingerprintconfiguration
 pub fn chrome_133() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
- // defaultuse Windows TCP Profile（most commonbrowserenvironment）
+ // defaultuse Windows TCP Profile (most commonbrowserenvironment)
  // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
@@ -270,7 +270,7 @@ pub fn chrome_133() -> ClientProfile {
 /// Firefox 133 fingerprintconfiguration
 pub fn firefox_133() -> ClientProfile {
  let (settings, settings_order) = firefox_http2_settings();
- // defaultuse Windows TCP Profile（most commonbrowserenvironment）
+ // defaultuse Windows TCP Profile (most commonbrowserenvironment)
  // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
@@ -315,10 +315,10 @@ pub fn chrome_136() -> ClientProfile {
  )
 }
 
-/// Chrome 135 fingerprintconfiguration（default）
+/// Chrome 135 fingerprintconfiguration (default)
 pub fn chrome_135() -> ClientProfile {
  let (settings, settings_order) = chrome_http2_settings();
- // defaultuse Windows TCP Profile（most commonbrowserenvironment）
+ // defaultuse Windows TCP Profile (most commonbrowserenvironment)
  // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
@@ -343,7 +343,7 @@ pub fn chrome_135() -> ClientProfile {
 /// Firefox 135 fingerprintconfiguration
 pub fn firefox_135() -> ClientProfile {
  let (settings, settings_order) = firefox_http2_settings();
- // defaultuse Windows TCP Profile（most commonbrowserenvironment）
+ // defaultuse Windows TCP Profile (most commonbrowserenvironment)
  // usercanthrough with_synced_tcp_profile() or with_tcp_profile_for_os() 来sync
  let default_tcp_profile = Some(TcpProfile::for_os(
  fingerprint_core::types::OperatingSystem::Windows10,
@@ -518,7 +518,7 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  map.insert("opera_90".to_string(), opera_91());
  map.insert("opera_91".to_string(), opera_91());
 
- // Edge series（use Chromium inside核，TLS fingerprint and Chrome same）
+ // Edge series (use Chromium inside核，TLS fingerprint and Chrome same)
  map.insert("edge_120".to_string(), edge_120());
  map.insert("edge_124".to_string(), edge_124());
  map.insert("edge_133".to_string(), edge_133());
@@ -550,7 +550,7 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  map
 }
 
-/// globalfingerprintconfigurationmap表（threadsecurity）
+/// globalfingerprintconfigurationmap表 (threadsecurity)
 static MAPPED_TLS_CLIENTS: OnceLock<HashMap<String, ClientProfile>> = OnceLock::new();
 
 /// Getfingerprintconfigurationmap表
@@ -561,7 +561,7 @@ pub fn mapped_tls_clients() -> &'static HashMap<String, ClientProfile> {
 /// Based on profile nameGet ClientProfile
 ///
 /// # Parameters
-/// - `profile_name`: fingerprintconfigurationname（如 "chrome_135", "firefox_133"）
+/// - `profile_name`: fingerprintconfigurationname (如 "chrome_135", "firefox_133")
 ///
 /// # Returns
 /// returnpair应 ClientProfile， if 不 exists则returnerror
@@ -578,7 +578,7 @@ pub fn get_client_profile(profile_name: &str) -> Result<ClientProfile, String> {
 /// Based on profile name and User-Agent Generatesyncbrowserfingerprint and TCP fingerprint
 ///
 /// # Parameters
-/// - `profile_name`: fingerprintconfigurationname（如 "chrome_135", "firefox_133"）
+/// - `profile_name`: fingerprintconfigurationname (如 "chrome_135", "firefox_133")
 /// - `user_agent`: User-Agent string， for sync TCP fingerprint
 ///
 /// # Returns

@@ -251,7 +251,7 @@ mod tests {
 
  let md = report.to_markdown();
  assert!(md.contains("# Test Report"));
- // Checksuccess率field exists（不强制requirepreciseformat）
+ // Checksuccess率field exists (不强制requirepreciseformat)
  assert!(md.contains("success率") || md.contains("Success"));
  assert!(md.contains("90."));
  }

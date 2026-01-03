@@ -38,7 +38,7 @@ pub struct HttpRequest {
  pub body: Option<Vec<u8>>,
 }
 
-/// auxiliaryfunction： as requestAdd Cookie（ if exists）
+/// auxiliaryfunction： as requestAdd Cookie ( if exists)
 pub fn add_cookies_to_request(
  request: &mut HttpRequest,
  cookie_store: &super::cookie::CookieStore,
@@ -148,7 +148,7 @@ impl HttpRequest {
  request
  }
 
- /// Build HTTP/1.1 requestbytes（recommend）
+ /// Build HTTP/1.1 requestbytes (recommend)
  pub fn build_http1_request_bytes(
  &self,
  host: &str,
@@ -162,7 +162,7 @@ impl HttpRequest {
 
  let mut head = format!("{} {} HTTP/1.1\r\n", safe_method, safe_path);
 
- // useorderedlist（ if provide）
+ // useorderedlist ( if provide)
  let ordered_headers = if let Some(order) = header_order {
  let mut h = HTTPHeaders::new();
  for (k, v) in &self.headers {
@@ -216,7 +216,7 @@ impl HttpRequest {
  out
  }
 
- /// random化 Header size写（simulate某些specificfingerprint or avoid WAF trait）
+ /// random化 Header size写 (simulate某些specificfingerprint or avoid WAF trait)
  pub fn with_randomized_header_case(&mut self) {
  let mut new_headers = HashMap::new();
  for (key, value) in self.headers.drain() {

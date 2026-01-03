@@ -37,7 +37,7 @@ impl Default for TcpProfile {
 impl TcpProfile {
  /// Based onoperating systemtypeGenerates corresponding TCP Profile
  ///
- /// ensure TCP fingerprint and browserfingerprint（User-Agent）consistent
+ /// ensure TCP fingerprint and browserfingerprint (User-Agent)consistent
  pub fn for_os(os: crate::types::OperatingSystem) -> Self {
  match os {
  crate::types::OperatingSystem::Windows10 | crate::types::OperatingSystem::Windows11 => {
@@ -83,7 +83,7 @@ impl TcpProfile {
  // from User-Agent inferoperating system
  // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
  let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
- // iOS device：use macOS TCP fingerprint（iOS based on macOS）
+ // iOS device：use macOS TCP fingerprint (iOS based on macOS)
  OperatingSystem::MacOS14
  } else if user_agent.contains("Windows NT 10.0") {
  OperatingSystem::Windows10
@@ -104,14 +104,14 @@ impl TcpProfile {
  } else if user_agent.contains("Linux") || user_agent.contains("Android") {
  OperatingSystem::Linux
  } else {
- // defaultuse Windows（most commonbrowserenvironment）
+ // defaultuse Windows (most commonbrowserenvironment)
  OperatingSystem::Windows10
  };
 
  Self::for_os(os)
  }
 
- /// from platformstring（如 "Windows", "macOS", "Linux"）Generate TCP Profile
+ /// from platformstring (如 "Windows", "macOS", "Linux")Generate TCP Profile
  pub fn from_platform(platform: &str) -> Self {
  use crate::types::OperatingSystem;
 
@@ -129,7 +129,7 @@ impl TcpProfile {
 /// TCP fingerprint
 #[derive(Debug, Clone)]
 pub struct TcpFingerprint {
- /// fingerprint ID（based on TCP traithash）
+ /// fingerprint ID (based on TCP traithash)
  pub id: String,
 
  /// TTL
@@ -144,7 +144,7 @@ pub struct TcpFingerprint {
  /// Window Scale
  pub window_scale: Option<u8>,
 
- /// TCP optionsstring（ for p0f compatible）
+ /// TCP optionsstring ( for p0f compatible)
  pub options_str: Option<String>,
 
  /// metadata

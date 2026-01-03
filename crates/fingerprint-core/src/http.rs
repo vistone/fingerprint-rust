@@ -10,7 +10,7 @@ use std::hash::{Hash, Hasher};
 /// HTTP fingerprint
 #[derive(Debug, Clone)]
 pub struct HttpFingerprint {
- /// fingerprint ID（based on User-Agent and Headers hash）
+ /// fingerprint ID (based on User-Agent and Headers hash)
  pub id: String,
 
  /// User-Agent
@@ -19,7 +19,7 @@ pub struct HttpFingerprint {
  /// HTTP header
  pub headers: HashMap<String, String>,
 
- /// HTTP/2 settings（ if 有）
+ /// HTTP/2 settings ( if 有)
  pub http2_settings: Option<Http2Settings>,
 
  /// metadata

@@ -151,7 +151,7 @@ impl SystemAnalysisResult {
  }
  }
 
- /// Createsecurityresult（无threat）
+ /// Createsecurityresult (无threat)
  pub fn safe() -> Self {
  Self {
  fingerprints: Vec::new(),
@@ -181,7 +181,7 @@ impl SystemAnalysisResult {
  }
  }
 
- /// Updaterisk score（based onthreattype）
+ /// Updaterisk score (based onthreattype)
  fn update_risk_score(&mut self) {
  if self.threat_types.is_empty() {
  self.risk_score = 0.0;
@@ -248,7 +248,7 @@ impl Clone for SystemAnalysisResult {
 /// systemlevelanalysis from **systemperspective**analysisnetworktraffic：
 /// - not onlyonly is singleprotocolParse，而 is 综合analysis
 /// - considersystemwholebehaviorpattern
-/// - detectsystemlevelthreat（DDoS、scan、abnormaltraffic etc.）
+/// - detectsystemlevelthreat (DDoS、scan、abnormaltraffic etc.)
 ///
 /// ## Implementation Example
 ///

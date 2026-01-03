@@ -7,7 +7,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-/// TCP signature（simplify版， for match）
+/// TCP signature (simplify版， for match)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TcpSignature {
  pub id: String,
@@ -95,7 +95,7 @@ pub struct TcpFeatures {
  /// TTL
  pub ttl: u8,
 
- /// initialbeginning TTL（infer）
+ /// initialbeginning TTL (infer)
  pub initial_ttl: u8,
 
  /// windowsize
@@ -346,7 +346,7 @@ impl TcpAnalyzer {
  }
  }
 
- // Window Size match（simplify）
+ // Window Size match (simplify)
  if signature.window_size > 0 {
  total += 1.0;
  let window_diff = (features.window as i32 - signature.window_size as i32).abs();

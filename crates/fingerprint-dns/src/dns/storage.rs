@@ -1,13 +1,13 @@
 //! DNS storemanagemodule
 //!
-//! provide原child性filewrite and 多formatoutput（JSON、YAML、TOML）
+//! provide原child性filewrite and 多formatoutput (JSON、YAML、TOML)
 
 use crate::dns::types::{DNSError, DomainIPs};
 use std::fs;
 use std::io::Write;
 use std::path::Path;
 
-/// willdomain IP infosave to file（原child性write）
+/// willdomain IP infosave to file (原child性write)
 /// support JSON、YAML、TOML threeformat
 pub fn save_domain_ips<P: AsRef<Path>>(
  domain: &str,
@@ -42,7 +42,7 @@ pub fn load_domain_ips<P: AsRef<Path>>(
 ) -> Result<Option<DomainIPs>, DNSError> {
  let base_dir = base_dir.as_ref();
 
- // 按prioritytry：JSON -> YAML -> TOML
+ //  by prioritytry：JSON -> YAML -> TOML
  let json_path = base_dir.join(format!("{}.json", domain));
  if json_path.exists() {
  return Ok(Some(load_from_json(&json_path)?));
@@ -61,7 +61,7 @@ pub fn load_domain_ips<P: AsRef<Path>>(
  Ok(None)
 }
 
-/// save as JSON（原child性write）
+/// save as JSON (原child性write)
 fn save_as_json(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
  let json_content = serde_json::to_string_pretty(domain_ips)?;
  atomic_write(path, json_content.as_bytes())?;
@@ -75,7 +75,7 @@ fn load_from_json(path: &Path) -> Result<DomainIPs, DNSError> {
  Ok(domain_ips)
 }
 
-/// save as YAML（原child性write）
+/// save as YAML (原child性write)
 fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
  // use serde_yaml directlyserialize
  let yaml_string =
@@ -93,7 +93,7 @@ fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
  Ok(domain_ips)
 }
 
-/// save as TOML（原child性write）
+/// save as TOML (原child性write)
 fn save_as_toml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
  let toml_content =
  toml::to_string_pretty(domain_ips).map_err(|e| DNSError::TomlSerialize(e.to_string()))?;

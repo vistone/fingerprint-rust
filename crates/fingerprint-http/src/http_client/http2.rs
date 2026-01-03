@@ -43,7 +43,7 @@ async fn send_http2_request_async(
 
  let start = Instant::now();
 
- // 1. establish TCP connection（application TCP Profile）
+ // 1. establish TCP connection (application TCP Profile)
  let addr = format!("{}:{}", host, port);
  let socket_addrs = addr
 .to_socket_addrs()
@@ -51,7 +51,7 @@ async fn send_http2_request_async(
 .next()
 .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
 
- // application TCP Profile（ if configuration了）
+ // application TCP Profile ( if configuration了)
  let tcp = if let Some(profile) = &config.profile {
  if let Some(ref tcp_profile) = profile.tcp_profile {
  super::tcp_fingerprint::connect_tcp_with_profile(socket_addrs, Some(tcp_profile))
@@ -71,7 +71,7 @@ async fn send_http2_request_async(
  // 2. TLS handshake
  let tls_stream = perform_tls_handshake(tcp, host, config).await?;
 
- // 3. HTTP/2 handshake（application Settings configuration）
+ // 3. HTTP/2 handshake (application Settings configuration)
  let mut builder = client::Builder::new();
 
  // applicationfingerprintconfiguration in HTTP/2 Settings
@@ -100,7 +100,7 @@ async fn send_http2_request_async(
  builder.max_header_list_size(max_header_list_size);
  }
 
- // settingsconnectionlevelwindowsize（Connection Flow）
+ // settingsconnectionlevelwindowsize (Connection Flow)
  builder.initial_connection_window_size(profile.connection_flow);
  }
 
@@ -123,7 +123,7 @@ async fn send_http2_request_async(
 .uri(uri)
 .version(http::Version::HTTP_2);
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -140,18 +140,18 @@ async fn send_http2_request_async(
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
- // skip host header（ if userpassed in）
+ // skip host header ( if userpassed in)
  if key.to_lowercase() != "host" {
  http_request = http_request.header(key, value);
  }
  }
 
- // Fix: Buildrequest（h2 need Request<()>，thenthrough SendStream send body）
+ // Fix: Buildrequest (h2 need Request<()>，thenthrough SendStream send body)
  let http_request = http_request
 .body(())
 .map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
 
- // 6. sendrequest（Get SendStream for send body）
+ // 6. sendrequest (Get SendStream for send body)
  // Fix: end_of_stream must as false，otherwisestreamwillimmediatelyclose，unable tosend body
  let has_body = request_with_cookies.body.is_some()
  && !request_with_cookies.body.as_ref().unwrap().is_empty();
@@ -159,7 +159,7 @@ async fn send_http2_request_async(
 .send_request(http_request, false) // Fix: 改 as false，only in send完 body back才endstream
 .map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;
 
- // Fix: through SendStream sendrequest体（ if exists）
+ // Fix: through SendStream sendrequest体 ( if exists)
  if let Some(body) = &request_with_cookies.body {
  if !body.is_empty() {
  // send body countdata，end_of_stream = true representthis isfinallycountdata
@@ -196,7 +196,7 @@ async fn send_http2_request_async(
 .sum();
  if total_header_size > MAX_HTTP2_HEADER_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/2 responseheadertoo large（>{} bytes）",
+ "HTTP/2 responseheadertoo large (>{} bytes)",
  MAX_HTTP2_HEADER_SIZE
  )));
  }
@@ -216,7 +216,7 @@ async fn send_http2_request_async(
  // securityCheck：preventresponsebody too large
  if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/2 responsebody too large（>{} bytes）",
+ "HTTP/2 responsebody too large (>{} bytes)",
  MAX_HTTP2_BODY_SIZE
  )));
  }

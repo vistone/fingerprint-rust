@@ -123,7 +123,7 @@ impl ServerCollector {
  }
 
  eprintln!(" from fileload了 {} DNS server", total_count);
- eprintln!("正 in test DNS serveravailable性（testdomain: {}）...", test_domain);
+ eprintln!("正 in test DNS serveravailable性 (testdomain: {})...", test_domain);
 
  // performhealthCheck
  let validated_pool = pool
@@ -154,7 +154,7 @@ impl ServerCollector {
  }
  );
 
- // saveValidatebackserver（先backup原file）
+ // saveValidatebackserver (先backup原file)
  if valid_count > 0 {
  let backup_path = format!("{}.backup", DEFAULT_SERVER_FILE);
  if let Err(e) = std::fs::copy(file_path, &backup_path) {
@@ -172,15 +172,15 @@ impl ServerCollector {
  Ok((total_count, valid_count))
  }
 
- /// collectallavailable DNS server（pair应 Go BootstrapPoolInternal）
+ /// collectallavailable DNS server (pair应 Go BootstrapPoolInternal)
  /// from multiplesourcecollect，并 in savefrontperformhealthCheck，只preserveavailableserver
  pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
- // 先try from localfileload（pair应 Go loadDefault）
+ // 先try from localfileload (pair应 Go loadDefault)
  let pool = ServerPool::load_default();
 
  if !pool.is_empty() {
  eprintln!(
- " from localfileload了 {} DNS server（alreadythroughValidate，directlyuse）",
+ " from localfileload了 {} DNS server (alreadythroughValidate，directlyuse)",
  pool.len()
  );
  // fileinserveralreadythroughValidate，directlyuse，不perform全面Check
@@ -188,7 +188,7 @@ impl ServerCollector {
  return pool;
  }
 
- // Iffile不 exists or as empty, from networkcollect（pair应 Go BootstrapPoolInternal）
+ // Iffile不 exists or as empty, from networkcollect (pair应 Go BootstrapPoolInternal)
  eprintln!("localfile不 exists or as empty， from networkcollect DNS server...");
 
  match Self::collect_public_dns(timeout).await {
@@ -198,7 +198,7 @@ impl ServerCollector {
 
  // in savefrontperformhealthCheck，只preserveavailableserver
  // usehighconcurrentdetect，每detect to 一batch就immediatelysave，fastcomplete不长 when betweenblocking
- eprintln!("正 in highconcurrenttest DNS serveravailable性（testwhichservercanreturn IP address）...");
+ eprintln!("正 in highconcurrenttest DNS serveravailable性 (testwhichservercanreturn IP address)...");
  let test_timeout = Duration::from_secs(2); // decreasetimeout duration，speed updetect
  let max_concurrency = 500; // 大幅increaseconcurrentcount，speed updetectspeed
  let save_batch_size = 100; // 每detect to 100availableserver就saveonce
@@ -254,7 +254,7 @@ impl ServerCollector {
  }
 }
 
-/// Validatewhether as valid IP address（IPv4 or IPv6）
+/// Validatewhether as valid IP address (IPv4 or IPv6)
 fn is_valid_ip_address(s: &str) -> bool {
  use std::net::{IpAddr, SocketAddr};
 

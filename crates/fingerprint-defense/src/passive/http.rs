@@ -76,7 +76,7 @@ impl fingerprint_core::fingerprint::Fingerprint for HttpFingerprint {
  }
 }
 
-/// HTTP signature（ for match）
+/// HTTP signature ( for match)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HttpSignature {
  pub id: String,
@@ -87,7 +87,7 @@ pub struct HttpSignature {
  pub sample_count: u64,
 }
 
-/// HTTP signature（ for p0f database）
+/// HTTP signature ( for p0f database)
 #[derive(Debug, Clone)]
 pub struct P0fHttpSignature {
  pub id: String,

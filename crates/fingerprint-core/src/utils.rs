@@ -4,7 +4,7 @@
 
 use rand::Rng;
 
-/// from slice in randomly selectanelement（threadsecurity）
+/// from slice in randomly select anelement (threadsecurity)
 /// use thread_rng() ensurethreadsecurity
 pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
  if items.is_empty() {
@@ -15,7 +15,7 @@ pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
  Some(items[index].clone())
 }
 
-/// from stringslice in randomly selectanelement（threadsecurity）
+/// from stringslice in randomly select anelement (threadsecurity)
 pub fn random_choice_string(items: &[&str]) -> Option<String> {
  random_choice(items).map(|s| s.to_string())
 }
@@ -65,7 +65,7 @@ pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSy
 
  // Note: iPhone/iPad User-Agent including "Mac OS X"，need先Checkmovedevice
  if user_agent.contains("iPhone") || user_agent.contains("iPad") {
- // iOS device：use macOS TCP fingerprint（iOS based on macOS）
+ // iOS device：use macOS TCP fingerprint (iOS based on macOS)
  OperatingSystem::MacOS14
  } else if user_agent.contains("Windows NT 10.0") {
  OperatingSystem::Windows10
@@ -86,7 +86,7 @@ pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSy
  } else if user_agent.contains("Linux") || user_agent.contains("Android") {
  OperatingSystem::Linux
  } else {
- // defaultuse Windows（most commonbrowserenvironment）
+ // defaultuse Windows (most commonbrowserenvironment)
  OperatingSystem::Windows10
  }
 }

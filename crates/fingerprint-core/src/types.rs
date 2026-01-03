@@ -81,7 +81,7 @@ impl std::fmt::Display for OperatingSystem {
  }
 }
 
-/// operating systemlist（ for randomly select）
+/// operating systemlist ( for randomly select)
 pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
  OperatingSystem::Windows10,
  OperatingSystem::Windows11,

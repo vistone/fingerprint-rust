@@ -15,7 +15,7 @@ pub struct SelfLearningAnalyzer {
  db: Arc<FingerprintDatabase>,
  /// not知fingerprintobservecounter (fp_id -> count)
  observations: DashMap<String, u64>,
- /// learning thresholdvalue（observe多少次back转入database）
+ /// learning thresholdvalue (observe多少次back转入database)
  learning_threshold: u64,
 }
 
@@ -61,7 +61,7 @@ impl SelfLearningAnalyzer {
  // protection点：limitobservelistsize，preventinside存撑爆 (DoS protection)
  const MAX_OBSERVATIONS: usize = 10000;
  if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
- // If达 to up限且 is new key, 则ignore
+ // If达 to up限 and  is new key, 则ignore
  return;
  }
 

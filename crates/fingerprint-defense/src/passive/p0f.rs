@@ -24,7 +24,7 @@ pub struct P0fDatabase {
  http_response: HashMap<String, P0fHttpSignature>,
 }
 
-/// HTTP signature（p0f format）
+/// HTTP signature (p0f format)
 #[derive(Debug, Clone)]
 pub struct P0fHttpSignature {
  pub id: String,
@@ -114,7 +114,7 @@ impl P0fDatabase {
  Ok(db)
  }
 
- /// Parse TCP signature（usedetailedParseer）
+ /// Parse TCP signature (usedetailedParseer)
  fn parse_tcp_signature(label: &str, sig: &str) -> Result<TcpSignature, P0fError> {
  // usedetailedParseer
  let p0f_sig = p0f_parser::parse_tcp_signature(label, sig)

@@ -20,11 +20,11 @@ use netconnpool::{Config as PoolConfig, ConnectionType, Pool};
 /// connection poolmanageer
 #[cfg(feature = "connection-pool")]
 pub struct ConnectionPoolManager {
- /// connection poolinstance（按 host:port group）
+ /// connection poolinstance ( by  host:port group)
  pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
  /// defaultconfiguration
  config: PoolManagerConfig,
- /// HTTP/2 sessionpool（Fix: implementtrue multiplexreuse）
+ /// HTTP/2 sessionpool (Fix: implementtrue multiplexreuse)
  #[cfg(feature = "http2")]
  h2_session_pool: Arc<super::h2_session_pool::H2SessionPool>,
  /// HTTP/3 sessionpool
@@ -39,7 +39,7 @@ impl Default for ConnectionPoolManager {
  }
 }
 
-/// connection poolmanageer（无connection poolFeatures when 占bit）
+/// connection poolmanageer (无connection poolFeatures when 占bit)
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
  #[allow(dead_code)]
@@ -344,7 +344,7 @@ mod pool_tests {
 
  // Getanconnection
  let conn_result = pool.get();
- // maywillfailure（ if unable toconnection），but不should panic
+ // maywillfailure ( if unable toconnection)，but不should panic
  if let Ok(_conn) = conn_result {
  println!("successGetconnection");
  }

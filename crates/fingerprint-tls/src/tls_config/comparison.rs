@@ -10,9 +10,9 @@ use crate::tls_config::spec::ClientHelloSpec;
 /// fingerprintmatchresult
 #[derive(Debug, Clone, PartialEq)]
 pub enum FingerprintMatch {
- /// completelymatch（include GREASE value）
+ /// completelymatch (include GREASE value)
  Exact,
- /// similarmatch（ignore GREASE valuebacksame）
+ /// similarmatch (ignore GREASE valuebacksame)
  Similar,
  /// does not match
  None,
@@ -58,7 +58,7 @@ pub fn compare_signatures(
  return FingerprintMatch::Exact;
  }
 
- // similarmatch（ignore GREASE）
+ // similarmatch (ignore GREASE)
  if sig1.similar_to(sig2) {
  return FingerprintMatch::Similar;
  }
@@ -110,7 +110,7 @@ mod tests {
  let spec2 = ClientHelloSpec::chrome_133();
  let result = compare_specs(&spec1, &spec2);
  // due toset成了random GREASE，两次Generate spec in GREASE valueupmaydifferent，
- // thereforeresultshould is Similar（ignore GREASE backsame）
+ // thereforeresultshould is Similar (ignore GREASE backsame)
  assert!(matches!(
  result,
  FingerprintMatch::Exact | FingerprintMatch::Similar

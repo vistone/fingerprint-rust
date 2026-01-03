@@ -19,7 +19,7 @@ pub enum TlsVersion {
  V1_0,
  /// SSL 3.0
  Ssl3_0,
- /// SSL 2.0（不support，butpreserveenumvalue）
+ /// SSL 2.0 (不support，butpreserveenumvalue)
  Ssl2_0,
  /// not知version
  Unknown(u16),

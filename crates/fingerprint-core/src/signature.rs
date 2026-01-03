@@ -14,7 +14,7 @@ use sha2::{Digest, Sha256};
 /// including from ClientHello message in Extractallclosekey information
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
- /// fingerprint ID（based on JA4 hash or signaturetraithash）
+ /// fingerprint ID (based on JA4 hash or signaturetraithash)
  pub id: String,
 
  /// TLS version
@@ -57,7 +57,7 @@ impl ClientHelloSignature {
  sig
  }
 
- /// Calculatefingerprint ID（based onsignaturetrait）
+ /// Calculatefingerprint ID (based onsignaturetrait)
  pub fn calculate_id(&self) -> String {
  let mut hasher = Sha256::new();
  hasher.update(self.version.to_u16().to_be_bytes());
@@ -106,13 +106,13 @@ impl ClientHelloSignature {
 .any(|&v| is_grease_value(v))
  }
 
- /// compare twosignaturewhethersimilar（ignore GREASE value）
+ /// compare twosignaturewhethersimilar (ignore GREASE value)
  ///
  /// # Parameters
  /// * `other` - 要compare另ansignature
  ///
  /// # Returns
- /// * `true` if signaturesimilar（ignore GREASE backsame），`false` otherwise
+ /// * `true` if signaturesimilar (ignore GREASE backsame)，`false` otherwise
  pub fn similar_to(&self, other: &Self) -> bool {
  self.version == other.version
  && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -125,7 +125,7 @@ impl ClientHelloSignature {
  && self.alpn == other.alpn
  }
 
- /// Calculatesignaturehashvalue（ for fastcompare）
+ /// Calculatesignaturehashvalue ( for fastcompare)
  /// usefilter GREASE backvalue
  pub fn hash(&self) -> u64 {
  use std::collections::hash_map::DefaultHasher;

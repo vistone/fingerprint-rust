@@ -23,26 +23,26 @@ use h2::client::SendRequest;
 /// Fix: pool化 SendRequest handle，implementtrue multiplexreuse
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub struct H2SessionPool {
- /// sessionpool（按 host:port group）
+ /// sessionpool ( by  host:port group)
  /// eachsessionincluding SendRequest handle、backbackground taskhandle and finallywhen used between
  sessions: Arc<Mutex<HashMap<String, Arc<H2Session>>>>,
- /// 正 in Createinsession（avoidsame key concurrentCreatecompetition）
+ /// 正 in Createinsession (avoidsame key concurrentCreatecompetition)
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
- /// sessiontimeout duration（default 5 minutes）
+ /// sessiontimeout duration (default 5 minutes)
  session_timeout: Duration,
 }
 
 /// HTTP/2 session
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 struct H2Session {
- /// SendRequest handle（ for sendrequest）
+ /// SendRequest handle ( for sendrequest)
  send_request: Arc<TokioMutex<SendRequest<bytes::Bytes>>>,
- /// backbackground taskhandle（ for manage h2_conn lifecycle）
+ /// backbackground taskhandle ( for manage h2_conn lifecycle)
  /// whenconnectioninvalid when ，taskwillend，wecandetect to 并removesession
  _background_task: tokio::task::JoinHandle<()>,
  /// finallywhen used between
  last_used: Arc<Mutex<Instant>>,
- /// connectionwhethervalid（由backbackground taskUpdate）
+ /// connectionwhethervalid (由backbackground taskUpdate)
  is_valid: Arc<Mutex<bool>>,
 }
 
@@ -84,7 +84,7 @@ impl H2SessionPool {
  self.cleanup_expired_sessions(&mut sessions);
 
  // Checkwhether有availablesession
- // 先Checksessionwhether exists且valid，avoid in holdlock when performcomplexoperation
+ // 先Checksessionwhether exists and valid，avoid in holdlock when performcomplexoperation
  let session_valid = sessions.get(key).and_then(|session| {
  let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
@@ -196,7 +196,7 @@ impl H2SessionPool {
  let is_valid = session.is_valid.lock().map(|v| *v).unwrap_or(false);
  let is_finished = session._background_task.is_finished();
 
- // preservevalidsession，且notexpire，且backbackground task仍 in run
+ // preservevalidsession， and notexpire， and backbackground task仍 in run
  if is_valid && !is_finished {
  if let Ok(last_used) = session.last_used.lock() {
  now.duration_since(*last_used) < self.session_timeout

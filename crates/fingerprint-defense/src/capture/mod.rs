@@ -1,6 +1,6 @@
 //! countpacketcapturemodule
 //!
-//! use纯 Rust implement from networkinterface or file实 when capturecountpacket（无systemdepend）。
+//! use纯 Rust implement from networkinterface or file实 when capturecountpacket (无systemdepend)。
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};
@@ -37,7 +37,7 @@ impl CaptureEngine {
  Ok(())
  }
 
- /// from networkinterfacecapturecountpacket（blocking式）
+ /// from networkinterfacecapturecountpacket (blocking式)
  fn capture_from_interface(
  interface: NetworkInterface,
  analyzer: Arc<PassiveAnalyzer>,
@@ -53,14 +53,14 @@ impl CaptureEngine {
  loop {
  match rx.next() {
  Ok(packet) => {
- // securityCheck：limitmaximumcountpacketsize以prevent DoS attack（65535 bytes = maximum IP 包）
+ // securityCheck：limitmaximumcountpacketsize以prevent DoS attack (65535 bytes = maximum IP 包)
  const MAX_PACKET_SIZE: usize = 65535;
  if packet.len() > MAX_PACKET_SIZE {
  eprintln!("[Capture] countpackettoo large，alreadyignore: {} bytes", packet.len());
  continue;
  }
  
- // skipEthernetframeheader（14 bytes）
+ // skipEthernetframeheader (14 bytes)
  if packet.len() > 14 {
  let ip_packet = &packet[14..];
  if let Ok(p) = PacketParser::parse(ip_packet) {
@@ -110,7 +110,7 @@ impl CaptureEngine {
  
  // pcap fileincountdatausuallyincludingEthernetframeheader
  if data.len() > 14 {
- // skipEthernetframeheader（14 bytes）
+ // skipEthernetframeheader (14 bytes)
  let ip_packet = &data[14..];
  if let Ok(p) = PacketParser::parse(ip_packet) {
  let _ = self.analyzer.analyze(&p);

@@ -31,7 +31,7 @@ impl TLSRecordType {
 pub struct TLSRecord {
  /// inside容type
  pub content_type: TLSRecordType,
- /// protocolversion（usually is TLS 1.0 = 0x0301， for compatible性）
+ /// protocolversion (usually is TLS 1.0 = 0x0301， for compatible性)
  pub version: u16,
  /// countdatainside容
  pub fragment: Vec<u8>,

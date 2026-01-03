@@ -9,10 +9,10 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-/// defaultserverpoolfile名（pair应 Go item dnsservernames.json）
+/// defaultserverpoolfile名 (pair应 Go item dnsservernames.json)
 const DEFAULT_SERVER_FILE: &str = "dnsservernames.json";
 
-/// DNS serverlist JSON struct（pair应 Go item DNSServerList）
+/// DNS serverlist JSON struct (pair应 Go item DNSServerList)
 #[derive(Debug, Serialize, Deserialize)]
 struct DNSServerList {
  servers: std::collections::HashMap<String, String>,
@@ -21,7 +21,7 @@ struct DNSServerList {
 /// DNS serverperformancestatistics
 #[derive(Debug, Clone)]
 struct ServerStats {
- /// 总response when between（milliseconds）
+ /// 总response when between (milliseconds)
  total_response_time_ms: u64,
  /// successquery次count
  success_count: u64,
@@ -54,7 +54,7 @@ impl ServerStats {
  self.last_update = std::time::Instant::now();
  }
 
- /// Getaverageresponse when between（milliseconds）
+ /// Getaverageresponse when between (milliseconds)
  fn avg_response_time_ms(&self) -> f64 {
  if self.success_count > 0 {
  self.total_response_time_ms as f64 / self.success_count as f64
@@ -78,7 +78,7 @@ impl ServerStats {
 #[derive(Debug, Clone)]
 pub struct ServerPool {
  servers: Arc<Vec<String>>,
- /// serverperformancestatistics（only in run when use，不persistent化）
+ /// serverperformancestatistics (only in run when use，不persistent化)
  stats: Arc<std::sync::RwLock<HashMap<String, ServerStats>>>,
 }
 
@@ -91,7 +91,7 @@ impl ServerPool {
  }
  }
 
- /// Createdefaultserverpool（usepublic DNS server）
+ /// Createdefaultserverpool (usepublic DNS server)
  #[allow(clippy::new_without_default, clippy::should_implement_trait)]
  pub fn default() -> Self {
  Self::new(vec![
@@ -102,7 +102,7 @@ impl ServerPool {
  ])
  }
 
- /// recordserverresponse when between（success）
+ /// recordserverresponse when between (success)
  pub fn record_success(
  &self,
  _server: &str,
@@ -132,9 +132,9 @@ impl ServerPool {
  Ok(())
  }
 
- /// slow eliminationserver（averageresponse when betweenexceed阈value or failure率过high）
+ /// slow eliminationserver (averageresponse when betweenexceed阈value or failure率过high)
  /// returnnewserverpool，non-blockingmainthread
- /// Fix: increase min_active_servers parameter，ensureat leastpreservespecifiedcountserver（按performancesort）
+ /// Fix: increase min_active_servers parameter，ensureat leastpreservespecifiedcountserver ( by performancesort)
  pub fn remove_slow_servers(
  &self,
  max_avg_response_time_ms: f64,
@@ -146,7 +146,7 @@ impl ServerPool {
  Ok(guard) => guard,
  Err(e) => {
  eprintln!("Warning: Lock poisoned in remove_slow_servers: {}", e);
- // Iflock in 毒, returnallserver（不eliminateanyserver）
+ // Iflock in 毒, returnallserver (不eliminateanyserver)
  return Self::new(self.servers.iter().cloned().collect());
  }
  };
@@ -163,7 +163,7 @@ impl ServerPool {
  stat.failure_rate(),
  )
  } else {
- // nostatisticscountdataserver（新server）considerperformance最好
+ // nostatisticscountdataserver (新server)considerperformance最好
  (server.clone(), 0.0, 0.0)
  }
  })
@@ -176,9 +176,9 @@ impl ServerPool {
 .map(|(s, _, _)| s.clone())
 .collect();
 
- // 容错保障： if filterback剩downserver太少，按performancesortforcepreserve top N
+ // 容错保障： if filterback剩downserver太少， by performancesortforcepreserve top N
  if filtered.len() < min_active_servers && !scored_servers.is_empty() {
- // 按 failure率 (firstclosekey字) and response when between (secondclosekey字) 升序sort
+ //  by  failure率 (firstclosekey字) and response when between (secondclosekey字) 升序sort
  scored_servers.sort_by(|a, b| {
  a.2.partial_cmp(&b.2)
 .unwrap_or(std::cmp::Ordering::Equal)
@@ -201,7 +201,7 @@ impl ServerPool {
  Self::new(filtered)
  }
 
- /// from local JSON fileloadserverpool（pair应 Go loadDefault）
+ /// from local JSON fileloadserverpool (pair应 Go loadDefault)
  /// Iffile不 exists or as empty, returnemptypool
  pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, crate::dns::types::DNSError> {
  let path = path.as_ref();
@@ -216,7 +216,7 @@ impl ServerPool {
  let list: DNSServerList =
  serde_json::from_str(&content).map_err(crate::dns::types::DNSError::Json)?;
 
- // Extractall IP address（Go itemuse GetAllServers returnall IP）
+ // Extractall IP address (Go itemuse GetAllServers returnall IP)
  let servers: Vec<String> = list
 .servers
 .values()
@@ -233,22 +233,22 @@ impl ServerPool {
  Ok(Self::new(servers))
  }
 
- /// saveserverpool to local JSON file（pair应 Go Save）
+ /// saveserverpool to local JSON file (pair应 Go Save)
  pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), crate::dns::types::DNSError> {
  let path = path.as_ref();
 
- // Buildservermap（name -> IP）
+ // Buildservermap (name -> IP)
  // Go itemuse "Auto-IP" asname
  let mut servers_map = std::collections::HashMap::new();
  for server in self.servers.iter() {
- // Extract IP address（去掉port）
+ // Extract IP address (去掉port)
  let ip = if let Some(colon_pos) = server.find(':') {
  &server[..colon_pos]
  } else {
  server.as_str()
  };
 
- // Generatename（pair应 Go "Auto-IP" format）
+ // Generatename (pair应 Go "Auto-IP" format)
  let name = format!("Auto-{}", ip);
  servers_map.insert(name, ip.to_string());
  }
@@ -274,7 +274,7 @@ impl ServerPool {
  Ok(())
  }
 
- /// from defaultfileloadserverpool（pair应 Go NewServerPool）
+ /// from defaultfileloadserverpool (pair应 Go NewServerPool)
  pub fn load_default() -> Self {
  Self::load_from_file(DEFAULT_SERVER_FILE).unwrap_or_else(|_| Self::new(Vec::new()))
  }
@@ -284,7 +284,7 @@ impl ServerPool {
  self.save_to_file(DEFAULT_SERVER_FILE)
  }
 
- /// Addserver并returnnew ServerPool（pair应 Go AddServer）
+ /// Addserver并returnnew ServerPool (pair应 Go AddServer)
  /// return (新pool, whether is 新Add的)
  pub fn with_added_server(&self, ip: &str) -> (Self, bool) {
  use std::net::IpAddr;
@@ -418,13 +418,13 @@ impl ServerPool {
 
  let resolver = TokioAsyncResolver::tokio(config, opts);
 
- // testquery（query A record）
+ // testquery (query A record)
  match resolver.lookup(&test_domain, RecordType::A).await {
  Ok(lookup_result) => {
  // Checkwhether真return了IPaddress
  let ip_count = lookup_result.iter().count();
  if ip_count > 0 {
- // querysuccess且return了IPaddress，serveravailable，immediatelyAdd to list
+ // querysuccess and return了IPaddress，serveravailable，immediatelyAdd to list
  let mut servers = match available_servers.lock() {
  Ok(guard) => guard,
  Err(e) => {
@@ -507,7 +507,7 @@ impl ServerPool {
  }
 
  /// healthCheck：testwhich DNS server is available的
- /// throughqueryanalready知domain（如 google.com）来testserverwhetheravailable
+ /// throughqueryanalready知domain (如 google.com)来testserverwhetheravailable
  pub async fn health_check(
  &self,
  test_domain: &str,
@@ -571,13 +571,13 @@ impl ServerPool {
 
  let resolver = TokioAsyncResolver::tokio(config, opts);
 
- // testquery（query A record）
+ // testquery (query A record)
  match resolver.lookup(&test_domain, RecordType::A).await {
  Ok(lookup_result) => {
  // Checkwhether真return了IPaddress
  let ip_count = lookup_result.iter().count();
  if ip_count > 0 {
- Some(server_str) // querysuccess且return了IPaddress，serveravailable
+ Some(server_str) // querysuccess and return了IPaddress，serveravailable
  } else {
  None // querysuccessbutnoreturnIPaddress，serverunavailable
  }

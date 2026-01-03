@@ -1,11 +1,11 @@
 //! HTTP/2 with Connection Pool
 //!
 //! architectureexplain：
-//! - HTTP/2 adoptsessionpool（H2SessionPool）implementtrue multiplexreuse
-//! - pool化pair象：h2::client::SendRequest handle（alreadyhandshakecompletesession）
-//! - reusemethod：concurrentmultiplereuse（ansessioncan when processmultiplerequest）
-//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource（accelerateconnectionestablish）
-//! - sessionestablishback，connectionlifecycle由 H2Session backbackground task（Driver）manage
+//! - HTTP/2 adoptsessionpool (H2SessionPool)implementtrue multiplexreuse
+//! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
+//! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
+//! - netconnpool 角色：only in Create新session when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
+//! - sessionestablishback，connectionlifecycle由 H2Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::pool::ConnectionPoolManager;
@@ -29,7 +29,7 @@ pub async fn send_http2_request_with_pool(
 
  // Note: connection poolinconnection in Create when maynoapplication TCP Profile
  // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
- // herewestill from connection poolGetconnection，but新Createconnectionwillapplication TCP Profile（ if configuration了）
+ // herewestill from connection poolGetconnection，but新Createconnectionwillapplication TCP Profile ( if configuration了)
 
  // from connection poolGetconnection
  let pool = pool_manager.get_pool(host, port)?;
@@ -120,7 +120,7 @@ pub async fn send_http2_request_with_pool(
  builder.max_header_list_size(max_header_list_size);
  }
 
- // settingsconnectionlevelwindowsize（Connection Flow）
+ // settingsconnectionlevelwindowsize (Connection Flow)
  builder.initial_connection_window_size(profile.connection_flow);
  }
 
@@ -128,7 +128,7 @@ pub async fn send_http2_request_with_pool(
 .await
 .map_err(|e| HttpClientError::Http2Error(format!("HTTP/2 handshakefailure: {}", e)))?;
 
- // return SendRequest and Connection（sessionpoolwillmanage Connection lifecycle）
+ // return SendRequest and Connection (sessionpoolwillmanage Connection lifecycle)
  Ok((client, h2_conn))
  })
 .await?;
@@ -157,7 +157,7 @@ pub async fn send_http2_request_with_pool(
  // do notmanualAdd host header，h2 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -176,12 +176,12 @@ pub async fn send_http2_request_with_pool(
 .filter(|(k, _)| k.to_lowercase() != "host")
 .fold(http2_request, |builder, (k, v)| builder.header(k, v));
 
- // Fix: Buildrequest（h2 need Request<()>，thenthrough SendStream send body）
+ // Fix: Buildrequest (h2 need Request<()>，thenthrough SendStream send body)
  let http2_request = http2_request
 .body(())
 .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
 
- // sendrequest（Get SendStream for send body）
+ // sendrequest (Get SendStream for send body)
  // Fix: end_of_stream must as false，otherwisestreamwillimmediatelyclose，unable tosend body
  let has_body = request.body.is_some() && !request.body.as_ref().unwrap().is_empty();
  let (response, mut send_stream) = client
@@ -191,7 +191,7 @@ pub async fn send_http2_request_with_pool(
  // releaselock，allowotherrequestreuse同ansession
  drop(client);
 
- // Fix: through SendStream sendrequest体（ if exists）
+ // Fix: through SendStream sendrequest体 ( if exists)
  if let Some(body) = &request.body {
  if !body.is_empty() {
  // send body countdata，end_of_stream = true representthis isfinallycountdata
@@ -228,7 +228,7 @@ pub async fn send_http2_request_with_pool(
 .sum();
  if total_header_size > MAX_HTTP2_HEADER_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/2 responseheadertoo large（>{} bytes）",
+ "HTTP/2 responseheadertoo large (>{} bytes)",
  MAX_HTTP2_HEADER_SIZE
  )));
  }
@@ -259,7 +259,7 @@ pub async fn send_http2_request_with_pool(
  // securityCheck：preventresponsebody too large
  if body_data.len().saturating_add(chunk.len()) > MAX_HTTP2_BODY_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/2 responsebody too large（>{} bytes）",
+ "HTTP/2 responsebody too large (>{} bytes)",
  MAX_HTTP2_BODY_SIZE
  )));
  }
@@ -304,7 +304,7 @@ mod tests {
 
  let request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get");
 
- println!("📡 sendfirst HTTP/2 request（shouldCreate新session）...");
+ println!("📡 sendfirst HTTP/2 request (shouldCreate新session)...");
  let result1 = send_http2_request_with_pool(
  "httpbin.org",
  443,
@@ -315,7 +315,7 @@ mod tests {
  )
 .await;
 
- // maywillfailure（networkissue），but不should panic
+ // maywillfailure (networkissue)，but不should panic
  if let Ok(response) = &result1 {
  assert_eq!(response.http_version, "HTTP/2");
  assert!(response.status_code > 0);
@@ -328,7 +328,7 @@ mod tests {
  // wait一小segment when between，ensuresessionalreadyestablish
  tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
- println!("\n📡 sendsecond HTTP/2 request（shouldreusesession）...");
+ println!("\n📡 sendsecond HTTP/2 request (shouldreusesession)...");
  let result2 = send_http2_request_with_pool(
  "httpbin.org",
  443,

@@ -27,7 +27,7 @@ pub fn send_http1_request(
 .set_write_timeout(Some(config.write_timeout))
 .map_err(HttpClientError::Io)?;
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(

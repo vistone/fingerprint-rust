@@ -4,9 +4,9 @@
 //!
 //! ## Features
 //!
-//! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint（Chrome、Firefox、Safari、Opera、Edge）
-//! - ✅ **real TLS configuration**：complete TLS Client Hello Spec（cipher suite、elliptic curve、extension etc.）
-//! - ✅ **JA4 fingerprintGenerate**：complete JA4 TLS clientfingerprintGenerate（sorted and unsorted version）
+//! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint (Chrome、Firefox、Safari、Opera、Edge)
+//! - ✅ **real TLS configuration**：complete TLS Client Hello Spec (cipher suite、elliptic curve、extension etc.)
+//! - ✅ **JA4 fingerprintGenerate**：complete JA4 TLS clientfingerprintGenerate (sorted and unsorted version)
 //! - ✅ **fingerprintcompare**：supportfingerprintsimilar度compare and 最佳matchfind
 //! - ✅ **GREASE process**：complete GREASE valuefilter and process
 //! - ✅ **mobilesupport**：iOS、Android mobilefingerprint

@@ -19,9 +19,9 @@ pub struct FingerprintResult {
  pub profile: ClientProfile,
  /// pair应 User-Agent
  pub user_agent: String,
- /// Client Hello ID（ and tls-client keepconsistent）
+ /// Client Hello ID ( and tls-client keepconsistent)
  pub hello_client_id: String,
- /// standard HTTP requestheader（includinggloballanguagesupport）
+ /// standard HTTP requestheader (includinggloballanguagesupport)
  pub headers: fingerprint_headers::headers::HTTPHeaders,
 }
 
@@ -40,7 +40,7 @@ impl std::fmt::Display for BrowserNotFoundError {
 impl std::error::Error for BrowserNotFoundError {}
 
 /// randomGetanfingerprint and pair应 User-Agent
-/// operating systemwillrandomly select
+/// operating systemwill randomly select
 pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
  get_random_fingerprint_with_os(None)
 }
@@ -58,7 +58,7 @@ pub fn get_random_fingerprint_with_os(
  // Getallavailablefingerprint name
  let names: Vec<String> = clients.keys().cloned().collect();
 
- // randomly selectan（threadsecurity）
+ // randomly select an (threadsecurity)
  let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
  let random_name = random_choice_string(&name_refs)
 .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -140,7 +140,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
  }));
  }
 
- // randomly selectan（threadsecurity）
+ // randomly select an (threadsecurity)
  let candidate_refs: Vec<&str> = candidates.iter().map(|s| s.as_str()).collect();
  let random_name = random_choice_string(&candidate_refs)
 .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -212,7 +212,7 @@ mod tests {
  println!("║ TCP fingerprint and browserfingerprintsync - realtest ║");
  println!("╚════════════════════════════════════════════════════════════════╝\n");
 
- println!("【test】randomly selectbrowserfingerprint（Validate TCP fingerprintautomaticsync）\n");
+ println!("【test】randomly selectbrowserfingerprint (Validate TCP fingerprintautomaticsync)\n");
 
  for i in 1..=5 {
  println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -247,7 +247,7 @@ mod tests {
  "Windows" => 128,
  "macOS" | "Linux" => 64,
  _ => {
- println!(" ⚠️ unable toValidate（not知operating system）");
+ println!(" ⚠️ unable toValidate (not知operating system)");
  continue;
  }
  };
@@ -259,7 +259,7 @@ mod tests {
  );
  } else {
  println!(
- " ❌ syncfailure！TTL ({}) and operating system ({}) does not match（expected: {}）",
+ " ❌ syncfailure！TTL ({}) and operating system ({}) does not match (expected: {})",
  tcp_profile.ttl, inferred_os, expected_ttl
  );
  }

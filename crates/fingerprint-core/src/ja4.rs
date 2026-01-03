@@ -225,7 +225,7 @@ impl std::fmt::Display for JA4T {
  }
 }
 
-/// JA4S TLS serverfingerprint（JA4 style）
+/// JA4S TLS serverfingerprint (JA4 style)
 /// 
 /// and JA3S similar，butuse SHA256 rather than MD5
 /// format: t_v_c_e (for example: t13d_1301_0000)
@@ -249,13 +249,13 @@ pub struct JA4S {
  pub transport: char,
  /// TLS version
  pub version: String,
- /// select's cipher suitescount（usually as 1）
+ /// select's cipher suitescount (usually as 1)
  pub cipher_count: usize,
  /// extensioncount
  pub extension_count: usize,
- /// first ALPN（ if 有）
+ /// first ALPN ( if 有)
  pub alpn: String,
- /// select's cipher suites（hexadecimal）
+ /// select's cipher suites (hexadecimal)
  pub cipher: u16,
  /// extensionhash (SHA256 front 12-bit)
  pub extension_hash: String,
@@ -269,7 +269,7 @@ impl JA4S {
  /// - `version`: TLS version ("1.0", "1.1", "1.2", "1.3")
  /// - `cipher`: serverselect's cipher suites
  /// - `extensions`: serverreturn's extensionslist
- /// - `alpn`: serverselect ALPN（optional）
+ /// - `alpn`: serverselect ALPN (optional)
  pub fn generate(
  transport: char,
  version: &str,
@@ -321,7 +321,7 @@ impl JA4S {
  Self {
  transport,
  version: v.to_string(),
- cipher_count: 1, // server只selectancipher suite
+ cipher_count: 1, // server只select ancipher suite
  extension_count: e_count,
  alpn: alpn_id.to_string(),
  cipher,
@@ -451,7 +451,7 @@ mod ja4s_tests {
 
  #[test]
  fn test_ja4s_extension_sorting() {
- // testextensionsort（pairhashimpact）
+ // testextensionsort (pairhashimpact)
  let ja4s1 = JA4S::generate('t', "1.3", 0x1301, &[0, 10, 11], None);
  let ja4s2 = JA4S::generate('t', "1.3", 0x1301, &[11, 10, 0], None);
  
@@ -460,7 +460,7 @@ mod ja4s_tests {
  }
 }
 
-/// JA4L - lightweightlevelfingerprint（Light Version）
+/// JA4L - lightweightlevelfingerprint (Light Version)
 ///
 /// simplify版 JA4，适 for 资source受限environment
 /// - use更快hashalgorithm
@@ -499,10 +499,10 @@ pub struct JA4L {
  /// extensioncount
  pub extension_count: usize,
  
- /// cipher suitesampling（front3，hexadecimal）
+ /// cipher suitesampling (front3，hexadecimal)
  pub cipher_sample: String,
  
- /// extensionsampling（front3，hexadecimal）
+ /// extensionsampling (front3，hexadecimal)
  pub extension_sample: String,
 }
 
@@ -548,7 +548,7 @@ impl JA4L {
  let cipher_count = filtered_ciphers.len().min(99);
  let extension_count = filtered_extensions.len().min(99);
 
- // samplingfront3cipher suite（lightweightlevelmethod）
+ // samplingfront3cipher suite (lightweightlevelmethod)
  let cipher_sample = filtered_ciphers
 .iter()
 .take(3)
@@ -556,7 +556,7 @@ impl JA4L {
 .collect::<Vec<_>>()
 .join("");
 
- // samplingfront3extension（lightweightlevelmethod）
+ // samplingfront3extension (lightweightlevelmethod)
  let extension_sample = filtered_extensions
 .iter()
 .take(3)
@@ -606,19 +606,19 @@ impl JA4L {
  destination: ja4.destination,
  cipher_count: ja4.cipher_count,
  extension_count: ja4.extension_count,
- // from hash in Extractsampling（simplify）
+ // from hash in Extractsampling (simplify)
  cipher_sample: ja4.cipher_hash[0..12.min(ja4.cipher_hash.len())].to_string(),
  extension_sample: ja4.extension_hash[0..12.min(ja4.extension_hash.len())].to_string(),
  }
  }
 
- /// estimatefingerprintCalculate成本（相pairvalue）
+ /// estimatefingerprintCalculate成本 (相pairvalue)
  /// returnvalue：1-10，1 as 最lightweight，10 as 最重
  pub fn computational_cost() -> u8 {
  2 // JA4L is lightweightlevel的，成本评分 as 2/10
  }
 
- /// estimateinside存usage（bytes）
+ /// estimateinside存usage (bytes)
  pub fn memory_footprint(&self) -> usize {
  std::mem::size_of::<Self>()
  + self.version.capacity()

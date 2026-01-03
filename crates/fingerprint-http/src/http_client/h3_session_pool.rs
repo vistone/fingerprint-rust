@@ -22,20 +22,20 @@ use h3::client::SendRequest;
 /// HTTP/3 sessionpoolmanageer
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 pub struct H3SessionPool {
- /// sessionpool（按 host:port group）
+ /// sessionpool ( by  host:port group)
  sessions: Arc<Mutex<HashMap<String, Arc<H3Session>>>>,
- /// 正 in Createinsession（avoidcompetition）
+ /// 正 in Createinsession (avoidcompetition)
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
- /// sessiontimeout duration（default 5 minutes）
+ /// sessiontimeout duration (default 5 minutes)
  session_timeout: Duration,
 }
 
 /// HTTP/3 session
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 struct H3Session {
- /// SendRequest handle（ for sendrequest）
+ /// SendRequest handle ( for sendrequest)
  send_request: Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>,
- /// backbackground taskhandle（ for manage h3 connectiondriver）
+ /// backbackground taskhandle ( for manage h3 connectiondriver)
  _background_task: tokio::task::JoinHandle<()>,
  /// finallywhen used between
  last_used: Arc<Mutex<Instant>>,

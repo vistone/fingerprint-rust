@@ -3,31 +3,31 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-/// IP addressdetailedinfo（Corresponds to Go version's IPInfo struct）
+/// IP addressdetailedinfo (Corresponds to Go version's IPInfo struct)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct IPInfo {
  /// IP address
  pub ip: String,
- /// host名（optional）
+ /// host名 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub hostname: Option<String>,
- /// 城市（optional）
+ /// 城市 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub city: Option<String>,
- /// 地区（optional）
+ /// 地区 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub region: Option<String>,
- /// 国家code（optional）
+ /// 国家code (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub country: Option<String>,
- /// geographic坐标（optional）
+ /// geographic坐标 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub loc: Option<String>,
- /// group织/ISP（optional）
+ /// group织/ISP (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub org: Option<String>,
- /// when 区（optional）
+ /// when 区 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub timezone: Option<String>,
 }
@@ -48,7 +48,7 @@ impl IPInfo {
  }
 }
 
-/// domain IP addressinfo（Corresponds to Go version's DomainIPs struct）
+/// domain IP addressinfo (Corresponds to Go version's DomainIPs struct)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DomainIPs {
  /// IPv4 addresslist
@@ -68,7 +68,7 @@ impl DomainIPs {
  }
  }
 
- /// Getall IP address（IPv4 + IPv6）
+ /// Getall IP address (IPv4 + IPv6)
  pub fn all_ips(&self) -> Vec<String> {
  let mut ips = Vec::new();
  for info in &self.ipv4 {
@@ -80,10 +80,10 @@ impl DomainIPs {
  ips
  }
 
- /// Checkwhether有new IP address（ and 另an DomainIPs compare）
+ /// Checkwhether有new IP address ( and 另an DomainIPs compare)
  ///
  /// `self` is 新Parse IP set，`other` is beforesave IP set
- /// If `self` in 有 `other` no IP, return true（discovernew IP）
+ /// If `self` in 有 `other` no IP, return true (discovernew IP)
  pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
  let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
  let other_ips: HashSet<String> = other.all_ips().into_iter().collect();
@@ -104,7 +104,7 @@ impl Default for DomainIPs {
 pub struct DNSResult {
  /// domain
  pub domain: String,
- /// Parse to IP address（IPv4 and IPv6）
+ /// Parse to IP address (IPv4 and IPv6)
  pub ips: DomainIPs,
 }
 
@@ -135,30 +135,30 @@ pub enum DNSError {
  Internal(String),
 }
 
-/// DNS configurationstruct（Corresponds to Go version's Config struct）
+/// DNS configurationstruct (Corresponds to Go version's Config struct)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DNSConfig {
- /// IPInfo.io API Token（required）
+ /// IPInfo.io API Token (required)
  pub ipinfo_token: String,
- /// domainlist（required）
+ /// domainlist (required)
  pub domain_list: Vec<String>,
- /// storedirectory（optional，defaultcurrentdirectory）
+ /// storedirectory (optional，defaultcurrentdirectory)
  #[serde(default = "default_domain_ips_dir")]
  pub domain_ips_dir: String,
- /// Checkinterval（optional，default "2m"）
+ /// Checkinterval (optional，default "2m")
  #[serde(default = "default_interval")]
  pub interval: String,
- /// DNS querymaximumconcurrentcount（optional，default 500）
+ /// DNS querymaximumconcurrentcount (optional，default 500)
  #[serde(default = "default_max_concurrency")]
  pub max_concurrency: usize,
- /// DNS querytimeout（optional，default "4s"）
+ /// DNS querytimeout (optional，default "4s")
  #[serde(default = "default_dns_timeout")]
  pub dns_timeout: String,
- /// HTTP Request timeout（optional，default "20s"）
+ /// HTTP Request timeout (optional，default "20s")
  #[serde(default = "default_http_timeout")]
  pub http_timeout: String,
- /// IP infoGetmaximumconcurrentcount（optional，default 50）
+ /// IP infoGetmaximumconcurrentcount (optional，default 50)
  #[serde(default = "default_max_ip_fetch_conc")]
  pub max_ip_fetch_conc: usize,
 }
@@ -188,7 +188,7 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
- /// Create a new DNS configuration（便利method，candirectlyusestring字面量）
+ /// Create a new DNS configuration (便利method，candirectlyusestring字面量)
  ///
  /// # Examples
  /// ```

@@ -69,13 +69,13 @@ impl ClientHelloSignature {
 .any(|&v| is_grease_value(v))
  }
 
- /// compare twosignaturewhethersimilar（ignore GREASE value）
+ /// compare twosignaturewhethersimilar (ignore GREASE value)
  ///
  /// # Parameters
  /// * `other` - 要compare另ansignature
  ///
  /// # Returns
- /// * `true` if signaturesimilar（ignore GREASE backsame），`false` otherwise
+ /// * `true` if signaturesimilar (ignore GREASE backsame)，`false` otherwise
  pub fn similar_to(&self, other: &Self) -> bool {
  self.version == other.version
  && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -88,7 +88,7 @@ impl ClientHelloSignature {
  && self.alpn == other.alpn
  }
 
- /// Calculatesignaturehashvalue（ for fastcompare）
+ /// Calculatesignaturehashvalue ( for fastcompare)
  /// usefilter GREASE backvalue
  pub fn hash(&self) -> u64 {
  use std::collections::hash_map::DefaultHasher;

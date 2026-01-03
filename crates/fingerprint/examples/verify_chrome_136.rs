@@ -12,7 +12,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
  println!("1️⃣ encryptionsuiteweightValidate:");
  let spec = chrome_136.get_client_hello_spec()?;
 
- // Getfront 5encryptionsuite（skip GREASE）
+ // Getfront 5encryptionsuite (skip GREASE)
  let first_suites: Vec<u16> = spec
 .cipher_suites
 .iter()

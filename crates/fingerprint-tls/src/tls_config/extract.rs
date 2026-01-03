@@ -49,7 +49,7 @@ pub fn extract_signature(spec: &ClientHelloSpec) -> ClientHelloSignature {
  signature.sni = Some(sni.clone());
  }
 
- // Extract ALPN（取first）
+ // Extract ALPN (取first)
  if let Some(alpn) = metadata.get_first_alpn() {
  signature.alpn = Some(alpn);
  }

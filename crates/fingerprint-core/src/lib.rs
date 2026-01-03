@@ -16,7 +16,7 @@
 //!
 //! ### systemlevelabstract
 //!
-//! - **systemupdown文** (`SystemContext`): networkentitycompleteinfo（IP、port、protocol、direction etc.）
+//! - **systemupdown文** (`SystemContext`): networkentitycompleteinfo (IP、port、protocol、direction etc.)
 //! - **networktraffic** (`NetworkFlow`): systemlevelnetworktraffic，includingupdown文 and fingerprintinfo
 //! - **systemprotectioninterface** (`SystemProtector`): systemlevelprotectionunifiedinterface
 //! - **systemanalysisinterface** (`SystemAnalyzer`): systemlevelanalysisunifiedinterface

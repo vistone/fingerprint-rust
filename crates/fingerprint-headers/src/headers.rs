@@ -5,38 +5,38 @@
 use fingerprint_core::types::BrowserType;
 use fingerprint_core::utils::{extract_chrome_version, extract_platform, random_choice_string};
 
-/// globallanguagelist（按usefrequencysort）
+/// globallanguagelist (by usefrequency sort)
 pub static LANGUAGES: &[&str] = &[
- "en-US,en;q=0.9", // 英语（美国）
- "zh-CN,zh;q=0.9,en;q=0.8", // in 文（简体）
- "es-ES,es;q=0.9,en;q=0.8", // 西班牙语
- "fr-FR,fr;q=0.9,en;q=0.8", // 法语
- "de-DE,de;q=0.9,en;q=0.8", // 德语
- "ja-JP,ja;q=0.9,en;q=0.8", // 日语
- "pt-BR,pt;q=0.9,en;q=0.8", // Portuguese（巴西）
- "ru-RU,ru;q=0.9,en;q=0.8", // 俄语
- "ar-SA,ar;q=0.9,en;q=0.8", // 阿拉伯语
- "ko-KR,ko;q=0.9,en;q=0.8", // 韩语
- "it-IT,it;q=0.9,en;q=0.8", // 意大利语
- "tr-TR,tr;q=0.9,en;q=0.8", // 土耳其语
- "pl-PL,pl;q=0.9,en;q=0.8", // 波兰语
- "nl-NL,nl;q=0.9,en;q=0.8", // 荷兰语
- "sv-SE,sv;q=0.9,en;q=0.8", // 瑞典语
- "vi-VN,vi;q=0.9,en;q=0.8", // 越南语
- "th-TH,th;q=0.9,en;q=0.8", // 泰语
- "id-ID,id;q=0.9,en;q=0.8", // 印尼语
- "hi-IN,hi;q=0.9,en;q=0.8", // 印地语
- "cs-CZ,cs;q=0.9,en;q=0.8", // 捷克语
- "ro-RO,ro;q=0.9,en;q=0.8", // 罗马尼亚语
- "hu-HU,hu;q=0.9,en;q=0.8", // 匈牙利语
- "el-GR,el;q=0.9,en;q=0.8", // 希腊语
- "da-DK,da;q=0.9,en;q=0.8", // 丹麦语
- "fi-FI,fi;q=0.9,en;q=0.8", // 芬兰语
- "no-NO,no;q=0.9,en;q=0.8", // 挪威语
- "he-IL,he;q=0.9,en;q=0.8", // 希伯来语
- "uk-UA,uk;q=0.9,en;q=0.8", // 乌克兰语
- "pt-PT,pt;q=0.9,en;q=0.8", // Portuguese（葡萄牙）
- "zh-TW,zh;q=0.9,en;q=0.8", // in 文（繁体）
+ "en-US,en;q=0.9", // English (US)
+ "zh-CN,zh;q=0.9,en;q=0.8", // Chinese (简体)
+ "es-ES,es;q=0.9,en;q=0.8", // Spanish
+ "fr-FR,fr;q=0.9,en;q=0.8", // French
+ "de-DE,de;q=0.9,en;q=0.8", // German
+ "ja-JP,ja;q=0.9,en;q=0.8", // Japanese
+ "pt-BR,pt;q=0.9,en;q=0.8", // Portuguese (Brazil)
+ "ru-RU,ru;q=0.9,en;q=0.8", // Russian
+ "ar-SA,ar;q=0.9,en;q=0.8", // Arabic
+ "ko-KR,ko;q=0.9,en;q=0.8", // Korean
+ "it-IT,it;q=0.9,en;q=0.8", // Italian
+ "tr-TR,tr;q=0.9,en;q=0.8", // Turkish
+ "pl-PL,pl;q=0.9,en;q=0.8", // Polish
+ "nl-NL,nl;q=0.9,en;q=0.8", // Dutch
+ "sv-SE,sv;q=0.9,en;q=0.8", // Swedish
+ "vi-VN,vi;q=0.9,en;q=0.8", // Vietnamese
+ "th-TH,th;q=0.9,en;q=0.8", // Thai
+ "id-ID,id;q=0.9,en;q=0.8", // Indonesian
+ "hi-IN,hi;q=0.9,en;q=0.8", // Hindi
+ "cs-CZ,cs;q=0.9,en;q=0.8", // Czech
+ "ro-RO,ro;q=0.9,en;q=0.8", // Romanian
+ "hu-HU,hu;q=0.9,en;q=0.8", // Hungarian
+ "el-GR,el;q=0.9,en;q=0.8", // Greek
+ "da-DK,da;q=0.9,en;q=0.8", // Danish
+ "fi-FI,fi;q=0.9,en;q=0.8", // Finnish
+ "no-NO,no;q=0.9,en;q=0.8", // Norwegian
+ "he-IL,he;q=0.9,en;q=0.8", // Hebrew
+ "uk-UA,uk;q=0.9,en;q=0.8", // Ukrainian
+ "pt-PT,pt;q=0.9,en;q=0.8", // Portuguese (葡萄牙)
+ "zh-TW,zh;q=0.9,en;q=0.8", // Chinese (繁体)
 ];
 
 /// standard HTTP requestheader
@@ -44,7 +44,7 @@ pub static LANGUAGES: &[&str] = &[
 pub struct HTTPHeaders {
  /// Accept header
  pub accept: String,
- /// Accept-Language header（supportgloballanguage）
+ /// Accept-Language header (supportgloballanguage)
  pub accept_language: String,
  /// Accept-Encoding header
  pub accept_encoding: String,
@@ -66,7 +66,7 @@ pub struct HTTPHeaders {
  pub sec_ch_ua_platform: String,
  /// Upgrade-Insecure-Requests header
  pub upgrade_insecure_requests: String,
- /// usercustom headers（如 Cookie、Authorization、X-API-Key etc.）
+ /// usercustom headers (如 Cookie、Authorization、X-API-Key etc.)
  pub custom: std::collections::HashMap<String, String>,
 }
 
@@ -112,7 +112,7 @@ impl HTTPHeaders {
  }
  }
 
- /// settingsusercustom header（systemwillautomaticmerge to to_map() in ）
+ /// settingsusercustom header (systemwillautomaticmerge to to_map() in )
  /// this isrecommendmethod，settingsbackcall to_map() canautomaticincludingcustom headers
  /// Examples：result.headers.set("Cookie", "session_id=abc123")
  pub fn set(&mut self, key: &str, value: &str) {
@@ -123,7 +123,7 @@ impl HTTPHeaders {
  }
  }
 
- /// bulksettingsusercustom headers（systemwillautomaticmerge to to_map() in ）
+ /// bulksettingsusercustom headers (systemwillautomaticmerge to to_map() in )
  /// Examples：result.headers.set_headers(&[("Cookie", "session_id=abc123"), ("X-API-Key", "key")])
  pub fn set_headers(&mut self, custom_headers: &[(&str, &str)]) {
  for (key, value) in custom_headers {
@@ -132,13 +132,13 @@ impl HTTPHeaders {
  }
 
  /// will HTTPHeaders convert to HashMap
- /// systemwillautomaticmerge Custom inusercustom headers（如 Cookie、Authorization、X-API-Key etc.）
+ /// systemwillautomaticmerge Custom inusercustom headers (如 Cookie、Authorization、X-API-Key etc.)
  pub fn to_map(&self) -> std::collections::HashMap<String, String> {
  self.to_map_with_custom(&[])
  }
 
  /// will HTTPHeaders convert to HashMap，并mergeusercustom headers
- /// custom_headers: usercustom headers（如 session、cookie、apikey etc.）
+ /// custom_headers: usercustom headers (如 session、cookie、apikey etc.)
  /// usercustom headers priority更high，willcoversystemGenerate headers
  pub fn to_map_with_custom(
  &self,
@@ -200,7 +200,7 @@ impl HTTPHeaders {
  }
  }
 
- // merge传入 custom_headers（priority最high，willcoverallalready有 headers）
+ // merge传入 custom_headers (priority最high，willcoverallalready有 headers)
  for (key, value) in custom_headers {
  if !value.is_empty() {
  headers.insert((*key).to_string(), (*value).to_string());
@@ -216,7 +216,7 @@ impl HTTPHeaders {
  let mut result = Vec::with_capacity(map.len());
  let mut used = std::collections::HashSet::new();
 
- // 1. 先按specified order orderAdd
+ // 1. 先 by specified order orderAdd
  for key in order {
  // find map is否 existsmatch key (ignoresize写performmatch，butpreserve order insize写)
  for (m_key, m_val) in &map {
@@ -228,7 +228,7 @@ impl HTTPHeaders {
  }
  }
 
- // 2. Add剩down且不再 order in headers
+ // 2. Add剩down and 不再 order in headers
  for (m_key, m_val) in map {
  if !used.contains(&m_key) {
  result.push((m_key, m_val));
@@ -245,7 +245,7 @@ impl Default for HTTPHeaders {
  }
 }
 
-/// randomly selectanlanguage
+/// randomly select anlanguage
 pub fn random_language() -> String {
  random_choice_string(LANGUAGES).unwrap_or_else(|| "en-US,en;q=0.9".to_string())
 }
@@ -294,7 +294,7 @@ pub fn generate_headers(
  BrowserType::Firefox => {
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
  headers.accept_encoding = "gzip, deflate, br".to_string();
- // Firefox 不use Sec-Fetch-* headers（旧version）
+ // Firefox 不use Sec-Fetch-* headers (旧version)
  // 新version Firefox use，butformatdifferent
  if is_mobile {
  headers.sec_fetch_site = "none".to_string();

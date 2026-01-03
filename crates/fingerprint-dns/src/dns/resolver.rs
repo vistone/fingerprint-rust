@@ -27,7 +27,7 @@ pub struct DNSResolver {
 }
 
 impl DNSResolver {
- /// Create a new DNS Parseer（usedefault DNS server）
+ /// Create a new DNS Parseer (usedefault DNS server)
  pub fn new(timeout: Duration) -> Self {
  Self {
  timeout,
@@ -45,7 +45,7 @@ impl DNSResolver {
  }
  }
 
- /// Parsedomainall IP address（IPv4 and IPv6）
+ /// Parsedomainall IP address (IPv4 and IPv6)
  pub async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError> {
  eprintln!(
  "[DNS Resolver] ========== startParsedomain: {} ==========",
@@ -112,7 +112,7 @@ impl DNSResolver {
  eprintln!("[DNS Resolver] startParsedomain: {} (IPv6: {})", domain, ipv6);
  eprintln!("[DNS Resolver] serverpool总count: {}", servers.len());
 
- // useallserverconcurrentquery（不limitcount）
+ // useallserverconcurrentquery (不limitcount)
  // Go item ResolveDomain use pool.GetAllServers() Getallserver，concurrentquery
  // failureserverwill被ignore，successserverreturn IP will被collect并deduplicate
  eprintln!("[DNS Resolver] willqueryall {} server", servers.len());
@@ -120,7 +120,7 @@ impl DNSResolver {
  let servers_with_sockets: Vec<_> = servers
 .iter()
 .filter_map(|server_str| {
- // Parseserveraddressformat：can is "ip:port" or only "ip"（defaultport 53）
+ // Parseserveraddressformat：can is "ip:port" or only "ip" (defaultport 53)
  let (ip_str, port) = if let Some(colon_pos) = server_str.find(':') {
  let ip = &server_str[..colon_pos];
  let port = server_str[colon_pos + 1..].parse::<u16>().unwrap_or(53);
@@ -244,7 +244,7 @@ impl DNSResolver {
  let response_time = start_time.elapsed();
  if !ips.is_empty() {
  // printdetailedlog，displayreturnall IP
- eprintln!("[DNS Query] ✅ server {} success，return {} IP（共 {} 条record），耗 when: {:?}",
+ eprintln!("[DNS Query] ✅ server {} success，return {} IP (共 {} 条record)，耗 when: {:?}",
  server_str, ips.len(), record_count, response_time);
  if ips.len() > 1 {
  eprintln!(" [DNS Query] return IP list: {}", ips.join(", "));
@@ -253,7 +253,7 @@ impl DNSResolver {
  eprintln!("Warning: recordserversuccessstatisticsfailure: {}", e);
  }
  } else {
- eprintln!("[DNS Query] ⚠️ server {} querysuccessbutnotreturn IP（共 {} 条record，buttypedoes not match），耗 when: {:?}",
+ eprintln!("[DNS Query] ⚠️ server {} querysuccessbutnotreturn IP (共 {} 条record，buttypedoes not match)，耗 when: {:?}",
  server_str, record_count, response_time);
  if let Err(e) = server_pool.record_failure(&server_str) {
  eprintln!("Warning: recordserverfailurestatisticsfailure: {}", e);
@@ -262,7 +262,7 @@ impl DNSResolver {
  Ok(ips)
  }
  Ok(Err(_)) | Err(_) => {
- // recordfailure（queryfailure or timeout），不printlog以decreaseoutput
+ // recordfailure (queryfailure or timeout)，不printlog以decreaseoutput
  let _ = server_pool.record_failure(&server_str);
  // singleserverfailure不impactwhole，returnemptyresult
  Ok::<Vec<String>, DNSError>(Vec::new())
@@ -281,7 +281,7 @@ impl DNSResolver {
  let mut query_tasks = query_tasks;
  let mut success_count = 0usize;
  let mut failure_count = 0usize;
- let mut total_ips_received = 0usize; // statistics收 to 总 IP count（deduplicatefront）
+ let mut total_ips_received = 0usize; // statistics收 to 总 IP count (deduplicatefront)
 
  // usetimeout and stream式process，collect尽may多result
  let timeout_future = tokio::time::sleep(overall_timeout);
@@ -291,7 +291,7 @@ impl DNSResolver {
  let log_interval = Duration::from_millis(500); // 每500msprintonceprogress
 
  eprintln!(
- "[DNS Resolver] startcollectqueryresult（overalltimeout: {:?}，总servercount: {}）",
+ "[DNS Resolver] startcollectqueryresult (overalltimeout: {:?}，总servercount: {})",
  overall_timeout, total_servers
  );
 
@@ -303,7 +303,7 @@ impl DNSResolver {
  Some(Ok(ips)) => {
  success_count += 1;
  let ips_count = ips.len(); // 先save IP count，avoidmovebackunable toaccess
- total_ips_received += ips_count; // statistics收 to 总 IP count（deduplicatefront）
+ total_ips_received += ips_count; // statistics收 to 总 IP count (deduplicatefront)
 
  let before_count = all_ips.len();
  for ip in ips {
@@ -314,7 +314,7 @@ impl DNSResolver {
 
  // Ifthisserverreturn IP in 有duplicate的, will in log in display
  if ips_count > new_ips_count {
- eprintln!("[DNS Resolver] serverreturn {} IP，其 in {} is new IP，{} is duplicate的（alreadyautomaticdeduplicate）",
+ eprintln!("[DNS Resolver] serverreturn {} IP，其 in {} is new IP，{} is duplicate的 (alreadyautomaticdeduplicate)",
  ips_count, new_ips_count, ips_count - new_ips_count);
  }
 
@@ -352,7 +352,7 @@ impl DNSResolver {
  // timeout
  _ = &mut timeout_future => {
  let duplicate_count = total_ips_received - all_ips.len();
- eprintln!("[DNS Resolver] ⏱️ queryoveralltimeout（{}seconds），complete {}/{} server，success {} ，failure {} ",
+ eprintln!("[DNS Resolver] ⏱️ queryoveralltimeout ({}seconds)，complete {}/{} server，success {} ，failure {} ",
  overall_timeout.as_secs(), success_count + failure_count, total_servers, success_count, failure_count);
  eprintln!("[DNS Resolver] IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP",
  total_ips_received, all_ips.len(), duplicate_count);
@@ -364,7 +364,7 @@ impl DNSResolver {
  let total_time = start_time.elapsed();
  let duplicate_count = total_ips_received - all_ips.len();
  eprintln!("[DNS Resolver] querycomplete，总耗 when: {:?}", total_time);
- eprintln!("[DNS Resolver] 最final IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP（deduplicate率: {:.2}%）",
+ eprintln!("[DNS Resolver] 最final IP deduplicatestatistics: 收 to {} IP，deduplicateback {} unique IP，filter了 {} duplicate IP (deduplicate率: {:.2}%)",
  total_ips_received, all_ips.len(), duplicate_count,
  if total_ips_received > 0 { (duplicate_count as f64 / total_ips_received as f64) * 100.0 } else { 0.0 });
 
@@ -373,7 +373,7 @@ impl DNSResolver {
  let ip_infos: Vec<IPInfo> = all_ips.into_iter().map(IPInfo::new).collect();
 
  eprintln!(
- "[DNS Resolver] convert to IPInfo，最finalreturn {} unique IP address（alreadydeduplicate）",
+ "[DNS Resolver] convert to IPInfo，最finalreturn {} unique IP address (alreadydeduplicate)",
  ip_infos.len()
  );
 
@@ -386,7 +386,7 @@ impl DNSResolver {
  }
  }
 
- /// usesystem DNS Parse（backsolution）
+ /// usesystem DNS Parse (backsolution)
  async fn resolve_with_system(&self, domain: &str, ipv6: bool) -> Result<Vec<IPInfo>, DNSError> {
  use std::net::ToSocketAddrs;
 
@@ -414,7 +414,7 @@ impl DNSResolver {
  Ok(ip_infos)
  }
 
- /// bulkParsedomain（concurrent）
+ /// bulkParsedomain (concurrent)
  pub async fn resolve_many(
  &self,
  domains: Vec<String>,

@@ -19,7 +19,7 @@ use tokio::net::TcpStream;
 /// # Returns
 /// successreturn Ok(())，failurereturnerror
 pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Result<()> {
- // 1. settings TTL（socket2 set_ttl need u32）
+ // 1. settings TTL (socket2 set_ttl need u32)
  socket.set_ttl(tcp_profile.ttl as u32)?;
 
  // 2. settings TCP options
@@ -27,10 +27,10 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
  // theseparameterneed in TCP handshake when through TCP optionssettings
  // butwecanthroughsettings socket options来impacttheseparameter
 
- // settings TCP_NODELAY（disabled Nagle algorithm，improveperformance）
+ // settings TCP_NODELAY (disabled Nagle algorithm，improveperformance)
  socket.set_nodelay(true)?;
 
- // 3. settingsreceivebuffersize（impact Window Size）
+ // 3. settingsreceivebuffersize (impact Window Size)
  // Window Size usually and receivebuffersize相close
  // Note: actual Window Size is in TCP handshake when negotiate的，here只 is settingsbuffer
  let recv_buffer_size = tcp_profile.window_size as usize;
@@ -46,7 +46,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
 ///
 /// # Parameters
 /// - `addr`: targetaddress
-/// - `tcp_profile`: TCP Profile configuration（optional）
+/// - `tcp_profile`: TCP Profile configuration (optional)
 ///
 /// # Returns
 /// returnconfiguration好 socket2::Socket
@@ -62,7 +62,7 @@ pub fn create_tcp_socket_with_profile(
 
  let socket = Socket::new(domain, Type::STREAM, Some(Protocol::TCP))?;
 
- // application TCP Profile（ if provide）
+ // application TCP Profile ( if provide)
  // Note: TTL must in connectionbeforesettings
  // in Linux up， for client socket，TTL can in connectionfrontsettings，不needbind
  if let Some(profile) = tcp_profile {
@@ -72,11 +72,11 @@ pub fn create_tcp_socket_with_profile(
  Ok(socket)
 }
 
-/// Createbring有 TCP Profile TcpStream（async）
+/// Createbring有 TCP Profile TcpStream (async)
 ///
 /// # Parameters
 /// - `addr`: targetaddress
-/// - `tcp_profile`: TCP Profile configuration（optional）
+/// - `tcp_profile`: TCP Profile configuration (optional)
 ///
 /// # Returns
 /// returnconfiguration好 tokio::net::TcpStream
@@ -87,13 +87,13 @@ pub async fn connect_tcp_with_profile(
  // Create socket
  let socket = create_tcp_socket_with_profile(&addr, tcp_profile)?;
 
- // settings as non-blockingpattern（tokio need）
+ // settings as non-blockingpattern (tokio need)
  socket.set_nonblocking(true)?;
 
- // connection to targetaddress（non-blocking）
+ // connection to targetaddress (non-blocking)
  match socket.connect(&addr.into()) {
  Ok(()) => {
- // connectionimmediatelysuccess（localconnection）
+ // connectionimmediatelysuccess (localconnection)
  let std_stream: std::net::TcpStream = socket.into();
  TcpStream::from_std(std_stream)
  }
@@ -106,7 +106,7 @@ pub async fn connect_tcp_with_profile(
  // waitconnectioncomplete
  stream.writable().await?;
 
- // Checkconnectionwhethersuccess（throughtrywriteemptycountdata）
+ // Checkconnectionwhethersuccess (throughtrywriteemptycountdata)
  match stream.try_write(&[]) {
  Ok(_) => Ok(stream),
  Err(ref e) if e.kind() == io::ErrorKind::WouldBlock => {
@@ -121,11 +121,11 @@ pub async fn connect_tcp_with_profile(
  }
 }
 
-/// Createbring有 TCP Profile TcpStream（sync）
+/// Createbring有 TCP Profile TcpStream (sync)
 ///
 /// # Parameters
 /// - `addr`: targetaddress
-/// - `tcp_profile`: TCP Profile configuration（optional）
+/// - `tcp_profile`: TCP Profile configuration (optional)
 ///
 /// # Returns
 /// returnconfiguration好 std::net::TcpStream
@@ -208,11 +208,11 @@ mod tests {
  use std::os::unix::io::AsRawFd;
  let _fd = stream.as_raw_fd();
 
- // tryGetreceivebuffersize（impact Window Size）
+ // tryGetreceivebuffersize (impact Window Size)
  // Note: 这need libc crate，butin order tosimplify，we暂 when comment掉
  // actualValidateshoulduse tcpdump or wireshark packet captureanalysis
  println!(" 🔍 server端 TCP parameterdetect：");
- println!(" ⚠️ Note: TTL in service端unable todirectlydetect（transferprocess in will递减）");
+ println!(" ⚠️ Note: TTL in service端unable todirectlydetect (transferprocess in will递减)");
  println!(" 💡 suggest：use tcpdump or wireshark packet captureValidate TTL");
  println!(" 💡 command：sudo tcpdump -i lo -n 'tcp port 9876' -v");
  }

@@ -159,7 +159,7 @@ impl SystemProtectionResult {
 ///
 /// systemlevelprotection from **systemperspective**makeprotectiondecision：
 /// - not onlyonly is singleserviceprotection，而 is 整systemprotection
-/// - can实施systemlevelmeasure（blacklist、rate limit、防火墙rule etc.）
+/// - can实施systemlevelmeasure (blacklist、rate limit、防火墙rule etc.)
 /// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example
@@ -199,7 +199,7 @@ pub trait SystemProtector: Send {
 
  /// Updatesystemstatus
  ///
- /// in makeprotectiondecisionback，canBased onresultUpdatesystemstatus（如Updateblacklist、statisticsinfo etc.）。
+ /// in makeprotectiondecisionback，canBased onresultUpdatesystemstatus (如Updateblacklist、statisticsinfo etc.)。
  ///
  /// # Parameters
  ///

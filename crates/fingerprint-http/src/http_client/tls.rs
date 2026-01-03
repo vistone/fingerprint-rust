@@ -1,7 +1,7 @@
 //! TLS connectionsupport
 //!
 //! useofficial rustls asbottomlayer TLS implement
-//! through ClientHelloCustomizer applicationbrowserfingerprint（Chrome、Firefox、Safari etc.）
+//! through ClientHelloCustomizer applicationbrowserfingerprint (Chrome、Firefox、Safari etc.)
 //! simulatemarket maturebrowser TLS fingerprint，不customselffingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
@@ -33,7 +33,7 @@ impl Default for TlsConnector {
 ///
 /// useofficial rustls asbottomlayer TLS implement
 /// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
-/// simulatemarket maturebrowser TLS fingerprint（Chrome、Firefox、Safari etc.）
+/// simulatemarket maturebrowser TLS fingerprint (Chrome、Firefox、Safari etc.)
 pub fn send_https_request(
  host: &str,
  port: u16,
@@ -63,7 +63,7 @@ pub fn send_https_request(
  use rustls::client::ServerName;
  use std::sync::Arc;
 
- // Build TLS configuration（尊重 verify_tls）
+ // Build TLS configuration (尊重 verify_tls)
  let tls_config = super::rustls_utils::build_client_config(
  config.verify_tls,
  Vec::new(),
@@ -78,7 +78,7 @@ pub fn send_https_request(
 
  let mut tls_stream = rustls::StreamOwned::new(conn, tcp_stream);
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -117,10 +117,10 @@ pub fn send_https_request(
  }
 }
 
-/// useconnection poolsend HTTPS（HTTP/1.1 over TLS）request
+/// useconnection poolsend HTTPS (HTTP/1.1 over TLS)request
 ///
 /// explain：
-/// - this is“connection pool + TLS”syncimplement（面向 `kh.google.com` 这类 https 站点）
+/// - this is“connection pool + TLS”syncimplement (面向 `kh.google.com` 这类 https 站点)
 /// - 目front只 for 回归test and `HttpClient` https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(
@@ -171,7 +171,7 @@ pub fn send_https_request_with_pool(
 
  let mut tls_stream = rustls::StreamOwned::new(conn_tls, tcp_stream);
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(

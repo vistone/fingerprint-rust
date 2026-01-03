@@ -86,12 +86,12 @@ impl SystemProtectionStats {
  self.last_update_time = Instant::now();
  }
 
- /// Getrun when between（seconds）
+ /// Getrun when between (seconds)
  pub fn uptime_seconds(&self) -> u64 {
  self.start_time.elapsed().as_secs()
  }
 
- /// Getcountpacketprocessrate（包/seconds）
+ /// Getcountpacketprocessrate (包/seconds)
  pub fn packets_per_second(&self) -> f64 {
  let uptime = self.uptime_seconds() as f64;
  if uptime > 0.0 {
@@ -101,7 +101,7 @@ impl SystemProtectionStats {
  }
  }
 
- /// Getanalysis率（alreadyanalysis/total）
+ /// Getanalysis率 (alreadyanalysis/total)
  pub fn analysis_rate(&self) -> f64 {
  if self.total_packets > 0 {
  self.analyzed_packets as f64 / self.total_packets as f64
@@ -110,7 +110,7 @@ impl SystemProtectionStats {
  }
  }
 
- /// Getblock率（alreadyblock/total）
+ /// Getblock率 (alreadyblock/total)
  pub fn block_rate(&self) -> f64 {
  if self.total_packets > 0 {
  self.blocked_packets as f64 / self.total_packets as f64

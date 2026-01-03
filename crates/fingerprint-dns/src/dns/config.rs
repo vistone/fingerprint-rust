@@ -7,7 +7,7 @@ use std::fs;
 use std::path::Path;
 
 /// from configurationfileload DNS configuration
-/// automaticidentifyconfigurationfileformat（JSON、YAML、TOML）
+/// automaticidentifyconfigurationfileformat (JSON、YAML、TOML)
 pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
  let path = path.as_ref();
  let content = fs::read_to_string(path)?;
@@ -21,7 +21,7 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
  }
  Some("toml") => toml::from_str(&content)?,
  _ => {
- // try按 JSON Parse
+ // try by  JSON Parse
  serde_json::from_str(&content).map_err(|_| {
  DNSError::Config(format!(
  "unsupported config format: {:?}. Supported: json, yaml, toml",

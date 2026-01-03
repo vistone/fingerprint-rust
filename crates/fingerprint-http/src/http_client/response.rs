@@ -35,7 +35,7 @@ impl HttpResponse {
  }
  }
 
- /// from 原beginningresponseParse（completeversion）
+ /// from 原beginningresponseParse (completeversion)
  pub fn parse(raw_response: &[u8]) -> Result<Self, String> {
  let start = std::time::Instant::now();
 
@@ -71,7 +71,7 @@ impl HttpResponse {
  })
  }
 
- /// find headers endbit置（\r\n\r\n）
+ /// find headers endbit置 (\r\n\r\n)
  fn find_headers_end(data: &[u8]) -> Result<(usize, usize), String> {
  // securityCheck：ensurecountdatalengthat least as 4 bytes
  if data.len() < 4 {
@@ -128,7 +128,7 @@ impl HttpResponse {
  Ok(headers)
  }
 
- /// processresponse体（support chunked and compression）
+ /// processresponse体 (support chunked and compression)
  fn process_body(
  body_bytes: &[u8],
  headers: &HashMap<String, String>,
@@ -152,7 +152,7 @@ impl HttpResponse {
 
  /// Parse chunked encoding
  fn parse_chunked(data: &[u8]) -> Result<Vec<u8>, String> {
- /// maximumallowsingle chunk size（10MB）
+ /// maximumallowsingle chunk size (10MB)
  /// preventmaliciousserversendoversized chunk causeinsidememory exhausted
  const MAX_CHUNK_SIZE: usize = 10 * 1024 * 1024; // 10MB
 
@@ -160,17 +160,17 @@ impl HttpResponse {
  let mut pos = 0;
 
  loop {
- // find chunk size 行end（\r\n）
+ // find chunk size 行end (\r\n)
  let size_line_end = data[pos..]
 .windows(2)
 .position(|w| w == b"\r\n")
 .ok_or("Invalid chunked encoding: missing CRLF after size")?;
 
- // Parse chunk size（hexadecimal）
+ // Parse chunk size (hexadecimal)
  let size_str = std::str::from_utf8(&data[pos..pos + size_line_end])
 .map_err(|_| "Invalid chunk size: not UTF-8")?;
 
- // removemay's extensionsparameter（如 "3b; name=value"）
+ // removemay's extensionsparameter (如 "3b; name=value")
  let size_str = size_str.split(';').next().unwrap_or(size_str).trim();
 
  let size = usize::from_str_radix(size_str, 16)

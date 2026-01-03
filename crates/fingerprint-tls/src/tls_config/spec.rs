@@ -65,7 +65,7 @@ pub struct ClientHelloSpec {
  /// TLS versionmaximumvalue
  /// Corresponds to Go version's TLSVersMax uint16
  pub tls_vers_max: u16,
- /// extensionmetadata（ for store SNI、ALPN etc.countdata）
+ /// extensionmetadata ( for store SNI、ALPN etc.countdata)
  /// reference：Huginn Net Profiler design
  pub metadata: Option<crate::tls_config::metadata::SpecMetadata>,
 }
@@ -122,7 +122,7 @@ impl ClientHelloSpec {
  spec
  }
 
- /// Create Chrome 133 fingerprint ClientHelloSpec（旧implement，preserve for compatible）
+ /// Create Chrome 133 fingerprint ClientHelloSpec (旧implement，preserve for compatible)
  #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
  pub fn chrome_133_old() -> Self {
  let mut spec = Self::new();
@@ -150,7 +150,7 @@ impl ClientHelloSpec {
  // compressionmethod
  spec.compression_methods = vec![COMPRESSION_NONE];
 
- // Chrome 133 's extensionsorder（Corresponds to Go version's ShuffleChromeTLSExtensions）
+ // Chrome 133 's extensionsorder (Corresponds to Go version's ShuffleChromeTLSExtensions)
  spec.extensions = vec![
  Box::new(UtlsGREASEExtension::new()),
  Box::new(SNIExtension::new(String::new())),
@@ -342,7 +342,7 @@ impl ClientHelloSpec {
  // compressionmethod
  spec.compression_methods = vec![COMPRESSION_NONE];
 
- // Firefox 133 's extensions（simplified version，actualneedview Go versioncompleteimplement）
+ // Firefox 133 's extensions (simplified version，actualneedview Go versioncompleteimplement)
  spec.extensions = vec![
  Box::new(SupportedCurvesExtension::new(vec![
  CURVE_P256, CURVE_P384, SECP521R1, X25519,

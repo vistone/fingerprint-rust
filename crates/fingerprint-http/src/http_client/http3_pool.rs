@@ -1,11 +1,11 @@
 //! HTTP/3 with Connection Pool
 //!
 //! architectureexplain：
-//! - HTTP/3 adoptsessionpool（H3SessionPool）implement QUIC sessionreuse
-//! - pool化pair象：h3::client::SendRequest handle（alreadyhandshakecomplete QUIC session）
-//! - reusemethod：concurrentmultiplereuse（an QUIC connectioncan when processmultiple Stream）
+//! - HTTP/3 adoptsessionpool (H3SessionPool)implement QUIC sessionreuse
+//! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
+//! - reusemethod：concurrentmultiplereuse (an QUIC connectioncan when processmultiple Stream)
 //! - QUIC Features：protocol本身includingconnectionmigrate and statusmanage，no need netconnpool
-//! - sessionestablishback，connectionlifecycle由 H3Session backbackground task（Driver）manage
+//! - sessionestablishback，connectionlifecycle由 H3Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::pool::ConnectionPoolManager;
@@ -131,7 +131,7 @@ pub async fn send_http3_request_with_pool(
  // do notmanualAdd host header，h3 willautomatic from URI Extract
 .header("user-agent", &config.user_agent);
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -150,7 +150,7 @@ pub async fn send_http3_request_with_pool(
 .filter(|(k, _)| k.to_lowercase() != "host")
 .fold(http3_request, |builder, (k, v)| builder.header(k, v));
 
- // Fix: Buildrequest（h3 need Request<()>，thenthrough stream send body）
+ // Fix: Buildrequest (h3 need Request<()>，thenthrough stream send body)
  let http3_request = http3_request
 .body(())
 .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
@@ -161,7 +161,7 @@ pub async fn send_http3_request_with_pool(
 .await
 .map_err(|e| HttpClientError::Http3Error(format!("sendrequestfailure: {}", e)))?;
 
- // Fix: through stream sendrequest体（ if exists）
+ // Fix: through stream sendrequest体 ( if exists)
  if let Some(body) = &request.body {
  if !body.is_empty() {
  stream
@@ -199,7 +199,7 @@ pub async fn send_http3_request_with_pool(
  // securityCheck：preventresponsebody too large
  if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/3 responsebody too large（>{} bytes）",
+ "HTTP/3 responsebody too large (>{} bytes)",
  MAX_HTTP3_BODY_SIZE
  )));
  }
@@ -221,7 +221,7 @@ pub async fn send_http3_request_with_pool(
 .sum();
  if total_header_size > MAX_HTTP3_HEADER_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/3 responseheadertoo large（>{} bytes）",
+ "HTTP/3 responseheadertoo large (>{} bytes)",
  MAX_HTTP3_HEADER_SIZE
  )));
  }
@@ -278,7 +278,7 @@ mod tests {
  )
 .await;
 
- // maywillfailure（networkissue or server不support HTTP/3），but不should panic
+ // maywillfailure (networkissue or server不support HTTP/3)，but不should panic
  if let Ok(response) = result {
  assert_eq!(response.http_version, "HTTP/3");
  }

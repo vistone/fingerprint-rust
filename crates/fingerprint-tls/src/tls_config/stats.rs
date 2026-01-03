@@ -20,9 +20,9 @@ pub struct FingerprintStats {
  pub fingerprints_with_alpn: usize,
  /// TLS versiondistribution
  pub version_distribution: HashMap<String, usize>,
- /// most common's cipher suites（front 10）
+ /// most common's cipher suites (front 10)
  pub top_cipher_suites: Vec<(u16, usize)>,
- /// most common's extensions（front 10）
+ /// most common's extensions (front 10)
  pub top_extensions: Vec<(u16, usize)>,
 }
 

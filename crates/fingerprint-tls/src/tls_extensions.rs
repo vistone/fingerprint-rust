@@ -27,7 +27,7 @@ pub struct KeyShare {
 /// TLS extension trait
 /// Corresponds to Go version's tls.TLSExtension interface
 pub trait TLSExtension: std::fmt::Debug + Any {
- /// Getextensionlength（includeheader）
+ /// Getextensionlength (includeheader)
  /// Corresponds to Go version's Len() int
  fn len(&self) -> usize;
 

@@ -39,17 +39,17 @@ impl ClientHelloMessage {
  ///
  /// # Errors
  ///
- /// Ifunable toGetencryptionsecurityrandomcount（ in no `crypto` feature when ）, willreturnerror。
+ /// Ifunable toGetencryptionsecurityrandomcount ( in no `crypto` feature when ), willreturnerror。
  /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurity性。
  pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
- // use TLS 1.2 asclientversion（in order tocompatible性）
+ // use TLS 1.2 asclientversion (in order tocompatible性)
  let client_version = spec.tls_vers_max.max(0x0303);
 
  // Generaterandomcount (32 bytes)
  let mut random = Vec::with_capacity(32);
 
  // front 4 bytes: Unix when between戳
- // usecurrent when between， if Getfailure则use 0（虽然不太mayfailure）
+ // usecurrent when between， if Getfailure则use 0 (虽然不太mayfailure)
  // fix 2038 year overflowissue：explicittruncatehighbit，ensure u32 rangeinside
  let timestamp = std::time::SystemTime::now()
 .duration_since(std::time::UNIX_EPOCH)
@@ -89,7 +89,7 @@ impl ClientHelloMessage {
  random.extend_from_slice(&random_bytes);
  }
 
- // emptysession ID（新session）
+ // emptysession ID (新session)
  let session_id = Vec::new();
 
  // cipher suite
@@ -123,7 +123,7 @@ impl ClientHelloMessage {
  for ext in extensions {
  let ext_id = ext.extension_id();
 
- // If is SNI extension（ID == 0）, weneedspecialprocess
+ // If is SNI extension (ID == 0), weneedspecialprocess
  if ext_id == 0 {
  // skipduplicate SNI extension
  if has_sni {
@@ -168,7 +168,7 @@ impl ClientHelloMessage {
  ext_bytes
  }
 
- /// Build SNI extensioncountdata（excludingextension ID and lengthfield）
+ /// Build SNI extensioncountdata (excludingextension ID and lengthfield)
  fn build_sni_extension(server_name: &str) -> Vec<u8> {
  let mut data = Vec::new();
 

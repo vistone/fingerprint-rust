@@ -102,7 +102,7 @@ impl ConsistencyAnalyzer {
  if let (Some(ja4), Some(ja4h)) =
  (tls.metadata().get("ja4"), http.metadata().get("ja4h"))
  {
- // if JA4 display is modern Chrome (t13d...), but JA4H display is HTTP/1.1 (..11..) 且no Cookie (..n..)
+ // if JA4 display is modern Chrome (t13d...), but JA4H display is HTTP/1.1 (..11..)  and no Cookie (..n..)
  // this isancommon爬虫trait
  if ja4.starts_with("t13") && ja4h.contains("11n") {
  report.add_discrepancy(

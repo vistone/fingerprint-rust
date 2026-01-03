@@ -30,25 +30,25 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSH {
- /// keyswapalgorithmlist（semicolon-separated）
+ /// keyswapalgorithmlist (semicolon-separated)
  pub kex_algorithms: String,
  
- /// encryptionalgorithmlist（semicolon-separated）
+ /// encryptionalgorithmlist (semicolon-separated)
  pub encryption_algorithms: String,
  
- /// MAC algorithmlist（semicolon-separated）
+ /// MAC algorithmlist (semicolon-separated)
  pub mac_algorithms: String,
  
- /// compressionalgorithmlist（semicolon-separated）
+ /// compressionalgorithmlist (semicolon-separated)
  pub compression_algorithms: String,
  
- /// complete HASSH string（ for Calculatehash）
+ /// complete HASSH string ( for Calculatehash)
  pub hassh_string: String,
  
- /// HASSH fingerprint（MD5 hash）
+ /// HASSH fingerprint (MD5 hash)
  pub fingerprint: String,
  
- /// SSH clienttype（infer）
+ /// SSH clienttype (infer)
  pub client_type: Option<String>,
 }
 
@@ -69,7 +69,7 @@ impl HASSH {
  mac_algorithms: &[&str],
  compression_algorithms: &[&str],
  ) -> Self {
- // connectionalgorithmlist（usesemicolon-separated）
+ // connectionalgorithmlist (usesemicolon-separated)
  let kex_str = kex_algorithms.join(";");
  let enc_str = encryption_algorithms.join(";");
  let mac_str = mac_algorithms.join(";");
@@ -200,25 +200,25 @@ impl std::fmt::Display for HASSH {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSHServer {
- /// keyswapalgorithmlist（semicolon-separated）
+ /// keyswapalgorithmlist (semicolon-separated)
  pub kex_algorithms: String,
  
- /// encryptionalgorithmlist（semicolon-separated）
+ /// encryptionalgorithmlist (semicolon-separated)
  pub encryption_algorithms: String,
  
- /// MAC algorithmlist（semicolon-separated）
+ /// MAC algorithmlist (semicolon-separated)
  pub mac_algorithms: String,
  
- /// compressionalgorithmlist（semicolon-separated）
+ /// compressionalgorithmlist (semicolon-separated)
  pub compression_algorithms: String,
  
  /// complete HASSH Server string
  pub hassh_server_string: String,
  
- /// HASSH Server fingerprint（MD5 hash）
+ /// HASSH Server fingerprint (MD5 hash)
  pub fingerprint: String,
  
- /// SSH servertype（infer）
+ /// SSH servertype (infer)
  pub server_type: Option<String>,
 }
 
@@ -488,7 +488,7 @@ mod tests {
  }
 }
 
-/// JA4SSH - SSH fingerprint（JA4 style）
+/// JA4SSH - SSH fingerprint (JA4 style)
 ///
 /// similar于 HASSH，butuse SHA256 rather than MD5，并adopt JA4 seriesformatstyle
 /// 
@@ -523,19 +523,19 @@ pub struct JA4SSH {
  /// compressionalgorithmcount
  pub compression_count: usize,
  
- /// KEX algorithmhash（SHA256 front 6-bit）
+ /// KEX algorithmhash (SHA256 front 6-bit)
  pub kex_hash: String,
  
- /// encryptionalgorithmhash（SHA256 front 6-bit）
+ /// encryptionalgorithmhash (SHA256 front 6-bit)
  pub encryption_hash: String,
  
- /// MAC algorithmhash（SHA256 front 6-bit）
+ /// MAC algorithmhash (SHA256 front 6-bit)
  pub mac_hash: String,
  
- /// compressionalgorithmhash（SHA256 front 6-bit）
+ /// compressionalgorithmhash (SHA256 front 6-bit)
  pub compression_hash: String,
  
- /// clienttype（infer）
+ /// clienttype (infer)
  pub client_type: Option<String>,
 }
 
@@ -594,7 +594,7 @@ impl JA4SSH {
  ssh
  }
 
- /// Calculatealgorithmlist SHA256 hash（取front 6-bit）
+ /// Calculatealgorithmlist SHA256 hash (取front 6-bit)
  fn compute_hash(algorithms: &[&str]) -> String {
  use sha2::{Digest, Sha256};
  

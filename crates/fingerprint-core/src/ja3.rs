@@ -28,25 +28,25 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA3 {
- /// SSL/TLS version（decimal）
+ /// SSL/TLS version (decimal)
  pub ssl_version: u16,
  
- /// cipher suitelist（comma-separated decimal）
+ /// cipher suitelist (comma-separated decimal)
  pub ciphers: String,
  
- /// extensionlist（comma-separated decimal）
+ /// extensionlist (comma-separated decimal)
  pub extensions: String,
  
- /// elliptic curvelist（comma-separated decimal）
+ /// elliptic curvelist (comma-separated decimal)
  pub elliptic_curves: String,
  
- /// elliptic curve点formatlist（comma-separated decimal）
+ /// elliptic curve点formatlist (comma-separated decimal)
  pub ec_point_formats: String,
  
- /// complete JA3 string（ for Calculatehash）
+ /// complete JA3 string ( for Calculatehash)
  pub ja3_string: String,
  
- /// JA3 fingerprint（MD5 hash）
+ /// JA3 fingerprint (MD5 hash)
  pub fingerprint: String,
 }
 
@@ -54,11 +54,11 @@ impl JA3 {
  /// Generate JA3 fingerprint
  ///
  /// # Parameters
- /// - `ssl_version`: TLS version（for example：771 = TLS 1.2, 772 = TLS 1.3）
- /// - `ciphers`: cipher suitelist（hexadecimalvalue）
- /// - `extensions`: extensionlist（hexadecimalvalue）
- /// - `elliptic_curves`: elliptic curvelist（hexadecimalvalue）
- /// - `ec_point_formats`: elliptic curve点formatlist（hexadecimalvalue）
+ /// - `ssl_version`: TLS version (for example：771 = TLS 1.2, 772 = TLS 1.3)
+ /// - `ciphers`: cipher suitelist (hexadecimalvalue)
+ /// - `extensions`: extensionlist (hexadecimalvalue)
+ /// - `elliptic_curves`: elliptic curvelist (hexadecimalvalue)
+ /// - `ec_point_formats`: elliptic curve点formatlist (hexadecimalvalue)
  ///
  /// # Returns
  /// JA3 fingerprintstruct
@@ -69,7 +69,7 @@ impl JA3 {
  elliptic_curves: &[u16],
  ec_point_formats: &[u8],
  ) -> Self {
- // filter GREASE value（ if need）
+ // filter GREASE value ( if need)
  let filtered_ciphers: Vec<u16> = ciphers
 .iter()
 .filter(|&&c| !crate::grease::is_grease_value(c))
@@ -88,7 +88,7 @@ impl JA3 {
 .cloned()
 .collect();
 
- // convert tocomma-separated decimalstring（JA3 usedecimal，is nothexadecimal）
+ // convert tocomma-separated decimalstring (JA3 usedecimal，is nothexadecimal)
  let ciphers_str = filtered_ciphers
 .iter()
 .map(|c| c.to_string())
@@ -181,19 +181,19 @@ impl std::fmt::Display for JA3 {
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA3S {
- /// SSL/TLS version（decimal）
+ /// SSL/TLS version (decimal)
  pub ssl_version: u16,
  
- /// select's cipher suites（decimal）
+ /// select's cipher suites (decimal)
  pub cipher: u16,
  
- /// extensionlist（comma-separated decimal）
+ /// extensionlist (comma-separated decimal)
  pub extensions: String,
  
- /// complete JA3S string（ for Calculatehash）
+ /// complete JA3S string ( for Calculatehash)
  pub ja3s_string: String,
  
- /// JA3S fingerprint（MD5 hash）
+ /// JA3S fingerprint (MD5 hash)
  pub fingerprint: String,
 }
 

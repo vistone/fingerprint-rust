@@ -8,13 +8,13 @@ use std::net::IpAddr;
 /// trafficdirection
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TrafficDirection {
- /// inputtraffic（entersystem）
+ /// inputtraffic (entersystem)
  Inbound,
 
- /// outputtraffic（leavesystem）
+ /// outputtraffic (leavesystem)
  Outbound,
 
- /// inside部traffic（systeminside部）
+ /// inside部traffic (systeminside部)
  Internal,
 }
 
@@ -50,7 +50,7 @@ pub enum ProtocolType {
  /// HTTP protocol
  Http,
 
- /// HTTPS protocol（TLS over TCP）
+ /// HTTPS protocol (TLS over TCP)
  Https,
 
  /// otherprotocol
@@ -109,7 +109,7 @@ impl std::fmt::Display for ProtocolType {
 /// ## Core Concept
 ///
 /// systemlevelprotectionneedconsidercompletesystemupdown文，而not onlyonly is singleservice or port：
-/// - networkentitycompleteinfo（source/target IP、port）
+/// - networkentitycompleteinfo (source/target IP、port)
 /// - protocoltype and direction
 /// - when between戳 and network interfaceinterface
 /// - countpacketlevelinfo
@@ -141,10 +141,10 @@ pub struct SystemContext {
  /// target IP address
  pub target_ip: IpAddr,
 
- /// sourceport（ for UDP/TCP）
+ /// sourceport ( for UDP/TCP)
  pub source_port: Option<u16>,
 
- /// targetport（ for UDP/TCP）
+ /// targetport ( for UDP/TCP)
  pub target_port: Option<u16>,
 
  /// protocoltype
@@ -156,10 +156,10 @@ pub struct SystemContext {
  /// network interfaceinterfacename
  pub interface: Option<String>,
 
- /// countpacketsize（bytes）
+ /// countpacketsize (bytes)
  pub packet_size: usize,
 
- /// trafficdirection（input/output）
+ /// trafficdirection (input/output)
  pub direction: TrafficDirection,
 }
 
@@ -200,7 +200,7 @@ impl SystemContext {
  }
  }
 
- /// judgewhether as localtraffic（source or target as localaddress）
+ /// judgewhether as localtraffic (source or target as localaddress)
  pub fn is_local(&self) -> bool {
  self.is_source_local() || self.is_target_local()
  }
@@ -221,7 +221,7 @@ impl SystemContext {
  }
  }
 
- /// Gettrafficuniqueidentifier符（ for 追踪）
+ /// Gettrafficuniqueidentifier符 ( for 追踪)
  pub fn flow_id(&self) -> String {
  format!(
  "{}:{}->{}:{}:{}",

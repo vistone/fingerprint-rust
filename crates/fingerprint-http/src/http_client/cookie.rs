@@ -111,7 +111,7 @@ impl Cookie {
 /// Cookie store
 #[derive(Debug, Clone)]
 pub struct CookieStore {
- /// 按domainstore Cookie
+ ///  by domainstore Cookie
  cookies: Arc<Mutex<HashMap<String, Vec<Cookie>>>>,
 }
 
@@ -149,7 +149,7 @@ impl CookieStore {
  /// Getspecifieddomainallvalid Cookie
  ///
  /// Based on RFC 6265 specificationperformdomainmatch：
- /// - Cookie domain property（如 `.example.com`）shouldmatch `example.com` 及其allchilddomain
+ /// - Cookie domain property (如 `.example.com`)shouldmatch `example.com` 及其allchilddomain
  /// - `example.com` Cookie shouldmatch `example.com` and `*.example.com`
  pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
  let cookies = match self.cookies.lock() {
@@ -165,16 +165,16 @@ impl CookieStore {
  for (cookie_domain, domain_cookies) in cookies.iter() {
  let cookie_domain_lower = cookie_domain.to_lowercase();
 
- // Fix: correctdomainmatchlogic（RFC 6265）
+ // Fix: correctdomainmatchlogic (RFC 6265)
  let matches = if cookie_domain_lower == domain_lower {
  // completelymatch
  true
  } else if let Some(base) = cookie_domain_lower.strip_prefix('.') {
- // Cookie domain 以. openheader（如.example.com）
+ // Cookie domain 以. openheader (如.example.com)
  // shouldmatch example.com and all *.example.com
  domain_lower == base || domain_lower.ends_with(&format!(".{}", base))
  } else {
- // Cookie domain not. openheader（如 example.com）
+ // Cookie domain not. openheader (如 example.com)
  // shouldmatch example.com and all *.example.com
  domain_lower == cookie_domain_lower
  || domain_lower.ends_with(&format!(".{}", cookie_domain_lower))
@@ -197,7 +197,7 @@ impl CookieStore {
  /// # Parameters
  /// - `domain`: requestdomain
  /// - `path`: requestpath
- /// - `is_secure`: whether as HTTPS connection（ for Secure Cookie Check）
+ /// - `is_secure`: whether as HTTPS connection ( for Secure Cookie Check)
  pub fn generate_cookie_header(
  &self,
  domain: &str,

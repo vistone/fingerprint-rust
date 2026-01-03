@@ -1,6 +1,6 @@
 //! IPInfo.io set成module
 //!
-//! from IPInfo.io API Get IP addressdetailedinfo（geographicbit置、ISP etc.）
+//! from IPInfo.io API Get IP addressdetailedinfo (geographicbit置、ISP etc.)
 
 use crate::dns::types::{DNSError, IPInfo};
 use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
@@ -72,7 +72,7 @@ impl IPInfoClient {
  })
  }
 
- /// bulkGet IP addressinfo（concurrent）
+ /// bulkGet IP addressinfo (concurrent)
  /// automaticdeduplicate，ensureeach IP 只queryonce
  pub async fn get_ip_infos(
  &self,

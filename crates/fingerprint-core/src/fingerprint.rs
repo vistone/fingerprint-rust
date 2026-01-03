@@ -34,27 +34,27 @@ impl std::fmt::Display for FingerprintType {
 
 /// fingerprintabstract trait
 ///
-/// allfingerprinttype（TLS、HTTP、TCP）都shouldimplementthis trait
+/// allfingerprinttype (TLS、HTTP、TCP)都shouldimplementthis trait
 pub trait Fingerprint: Send + Sync {
  /// Getfingerprinttype
  fn fingerprint_type(&self) -> FingerprintType;
 
- /// Getfingerprintuniqueidentifier符（usually is hashvalue）
+ /// Getfingerprintuniqueidentifier符 (usually is hashvalue)
  fn id(&self) -> String;
 
  /// Getfingerprintmetadata
  fn metadata(&self) -> &FingerprintMetadata;
 
- /// Getfingerprintmetadata（mutablereference）
+ /// Getfingerprintmetadata (mutablereference)
  fn metadata_mut(&mut self) -> &mut FingerprintMetadata;
 
- /// Calculatefingerprinthashvalue（ for fastcompare）
+ /// Calculatefingerprinthashvalue ( for fastcompare)
  fn hash(&self) -> u64;
 
  /// compare twofingerprintwhethersimilar
  fn similar_to(&self, other: &dyn Fingerprint) -> bool;
 
- /// Getfingerprintstringrepresent（ for debug and log）
+ /// Getfingerprintstringrepresent ( for debug and log)
  fn to_string(&self) -> String;
 }
 
@@ -121,11 +121,11 @@ impl FingerprintComparator {
  if f1.similar_to(f2) {
  FingerprintComparison::perfect_match()
  } else {
- // Calculatesimilar度（based onhashvalue）
+ // Calculatesimilar度 (based onhashvalue)
  let h1 = f1.hash();
  let h2 = f2.hash();
 
- // simplesimilar度Calculate（based onhashvalue汉明distance）
+ // simplesimilar度Calculate (based onhashvalue汉明distance)
  let similarity = if h1 == h2 {
  1.0
  } else {

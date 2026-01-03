@@ -53,10 +53,10 @@ pub fn filter_grease_values(values: &[u16]) -> Vec<u16> {
 .collect()
 }
 
-/// from u16 list in remove GREASE value（in-placemodify）
+/// from u16 list in remove GREASE value (in-placemodify)
 ///
 /// # Parameters
-/// * `values` - 要modify u16 valuelist（mutablereference）
+/// * `values` - 要modify u16 valuelist (mutablereference)
 ///
 /// # Examples
 /// ```

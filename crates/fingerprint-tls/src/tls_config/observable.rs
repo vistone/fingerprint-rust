@@ -13,7 +13,7 @@ use fingerprint_core::dicttls::supported_groups::CurveID;
 /// reference：Huginn Net Profiler TlsClientObserved
 #[derive(Debug, Clone, PartialEq)]
 pub struct TlsClientObserved {
- /// TLS version（stringrepresent，如 "13", "12"）
+ /// TLS version (stringrepresent，如 "13", "12")
  pub version: String,
  /// Server Name Indication
  pub sni: Option<String>,
@@ -99,7 +99,7 @@ mod tests {
  fn test_has_extension() {
  let spec = ClientHelloSpec::chrome_133();
  let observed = TlsClientObserved::from_spec(&spec);
- // Checkwhetherincluding SNI extension（0x0000）
+ // Checkwhetherincluding SNI extension (0x0000)
  let has_sni = observed.has_extension(0x0000);
  // Chrome 133 shouldincluding SNI
  assert!(has_sni);

@@ -12,7 +12,7 @@
 //! - ✅ **crosslayerconsistency审计** (`consistency`): JA4+ consistencyvalidate
 //! - ✅ **fingerprintdatabase** (`database`): SQLite store and analysisfingerprinttrait
 //! - ✅ **learnmechanism** (`learner`): automaticdiscover and recordnot知fingerprint
-//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implement实 when network interface and pcap filecapture（无systemdepend）
+//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implement实 when network interface and pcap filecapture (无systemdepend)
 //!
 //! ## planinFeatures
 //!

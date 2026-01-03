@@ -29,7 +29,7 @@ impl TLSHandshakeBuilder {
  let handshake_bytes = handshake.to_bytes();
 
  // 5. Create TLS record
- // use TLS 1.0 (0x0301) asrecordversion（in order tocompatible性）
+ // use TLS 1.0 (0x0301) asrecordversion (in order tocompatible性)
  let record = TLSRecord::handshake(0x0301, handshake_bytes);
 
  // 6. serialize TLS record
@@ -41,7 +41,7 @@ impl TLSHandshakeBuilder {
  // 1. Create ClientHello message
  let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
  println!("\n╔══════════════════════════════════════════════════════════╗");
- println!("║ Build TLS ClientHello（useselffingerprint） ║");
+ println!("║ Build TLS ClientHello (useselffingerprint) ║");
  println!("╚══════════════════════════════════════════════════════════╝\n");
 
  println!("📋 ClientHelloSpec info:");

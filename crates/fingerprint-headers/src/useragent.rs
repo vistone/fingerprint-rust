@@ -256,13 +256,13 @@ impl UserAgentGenerator {
  }
 
  /// Based on fingerprint nameGet User-Agent
- /// If fingerprintneedoperating system information, willrandomly selectanoperating system
+ /// If fingerprintneed operating system information, will randomly select anoperating system
  pub fn get_user_agent(&self, profile_name: &str) -> Result<String, String> {
  self.get_user_agent_with_os(profile_name, None)
  }
 
  /// Based on fingerprint name and specifiedoperating systemGet User-Agent
- /// If os as None, 且needoperating system information，willrandomly selectanoperating system
+ /// If os as None, and need operating system information，will randomly select anoperating system
  pub fn get_user_agent_with_os(
  &self,
  profile_name: &str,
@@ -278,7 +278,7 @@ impl UserAgentGenerator {
  return Ok(template.template.clone());
  }
 
- // if needoperating system information
+ // if need operating system information
  let os_str = match os {
  Some(os) => os.as_str(),
  None => {
@@ -365,14 +365,14 @@ impl Default for UserAgentGenerator {
  }
 }
 
-/// globaldefaultGenerator（threadsecurity）
+/// globaldefaultGenerator (threadsecurity)
 static DEFAULT_GENERATOR: OnceLock<UserAgentGenerator> = OnceLock::new();
 
 fn get_default_generator() -> &'static UserAgentGenerator {
  DEFAULT_GENERATOR.get_or_init(UserAgentGenerator::new)
 }
 
-/// randomly selectanoperating system
+/// randomly select anoperating system
 pub fn random_os() -> OperatingSystem {
  random_choice(OPERATING_SYSTEMS).unwrap_or(OperatingSystem::Windows10)
 }

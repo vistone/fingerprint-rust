@@ -2,8 +2,8 @@
 //!
 //! architectureexplain：
 //! - HTTP/1.1 adopt netconnpool manage TCP connection pool
-//! - pool化pair象：TcpStream（裸 TCP connection）
-//! - reusemethod：serialreuse（anconnectionsame when betweencan onlyprocessanrequest）
+//! - pool化pair象：TcpStream (裸 TCP connection)
+//! - reusemethod：serialreuse (anconnectionsame when betweencan onlyprocessanrequest)
 //! - protocollimit：HTTP/1.1 unable tomultiplereuse，needlarge numberconnectionsupportconcurrent
 //! - netconnpool 负责：connectionCreate、keepactive、故障detect and 回收
 
@@ -42,7 +42,7 @@ pub fn send_http1_request_with_pool(
  // clone TcpStream so thatwecanuse它
  let mut stream = tcp_stream.try_clone().map_err(HttpClientError::Io)?;
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -62,8 +62,8 @@ pub fn send_http1_request_with_pool(
 .write_all(http_request.as_bytes())
 .map_err(HttpClientError::Io)?;
 
- // Fix: usecompleteresponsereadlogic（include body）
- // connectionwillautomatic归still to connection pool（through Drop）
+ // Fix: usecompleteresponsereadlogic (include body)
+ // connectionwillautomatic归still to connection pool (through Drop)
  let buffer =
  super::io::read_http1_response_bytes(&mut stream, super::io::DEFAULT_MAX_RESPONSE_BYTES)
 .map_err(HttpClientError::Io)?;
@@ -103,7 +103,7 @@ mod tests {
  let result =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // maywillfailure（networkissue），but不should panic
+ // maywillfailure (networkissue)，but不should panic
  if let Ok(response) = result {
  println!("status code: {}", response.status_code);
  assert!(response.status_code > 0);
@@ -121,7 +121,7 @@ mod tests {
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 
- // second次request（shouldreuseconnection）
+ // second次request (shouldreuseconnection)
  let _ =
  send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
 

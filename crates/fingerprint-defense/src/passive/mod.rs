@@ -20,7 +20,7 @@ pub use tls::{TlsAnalyzer, TlsFingerprint};
 // use core insystemlevelabstract
 use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
 
-/// passiveanalysiser（多protocol）
+/// passiveanalysiser (多protocol)
 pub struct PassiveAnalyzer {
  tcp_analyzer: TcpAnalyzer,
  http_analyzer: HttpAnalyzer,
@@ -59,7 +59,7 @@ impl PassiveAnalyzer {
  result
  }
 
- /// analysiscountpacket并return NetworkFlow（新method， for systemlevelprotection）
+ /// analysiscountpacket并return NetworkFlow (新method， for systemlevelprotection)
  pub fn analyze_to_flow(&self, packet: &Packet) -> Result<NetworkFlow, PassiveError> {
  // 1. determineprotocoltype
  let protocol = match (
@@ -89,7 +89,7 @@ impl PassiveAnalyzer {
  context.packet_size = packet.payload.len();
 
  // intelligentdirectionidentify： if is privateaddress发往公网，usually is Outbound；反之 is Inbound
- // herelogiccanBased on部署environment（gateway vs final端）furtherfine-tune
+ // herelogiccanBased on部署environment (gateway vs final端)furtherfine-tune
  let src_is_local = match packet.src_ip {
  std::net::IpAddr::V4(ip) => ip.is_loopback() || ip.is_private(),
  std::net::IpAddr::V6(ip) => ip.is_loopback(),

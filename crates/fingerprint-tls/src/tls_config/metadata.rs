@@ -1,6 +1,6 @@
 //! TLS metadatastoremodule
 //!
-//! in Build ClientHelloSpec when saveextensionmetadata（SNI、ALPN etc.）
+//! in Build ClientHelloSpec when saveextensionmetadata (SNI、ALPN etc.)
 //! this waycan in Extractsignature when Getcompleteinfo
 
 use std::collections::HashMap;
@@ -9,17 +9,17 @@ use std::collections::HashMap;
 /// storeextensioninside部countdata， for back续Extract
 #[derive(Debug, Clone, Default)]
 pub struct ExtensionMetadata {
- /// SNI value（ if exists）
+ /// SNI value ( if exists)
  pub sni: Option<String>,
- /// ALPN protocollist（ if exists）
+ /// ALPN protocollist ( if exists)
  pub alpn: Option<Vec<String>>,
- /// elliptic curvelist（ if exists）
+ /// elliptic curvelist ( if exists)
  pub elliptic_curves: Option<Vec<u16>>,
- /// elliptic curve点format（ if exists）
+ /// elliptic curve点format ( if exists)
  pub elliptic_curve_point_formats: Option<Vec<u8>>,
- /// signaturealgorithmlist（ if exists）
+ /// signaturealgorithmlist ( if exists)
  pub signature_algorithms: Option<Vec<u16>>,
- /// supportversion（ if exists）
+ /// supportversion ( if exists)
  pub supported_versions: Option<Vec<u16>>,
 }
 
@@ -27,7 +27,7 @@ pub struct ExtensionMetadata {
 /// for storeextensioninside部countdata
 #[derive(Debug, Clone, Default)]
 pub struct SpecMetadata {
- /// extensionmetadatamap（extension ID -> metadata）
+ /// extensionmetadatamap (extension ID -> metadata)
  pub extension_metadata: HashMap<u16, ExtensionMetadata>,
 }
 
@@ -105,7 +105,7 @@ impl SpecMetadata {
 .and_then(|m| m.alpn.as_ref())
  }
 
- /// Getfirst ALPN protocol（ for signature）
+ /// Getfirst ALPN protocol ( for signature)
  pub fn get_first_alpn(&self) -> Option<String> {
  self.get_alpn().and_then(|alpn| alpn.first().cloned())
  }

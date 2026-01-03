@@ -66,7 +66,7 @@ async fn send_http3_request_async(
  // increase保活frequency以auxiliaryconnectionmigrateidentify
  transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
- // allowpair端migrate（defaultalreadyopen，此处explicitexplain其important性）
+ // allowpair端migrate (defaultalreadyopen，此处explicitexplain其important性)
  // transport.allow_peer_migration(true);
 
  // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)
@@ -79,7 +79,7 @@ async fn send_http3_request_async(
 
  client_config.transport_config(Arc::new(transport));
 
- // 2. DNS Parse（priority IPv4，avoid IPv4 endpoint connection IPv6 remote cause invalid remote address）
+ // 2. DNS Parse (priority IPv4，avoid IPv4 endpoint connection IPv6 remote cause invalid remote address)
  let addr_str = format!("{}:{}", host, port);
  let mut addrs: Vec<SocketAddr> = addr_str
 .to_socket_addrs()
@@ -94,7 +94,7 @@ async fn send_http3_request_async(
  let mut connection_result = Err(HttpClientError::ConnectionFailed("无availableaddress".to_string()));
 
  for remote_addr in addrs {
- // Create QUIC endpoint（按 remote address族selectbind）
+ // Create QUIC endpoint ( by  remote address族selectbind)
  let bind_addr = match remote_addr.ip() {
  IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
  IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),
@@ -157,7 +157,7 @@ async fn send_http3_request_async(
 .uri(uri)
 .version(http::Version::HTTP_3);
 
- // Fix: Add Cookie to request（ if exists）
+ // Fix: Add Cookie to request ( if exists)
  let mut request_with_cookies = request.clone();
  if let Some(cookie_store) = &config.cookie_store {
  super::request::add_cookies_to_request(
@@ -174,13 +174,13 @@ async fn send_http3_request_async(
  http_request = http_request.header("user-agent", &config.user_agent);
 
  for (key, value) in &request_with_cookies.headers {
- // skip host header（ if userpassed in）
+ // skip host header ( if userpassed in)
  if key.to_lowercase() != "host" {
  http_request = http_request.header(key, value);
  }
  }
 
- // Fix: Buildrequest（h3 need Request<()>，thenthrough stream send body）
+ // Fix: Buildrequest (h3 need Request<()>，thenthrough stream send body)
  let http_request = http_request
 .body(())
 .map_err(|e| HttpClientError::InvalidResponse(format!("Buildrequestfailure: {}", e)))?;
@@ -191,7 +191,7 @@ async fn send_http3_request_async(
 .await
 .map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;
 
- // Fix: through stream sendrequest体（ if exists）
+ // Fix: through stream sendrequest体 ( if exists)
  if let Some(body) = &request.body {
  if !body.is_empty() {
  stream
@@ -224,7 +224,7 @@ async fn send_http3_request_async(
 .sum();
  if total_header_size > MAX_HTTP3_HEADER_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/3 responseheadertoo large（>{} bytes）",
+ "HTTP/3 responseheadertoo large (>{} bytes)",
  MAX_HTTP3_HEADER_SIZE
  )));
  }
@@ -247,7 +247,7 @@ async fn send_http3_request_async(
  // securityCheck：preventresponsebody too large
  if body_data.len().saturating_add(chunk_len) > MAX_HTTP3_BODY_SIZE {
  return Err(HttpClientError::InvalidResponse(format!(
- "HTTP/3 responsebody too large（>{} bytes）",
+ "HTTP/3 responsebody too large (>{} bytes)",
  MAX_HTTP3_BODY_SIZE
  )));
  }

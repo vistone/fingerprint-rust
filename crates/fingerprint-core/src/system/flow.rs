@@ -26,10 +26,10 @@ pub struct FlowCharacteristics {
  /// averagecountpacketsize
  pub avg_packet_size: f64,
 
- /// countpacketrate（包/seconds）
+ /// countpacketrate (包/seconds)
  pub packet_rate: f64,
 
- /// bytesrate（bytes/seconds）
+ /// bytesrate (bytes/seconds)
  pub byte_rate: f64,
 }
 
@@ -85,8 +85,8 @@ impl Default for FlowCharacteristics {
 /// ## Core Concept
 ///
 /// systemlevelprotectionneed from **networktraffic**perspectiveperformanalysis and protection，而is notonlyonlyfocussingleservice：
-/// - completesystemupdown文（source/target、protocol、direction etc.）
-/// - detect to fingerprintinfo（TLS、HTTP、TCP etc.）
+/// - completesystemupdown文 (source/target、protocol、direction etc.)
+/// - detect to fingerprintinfo (TLS、HTTP、TCP etc.)
 /// - trafficstatisticstrait and behaviorpattern
 ///
 /// ## Examples
@@ -106,7 +106,7 @@ pub struct NetworkFlow {
  /// systemupdown文
  pub context: SystemContext,
 
- /// detect to fingerprintlist（ if 有）
+ /// detect to fingerprintlist ( if 有)
  /// Note: due to trait object limit，herecannotdirectly Clone，needmanualprocess
  #[cfg_attr(test, allow(dead_code))]
  fingerprints: Vec<Box<dyn Fingerprint>>,

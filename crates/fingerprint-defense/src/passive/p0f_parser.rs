@@ -1,11 +1,11 @@
-//! p0f signatureParseer（detailedimplement）
+//! p0f signatureParseer (detailedimplement)
 //!
 //! completeimplement p0f.fp formatParse，supportallfield and pattern。
 
 use crate::passive::tcp::TcpSignature;
 use thiserror::Error;
 
-/// p0f TCP signature（complete版）
+/// p0f TCP signature (complete版)
 #[derive(Debug, Clone)]
 pub struct P0fTcpSignature {
  /// signature ID
@@ -14,7 +14,7 @@ pub struct P0fTcpSignature {
  /// taginfo
  pub label: SignatureLabel,
 
- /// systemtypelimit（optional）
+ /// systemtypelimit (optional)
  pub sys: Option<Vec<SystemType>>,
 
  /// TTL pattern
@@ -333,7 +333,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  return Ok((mss_pattern, options_order));
  }
 
- // Parse MSS pattern（firstpartial）
+ // Parse MSS pattern (firstpartial)
  // formatmay is: mss*20,10 or mss,1460
  let mss_part = parts[0];
  if mss_part.contains("mss") {
@@ -366,7 +366,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  options_order.push(opt);
  }
  } else {
- // Ifnosecondpartial, mayoptionsorder就 in firstpartial（ in MSS patternafter）
+ // Ifnosecondpartial, mayoptionsorder就 in firstpartial ( in MSS patternafter)
  // format: mss*20,10 or mss,1460
  // thissituationdown，optionsordermay不 exists， or 者need from other地方Extract
  // 暂 when 不processthissituation
@@ -432,10 +432,10 @@ fn parse_ip_flags(flags_str: &str) -> Result<IpFlags, P0fParseError> {
  })
 }
 
-/// will P0fTcpSignature convert to TcpSignature（ for match）
+/// will P0fTcpSignature convert to TcpSignature ( for match)
 impl From<P0fTcpSignature> for TcpSignature {
  fn from(p0f_sig: P0fTcpSignature) -> Self {
- // from MSS patternExtractfixedvalue（ if may）
+ // from MSS patternExtractfixedvalue ( if may)
  let mss = match &p0f_sig.mss_pattern {
  MssPattern::Fixed(v) => Some(*v),
  MssPattern::Multiple { multiplier, offset } => {
@@ -448,14 +448,14 @@ impl From<P0fTcpSignature> for TcpSignature {
  MssPattern::None => None,
  };
 
- // from optionsorder in Extract Window Scale（ if exists）
+ // from optionsorder in Extract Window Scale ( if exists)
  let window_scale = if p0f_sig.options_order.contains(&TcpOptionType::WindowScale) {
  Some(7) // defaultvalue，actualshould from countpacket in Extract
  } else {
  None
  };
 
- // from windowvaluepatternExtractfixedvalue（ if may）
+ // from windowvaluepatternExtractfixedvalue ( if may)
  let window_size = match &p0f_sig.window_value {
  WindowSizePattern::Value(v) => *v,
  _ => 0, // wildcard or otherpattern
