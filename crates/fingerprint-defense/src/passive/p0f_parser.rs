@@ -111,7 +111,7 @@ pub enum WindowSizePattern {
 /// MSS pattern
 #[derive(Debug, Clone, PartialEq)]
 pub enum MssPattern {
- /// 无 MSS
+ /// none MSS
  None,
  /// fixedvalue：mss,1460
  Fixed(u16),

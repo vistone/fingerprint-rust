@@ -1,6 +1,6 @@
 //! countpacketcapturemodule
 //!
-//! use纯 Rust implement from networkinterface or file实 when capturecountpacket (无systemdepend)。
+//! use纯 Rust implement from networkinterface or file实 when capturecountpacket (nonesystemdepend)。
 
 use crate::passive::{PacketParser, PassiveAnalyzer};
 use pnet::datalink::{self, Channel, NetworkInterface};

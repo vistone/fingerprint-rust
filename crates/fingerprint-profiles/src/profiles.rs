@@ -456,7 +456,7 @@ pub fn edge_133() -> ClientProfile {
  )
 }
 
-/// Initializeallfingerprintconfigurationmap表
+/// Initializeallfingerprintconfigurationmaptable
 fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  let mut map = HashMap::new();
 
@@ -550,10 +550,10 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
  map
 }
 
-/// globalfingerprintconfigurationmap表 (threadsecurity)
+/// globalfingerprintconfigurationmaptable (threadsecurity)
 static MAPPED_TLS_CLIENTS: OnceLock<HashMap<String, ClientProfile>> = OnceLock::new();
 
-/// Getfingerprintconfigurationmap表
+/// Getfingerprintconfigurationmaptable
 pub fn mapped_tls_clients() -> &'static HashMap<String, ClientProfile> {
  MAPPED_TLS_CLIENTS.get_or_init(init_mapped_tls_clients)
 }

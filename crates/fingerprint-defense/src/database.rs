@@ -21,7 +21,7 @@ impl FingerprintDatabase {
  Ok(db)
  }
 
- /// Initialize表struct
+ /// Initializetablestruct
  fn init(&self) -> SqliteResult<()> {
  self.conn.execute(
  "CREATE TABLE IF NOT EXISTS flows (

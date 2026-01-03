@@ -89,7 +89,7 @@ impl ClientHelloMessage {
  random.extend_from_slice(&random_bytes);
  }
 
- // emptysession ID (新session)
+ // emptysession ID (newsession)
  let session_id = Vec::new();
 
  // cipher suite

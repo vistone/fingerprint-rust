@@ -82,7 +82,7 @@ impl DomainIPs {
 
  /// Checkwhether有new IP address ( and 另an DomainIPs compare)
  ///
- /// `self` is 新Parse IP set，`other` is beforesave IP set
+ /// `self` is newParse IP set，`other` is beforesave IP set
  /// If `self` in 有 `other` no IP, return true (discovernew IP)
  pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
  let self_ips: HashSet<String> = self.all_ips().into_iter().collect();

@@ -329,7 +329,7 @@ impl HttpClient {
  // Parsenew URL domain and path ( for Cookie fieldfilter)
  let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
 
- // Fix: reBuildrequest，只including适 for 新domain Cookie
+ // Fix: reBuildrequest，只including适 for newdomain Cookie
  let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
 
  // copy非 Cookie headers，并Add Referer
@@ -342,7 +342,7 @@ impl HttpClient {
  final_redirect_request =
  final_redirect_request.with_header("Referer", &request.url);
 
- // Add适 for 新domain Cookie
+ // Add适 for newdomain Cookie
  if let Some(cookie_store) = &self.config.cookie_store {
  if let Some(cookie_header) = cookie_store.generate_cookie_header(
  &new_host,

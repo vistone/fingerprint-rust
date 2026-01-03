@@ -132,7 +132,7 @@ impl Service {
  }
 
  // startbackbackground task：regularslow eliminationDNSserver (non-blockingmainthread)
- // reference Go 项destinationimplement： in Parseprocess in recordperformance，back台regularcleanup慢node
+ // reference Go itemdestinationimplement： in Parseprocess in recordperformance，back台regularcleanup慢node
  let resolver_for_cleanup = self.resolver.clone();
  let server_pool_for_cleanup = server_pool_arc.clone();
  let dns_timeout_for_cleanup = dns_timeout;
@@ -161,7 +161,7 @@ impl Service {
  removed_count, new_count
  );
 
- // Update resolver serverpool (pair应 Go 项destinationUpdateserverpool)
+ // Update resolver serverpool (pair应 Go itemdestinationUpdateserverpool)
  let new_resolver = DNSResolver::with_server_pool(
  dns_timeout_for_cleanup,
  Arc::new(optimized_pool),
@@ -298,7 +298,7 @@ impl Service {
 
  /// settingsbasicexecuteinterval
  pub fn set_interval(&self, _interval: Duration) {
- // Note: dynamicadjustpatterndown，actualintervalwillBased onwhetherdiscover新IP而change
+ // Note: dynamicadjustpatterndown，actualintervalwillBased onwhetherdiscovernewIP而change
  // thisfunctionmain for staticpattern，目front暂不support
  }
 
@@ -356,7 +356,7 @@ async fn resolve_and_save_all_internal(
 .map(|e| e.ipv6.iter().map(|ip| ip.ip.clone()).collect())
 .unwrap_or_default();
 
- // 找出新discover IP (只querythese)
+ // 找出newdiscover IP (只querythese)
  let new_ipv4: Vec<String> = all_ipv4.difference(&existing_ipv4).cloned().collect();
  let new_ipv6: Vec<String> = all_ipv6.difference(&existing_ipv6).cloned().collect();
 
@@ -381,7 +381,7 @@ async fn resolve_and_save_all_internal(
  }
  }
 
- // 只query新discover IPv4 detailedinfo
+ // 只querynewdiscover IPv4 detailedinfo
  if !new_ipv4.is_empty() {
  eprintln!(
  "[DNS Service] discover {} new IPv4 address，正 in Getdetailedinfo...",
@@ -407,7 +407,7 @@ async fn resolve_and_save_all_internal(
  }
  }
 
- // 只query新discover IPv6 detailedinfo
+ // 只querynewdiscover IPv6 detailedinfo
  if !new_ipv6.is_empty() {
  eprintln!(
  "[DNS Service] discover {} new IPv6 address，正 in Getdetailedinfo...",

@@ -295,7 +295,7 @@ pub fn generate_headers(
  headers.accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8".to_string();
  headers.accept_encoding = "gzip, deflate, br".to_string();
  // Firefox 不use Sec-Fetch-* headers (旧version)
- // 新version Firefox use，butformatdifferent
+ // newversion Firefox use，butformatdifferent
  if is_mobile {
  headers.sec_fetch_site = "none".to_string();
  headers.sec_fetch_mode = "navigate".to_string();

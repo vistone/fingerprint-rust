@@ -4,7 +4,7 @@
 //! - HTTP/2 adoptsessionpool (H2SessionPool)implementtrue multiplexreuse
 //! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
-//! - netconnpool role：only in Create新session when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
+//! - netconnpool role：only in Createnewsession when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
 //! - sessionestablishback，connectionlifecycle由 H2Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
@@ -29,7 +29,7 @@ pub async fn send_http2_request_with_pool(
 
  // Note: connection poolinconnection in Create when maynoapplication TCP Profile
  // in order toensure TCP fingerprintconsistency，wesuggest in Createconnection poolbefore就through generate_unified_fingerprint sync TCP Profile
- // herewestill from connection poolGetconnection，but新Createconnectionwillapplication TCP Profile ( if configuration了)
+ // herewestill from connection poolGetconnection，butnewCreateconnectionwillapplication TCP Profile ( if configuration了)
 
  // from connection poolGetconnection
  let pool = pool_manager.get_pool(host, port)?;

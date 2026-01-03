@@ -32,7 +32,7 @@ pub struct ReportSummary {
 }
 
 impl ValidationReport {
- /// Create新report
+ /// Createnewreport
  pub fn new(title: String) -> Self {
  #[cfg(feature = "reporter")]
  let generated_at = chrono::Local::now().format("%Y-%m-%d %H:%M:%S").to_string();
@@ -144,7 +144,7 @@ impl ValidationReport {
 }
 
 impl ReportSection {
- /// Create新section
+ /// Createnewsection
  pub fn new(title: String) -> Self {
  Self {
  title,

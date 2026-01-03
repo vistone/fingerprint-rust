@@ -151,7 +151,7 @@ impl SystemAnalysisResult {
  }
  }
 
- /// Createsecurityresult (无threat)
+ /// Createsecurityresult (nonethreat)
  pub fn safe() -> Self {
  Self {
  fingerprints: Vec::new(),
@@ -228,7 +228,7 @@ impl std::fmt::Debug for SystemAnalysisResult {
 // Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for SystemAnalysisResult {
  fn clone(&self) -> Self {
- // Note: fingerprints cannot Clone，so新instance from emptyliststart
+ // Note: fingerprints cannot Clone，sonewinstance from emptyliststart
  Self {
  fingerprints: Vec::new(), // cannot Clone trait object
  risk_score: self.risk_score,

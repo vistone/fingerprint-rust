@@ -4,7 +4,7 @@
 //! currentimplementwill：
 //! - 先读 to `\r\n\r\n` Getresponseheader
 //! - 若有 `Content-Length`：read to complete body backreturn
-//! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (无 trailer commonscenario)backreturn
+//! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (none trailer commonscenario)backreturn
 //! - otherwise：读 to EOF ( etc.价于connectionclose)
 //!
 //! 同 when providemaximumresponsesizeprotect，preventinside存被打爆。
@@ -99,7 +99,7 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
  }
  }
 
- // chunked：common无 trailer endmarker
+ // chunked：commonnone trailer endmarker
  if is_chunked {
  if let Some(end) = headers_end {
  let body = &buf[end..];

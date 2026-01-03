@@ -163,7 +163,7 @@ impl ServerPool {
  stat.failure_rate(),
  )
  } else {
- // nostatisticscountdataserver (新server)considerperformance最好
+ // nostatisticscountdataserver (newserver)considerperformance最好
  (server.clone(), 0.0, 0.0)
  }
  })
@@ -285,7 +285,7 @@ impl ServerPool {
  }
 
  /// Addserver并returnnew ServerPool (pair应 Go AddServer)
- /// return (新pool, whether is 新Add的)
+ /// return (newpool, whether is newAdd的)
  pub fn with_added_server(&self, ip: &str) -> (Self, bool) {
  use std::net::IpAddr;
  use std::str::FromStr;
@@ -313,7 +313,7 @@ impl ServerPool {
  return (self.clone(), false);
  }
 
- // Add新server
+ // Addnewserver
  let mut new_servers = (*self.servers).clone();
  new_servers.push(server);
  (

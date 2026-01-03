@@ -123,10 +123,10 @@ impl H3SessionPool {
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 
- // Create新session
+ // Createnewsession
  let result = create_session.await;
 
- // 无论successfailure，都 from pending in remove
+ // none论successfailure，都 from pending in remove
  if let Ok(mut pending) = self.pending_sessions.lock() {
  pending.remove(key);
  }

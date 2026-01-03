@@ -39,7 +39,7 @@ impl Default for ConnectionPoolManager {
  }
 }
 
-/// connection poolmanageer (无connection poolFeatures when 占bit)
+/// connection poolmanageer (noneconnection poolFeatures when 占bit)
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
  #[allow(dead_code)]
@@ -175,7 +175,7 @@ impl ConnectionPoolManager {
 .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
 .collect();
 
- // priorityuse IPv4，avoid in "无 IPv6 route"environment in appear `Network is unreachable`。
+ // priorityuse IPv4，avoid in "none IPv6 route"environment in appear `Network is unreachable`。
  let mut v4 = Vec::new();
  let mut v6 = Vec::new();
  for a in addrs {

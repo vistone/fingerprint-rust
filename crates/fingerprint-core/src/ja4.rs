@@ -356,7 +356,7 @@ impl std::fmt::Display for JA4S {
 pub struct ConsistencyReport {
  /// overallscore (0-100)
  pub score: u8,
- /// discover不consistent项
+ /// discover不consistentitem
  pub discrepancies: Vec<String>,
  /// whether疑似机er人
  pub bot_detected: bool,

@@ -59,7 +59,7 @@ impl H2SessionPool {
 
  /// Get or Create HTTP/2 session
  /// return SendRequest handleclone
- /// create_session: Create新sessionasyncfunction，return (SendRequest, Connection)
+ /// create_session: Createnewsessionasyncfunction，return (SendRequest, Connection)
  pub async fn get_or_create_session<Fut, IO>(
  &self,
  key: &str,
@@ -132,13 +132,13 @@ impl H2SessionPool {
  if let Some(mut rx) = rx {
  // waitoriginalCreatetaskcomplete
  let _ = rx.changed().await;
- // Createcompletebackrecursivecall以Get新Createsession
+ // Createcompletebackrecursivecall以GetnewCreatesession
  // Note: due to Fut limit，herecannotdirectlyrecursive，weactualupshould in outsidelayerloop
  // butin order tocode简洁，weheredirectlyjump to reChecklogic
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 
- // personallyCreate新session
+ // personallyCreatenewsession
  let (send_request_h2, h2_conn) = create_session.await.inspect_err(|_e| {
  // Createfailurealsoneed from pending in remove
  if let Ok(mut pending) = self.pending_sessions.lock() {

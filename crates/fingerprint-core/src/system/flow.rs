@@ -177,7 +177,7 @@ impl std::fmt::Debug for NetworkFlow {
 // Manual implementation Clone，because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for NetworkFlow {
  fn clone(&self) -> Self {
- // Note: fingerprints cannot Clone，so新instance from emptyliststart
+ // Note: fingerprints cannot Clone，sonewinstance from emptyliststart
  // this is合理的，becausefingerprintusually不should被copy，而 is throughreferenceshared
  Self {
  context: self.context.clone(),
