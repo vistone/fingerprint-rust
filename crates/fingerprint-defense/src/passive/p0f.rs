@@ -40,7 +40,7 @@ impl P0fDatabase {
  Self::parse(&content)
  }
 
- /// Parse p0f databaseinside容
+ /// Parse p0f databaseinsidecontain
  pub fn parse(content: &str) -> Result<Self, P0fError> {
  let mut db = Self {
  tcp_request: HashMap::new(),

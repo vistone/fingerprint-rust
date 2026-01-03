@@ -9,16 +9,16 @@
 //! ## itemfrontalreadyimplementFeatures
 //!
 //! - ✅ **passivefingerprintidentify** (`passive`): TCP/IP (p0f), HTTP, TLS passiveidentify
-//! - ✅ **crosslayerconsistency审calculate** (`consistency`): JA4+ consistencyvalidate
+//! - ✅ **crosslayerconsistencyreviewcalculate** (`consistency`): JA4+ consistencyvalidate
 //! - ✅ **fingerprintdatabase** (`database`): SQLite store and analysisfingerprinttrait
 //! - ✅ **learnmechanism** (`learner`): automaticdiscover and recordnot知fingerprint
-//! - ✅ **countpacketcapture** (`capture`): 纯 Rust implementactual when network interface and pcap filecapture (nonesystemdepend)
+//! - ✅ **countpacketcapture** (`capture`): pure Rust implementactual when network interface and pcap filecapture (nonesystemdepend)
 //!
 //! ## planinFeatures
 //!
 //! - **systemanalysiser** (`analyzer`): implement `SystemAnalyzer` trait
 //! - **systemprotectioner** (`protector`): implement `SystemProtector` trait
-//! - **threat狩猎** (`hunting`): 蜜罐 and behavioranalysis
+//! - **threat狩猎** (`hunting`): honeypot and behavioranalysis
 
 pub mod capture;
 pub mod database;

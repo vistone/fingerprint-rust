@@ -358,7 +358,7 @@ pub struct ConsistencyReport {
  pub score: u8,
  /// discover不consistentitem
  pub discrepancies: Vec<String>,
- /// whether疑似机er人
+ /// whethersuspected machineer人
  pub bot_detected: bool,
 }
 

@@ -49,7 +49,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
 /// - `tcp_profile`: TCP Profile configuration (optional)
 ///
 /// # Returns
-/// returnconfiguration好 socket2::Socket
+/// returnconfigurationgood socket2::Socket
 pub fn create_tcp_socket_with_profile(
  addr: &SocketAddr,
  tcp_profile: Option<&TcpProfile>,
@@ -79,7 +79,7 @@ pub fn create_tcp_socket_with_profile(
 /// - `tcp_profile`: TCP Profile configuration (optional)
 ///
 /// # Returns
-/// returnconfiguration好 tokio::net::TcpStream
+/// returnconfigurationgood tokio::net::TcpStream
 pub async fn connect_tcp_with_profile(
  addr: SocketAddr,
  tcp_profile: Option<&TcpProfile>,
@@ -128,7 +128,7 @@ pub async fn connect_tcp_with_profile(
 /// - `tcp_profile`: TCP Profile configuration (optional)
 ///
 /// # Returns
-/// returnconfiguration好 std::net::TcpStream
+/// returnconfigurationgood std::net::TcpStream
 pub fn connect_tcp_with_profile_sync(
  addr: SocketAddr,
  tcp_profile: Option<&TcpProfile>,

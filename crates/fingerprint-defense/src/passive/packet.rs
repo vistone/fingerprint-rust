@@ -167,7 +167,7 @@ impl PacketParser {
  }
 
  // IPv6 headerfixed 40 bytes
- // version(4bit) + trafficclass别(8bit) + streamtag(20bit) = front 4 bytes
+ // version(4bit) + trafficclassdistinguish(8bit) + streamtag(20bit) = front 4 bytes
  let version = (raw_packet[0] >> 4) & 0x0F;
  if version != 6 {
  return Err(PacketError::InvalidVersion);
@@ -179,7 +179,7 @@ impl PacketParser {
  // nextheader (protocoltype，bytes 6)
  let next_header = raw_packet[6];
 
- // 跳countlimit (TTL，bytes 7)
+ // jumpcountlimit (TTL，bytes 7)
  let hop_limit = raw_packet[7];
 
  // sourceaddress (128bit，bytes 8-23)

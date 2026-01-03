@@ -124,7 +124,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
  let browser_type_lower = browser_type.to_lowercase();
 
- // filter出specifiedbrowsertypefingerprint
+ // filteroutspecifiedbrowsertypefingerprint
  let candidates: Vec<String> = clients
 .keys()
 .filter(|name| {

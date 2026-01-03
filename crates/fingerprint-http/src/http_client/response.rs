@@ -338,7 +338,7 @@ mod tests {
 
  assert_eq!(response.status_code, 200);
  assert_eq!(response.status_text, "OK");
- // headers store when willconvert tosmall写
+ // headers store when willconvert tosmallwrite
  assert_eq!(
  response.get_header("content-type"),
  Some(&"text/html".to_string())

@@ -283,7 +283,7 @@ impl HttpClient {
  format!("{}://{}:{}{}", scheme, host, port, location)
  } else {
  // mutualpairpath
- // Fix: correctprocesspathconcatenate，avoid双斜杠
+ // Fix: correctprocesspathconcatenate，avoiddouble slash
  let base_path = if path.ends_with('/') {
  &path
  } else {
@@ -301,7 +301,7 @@ impl HttpClient {
  // Fix: Based on HTTP status codecorrectprocessredirectmethod (RFC 7231)
  let redirect_method = match response.status_code {
  301..=303 => {
- // 301, 302, 303: POST should改 as GET，并removerequest体
+ // 301, 302, 303: POST shouldchange as GET，并removerequest体
  HttpMethod::Get
  }
  307 | 308 => {
@@ -354,7 +354,7 @@ impl HttpClient {
  }
  }
 
- // Ifkeep POST/PUT/PATCH, preserverequest体； if 改 as GET，removerequest体 (RFC 7231 require)
+ // Ifkeep POST/PUT/PATCH, preserverequest体； if change as GET，removerequest体 (RFC 7231 require)
  if redirect_method != HttpMethod::Get {
  if let Some(body) = &request.body {
  final_redirect_request = final_redirect_request.with_body(body.clone());
@@ -532,8 +532,8 @@ impl HttpClient {
  {
  if self.config.prefer_http3 {
  // Ifopen了 HTTP/3, wetry它。
- // Iffailure, wemay希望降level，but HTTP/3 to TCP is differenttransferlayer，
- // usually if userexplicitrequire HTTP/3，failurethenshould报错。
+ // Iffailure, wemaywant to reducelevel，but HTTP/3 to TCP is differenttransferlayer，
+ // usually if userexplicitrequire HTTP/3，failurethenshouldreport error。
  // butherein order tostable健property， if is becauseprotocolerror，wecan降level。
  // temporary when keepsimple：directlyreturn。
  match http3::send_http3_request(host, port, path, request, &self.config) {

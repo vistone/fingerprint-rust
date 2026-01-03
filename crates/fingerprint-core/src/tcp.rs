@@ -7,7 +7,7 @@ use crate::metadata::FingerprintMetadata;
 use std::hash::{Hash, Hasher};
 
 /// TCP configurationdescribefile
-/// for main动configuration出口connection TCP parameter
+/// for main动configurationexitconnection TCP parameter
 #[derive(Debug, Clone, Copy)]
 pub struct TcpProfile {
  /// initialbeginning TTL

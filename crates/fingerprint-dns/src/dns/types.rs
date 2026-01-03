@@ -15,7 +15,7 @@ pub struct IPInfo {
  /// 城市 (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub city: Option<String>,
- /// 地区 (optional)
+ /// region (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub region: Option<String>,
  /// 国家code (optional)
@@ -27,7 +27,7 @@ pub struct IPInfo {
  /// group织/ISP (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub org: Option<String>,
- /// when 区 (optional)
+ /// when area (optional)
  #[serde(skip_serializing_if = "Option::is_none")]
  pub timezone: Option<String>,
 }

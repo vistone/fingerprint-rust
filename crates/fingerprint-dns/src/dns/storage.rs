@@ -87,7 +87,7 @@ fn save_as_yaml(path: &Path, domain_ips: &DomainIPs) -> Result<(), DNSError> {
 /// from YAML load
 fn load_from_yaml(path: &Path) -> Result<DomainIPs, DNSError> {
  let content = fs::read_to_string(path)?;
- // use serde_yaml directly反serialize
+ // use serde_yaml directlyreverseserialize
  let domain_ips: DomainIPs =
  serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?;
  Ok(domain_ips)

@@ -102,7 +102,7 @@ impl ValidationReport {
  md
  }
 
- /// Generate纯textreport
+ /// Generatepuretextreport
  pub fn to_text(&self) -> String {
  let mut text = String::new();
 
@@ -153,7 +153,7 @@ impl ReportSection {
  }
  }
 
- /// Addinside容execute
+ /// Addinsidecontainexecute
  pub fn add_line(&mut self, line: String) {
  self.content.push(line);
  }
@@ -171,7 +171,7 @@ impl ReportSection {
  md.push_str(&"#".repeat(level));
  md.push_str(&format!(" {}\n\n", self.title));
 
- // inside容
+ // insidecontain
  for line in &self.content {
  md.push_str(line);
  md.push('\n');
@@ -188,7 +188,7 @@ impl ReportSection {
  md
  }
 
- /// convert to纯text
+ /// convert topuretext
  fn to_text(&self, indent: usize) -> String {
  let mut text = String::new();
  let indent_str = " ".repeat(indent);
@@ -197,7 +197,7 @@ impl ReportSection {
  text.push_str(&format!("{}{}\n", indent_str, self.title));
  text.push_str(&format!("{}{}\n", indent_str, "-".repeat(self.title.len())));
 
- // inside容
+ // insidecontain
  for line in &self.content {
  text.push_str(&format!("{} {}\n", indent_str, line));
  }

@@ -26,7 +26,7 @@ pub struct H2SessionPool {
  /// sessionpool ( by  host:port group)
  /// eachsessionincluding SendRequest handle、backbackground taskhandle and finallywhen used between
  sessions: Arc<Mutex<HashMap<String, Arc<H2Session>>>>,
- /// 正 in Createinsession (avoidsame key concurrentCreatecompetition)
+ /// positive in Createinsession (avoidsame key concurrentCreatecompetition)
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
  /// sessiontimeout duration (default 5 minutes)
  session_timeout: Duration,
@@ -111,7 +111,7 @@ impl H2SessionPool {
  }
  }
 
- // Ifnoavailablesession, Checkwhether正 in Create in (Race Condition Fix)
+ // Ifnoavailablesession, Checkwhetherpositive in Create in (Race Condition Fix)
  let rx = {
  let mut pending = self
 .pending_sessions
@@ -120,10 +120,10 @@ impl H2SessionPool {
  if let Some(rx) = pending.get(key) {
  Some(rx.clone())
  } else {
- // marker as 正 in Create
+ // marker as positive in Create
  let (_tx, rx) = watch::channel(false);
  pending.insert(key.to_string(), rx.clone());
- // herewe稍microviolate一downprinciple，in order tologic清晰directly in herereturn None representweneedpersonallyCreate
+ // herewe稍microviolate一downprinciple，in order tologiccleardirectly in herereturn None representweneedpersonallyCreate
  // butwewillpreserve tx in backcontinueuse
  None
  }
@@ -134,7 +134,7 @@ impl H2SessionPool {
  let _ = rx.changed().await;
  // Createcompletebackrecursivecall以GetnewCreatesession
  // Note: due to Fut limit，herecannotdirectlyrecursive，weactualupshould in outsidelayerloop
- // butin order tocode简洁，weheredirectlyjump to reChecklogic
+ // butin order tocodeconcise，weheredirectlyjump to reChecklogic
  return Box::pin(self.get_or_create_session(key, create_session)).await;
  }
 

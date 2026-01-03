@@ -218,7 +218,7 @@ impl HTTPHeaders {
 
  // 1. 先 by specified order orderAdd
  for key in order {
- // find map is否 existsmatch key (ignoresize写performmatch，butpreserve order insize写)
+ // find map is否 existsmatch key (ignoresizewriteperformmatch，butpreserve order insizewrite)
  for (m_key, m_val) in &map {
  if m_key.eq_ignore_ascii_case(key) && !used.contains(m_key) {
  result.push((key.clone(), m_val.clone()));

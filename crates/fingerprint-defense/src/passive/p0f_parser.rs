@@ -136,7 +136,7 @@ pub enum TcpOptionType {
 pub struct IpFlags {
  /// Don't Fragment
  pub df: bool,
- /// ID 递增
+ /// ID 递increase
  pub id_plus: bool,
  /// ID fixed
  pub id_minus: bool,
@@ -368,7 +368,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
  } else {
  // Ifnosecondpartial, mayoptionsorderthen in firstpartial ( in MSS patternafter)
  // format: mss*20,10 or mss,1460
- // thissituationdown，optionsordermay不 exists， or one whoneed from other地方Extract
+ // thissituationdown，optionsordermay不 exists， or one whoneed from otherplaceExtract
  // temporary when 不processthissituation
  }
 

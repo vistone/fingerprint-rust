@@ -5,9 +5,9 @@
 //! - read first to `\r\n\r\n` Getresponseheader
 //! - 若有 `Content-Length`：read to complete body backreturn
 //! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (none trailer commonscenario)backreturn
-//! - otherwise：读 to EOF ( etc.价于connectionclose)
+//! - otherwise：读 to EOF ( etc.equivalent toconnectionclose)
 //!
-//! same when providemaximumresponsesizeprotect，preventinsidesave被打爆。
+//! same when providemaximumresponsesizeprotect，preventinsidesavebe overwhelmed。
 
 use std::io;
 use std::io::Read;
@@ -105,7 +105,7 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
  let body = &buf[end..];
  if find_subsequence(body, b"0\r\n\r\n").is_some() {
  // here不tryprecisedeterminebitendbitplace (trailer situationcomparecomplex)，
- // as long as读 to endflagcanreturn，交给backcontinueParseprocess。
+ // as long as读 to endflagcanreturn，hand overbackcontinueParseprocess。
  break;
  }
  }

@@ -21,7 +21,7 @@ impl IPInfoClient {
  /// Get IP addressdetailedinfo
  pub async fn get_ip_info(&self, ip: &str) -> Result<IPInfo, DNSError> {
  // securityFix: use HTTP Header pass token，而is not URL parameter
- // this waycanavoid token 泄露 to log、errormessage、proxyserver etc.
+ // this waycanavoid token leak to log、errormessage、proxyserver etc.
  let url = format!("https://ipinfo.io/{}", ip);
 
  // useiteminside部 HttpClient

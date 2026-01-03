@@ -30,7 +30,7 @@ pub fn extract_chrome_version(user_agent: &str) -> String {
  {
  return user_agent[version_start..version_start + end].to_string();
  }
- // If没找 to endbitplace, return to stringend尾
+ // Ifnot found to endbitplace, return to stringend尾
  return user_agent[version_start..]
 .split_whitespace()
 .next()

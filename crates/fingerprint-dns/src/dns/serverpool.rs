@@ -163,7 +163,7 @@ impl ServerPool {
  stat.failure_rate(),
  )
  } else {
- // nostatisticscountdataserver (newserver)considerperformancemost好
+ // nostatisticscountdataserver (newserver)considerperformancemostgood
  (server.clone(), 0.0, 0.0)
  }
  })
@@ -176,7 +176,7 @@ impl ServerPool {
 .map(|(s, _, _)| s.clone())
 .collect();
 
- // 容错保障： if filterback剩downservertoo少， by performancesortforcepreserve top N
+ // fault tolerance guarantee： if filterback剩downservertoo少， by performancesortforcepreserve top N
  if filtered.len() < min_active_servers && !scored_servers.is_empty() {
  //  by  failure率 (firstclosekey字) and response when between (secondclosekey字) 升sequencesort
  scored_servers.sort_by(|a, b| {
@@ -421,7 +421,7 @@ impl ServerPool {
  // testquery (query A record)
  match resolver.lookup(&test_domain, RecordType::A).await {
  Ok(lookup_result) => {
- // Checkwhether真return了IPaddress
+ // Checkwhethertruereturn了IPaddress
  let ip_count = lookup_result.iter().count();
  if ip_count > 0 {
  // querysuccess and return了IPaddress，serveravailable，immediatelyAdd to list
@@ -574,7 +574,7 @@ impl ServerPool {
  // testquery (query A record)
  match resolver.lookup(&test_domain, RecordType::A).await {
  Ok(lookup_result) => {
- // Checkwhether真return了IPaddress
+ // Checkwhethertruereturn了IPaddress
  let ip_count = lookup_result.iter().count();
  if ip_count > 0 {
  Some(server_str) // querysuccess and return了IPaddress，serveravailable

@@ -29,11 +29,11 @@ impl TLSRecordType {
 /// TLS record
 #[derive(Debug, Clone)]
 pub struct TLSRecord {
- /// inside容type
+ /// insidecontaintype
  pub content_type: TLSRecordType,
  /// protocolversion (usually is TLS 1.0 = 0x0301， for compatibleproperty)
  pub version: u16,
- /// countdatainside容
+ /// countdatainsidecontain
  pub fragment: Vec<u8>,
 }
 

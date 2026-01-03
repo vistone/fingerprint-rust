@@ -246,7 +246,7 @@ impl Clone for SystemAnalysisResult {
 /// ## Core Concept
 ///
 /// systemlevelanalysis from **systemperspective**analysisnetworktraffic：
-/// - not onlyonly is singleprotocolParse，而 is 综合analysis
+/// - not onlyonly is singleprotocolParse，而 is comprehensiveanalysis
 /// - considersystemwholebehaviorpattern
 /// - detectsystemlevelthreat (DDoS、scan、abnormaltraffic etc.)
 ///

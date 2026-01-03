@@ -24,7 +24,7 @@ use h3::client::SendRequest;
 pub struct H3SessionPool {
  /// sessionpool ( by  host:port group)
  sessions: Arc<Mutex<HashMap<String, Arc<H3Session>>>>,
- /// 正 in Createinsession (avoidcompetition)
+ /// positive in Createinsession (avoidcompetition)
  pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
  /// sessiontimeout duration (default 5 minutes)
  session_timeout: Duration,
@@ -103,7 +103,7 @@ impl H3SessionPool {
  }
  }
 
- // Checkwhether正 in Create in (Race Condition Fix)
+ // Checkwhetherpositive in Create in (Race Condition Fix)
  let rx = {
  let mut pending = self
 .pending_sessions

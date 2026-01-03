@@ -69,7 +69,7 @@ pub async fn send_http3_request_with_pool(
  ));
  transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
- // 增大receivewindow以improvethroughput
+ // increasereceivewindow以improvethroughput
  transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
  transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
@@ -108,7 +108,7 @@ pub async fn send_http3_request_with_pool(
  })
 .await?;
 
- // Get并排他property地use SendRequest
+ // Getand exclude othersproperty地use SendRequest
  let mut send_request = send_request_mutex.lock().await;
 
  // Build HTTP/3 request

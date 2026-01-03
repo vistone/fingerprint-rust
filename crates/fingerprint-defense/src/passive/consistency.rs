@@ -1,6 +1,6 @@
 //! fingerprintconsistencyChecker
 //!
-//! crossValidate TCP、TLS and HTTP layercountdata，detect欺骗behavior and abnormal机er人。
+//! crossValidate TCP、TLS and HTTP layercountdata，detectdeceivebehavior and abnormal机er人。
 
 use fingerprint_core::fingerprint::FingerprintType;
 use fingerprint_core::ja4::ConsistencyReport;
@@ -56,7 +56,7 @@ impl ConsistencyAnalyzer {
 
  // Check TTL and OS whethermatch
  if ua.contains("windows") && tcp_os.contains("linux") {
- // mayuse了proxy or fingerprint混淆不completely
+ // mayuse了proxy or fingerprintconfusion notcompletely
  }
  }
 
@@ -103,7 +103,7 @@ impl ConsistencyAnalyzer {
  (tls.metadata().get("ja4"), http.metadata().get("ja4h"))
  {
  // if JA4 display is modern Chrome (t13d...), but JA4H display is HTTP/1.1 (..11..)  and no Cookie (..n..)
- // this isancommon爬虫trait
+ // this isancommoncrawlertrait
  if ja4.starts_with("t13") && ja4h.contains("11n") {
  report.add_discrepancy(
  format!("detect to modern TLS trait (JA4: {})，but HTTP behaviorperform as traditional无 Cookie request (JA4H: {})", ja4, ja4h),

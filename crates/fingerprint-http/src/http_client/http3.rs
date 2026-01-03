@@ -66,7 +66,7 @@ async fn send_http3_request_async(
  // increasekeep-alivefrequency以auxiliaryconnectionmigrateidentify
  transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
- // allowpairendmigrate (defaultalreadyopen，此处explicitexplain其importantproperty)
+ // allowpairendmigrate (defaultalreadyopen，hereexplicitexplain其importantproperty)
  // transport.allow_peer_migration(true);
 
  // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)

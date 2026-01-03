@@ -6,7 +6,7 @@
 //!
 //! ## corefixedbit
 //!
-//! `fingerprint-core` is systemlevelprotectioncore，alloutside部component都围绕thiscore展open：
+//! `fingerprint-core` is systemlevelprotectioncore，alloutside部componentall revolve aroundthiscore展open：
 //!
 //! - **systemlevelabstract**: systemupdowntext、networktraffic、protectiondecision etc.
 //! - **offense and defenseunifiedinterface**: fingerprintabstract、analysisinterface、protectioninterface etc.

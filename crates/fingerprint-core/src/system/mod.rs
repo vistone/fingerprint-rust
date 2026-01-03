@@ -5,7 +5,7 @@
 //! ## Core Concept
 //!
 //! from **singleserviceprotection**improve to **systemlevelprotection**：
-//! - from network interfacelevel拦截、analysis and protectionallnetworktraffic
+//! - from network interfacelevelintercept、analysis and protectionallnetworktraffic
 //! - not onlyonly is HTTP，stillinclude TCP、UDP、ICMP etc.allprotocol
 //! - systemleveldecision，canactual施firewallrule、trafficrate limit etc.systemlevelprotectionmeasure
 //!

@@ -1,10 +1,10 @@
 //! rustls ClientHello customizeer (optional)
 //!
-//! itemfrontonlydo一件事：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**。
+//! itemfrontonlydoone thing：**Based on fingerprint-rust `ClientHelloSpec` adjust"extensionencodingorder"**。
 //!
 //! explain：
-//! - rustls 并不一fixedwillsend spec 里listallextension；herewill以 rustls actual `used` as 准，
-//! onlypair交setreorder，并把notcover's extensions by  rustls defaultorder追add，ensure仍 is anvalidarrange。
+//! - rustls not necessarilyfixedwillsend spec 里listallextension；herewill以 rustls actual `used` as allow，
+//! onlypair交setreorder，and putnotcover's extensions by  rustls defaultorderchaseadd，ensure仍 is anvalidarrange。
 //! - spec 里mayappearmultiple GREASE extension ( in realbrowser in themusually is different GREASE value)。
 //! as avoid"duplicateextensiontype"cause rustls refuse，wewill把each GREASE 占bitsymbolmapbecomedifferent GREASE value。
 //!
@@ -67,7 +67,7 @@ fn desired_extension_ids_from_spec(spec: &ClientHelloSpec) -> Vec<u16> {
 /// rule：
 /// - onlypair `used` 里appear's extensionsreorder (交set)
 /// - `desired` 里duplicate/不 in `used` will被ignore
-/// - `used` 里notappear in `desired` 's extensionskeeporiginalmutualpairorder并追add to end尾
+/// - `used` 里notappear in `desired` 's extensionskeeporiginalmutualpairorder并chaseadd to end尾
 fn reorder_used_extensions(used: Vec<ExtensionType>, desired: &[u16]) -> Vec<ExtensionType> {
  let mut out: Vec<ExtensionType> = Vec::with_capacity(used.len());
 

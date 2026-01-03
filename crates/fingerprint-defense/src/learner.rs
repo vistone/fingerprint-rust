@@ -15,7 +15,7 @@ pub struct SelfLearningAnalyzer {
  db: Arc<FingerprintDatabase>,
  /// not知fingerprintobservecounter (fp_id -> count)
  observations: DashMap<String, u64>,
- /// learning thresholdvalue (observemultiple少timebackturn入database)
+ /// learning thresholdvalue (observemultiple少timebackturnenterdatabase)
  learning_threshold: u64,
 }
 
@@ -58,7 +58,7 @@ impl SelfLearningAnalyzer {
 
  let key = format!("{}:{}", fp_type, fp_id);
 
- // protectionpoint：limitobservelistsize，preventinsidesave撑爆 (DoS protection)
+ // protectionpoint：limitobservelistsize，preventinsidesaveburst (DoS protection)
  const MAX_OBSERVATIONS: usize = 10000;
  if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
  // Ifreach to uplimit and  is new key, thenignore
@@ -70,7 +70,7 @@ impl SelfLearningAnalyzer {
 
  if *count >= self.learning_threshold {
  // reach to thresholdvalue，can in database in establishinitialstepentry
- // TODO: Extracttrait并store as pendingcore准signature
+ // TODO: Extracttrait并store as pendingcoreallowsignature
  println!("[Learner] Detected stable unknown fingerprint: {}", key);
  }
  }

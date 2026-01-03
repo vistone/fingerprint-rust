@@ -100,7 +100,7 @@ impl ClientHelloSpec {
  /// Create Chrome 133 fingerprint ClientHelloSpec
  /// Corresponds to Go version's Chrome_133 SpecFactory
  ///
- /// use Builder patterncanmore灵活地Build：
+ /// use Builder patterncanmoreflexiblyBuild：
  /// ```rust,no_run
  /// use fingerprint_tls::tls_config::ClientHelloSpecBuilder;
  /// let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();

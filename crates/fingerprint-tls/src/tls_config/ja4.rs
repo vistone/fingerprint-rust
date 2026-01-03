@@ -80,7 +80,7 @@ impl Ja4RawFingerprint {
  }
 }
 
-/// JA4 载荷struct
+/// JA4 payloadstruct
 /// followofficial FoxIO specification
 #[derive(Debug, Clone, PartialEq)]
 pub struct Ja4Payload {
@@ -223,7 +223,7 @@ impl Ja4Signature {
 .collect::<Vec<String>>()
 .join(",");
 
- // Based onspecification， if nosignaturealgorithm，string不below划线ending
+ // Based onspecification， if nosignaturealgorithm，string不belowunderscoreending
  let ja4_c_raw = if sig_algs_str.is_empty() {
  extensions_str
  } else if extensions_str.is_empty() {

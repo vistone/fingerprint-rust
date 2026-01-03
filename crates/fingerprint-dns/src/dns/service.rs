@@ -356,7 +356,7 @@ async fn resolve_and_save_all_internal(
 .map(|e| e.ipv6.iter().map(|ip| ip.ip.clone()).collect())
 .unwrap_or_default();
 
- // 找出newdiscover IP (onlyquerythese)
+ // find outnewdiscover IP (onlyquerythese)
  let new_ipv4: Vec<String> = all_ipv4.difference(&existing_ipv4).cloned().collect();
  let new_ipv6: Vec<String> = all_ipv6.difference(&existing_ipv6).cloned().collect();
 
@@ -448,7 +448,7 @@ async fn resolve_and_save_all_internal(
  Ok(has_new_ips)
 }
 
-/// Format Duration as 可读string
+/// Format Duration as readablestring
 fn format_duration(d: &Duration) -> String {
  let secs = d.as_secs();
  if secs < 60 {

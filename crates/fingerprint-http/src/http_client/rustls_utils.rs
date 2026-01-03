@@ -30,7 +30,7 @@ pub fn build_root_store() -> rustls::RootCertStore {
  root_store
 }
 
-/// 若 verify_tls=false，thensafeinstall"acceptallcertificate" verifier (危险Features，only for debug)
+/// 若 verify_tls=false，thensafeinstall"acceptallcertificate" verifier (dangerousFeatures，only for debug)
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
  if verify_tls {

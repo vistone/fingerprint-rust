@@ -16,7 +16,7 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
  let config: DNSConfig = match path.extension().and_then(|s| s.to_str()) {
  Some("json") => serde_json::from_str(&content).map_err(DNSError::Json)?,
  Some("yaml") | Some("yml") => {
- // use serde_yaml directly反serialize
+ // use serde_yaml directlyreverseserialize
  serde_yaml::from_str(&content).map_err(|e| DNSError::Yaml(e.to_string()))?
  }
  Some("toml") => toml::from_str(&content)?,

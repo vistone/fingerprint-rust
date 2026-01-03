@@ -252,7 +252,7 @@ impl ClientHelloSpecBuilder {
  ) {
  let (mut extensions, mut metadata) = Self::chrome_133_extensions();
 
- // needlepair 136 fine-tune：ensure ALPN including h3 并put firstbit (Chrome 136 strong化了pair h3 support)
+ // needlepair 136 fine-tune：ensure ALPN including h3 并put firstbit (Chrome 136 strongchangedpair h3 support)
  let alpn_protocols = vec!["h3".to_string(), "h2".to_string(), "http/1.1".to_string()];
  metadata.set_alpn(alpn_protocols.clone());
 
