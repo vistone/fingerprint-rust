@@ -1,75 +1,75 @@
-//! TLS 握手构建器
+//! TLS handshakeBuilder
 //!
-//! 根据 ClientHelloSpec 构建完整的 TLS ClientHello 握手
+//! Based on ClientHelloSpec Buildcomplete TLS ClientHello handshake
 
 use super::{ClientHelloMessage, TLSHandshake, TLSRecord};
 use crate::tls_config::ClientHelloSpec;
 
-/// TLS 握手构建器
+/// TLS handshakeBuilder
 pub struct TLSHandshakeBuilder;
 
 impl TLSHandshakeBuilder {
-    /// 根据 ClientHelloSpec 构建 TLS ClientHello 记录
+    /// Based on ClientHelloSpec Build TLS ClientHello record
     ///
-    /// 返回完整的 TLS 记录字节流，可以直接发送到服务器
+    /// returncomplete TLS recordbytesstream, candirectlysend to server
     pub fn build_client_hello(
         spec: &ClientHelloSpec,
         server_name: &str,
     ) -> Result<Vec<u8>, String> {
-        // 1. 创建 ClientHello 消息
+        // 1. Create ClientHello message
         let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
 
-        // 2. 序列化 ClientHello 消息体
+        // 2. serialize ClientHello message体
         let body = client_hello.to_bytes();
 
-        // 3. 创建握手消息
+        // 3. Createhandshakemessage
         let handshake = TLSHandshake::client_hello(body);
 
-        // 4. 序列化握手消息
+        // 4. serializehandshakemessage
         let handshake_bytes = handshake.to_bytes();
 
-        // 5. 创建 TLS 记录
-        // 使用 TLS 1.0 (0x0301) 作为记录版本（为了兼容性）
+        // 5. Create TLS record
+        // use TLS 1.0 (0x0301) asrecordversion (in order tocompatibleproperty)
         let record = TLSRecord::handshake(0x0301, handshake_bytes);
 
-        // 6. 序列化 TLS 记录
+        // 6. serialize TLS record
         Ok(record.to_bytes())
     }
 
-    /// 构建并打印调试信息
+    /// Build并printdebuginfo
     pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
-        // 1. 创建 ClientHello 消息
+        // 1. Create ClientHello message
         let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
         println!("\n╔══════════════════════════════════════════════════════════╗");
-        println!("║          构建 TLS ClientHello（使用自己的指纹）          ║");
+        println!("║ Build TLS ClientHello (useselffingerprint) ║");
         println!("╚══════════════════════════════════════════════════════════╝\n");
 
-        println!("📋 ClientHelloSpec 信息:");
-        println!("  - 密码套件数: {}", spec.cipher_suites.len());
-        println!("  - 扩展数: {}", spec.extensions.len());
+        println!("📋 ClientHelloSpec info:");
+        println!(" - cipher suitecount: {}", spec.cipher_suites.len());
+        println!(" - extensioncount: {}", spec.extensions.len());
         println!(
-            "  - TLS 版本范围: 0x{:04x} - 0x{:04x}",
+            " - TLS versionrange: 0x{:04x} - 0x{:04x}",
             spec.tls_vers_min, spec.tls_vers_max
         );
-        println!("  - 压缩方法: {:?}", spec.compression_methods);
+        println!(" - compressionmethod: {:?}", spec.compression_methods);
 
-        // 打印 ClientHello 调试信息
+        // print ClientHello debuginfo
         println!("\n{}", client_hello.debug_info());
 
         let body = client_hello.to_bytes();
-        println!("\n📦 ClientHello 消息体: {} bytes", body.len());
+        println!("\n📦 ClientHello message体: {} bytes", body.len());
 
         let handshake = TLSHandshake::client_hello(body);
         let handshake_bytes = handshake.to_bytes();
-        println!("📦 握手消息: {} bytes", handshake_bytes.len());
+        println!("📦 handshakemessage: {} bytes", handshake_bytes.len());
 
         let record = TLSRecord::handshake(0x0301, handshake_bytes);
         let record_bytes = record.to_bytes();
-        println!("📦 TLS 记录: {} bytes", record_bytes.len());
+        println!("📦 TLS record: {} bytes", record_bytes.len());
 
-        println!("\n✅ TLS ClientHello 构建完成！");
+        println!("\n✅ TLS ClientHello Buildcomplete！");
         println!(
-            "   使用我们自己的指纹: {} 密码套件, {} 扩展\n",
+            " useweselffingerprint: {} cipher suite, {} extension\n",
             spec.cipher_suites.len(),
             spec.extensions.len()
         );
@@ -84,7 +84,7 @@ mod tests {
 
     #[test]
     fn test_build_client_hello() {
-        // 创建一个简单的 ClientHelloSpec
+        // Createansimple ClientHelloSpec
         let spec = ClientHelloSpec {
             cipher_suites: vec![
                 0xc02f, // TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
@@ -104,28 +104,28 @@ mod tests {
         let bytes = result.unwrap();
         println!("Generated ClientHello: {} bytes", bytes.len());
 
-        // 验证 TLS 记录格式
+        // Validate TLS recordformat
         assert_eq!(bytes[0], 22); // Handshake
         assert_eq!(bytes[1], 0x03); // Version major
         assert_eq!(bytes[2], 0x01); // Version minor (TLS 1.0)
 
-        // 验证长度字段
+        // Validatelengthfield
         let record_length = u16::from_be_bytes([bytes[3], bytes[4]]) as usize;
         assert_eq!(bytes.len(), 5 + record_length);
     }
 
     #[test]
     fn test_build_with_real_spec() {
-        // 使用真实的 Chrome 133 指纹
+        // usereal Chrome 133 fingerprint
         let spec = ClientHelloSpec::chrome_133();
 
         let result = TLSHandshakeBuilder::build_with_debug(&spec, "www.google.com");
         assert!(result.is_ok());
 
         let bytes = result.unwrap();
-        println!("\n生成的 Chrome 133 ClientHello: {} bytes", bytes.len());
+        println!("\nGenerate Chrome 133 ClientHello: {} bytes", bytes.len());
 
-        // Chrome 133 应该有较多的密码套件和扩展
-        assert!(bytes.len() > 200); // Chrome 的 ClientHello 通常很大
+        // Chrome 133 should有comparemultiple's cipher suites and extension
+        assert!(bytes.len() > 200); // Chrome ClientHello usually很大
     }
 }

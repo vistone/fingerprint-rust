@@ -1,40 +1,40 @@
-//! 网络流量抽象
+//! network trafficabstract
 //!
-//! 定义系统级别的网络流量，包含完整的上下文和指纹信息。
+//! definesystemlevelnetwork traffic, includingcompleteupdowntext and fingerprintinfo.
 
 use super::context::SystemContext;
 use crate::fingerprint::Fingerprint;
 use std::time::Duration;
 
-/// 流量特征
+/// traffictrait
 ///
-/// 描述网络流量的统计特征和行为模式。
+/// describenetwork trafficstatisticstrait and behaviorpattern.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FlowCharacteristics {
-    /// 数据包数量
+    /// countpacketcount
     pub packet_count: u64,
 
-    /// 总字节数
+    /// totalbytescount
     pub total_bytes: u64,
 
-    /// 持续时间
+    /// continuous when between
     pub duration: Duration,
 
-    /// 是否加密
+    /// whetherencryption
     pub encrypted: bool,
 
-    /// 平均数据包大小
+    /// averagecountpacketsize
     pub avg_packet_size: f64,
 
-    /// 数据包速率（包/秒）
+    /// countpacketrate (package/seconds)
     pub packet_rate: f64,
 
-    /// 字节速率（字节/秒）
+    /// bytesrate (bytes/seconds)
     pub byte_rate: f64,
 }
 
 impl FlowCharacteristics {
-    /// 创建新的流量特征
+    /// Create a newtraffictrait
     pub fn new() -> Self {
         Self {
             packet_count: 0,
@@ -47,13 +47,13 @@ impl FlowCharacteristics {
         }
     }
 
-    /// 更新统计数据
+    /// Updatestatisticscountdata
     pub fn update(&mut self, packet_size: usize) {
         self.packet_count += 1;
         self.total_bytes += packet_size as u64;
         self.avg_packet_size = self.total_bytes as f64 / self.packet_count as f64;
 
-        // 如果 duration 不为零，计算速率
+        // If duration is not零, Calculaterate
         if !self.duration.is_zero() {
             let secs = self.duration.as_secs_f64();
             self.packet_rate = self.packet_count as f64 / secs;
@@ -61,7 +61,7 @@ impl FlowCharacteristics {
         }
     }
 
-    /// 设置持续时间并更新速率
+    /// settingscontinuous when between并Updaterate
     pub fn set_duration(&mut self, duration: Duration) {
         self.duration = duration;
         if !duration.is_zero() {
@@ -78,45 +78,45 @@ impl Default for FlowCharacteristics {
     }
 }
 
-/// 网络流量
+/// network traffic
 ///
-/// 表示系统级别的网络流量，包含完整的上下文、指纹信息和特征。
+/// representsystemlevelnetwork traffic, includingcompleteupdowntext, fingerprintinfo and trait.
 ///
-/// ## 核心思想
+/// ## Core Concept
 ///
-/// 系统级别防护需要从**网络流量**的角度进行分析和防护，而不是仅仅关注单个服务：
-/// - 完整的系统上下文（源/目标、协议、方向等）
-/// - 检测到的指纹信息（TLS、HTTP、TCP等）
-/// - 流量的统计特征和行为模式
+/// system-level protectionneed from **network traffic**perspectiveperformanalysis and protection, 而is notonlyonlyfocussingleservice：
+/// - completesystem context (source/target, protocol, direction etc.)
+/// - detect to fingerprintinfo (TLS, HTTP, TCP etc.)
+/// - trafficstatisticstrait and behaviorpattern
 ///
-/// ## 示例
+/// ## Examples
 ///
 /// ```rust
 /// use fingerprint_core::system::{NetworkFlow, SystemContext, ProtocolType};
 ///
 /// let ctx = SystemContext::new(
-///     "192.168.1.100".parse().unwrap(),
-///     "10.0.0.1".parse().unwrap(),
-///     ProtocolType::Http,
+/// "192.168.1.100".parse().unwrap(),
+/// "10.0.0.1".parse().unwrap(),
+/// ProtocolType::Http,
 /// );
 ///
 /// let flow = NetworkFlow::new(ctx);
 /// ```
 pub struct NetworkFlow {
-    /// 系统上下文
+    /// system context
     pub context: SystemContext,
 
-    /// 检测到的指纹列表（如果有）
-    /// 注意：由于 trait object 的限制，这里不能直接 Clone，需要手动处理
+    /// detect to fingerprintlist ( if 有)
+    /// Note: due to trait object limit, herecannotdirectly Clone, needmanualprocess
     #[cfg_attr(test, allow(dead_code))]
     fingerprints: Vec<Box<dyn Fingerprint>>,
 
-    /// 流量特征
+    /// traffictrait
     pub characteristics: FlowCharacteristics,
 }
 
 impl NetworkFlow {
-    /// 创建新的网络流量
+    /// Create a newnetwork traffic
     pub fn new(context: SystemContext) -> Self {
         Self {
             context,
@@ -125,22 +125,22 @@ impl NetworkFlow {
         }
     }
 
-    /// 添加指纹
+    /// Addfingerprint
     pub fn add_fingerprint(&mut self, fingerprint: Box<dyn Fingerprint>) {
         self.fingerprints.push(fingerprint);
     }
 
-    /// 检查是否有指纹
+    /// Checkwhether有fingerprint
     pub fn has_fingerprints(&self) -> bool {
         !self.fingerprints.is_empty()
     }
 
-    /// 获取所有指纹的引用
+    /// Getallfingerprintreference
     pub fn fingerprints(&self) -> &[Box<dyn Fingerprint>] {
         &self.fingerprints
     }
 
-    /// 获取指定类型的指纹
+    /// Getspecifiedtypefingerprint
     pub fn get_fingerprints_by_type(
         &self,
         fingerprint_type: crate::fingerprint::FingerprintType,
@@ -152,18 +152,18 @@ impl NetworkFlow {
             .collect()
     }
 
-    /// 更新流量特征
+    /// Updatetraffictrait
     pub fn update_characteristics(&mut self, packet_size: usize) {
         self.characteristics.update(packet_size);
     }
 
-    /// 获取流量的唯一标识符
+    /// Gettrafficuniqueidentifiersymbol
     pub fn flow_id(&self) -> String {
         self.context.flow_id()
     }
 }
 
-// 手动实现 Debug，因为 Box<dyn Fingerprint> 不能自动实现 Debug
+// Manual implementation Debug, because Box<dyn Fingerprint> cannotautomaticimplement Debug
 impl std::fmt::Debug for NetworkFlow {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("NetworkFlow")
@@ -174,14 +174,14 @@ impl std::fmt::Debug for NetworkFlow {
     }
 }
 
-// 手动实现 Clone，因为 Box<dyn Fingerprint> 不能自动 Clone
+// Manual implementation Clone, because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for NetworkFlow {
     fn clone(&self) -> Self {
-        // 注意：fingerprints 不能 Clone，所以新实例从空列表开始
-        // 这是合理的，因为指纹通常不应该被复制，而是通过引用共享
+        // Note: fingerprints cannot Clone, sonewinstance from emptyliststart
+        // this is合process的, becausefingerprintusually不should被copy, 而 is throughreferenceshared
         Self {
             context: self.context.clone(),
-            fingerprints: Vec::new(), // 不能 Clone trait object
+            fingerprints: Vec::new(), // cannot Clone trait object
             characteristics: self.characteristics.clone(),
         }
     }

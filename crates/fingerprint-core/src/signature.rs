@@ -1,7 +1,7 @@
-//! TLS ClientHello Signature 模块
+//! TLS ClientHello Signature module
 //!
-//! 提供 TLS ClientHello 的签名提取和比较功能
-//! 参考：Huginn Net 的 Signature 结构设计
+//! provide TLS ClientHello signatureExtract and compareFeatures
+//! reference：Huginn Net Signature structdesign
 
 use crate::dicttls::supported_groups::CurveID;
 use crate::fingerprint::{Fingerprint, FingerprintType};
@@ -10,40 +10,40 @@ use crate::metadata::FingerprintMetadata;
 use crate::version::TlsVersion;
 use sha2::{Digest, Sha256};
 
-/// TLS ClientHello 签名
-/// 包含从 ClientHello 消息中提取的所有关键 information
+/// TLS ClientHello signature
+/// including from ClientHello message in Extractallclosekey information
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
-    /// 指纹 ID（基于 JA4 hash 或签名特征的哈希）
+    /// fingerprint ID (based on JA4 hash or signaturetraithash)
     pub id: String,
 
-    /// TLS 版本
+    /// TLS version
     pub version: TlsVersion,
-    /// 密码套件列表（包含 GREASE）
+    /// cipher suitelist (including GREASE)
     pub cipher_suites: Vec<u16>,
-    /// 扩展列表（包含 GREASE）
+    /// extensionlist (including GREASE)
     pub extensions: Vec<u16>,
-    /// 椭圆曲线列表
+    /// elliptic curvelist
     pub elliptic_curves: Vec<CurveID>,
-    /// 椭圆曲线点格式
+    /// elliptic curvepointformat
     pub elliptic_curve_point_formats: Vec<u8>,
-    /// 签名算法列表
+    /// signaturealgorithmlist
     pub signature_algorithms: Vec<u16>,
     /// Server Name Indication
     pub sni: Option<String>,
     /// Application-Layer Protocol Negotiation
     pub alpn: Option<String>,
 
-    /// 元数据
+    /// metadata
     pub metadata: FingerprintMetadata,
 }
 
 impl ClientHelloSignature {
-    /// 创建新的签名
+    /// Create a newsignature
     pub fn new() -> Self {
         let mut sig = Self {
             id: String::new(),
-            version: TlsVersion::V1_2, // 默认 TLS 1.2
+            version: TlsVersion::V1_2, // default TLS 1.2
             cipher_suites: Vec::new(),
             extensions: Vec::new(),
             elliptic_curves: Vec::new(),
@@ -57,7 +57,7 @@ impl ClientHelloSignature {
         sig
     }
 
-    /// 计算指纹 ID（基于签名特征）
+    /// Calculatefingerprint ID (based onsignaturetrait)
     pub fn calculate_id(&self) -> String {
         let mut hasher = Sha256::new();
         hasher.update(self.version.to_u16().to_be_bytes());
@@ -81,22 +81,22 @@ impl ClientHelloSignature {
         format!("{:x}", hasher.finalize())
     }
 
-    /// 获取过滤 GREASE 后的密码套件
+    /// Getfilter GREASE back's cipher suites
     pub fn cipher_suites_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.cipher_suites)
     }
 
-    /// 获取过滤 GREASE 后的扩展
+    /// Getfilter GREASE back's extensions
     pub fn extensions_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.extensions)
     }
 
-    /// 获取过滤 GREASE 后的签名算法
+    /// Getfilter GREASE backsignaturealgorithm
     pub fn signature_algorithms_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.signature_algorithms)
     }
 
-    /// 检查是否包含 GREASE 值
+    /// Checkwhetherincluding GREASE value
     pub fn has_grease(&self) -> bool {
         self.cipher_suites.iter().any(|&v| is_grease_value(v))
             || self.extensions.iter().any(|&v| is_grease_value(v))
@@ -106,13 +106,13 @@ impl ClientHelloSignature {
                 .any(|&v| is_grease_value(v))
     }
 
-    /// 比较两个签名是否相似（忽略 GREASE 值）
+    /// compare twosignaturewhethersimilar (ignore GREASE value)
     ///
-    /// # 参数
-    /// * `other` - 要比较的另一个签名
+    /// # Parameters
+    /// * `other` - needcompare另ansignature
     ///
-    /// # 返回
-    /// * `true` 如果签名相似（忽略 GREASE 后相同），`false` 否则
+    /// # Returns
+    /// * `true` if signaturesimilar (ignore GREASE backsame), `false` otherwise
     pub fn similar_to(&self, other: &Self) -> bool {
         self.version == other.version
             && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -125,8 +125,8 @@ impl ClientHelloSignature {
             && self.alpn == other.alpn
     }
 
-    /// 计算签名的哈希值（用于快速比较）
-    /// 使用过滤 GREASE 后的值
+    /// Calculatesignaturehashvalue ( for fastcompare)
+    /// usefilter GREASE backvalue
     pub fn hash(&self) -> u64 {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
@@ -170,9 +170,9 @@ impl Fingerprint for ClientHelloSignature {
             return false;
         }
 
-        // 尝试转换为 ClientHelloSignature
-        // 由于 trait 的限制，我们只能比较哈希值
-        // 实际使用中，应该通过类型转换来比较
+        // tryconvert to ClientHelloSignature
+        // due to trait limit, wecan onlycomparehashvalue
+        // actualuse in , shouldthroughtypeConvertfromcompare
         self.hash() == other.hash()
     }
 
@@ -201,15 +201,15 @@ mod tests {
     fn test_similar_to() {
         let mut sig1 = ClientHelloSignature::new();
         sig1.version = TlsVersion::V1_2;
-        sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // 包含 GREASE
+        sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // including GREASE
         sig1.extensions = vec![0x0000, 0x0010];
 
         let mut sig2 = ClientHelloSignature::new();
         sig2.version = TlsVersion::V1_2;
-        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // 不同的 GREASE，但过滤后相同
+        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // different GREASE，butfilterbacksame
         sig2.extensions = vec![0x0000, 0x0010];
 
-        // 过滤 GREASE 后应该相同
+        // filter GREASE backshouldsame
         assert_eq!(
             sig1.cipher_suites_without_grease(),
             sig2.cipher_suites_without_grease()

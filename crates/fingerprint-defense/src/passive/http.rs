@@ -1,39 +1,39 @@
-//! HTTP 被动指纹识别
+//! HTTP passivefingerprintidentify
 //!
-//! 实现 HTTP 请求/响应的被动指纹识别。
+//! implement HTTP request/responsepassivefingerprintidentify.
 
 use crate::passive::packet::Packet;
 use std::collections::HashMap;
 
-/// HTTP 分析器
+/// HTTP analysiser
 pub struct HttpAnalyzer {
-    /// 签名数据库
+    /// signaturedatabase
     #[allow(dead_code)]
     signatures: HashMap<String, HttpSignature>,
 }
 
 use serde::{Deserialize, Serialize};
 
-/// HTTP 指纹
+/// HTTP fingerprint
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HttpFingerprint {
-    /// 匹配的签名
+    /// matchsignature
     pub signature: Option<HttpSignature>,
 
-    /// 相似度
+    /// similardegree
     pub similarity: f64,
 
     /// User-Agent
     pub user_agent: Option<String>,
 
-    /// 检测到的浏览器
+    /// detect to browser
     pub browser: Option<String>,
 
-    /// HTTP/2 特有特征
+    /// HTTP/2 special有trait
     pub h2_settings: Option<Vec<(u16, u32)>>,
     pub h2_window_update: Option<u32>,
 
-    /// 指纹元数据
+    /// fingerprintmetadata
     pub metadata: fingerprint_core::metadata::FingerprintMetadata,
 }
 
@@ -76,7 +76,7 @@ impl fingerprint_core::fingerprint::Fingerprint for HttpFingerprint {
     }
 }
 
-/// HTTP 签名（用于匹配）
+/// HTTP signature ( for match)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct HttpSignature {
     pub id: String,
@@ -87,7 +87,7 @@ pub struct HttpSignature {
     pub sample_count: u64,
 }
 
-/// HTTP 签名（用于 p0f 数据库）
+/// HTTP signature ( for p0f database)
 #[derive(Debug, Clone)]
 pub struct P0fHttpSignature {
     pub id: String,
@@ -97,26 +97,26 @@ pub struct P0fHttpSignature {
 }
 
 impl HttpAnalyzer {
-    /// 创建新的 HTTP 分析器
+    /// Create a new HTTP analysiser
     pub fn new() -> Result<Self, String> {
         Ok(Self {
             signatures: HashMap::new(),
         })
     }
 
-    /// 分析 HTTP 数据包
+    /// analysis HTTP countpacket
     pub fn analyze(&self, packet: &Packet) -> Option<HttpFingerprint> {
-        // 尝试解析 HTTP 请求
+        // tryParse HTTP request
         if let Some(request) = self.parse_http_request(&packet.payload) {
             let user_agent = request.headers.get("user-agent").cloned();
             let browser = user_agent.as_ref().and_then(|ua| self.detect_browser(ua));
 
-            // 匹配签名
+            // matchsignature
             let (signature, similarity) = self.match_signature(&request);
 
             let mut metadata = fingerprint_core::metadata::FingerprintMetadata::new();
 
-            // 计算 JA4H
+            // Calculate JA4H
             let header_tuples: Vec<(&str, &str)> = request
                 .headers
                 .iter()
@@ -145,17 +145,17 @@ impl HttpAnalyzer {
         None
     }
 
-    /// 解析 HTTP 请求
+    /// Parse HTTP request
     fn parse_http_request(&self, data: &[u8]) -> Option<HttpRequest> {
-        // 限制解析的数据量，防止超大包导致内存耗尽
-        let limit = 8192; // 8KB 足够常规请求
+        // limitParsecountdataquantity, preventoversizedpackagecauseinsidememory exhausted
+        let limit = 8192; // 8KB enoughregularrequest
         let parse_data = if data.len() > limit {
             &data[..limit]
         } else {
             data
         };
 
-        // 简单的 HTTP 请求解析
+        // simple HTTP requestParse
         let text = String::from_utf8_lossy(parse_data);
         let mut lines = text.lines();
 
@@ -172,7 +172,7 @@ impl HttpAnalyzer {
 
         if !["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"].contains(&method.as_str())
         {
-            // 检查是否是 H2 Connection Preface
+            // Checkwhether is H2 Connection Preface
             if method == "PRI" && path == "*" && version.contains("HTTP/2") {
                 let preface_end = 24;
                 if data.len() > preface_end {
@@ -187,7 +187,7 @@ impl HttpAnalyzer {
         let mut cookie_count = 0;
         let mut has_referer = false;
 
-        // 限制解析 Header 的行数
+        // limitParse Header executecount
         for (i, line) in lines.enumerate() {
             if i > 100 || line.is_empty() {
                 break;
@@ -222,7 +222,7 @@ impl HttpAnalyzer {
         })
     }
 
-    /// 解析 H2 请求帧
+    /// Parse H2 requestframe
     fn parse_h2_request(&self, data: &[u8]) -> Option<HttpRequest> {
         let mut offset = 0;
         let mut h2_settings = Vec::new();
@@ -301,7 +301,7 @@ impl HttpAnalyzer {
         })
     }
 
-    /// 检测浏览器
+    /// detectbrowser
     fn detect_browser(&self, user_agent: &str) -> Option<String> {
         let ua_lower = user_agent.to_lowercase();
 
@@ -320,14 +320,14 @@ impl HttpAnalyzer {
         }
     }
 
-    /// 匹配签名
+    /// matchsignature
     fn match_signature(&self, _request: &HttpRequest) -> (Option<HttpSignature>, f64) {
-        // TODO: 实现签名匹配
+        // TODO: implementsignaturematch
         (None, 0.0)
     }
 }
 
-/// HTTP 请求
+/// HTTP request
 #[derive(Debug, Clone)]
 struct HttpRequest {
     method: String,

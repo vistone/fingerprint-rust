@@ -1,7 +1,7 @@
-//! HTTP/3 会话池
+//! HTTP/3 sessionpool
 //!
-//! 池化 h3::client::SendRequest 句柄，实现真正的 HTTP/3 多路复用
-//! 避免每次请求都重新进行 QUIC 握手和 HTTP/3 连接建立
+//! pool化 h3::client::SendRequest handle, implementtrue HTTP/3 multiplereuse
+//! avoideach timerequest都reperform QUIC handshake and HTTP/3 connectionestablish
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::Result;
@@ -19,33 +19,33 @@ use tokio::sync::Mutex as TokioMutex;
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use h3::client::SendRequest;
 
-/// HTTP/3 会话池管理器
+/// HTTP/3 sessionpoolmanageer
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 pub struct H3SessionPool {
-    /// 会话池（按 host:port 分组）
+    /// sessionpool ( by  host:port group)
     sessions: Arc<Mutex<HashMap<String, Arc<H3Session>>>>,
-    /// 正在创建中的会话（避免竞争）
+    /// positive in Createinsession (avoidcompetition)
     pending_sessions: Arc<Mutex<HashMap<String, watch::Receiver<bool>>>>,
-    /// 会话超时时间（默认 5 分钟）
+    /// sessiontimeout duration (default 5 minutes)
     session_timeout: Duration,
 }
 
-/// HTTP/3 会话
+/// HTTP/3 session
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 struct H3Session {
-    /// SendRequest 句柄（用于发送请求）
+    /// SendRequest handle ( for sendrequest)
     send_request: Arc<TokioMutex<SendRequest<h3_quinn::OpenStreams, bytes::Bytes>>>,
-    /// 后台任务句柄（用于管理 h3 连接驱动）
+    /// backbackground taskhandle ( for manage h3 connectiondriver)
     _background_task: tokio::task::JoinHandle<()>,
-    /// 最后使用时间
+    /// finallywhen used between
     last_used: Arc<Mutex<Instant>>,
-    /// 连接是否有效
+    /// connectionwhethervalid
     is_valid: Arc<Mutex<bool>>,
 }
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 impl H3SessionPool {
-    /// 创建新的会话池
+    /// Create a newsessionpool
     pub fn new(session_timeout: Duration) -> Self {
         Self {
             sessions: Arc::new(Mutex::new(HashMap::new())),
@@ -54,7 +54,7 @@ impl H3SessionPool {
         }
     }
 
-    /// 获取或创建 HTTP/3 会话
+    /// Get or Create HTTP/3 session
     pub async fn get_or_create_session<Fut>(
         &self,
         key: &str,
@@ -68,12 +68,14 @@ impl H3SessionPool {
             )>,
         >,
     {
-        // 尝试从池中获取
+        // try from pool in Get
         {
             let mut sessions = self.sessions.lock().unwrap_or_else(|e| {
-                eprintln!("警告: H3 会话池锁失败: {}", e);
+                eprintln!("warning: H3 sessionpoollockfailure: {}", e);
                 drop(e.into_inner());
-                self.sessions.lock().expect("无法获取 H3 会话池锁")
+                self.sessions
+                    .lock()
+                    .expect("unable toGet H3 sessionpoollock")
             });
 
             self.cleanup_expired_sessions(&mut sessions);
@@ -89,7 +91,7 @@ impl H3SessionPool {
             });
 
             if let Some(send_request) = session_valid {
-                // 更新最后使用时间
+                // Updatefinallywhen used between
                 if let Some(session) = sessions.get(key) {
                     if let Ok(mut last_used) = session.last_used.lock() {
                         *last_used = Instant::now();
@@ -103,7 +105,7 @@ impl H3SessionPool {
             }
         }
 
-        // 检查是否正在创建中 (Race Condition Fix)
+        // Checkwhetherpositive in Create in (Race Condition Fix)
         let rx = {
             let mut pending = self
                 .pending_sessions
@@ -123,10 +125,10 @@ impl H3SessionPool {
             return Box::pin(self.get_or_create_session(key, create_session)).await;
         }
 
-        // 创建新会话
+        // Createnewsession
         let result = create_session.await;
 
-        // 无论成功失败，都从 pending 中移除
+        // none论successfailure, 都 from pending in remove
         if let Ok(mut pending) = self.pending_sessions.lock() {
             pending.remove(key);
         }
@@ -138,16 +140,16 @@ impl H3SessionPool {
         let key_clone = key.to_string();
         let sessions_clone = self.sessions.clone();
 
-        // 启动后台任务管理连接生命周期
+        // startbackbackground taskmanageconnectionlifecycle
         let background_task = tokio::spawn(async move {
-            // 驱动 h3 连接
+            // driver h3 connection
             let _ = std::future::poll_fn(|cx| driver.poll_close(cx)).await;
 
-            // 标记为无效
+            // marker as invalid
             if let Ok(mut valid) = is_valid_clone.lock() {
                 *valid = false;
             }
-            // 从池中移除
+            // from pool in remove
             if let Ok(mut sessions) = sessions_clone.lock() {
                 sessions.remove(&key_clone);
             }
@@ -160,7 +162,7 @@ impl H3SessionPool {
             is_valid,
         });
 
-        // 添加到池中
+        // Add to pool in
         {
             if let Ok(mut sessions) = self.sessions.lock() {
                 sessions.insert(key.to_string(), session);

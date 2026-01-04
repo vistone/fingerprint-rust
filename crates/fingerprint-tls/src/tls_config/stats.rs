@@ -1,33 +1,33 @@
-//! TLS 指纹统计模块
+//! TLS fingerprintstatisticsmodule
 //!
-//! 提供指纹统计和分析功能
-//! 参考：Huginn Net Profiler 的统计功能
+//! providefingerprintstatistics and analysisFeatures
+//! reference：Huginn Net Profiler statisticsFeatures
 
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 use std::collections::HashMap;
 
-/// TLS 指纹统计信息
+/// TLS fingerprintstatisticsinfo
 #[derive(Debug, Clone)]
 pub struct FingerprintStats {
-    /// 总指纹数量
+    /// totalfingerprintcount
     pub total_fingerprints: usize,
-    /// 包含 GREASE 的指纹数量
+    /// including GREASE fingerprintcount
     pub fingerprints_with_grease: usize,
-    /// 包含 SNI 的指纹数量
+    /// including SNI fingerprintcount
     pub fingerprints_with_sni: usize,
-    /// 包含 ALPN 的指纹数量
+    /// including ALPN fingerprintcount
     pub fingerprints_with_alpn: usize,
-    /// TLS 版本分布
+    /// TLS versiondistribution
     pub version_distribution: HashMap<String, usize>,
-    /// 最常见的密码套件（前 10）
+    /// most common's cipher suites (front 10)
     pub top_cipher_suites: Vec<(u16, usize)>,
-    /// 最常见的扩展（前 10）
+    /// most common's extensions (front 10)
     pub top_extensions: Vec<(u16, usize)>,
 }
 
 impl FingerprintStats {
-    /// 从多个 ClientHelloSpec 计算统计信息
+    /// from multiple ClientHelloSpec Calculatestatisticsinfo
     pub fn from_specs(specs: &[ClientHelloSpec]) -> Self {
         let mut stats = Self {
             total_fingerprints: specs.len(),
@@ -45,43 +45,43 @@ impl FingerprintStats {
         for spec in specs {
             let signature = crate::tls_config::extract::extract_signature(spec);
 
-            // 检查 GREASE
+            // Check GREASE
             if signature.has_grease() {
                 stats.fingerprints_with_grease += 1;
             }
 
-            // 检查 SNI
+            // Check SNI
             if signature.sni.is_some() {
                 stats.fingerprints_with_sni += 1;
             }
 
-            // 检查 ALPN
+            // Check ALPN
             if signature.alpn.is_some() {
                 stats.fingerprints_with_alpn += 1;
             }
 
-            // TLS 版本分布
+            // TLS versiondistribution
             let version_str = format!("{}", signature.version);
             *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
-            // 统计密码套件
+            // statisticscipher suite
             for suite in &signature.cipher_suites {
                 *cipher_suite_counts.entry(*suite).or_insert(0) += 1;
             }
 
-            // 统计扩展
+            // statisticsextension
             for ext in &signature.extensions {
                 *extension_counts.entry(*ext).or_insert(0) += 1;
             }
         }
 
-        // 获取最常见的密码套件
+        // Getmost common's cipher suites
         let mut cipher_vec: Vec<(u16, usize)> = cipher_suite_counts.into_iter().collect();
         cipher_vec.sort_by_key(|(_, count)| *count);
         cipher_vec.reverse();
         stats.top_cipher_suites = cipher_vec.into_iter().take(10).collect();
 
-        // 获取最常见的扩展
+        // Getmost common's extensions
         let mut ext_vec: Vec<(u16, usize)> = extension_counts.into_iter().collect();
         ext_vec.sort_by_key(|(_, count)| *count);
         ext_vec.reverse();
@@ -90,9 +90,9 @@ impl FingerprintStats {
         stats
     }
 
-    /// 从多个签名计算统计信息
+    /// from multiplesignatureCalculatestatisticsinfo
     pub fn from_signatures(signatures: &[ClientHelloSignature]) -> Self {
-        // 直接从签名计算统计信息
+        // directly from signatureCalculatestatisticsinfo
         let mut stats = Self {
             total_fingerprints: signatures.len(),
             fingerprints_with_grease: 0,
@@ -107,43 +107,43 @@ impl FingerprintStats {
         let mut extension_counts: HashMap<u16, usize> = HashMap::new();
 
         for signature in signatures {
-            // 检查 GREASE
+            // Check GREASE
             if signature.has_grease() {
                 stats.fingerprints_with_grease += 1;
             }
 
-            // 检查 SNI
+            // Check SNI
             if signature.sni.is_some() {
                 stats.fingerprints_with_sni += 1;
             }
 
-            // 检查 ALPN
+            // Check ALPN
             if signature.alpn.is_some() {
                 stats.fingerprints_with_alpn += 1;
             }
 
-            // TLS 版本分布
+            // TLS versiondistribution
             let version_str = format!("{}", signature.version);
             *stats.version_distribution.entry(version_str).or_insert(0) += 1;
 
-            // 统计密码套件
+            // statisticscipher suite
             for suite in &signature.cipher_suites {
                 *cipher_suite_counts.entry(*suite).or_insert(0) += 1;
             }
 
-            // 统计扩展
+            // statisticsextension
             for ext in &signature.extensions {
                 *extension_counts.entry(*ext).or_insert(0) += 1;
             }
         }
 
-        // 获取最常见的密码套件
+        // Getmost common's cipher suites
         let mut cipher_vec: Vec<(u16, usize)> = cipher_suite_counts.into_iter().collect();
         cipher_vec.sort_by_key(|(_, count)| *count);
         cipher_vec.reverse();
         stats.top_cipher_suites = cipher_vec.into_iter().take(10).collect();
 
-        // 获取最常见的扩展
+        // Getmost common's extensions
         let mut ext_vec: Vec<(u16, usize)> = extension_counts.into_iter().collect();
         ext_vec.sort_by_key(|(_, count)| *count);
         ext_vec.reverse();

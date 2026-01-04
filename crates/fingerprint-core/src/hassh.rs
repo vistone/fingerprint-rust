@@ -1,87 +1,87 @@
-//! HASSH SSH 指纹实现
+//! HASSH SSH fingerprintimplement
 //!
-//! HASSH 是 Salesforce 开发的 SSH 客户端/服务器指纹识别方法。
-//! 类似于 JA3 for TLS，HASSH 用于识别 SSH 客户端和服务器。
+//! HASSH is Salesforce opensend SSH client/serverfingerprintidentifymethod.
+//! similar于 JA3 for TLS, HASSH for identify SSH client and server.
 //!
-//! ## 参考
-//! - 论文: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
+//! ## reference
+//! - paper: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
 //! - GitHub: https://github.com/salesforce/hassh
 //!
-//! ## 算法
+//! ## algorithm
 //! HASSH = MD5(Client KEX Algorithms;Encryption Algorithms;MAC Algorithms;Compression Algorithms)
 
 use serde::{Deserialize, Serialize};
 
-/// HASSH SSH 客户端指纹
+/// HASSH SSH clientfingerprint
 ///
-/// 格式: MD5(KEX;EncryptionAlgs;MACAlgs;CompressionAlgs)
+/// format: MD5(KEX;EncryptionAlgs;MACAlgs;CompressionAlgs)
 ///
-/// ## 示例
+/// ## Examples
 /// ```
 /// use fingerprint_core::hassh::HASSH;
 ///
 /// let hassh = HASSH::generate(
-///     &["diffie-hellman-group14-sha1", "diffie-hellman-group-exchange-sha256"],
-///     &["aes128-ctr", "aes256-ctr"],
-///     &["hmac-sha2-256", "hmac-sha2-512"],
-///     &["none", "zlib@openssh.com"],
+/// &["diffie-hellman-group14-sha1", "diffie-hellman-group-exchange-sha256"],
+/// &["aes128-ctr", "aes256-ctr"],
+/// &["hmac-sha2-256", "hmac-sha2-512"],
+/// &["none", "zlib@openssh.com"],
 /// );
 /// assert!(!hassh.fingerprint.is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSH {
-    /// 密钥交换算法列表（分号分隔）
+    /// keyswapalgorithmlist (semicolon-separated)
     pub kex_algorithms: String,
-    
-    /// 加密算法列表（分号分隔）
+
+    /// encryptionalgorithmlist (semicolon-separated)
     pub encryption_algorithms: String,
-    
-    /// MAC 算法列表（分号分隔）
+
+    /// MAC algorithmlist (semicolon-separated)
     pub mac_algorithms: String,
-    
-    /// 压缩算法列表（分号分隔）
+
+    /// compressionalgorithmlist (semicolon-separated)
     pub compression_algorithms: String,
-    
-    /// 完整的 HASSH 字符串（用于计算哈希）
+
+    /// complete HASSH string ( for Calculatehash)
     pub hassh_string: String,
-    
-    /// HASSH 指纹（MD5 哈希）
+
+    /// HASSH fingerprint (MD5 hash)
     pub fingerprint: String,
-    
-    /// SSH 客户端类型（推断）
+
+    /// SSH clienttype (infer)
     pub client_type: Option<String>,
 }
 
 impl HASSH {
-    /// 生成 HASSH 指纹
+    /// Generate HASSH fingerprint
     ///
-    /// # 参数
-    /// - `kex_algorithms`: 密钥交换算法列表
-    /// - `encryption_algorithms`: 加密算法列表
-    /// - `mac_algorithms`: MAC 算法列表
-    /// - `compression_algorithms`: 压缩算法列表
+    /// # Parameters
+    /// - `kex_algorithms`: keyswapalgorithmlist
+    /// - `encryption_algorithms`: encryptionalgorithmlist
+    /// - `mac_algorithms`: MAC algorithmlist
+    /// - `compression_algorithms`: compressionalgorithmlist
     ///
-    /// # 返回
-    /// HASSH 指纹结构
+    /// # Returns
+    /// HASSH fingerprintstruct
     pub fn generate(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
         mac_algorithms: &[&str],
         compression_algorithms: &[&str],
     ) -> Self {
-        // 连接算法列表（使用分号分隔）
+        // connectionalgorithmlist (usesemicolon-separated)
         let kex_str = kex_algorithms.join(";");
         let enc_str = encryption_algorithms.join(";");
         let mac_str = mac_algorithms.join(";");
         let comp_str = compression_algorithms.join(";");
 
-        // 构建 HASSH 字符串
+        // Build HASSH string
         let hassh_string = format!("{};{};{};{}", kex_str, enc_str, mac_str, comp_str);
 
-        // 计算 MD5 哈希
+        // Calculate MD5 hash
         let fingerprint = Self::md5_hash(&hassh_string);
 
-        // 推断客户端类型
+        // inferclienttype
         let client_type = Self::infer_client_type(kex_algorithms, encryption_algorithms);
 
         Self {
@@ -95,31 +95,34 @@ impl HASSH {
         }
     }
 
-    /// 计算 MD5 哈希
+    /// Calculate MD5 hash
     fn md5_hash(input: &str) -> String {
         let digest = md5::compute(input.as_bytes());
         format!("{:x}", digest)
     }
 
-    /// 推断 SSH 客户端类型
+    /// infer SSH clienttype
     fn infer_client_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
     ) -> Option<String> {
-        // 基于算法特征推断客户端类型
-        
-        // OpenSSH 特征
-        if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256")) {
-            if encryption_algorithms
+        // based onalgorithmtraitinferclienttype
+
+        // OpenSSH trait
+        if kex_algorithms
+            .iter()
+            .any(|&k| k.contains("curve25519-sha256"))
+            && encryption_algorithms
                 .iter()
                 .any(|&e| e.contains("chacha20-poly1305"))
-            {
-                return Some("OpenSSH".to_string());
-            }
+        {
+            return Some("OpenSSH".to_string());
         }
 
-        // PuTTY 特征
-        if kex_algorithms.iter().any(|&k| k.contains("ecdh-sha2-nistp256"))
+        // PuTTY trait
+        if kex_algorithms
+            .iter()
+            .any(|&k| k.contains("ecdh-sha2-nistp256"))
             && encryption_algorithms
                 .iter()
                 .any(|&e| e.contains("aes256-ctr"))
@@ -127,7 +130,7 @@ impl HASSH {
             return Some("PuTTY".to_string());
         }
 
-        // Paramiko (Python) 特征
+        // Paramiko (Python) trait
         if kex_algorithms
             .iter()
             .any(|&k| k.contains("diffie-hellman-group14-sha1"))
@@ -136,7 +139,7 @@ impl HASSH {
             return Some("Paramiko".to_string());
         }
 
-        // libssh 特征
+        // libssh trait
         if kex_algorithms
             .iter()
             .any(|&k| k.contains("ecdh-sha2-nistp521"))
@@ -147,9 +150,9 @@ impl HASSH {
         None
     }
 
-    /// 从 SSH KEX_INIT 消息解析 HASSH
+    /// from SSH KEX_INIT messageParse HASSH
     ///
-    /// SSH KEX_INIT 消息包含算法协商信息
+    /// SSH KEX_INIT messageincludingalgorithmnegotiateinfo
     pub fn from_kex_init(kex_init: &SSHKexInit) -> Self {
         Self::generate(
             &kex_init
@@ -182,48 +185,48 @@ impl std::fmt::Display for HASSH {
     }
 }
 
-/// HASSH Server - SSH 服务器指纹
+/// HASSH Server - SSH serverfingerprint
 ///
-/// 格式: MD5(Server KEX;EncryptionAlgs;MACAlgs;CompressionAlgs)
+/// format: MD5(Server KEX;EncryptionAlgs;MACAlgs;CompressionAlgs)
 ///
-/// ## 示例
+/// ## Examples
 /// ```
 /// use fingerprint_core::hassh::HASSHServer;
 ///
 /// let hassh_server = HASSHServer::generate(
-///     &["diffie-hellman-group14-sha256"],
-///     &["aes256-ctr"],
-///     &["hmac-sha2-512"],
-///     &["none"],
+/// &["diffie-hellman-group14-sha256"],
+/// &["aes256-ctr"],
+/// &["hmac-sha2-512"],
+/// &["none"],
 /// );
 /// assert!(!hassh_server.fingerprint.is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct HASSHServer {
-    /// 密钥交换算法列表（分号分隔）
+    /// keyswapalgorithmlist (semicolon-separated)
     pub kex_algorithms: String,
-    
-    /// 加密算法列表（分号分隔）
+
+    /// encryptionalgorithmlist (semicolon-separated)
     pub encryption_algorithms: String,
-    
-    /// MAC 算法列表（分号分隔）
+
+    /// MAC algorithmlist (semicolon-separated)
     pub mac_algorithms: String,
-    
-    /// 压缩算法列表（分号分隔）
+
+    /// compressionalgorithmlist (semicolon-separated)
     pub compression_algorithms: String,
-    
-    /// 完整的 HASSH Server 字符串
+
+    /// complete HASSH Server string
     pub hassh_server_string: String,
-    
-    /// HASSH Server 指纹（MD5 哈希）
+
+    /// HASSH Server fingerprint (MD5 hash)
     pub fingerprint: String,
-    
-    /// SSH 服务器类型（推断）
+
+    /// SSH servertype (infer)
     pub server_type: Option<String>,
 }
 
 impl HASSHServer {
-    /// 生成 HASSH Server 指纹
+    /// Generate HASSH Server fingerprint
     pub fn generate(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
@@ -252,19 +255,21 @@ impl HASSHServer {
         }
     }
 
-    /// 计算 MD5 哈希
+    /// Calculate MD5 hash
     fn md5_hash(input: &str) -> String {
         let digest = md5::compute(input.as_bytes());
         format!("{:x}", digest)
     }
 
-    /// 推断 SSH 服务器类型
+    /// infer SSH servertype
     fn infer_server_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
     ) -> Option<String> {
         // OpenSSH Server
-        if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256"))
+        if kex_algorithms
+            .iter()
+            .any(|&k| k.contains("curve25519-sha256"))
             && encryption_algorithms
                 .iter()
                 .any(|&e| e.contains("chacha20-poly1305"))
@@ -292,7 +297,7 @@ impl HASSHServer {
         None
     }
 
-    /// 从 SSH KEX_INIT 消息解析 HASSH Server
+    /// from SSH KEX_INIT messageParse HASSH Server
     pub fn from_kex_init(kex_init: &SSHKexInit) -> Self {
         Self::generate(
             &kex_init
@@ -325,60 +330,60 @@ impl std::fmt::Display for HASSHServer {
     }
 }
 
-/// SSH KEX_INIT 消息结构
+/// SSH KEX_INIT messagestruct
 ///
-/// 包含 SSH 密钥交换初始化消息的所有算法列表
+/// including SSH keyswapInitializemessageallalgorithmlist
 #[derive(Debug, Clone, Default)]
 pub struct SSHKexInit {
-    /// 密钥交换算法
+    /// keyswapalgorithm
     pub kex_algorithms: Vec<String>,
-    
-    /// 服务器主机密钥算法
+
+    /// serverhostkeyalgorithm
     pub server_host_key_algorithms: Vec<String>,
-    
-    /// 客户端到服务器加密算法
+
+    /// client to serverencryptionalgorithm
     pub encryption_algorithms_client_to_server: Vec<String>,
-    
-    /// 服务器到客户端加密算法
+
+    /// server to clientencryptionalgorithm
     pub encryption_algorithms_server_to_client: Vec<String>,
-    
-    /// 客户端到服务器 MAC 算法
+
+    /// client to server MAC algorithm
     pub mac_algorithms_client_to_server: Vec<String>,
-    
-    /// 服务器到客户端 MAC 算法
+
+    /// server to client MAC algorithm
     pub mac_algorithms_server_to_client: Vec<String>,
-    
-    /// 客户端到服务器压缩算法
+
+    /// client to servercompressionalgorithm
     pub compression_algorithms_client_to_server: Vec<String>,
-    
-    /// 服务器到客户端压缩算法
+
+    /// server to clientcompressionalgorithm
     pub compression_algorithms_server_to_client: Vec<String>,
 }
 
 impl SSHKexInit {
-    /// 创建新的 KEX_INIT 消息
+    /// Create a new KEX_INIT message
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// 从原始 SSH 数据包解析（简化版本）
+    /// from originalbeginning SSH countpacketParse (simplified version)
     ///
-    /// 注意：这是一个简化实现，完整的 SSH 协议解析需要更复杂的状态机
+    /// Note: this isanSimplified implementation, complete SSH protocolParseneedmorecomplexstatus机
     pub fn parse(data: &[u8]) -> Result<Self, String> {
-        // SSH 协议格式复杂，这里提供基本框架
-        // 实际应用中应使用专门的 SSH 协议解析库
-        
+        // SSH protocolformatcomplex, hereprovidebasicframework
+        // actualapplication in shouldusespecifically SSH protocolParselibrary
+
         if data.len() < 16 {
-            return Err("数据包太短".to_string());
+            return Err("countpackettoo short".to_string());
         }
 
-        // SSH KEX_INIT 消息类型为 20 (SSH_MSG_KEXINIT)
+        // SSH KEX_INIT messagetype as 20 (SSH_MSG_KEXINIT)
         if data[0] != 20 {
-            return Err("不是 KEX_INIT 消息".to_string());
+            return Err("is not KEX_INIT message".to_string());
         }
 
-        // 这里应该解析 name-list 字段
-        // 由于 SSH 协议解析复杂，暂时返回空结构
+        // hereshouldParse name-list field
+        // due to SSH protocolParsecomplex, temporary when returnemptystruct
         Ok(Self::new())
     }
 }
@@ -400,7 +405,7 @@ mod tests {
         );
 
         assert!(!hassh.fingerprint.is_empty());
-        assert_eq!(hassh.fingerprint.len(), 32); // MD5 哈希长度
+        assert_eq!(hassh.fingerprint.len(), 32); // MD5 hashlength
         assert!(hassh.kex_algorithms.contains("diffie-hellman"));
         assert!(hassh.encryption_algorithms.contains("aes128-ctr"));
     }
@@ -488,21 +493,21 @@ mod tests {
     }
 }
 
-/// JA4SSH - SSH 指纹（JA4 风格）
+/// JA4SSH - SSH fingerprint (JA4 style)
 ///
-/// 类似于 HASSH，但使用 SHA256 而非 MD5，并采用 JA4 系列的格式风格
-/// 
-/// 格式: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
+/// similar于 HASSH, butuse SHA256 rather than MD5, 并adopt JA4 seriesformatstyle
 ///
-/// ## 示例
+/// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
+///
+/// ## Examples
 /// ```
 /// use fingerprint_core::hassh::JA4SSH;
 ///
 /// let ja4ssh = JA4SSH::generate(
-///     &["diffie-hellman-group14-sha256"],
-///     &["aes256-ctr"],
-///     &["hmac-sha2-256"],
-///     &["none"],
+/// &["diffie-hellman-group14-sha256"],
+/// &["aes256-ctr"],
+/// &["hmac-sha2-256"],
+/// &["none"],
 /// );
 /// assert!(!ja4ssh.fingerprint_string().is_empty());
 /// ```
@@ -510,56 +515,56 @@ mod tests {
 pub struct JA4SSH {
     /// 'c' for client, 's' for server
     pub direction: char,
-    
-    /// 密钥交换算法数量
+
+    /// keyswapalgorithmcount
     pub kex_count: usize,
-    
-    /// 加密算法数量
+
+    /// encryptionalgorithmcount
     pub encryption_count: usize,
-    
-    /// MAC 算法数量
+
+    /// MAC algorithmcount
     pub mac_count: usize,
-    
-    /// 压缩算法数量
+
+    /// compressionalgorithmcount
     pub compression_count: usize,
-    
-    /// KEX 算法哈希（SHA256 前 6 位）
+
+    /// KEX algorithmhash (SHA256 front 6-bit)
     pub kex_hash: String,
-    
-    /// 加密算法哈希（SHA256 前 6 位）
+
+    /// encryptionalgorithmhash (SHA256 front 6-bit)
     pub encryption_hash: String,
-    
-    /// MAC 算法哈希（SHA256 前 6 位）
+
+    /// MAC algorithmhash (SHA256 front 6-bit)
     pub mac_hash: String,
-    
-    /// 压缩算法哈希（SHA256 前 6 位）
+
+    /// compressionalgorithmhash (SHA256 front 6-bit)
     pub compression_hash: String,
-    
-    /// 客户端类型（推断）
+
+    /// clienttype (infer)
     pub client_type: Option<String>,
 }
 
 impl JA4SSH {
-    /// 生成 JA4SSH 客户端指纹
+    /// Generate JA4SSH clientfingerprint
     ///
-    /// # 参数
-    /// - `kex_algorithms`: 密钥交换算法列表
-    /// - `encryption_algorithms`: 加密算法列表
-    /// - `mac_algorithms`: MAC 算法列表
-    /// - `compression_algorithms`: 压缩算法列表
+    /// # Parameters
+    /// - `kex_algorithms`: keyswapalgorithmlist
+    /// - `encryption_algorithms`: encryptionalgorithmlist
+    /// - `mac_algorithms`: MAC algorithmlist
+    /// - `compression_algorithms`: compressionalgorithmlist
     pub fn generate(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
         mac_algorithms: &[&str],
         compression_algorithms: &[&str],
     ) -> Self {
-        // 计算各算法列表的 SHA256 哈希
+        // Calculateeachalgorithmlist SHA256 hash
         let kex_hash = Self::compute_hash(kex_algorithms);
         let enc_hash = Self::compute_hash(encryption_algorithms);
         let mac_hash = Self::compute_hash(mac_algorithms);
         let comp_hash = Self::compute_hash(compression_algorithms);
 
-        // 推断客户端类型
+        // inferclienttype
         let client_type = Self::infer_client_type(kex_algorithms, encryption_algorithms);
 
         Self {
@@ -576,7 +581,7 @@ impl JA4SSH {
         }
     }
 
-    /// 生成 JA4SSH 服务器指纹
+    /// Generate JA4SSH serverfingerprint
     pub fn generate_server(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
@@ -594,10 +599,10 @@ impl JA4SSH {
         ssh
     }
 
-    /// 计算算法列表的 SHA256 哈希（取前 6 位）
+    /// Calculatealgorithmlist SHA256 hash (getfront 6-bit)
     fn compute_hash(algorithms: &[&str]) -> String {
         use sha2::{Digest, Sha256};
-        
+
         if algorithms.is_empty() {
             return "000000".to_string();
         }
@@ -610,23 +615,26 @@ impl JA4SSH {
         hex[0..6].to_string()
     }
 
-    /// 推断 SSH 客户端类型
+    /// infer SSH clienttype
     fn infer_client_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
     ) -> Option<String> {
-        // OpenSSH 特征
-        if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256")) {
-            if encryption_algorithms
+        // OpenSSH trait
+        if kex_algorithms
+            .iter()
+            .any(|&k| k.contains("curve25519-sha256"))
+            && encryption_algorithms
                 .iter()
                 .any(|&e| e.contains("chacha20-poly1305"))
-            {
-                return Some("OpenSSH".to_string());
-            }
+        {
+            return Some("OpenSSH".to_string());
         }
 
-        // PuTTY 特征
-        if kex_algorithms.iter().any(|&k| k.contains("ecdh-sha2-nistp256"))
+        // PuTTY trait
+        if kex_algorithms
+            .iter()
+            .any(|&k| k.contains("ecdh-sha2-nistp256"))
             && encryption_algorithms
                 .iter()
                 .any(|&e| e.contains("aes256-ctr"))
@@ -634,7 +642,7 @@ impl JA4SSH {
             return Some("PuTTY".to_string());
         }
 
-        // Paramiko (Python) 特征
+        // Paramiko (Python) trait
         if kex_algorithms
             .iter()
             .any(|&k| k.contains("diffie-hellman-group14-sha1"))
@@ -646,13 +654,15 @@ impl JA4SSH {
         None
     }
 
-    /// 推断 SSH 服务器类型
+    /// infer SSH servertype
     fn infer_server_type(
         kex_algorithms: &[&str],
         encryption_algorithms: &[&str],
     ) -> Option<String> {
         // OpenSSH Server
-        if kex_algorithms.iter().any(|&k| k.contains("curve25519-sha256"))
+        if kex_algorithms
+            .iter()
+            .any(|&k| k.contains("curve25519-sha256"))
             && encryption_algorithms
                 .iter()
                 .any(|&e| e.contains("chacha20-poly1305"))
@@ -672,8 +682,8 @@ impl JA4SSH {
         None
     }
 
-    /// 转换为标准的 JA4SSH 指纹字符串
-    /// 格式: c{kex:02}{enc:02}{mac:02}{comp:02}_{kex_hash}_{enc_hash}_{mac_hash}_{comp_hash}
+    /// convert tostandard JA4SSH fingerprintstring
+    /// format: c{kex:02}{enc:02}{mac:02}{comp:02}_{kex_hash}_{enc_hash}_{mac_hash}_{comp_hash}
     pub fn fingerprint_string(&self) -> String {
         format!(
             "{}{:02}{:02}{:02}{:02}_{}_{}_{}_{}",
@@ -689,7 +699,7 @@ impl JA4SSH {
         )
     }
 
-    /// 从 SSH KEX_INIT 消息生成 JA4SSH
+    /// from SSH KEX_INIT messageGenerate JA4SSH
     pub fn from_kex_init(kex_init: &SSHKexInit) -> Self {
         Self::generate(
             &kex_init
@@ -783,12 +793,7 @@ mod ja4ssh_tests {
 
     #[test]
     fn test_ja4ssh_fingerprint_string() {
-        let ja4ssh = JA4SSH::generate(
-            &["test-kex"],
-            &["test-enc"],
-            &["test-mac"],
-            &["none"],
-        );
+        let ja4ssh = JA4SSH::generate(&["test-kex"], &["test-enc"], &["test-mac"], &["none"]);
 
         let fp = ja4ssh.fingerprint_string();
         assert!(fp.starts_with("c01010101_"));
@@ -797,12 +802,7 @@ mod ja4ssh_tests {
 
     #[test]
     fn test_ja4ssh_display() {
-        let ja4ssh = JA4SSH::generate(
-            &["kex"],
-            &["enc"],
-            &["mac"],
-            &["none"],
-        );
+        let ja4ssh = JA4SSH::generate(&["kex"], &["enc"], &["mac"], &["none"]);
 
         let displayed = format!("{}", ja4ssh);
         assert_eq!(displayed, ja4ssh.fingerprint_string());
@@ -811,7 +811,7 @@ mod ja4ssh_tests {
     #[test]
     fn test_ja4ssh_empty_algorithms() {
         let ja4ssh = JA4SSH::generate(&[], &[], &[], &[]);
-        
+
         assert_eq!(ja4ssh.kex_count, 0);
         assert_eq!(ja4ssh.kex_hash, "000000");
         assert!(ja4ssh.fingerprint_string().contains("c00000000_"));
@@ -819,10 +819,10 @@ mod ja4ssh_tests {
 
     #[test]
     fn test_ja4ssh_hash_consistency() {
-        // 同样的算法应该产生相同的哈希
+        // same样algorithmshouldproducesame的hash
         let ja4ssh1 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
         let ja4ssh2 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
-        
+
         assert_eq!(ja4ssh1.kex_hash, ja4ssh2.kex_hash);
         assert_eq!(ja4ssh1.encryption_hash, ja4ssh2.encryption_hash);
     }

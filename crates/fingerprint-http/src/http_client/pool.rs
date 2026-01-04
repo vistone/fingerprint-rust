@@ -1,6 +1,6 @@
-//! 连接池管理
+//! connection poolmanage
 //!
-//! 基于 netconnpool 实现连接复用和生命周期管理
+//! based on netconnpool implementconnectionreuse and lifecyclemanage
 
 use super::{HttpClientError, Result};
 use std::time::Duration;
@@ -17,17 +17,17 @@ use std::sync::{Arc, Mutex};
 #[cfg(feature = "connection-pool")]
 use netconnpool::{Config as PoolConfig, ConnectionType, Pool};
 
-/// 连接池管理器
+/// connection poolmanageer
 #[cfg(feature = "connection-pool")]
 pub struct ConnectionPoolManager {
-    /// 连接池实例（按 host:port 分组）
+    /// connection poolinstance ( by  host:port group)
     pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
-    /// 默认配置
+    /// defaultconfiguration
     config: PoolManagerConfig,
-    /// HTTP/2 会话池（修复：实现真正的多路复用）
+    /// HTTP/2 sessionpool (Fix: implementtrue multiplexreuse)
     #[cfg(feature = "http2")]
     h2_session_pool: Arc<super::h2_session_pool::H2SessionPool>,
-    /// HTTP/3 会话池
+    /// HTTP/3 sessionpool
     #[cfg(feature = "http3")]
     h3_session_pool: Arc<super::h3_session_pool::H3SessionPool>,
 }
@@ -39,7 +39,7 @@ impl Default for ConnectionPoolManager {
     }
 }
 
-/// 连接池管理器（无连接池功能时的占位）
+/// connection poolmanageer (noneconnection poolFeatures when 占bit)
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
     #[allow(dead_code)]
@@ -53,20 +53,20 @@ impl Default for ConnectionPoolManager {
     }
 }
 
-/// 连接池管理器配置
+/// connection poolmanageerconfiguration
 #[derive(Debug, Clone)]
 pub struct PoolManagerConfig {
-    /// 最大连接数
+    /// maximumconnectioncount
     pub max_connections: usize,
-    /// 最小空闲连接数
+    /// minimumempty闲connectioncount
     pub min_idle: usize,
-    /// 连接超时
+    /// connectiontimeout
     pub connect_timeout: Duration,
-    /// 空闲超时
+    /// empty闲timeout
     pub idle_timeout: Duration,
-    /// 最大生命周期
+    /// maximumlifecycle
     pub max_lifetime: Duration,
-    /// 是否启用连接复用
+    /// whetherenabledconnectionreuse
     pub enable_reuse: bool,
 }
 
@@ -77,14 +77,14 @@ impl Default for PoolManagerConfig {
             min_idle: 10,
             connect_timeout: Duration::from_secs(30),
             idle_timeout: Duration::from_secs(90),
-            max_lifetime: Duration::from_secs(600), // 10分钟
+            max_lifetime: Duration::from_secs(600), // 10minutes
             enable_reuse: true,
         }
     }
 }
 
 impl ConnectionPoolManager {
-    /// 创建新的连接池管理器
+    /// Create a newconnection poolmanageer
     #[cfg(feature = "connection-pool")]
     pub fn new(config: PoolManagerConfig) -> Self {
         Self {
@@ -102,35 +102,35 @@ impl ConnectionPoolManager {
         Self { config }
     }
 
-    /// 获取 HTTP/2 会话池
+    /// Get HTTP/2 sessionpool
     #[cfg(all(feature = "connection-pool", feature = "http2"))]
     pub fn h2_session_pool(&self) -> &Arc<super::h2_session_pool::H2SessionPool> {
         &self.h2_session_pool
     }
 
-    /// 获取 HTTP/3 会话池
+    /// Get HTTP/3 sessionpool
     #[cfg(all(feature = "connection-pool", feature = "http3"))]
     pub fn h3_session_pool(&self) -> &Arc<super::h3_session_pool::H3SessionPool> {
         &self.h3_session_pool
     }
 
-    /// 获取或创建连接池
+    /// Get or Createconnection pool
     #[cfg(feature = "connection-pool")]
     pub fn get_pool(&self, host: &str, port: u16) -> Result<Arc<Pool>> {
         let key = format!("{}:{}", host, port);
-        let mut pools = self
-            .pools
-            .lock()
-            .map_err(|e| HttpClientError::ConnectionFailed(format!("连接池锁失败: {}", e)))?;
+        let mut pools = self.pools.lock().map_err(|e| {
+            HttpClientError::ConnectionFailed(format!("connection poollockfailure: {}", e))
+        })?;
 
         if let Some(pool) = pools.get(&key) {
             return Ok(pool.clone());
         }
 
-        // 创建新的连接池
+        // Create a newconnection pool
         let pool_config = self.create_pool_config(host, port);
-        let pool = Pool::new(pool_config)
-            .map_err(|e| HttpClientError::ConnectionFailed(format!("创建连接池失败: {:?}", e)))?;
+        let pool = Pool::new(pool_config).map_err(|e| {
+            HttpClientError::ConnectionFailed(format!("Createconnection poolfailure: {:?}", e))
+        })?;
 
         let pool = Arc::new(pool);
         pools.insert(key, pool.clone());
@@ -141,11 +141,12 @@ impl ConnectionPoolManager {
     #[cfg(not(feature = "connection-pool"))]
     pub fn get_pool(&self, _host: &str, _port: u16) -> Result<()> {
         Err(HttpClientError::ConnectionFailed(
-            "连接池功能未启用，请使用 --features connection-pool 编译".to_string(),
+            "connection poolFeaturesnotenabled，请use --features connection-pool compile"
+                .to_string(),
         ))
     }
 
-    /// 创建连接池配置
+    /// Createconnection poolconfiguration
     #[cfg(feature = "connection-pool")]
     fn create_pool_config(&self, host: &str, port: u16) -> PoolConfig {
         let host = host.to_string();
@@ -164,9 +165,9 @@ impl ConnectionPoolManager {
             health_check_timeout: Duration::from_secs(3),
             connection_leak_timeout: Duration::from_secs(300),
 
-            // 提供 Dialer 函数来创建 TCP 连接
-            // 注意：这里无法直接访问 config.profile，因为 dialer 是闭包
-            // TCP Profile 应该在创建连接池之前就应用到 config 中
+            // provide Dialer functionfromCreate TCP connection
+            // Note: hereunable todirectlyaccess config.profile, because dialer is closepackage
+            // TCP Profile should in Createconnection poolbeforethenapplication to config in
             dialer: Some(Box::new(move |_protocol| {
                 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 
@@ -175,7 +176,7 @@ impl ConnectionPoolManager {
                     .map_err(|e| Box::new(e) as Box<dyn std::error::Error + Send + Sync>)?
                     .collect();
 
-                // 优先使用 IPv4，避免在"无 IPv6 路由"的环境中出现 `Network is unreachable`。
+                // priorityuse IPv4, avoid in "none IPv6 route"environment in appear `Network is unreachable`.
                 let mut v4 = Vec::new();
                 let mut v6 = Vec::new();
                 for a in addrs {
@@ -187,8 +188,8 @@ impl ConnectionPoolManager {
 
                 let mut last_err: Option<std::io::Error> = None;
                 for addr in v4.into_iter().chain(v6.into_iter()) {
-                    // 注意：这里暂时使用标准连接，TCP Profile 应该在创建连接池时通过其他方式应用
-                    // TODO: 支持在连接池中应用 TCP Profile
+                    // Note: heretemporary when usestandardconnection, TCP Profile should in Createconnection pool when throughothermethodapplication
+                    // TODO: support in connection pool in application TCP Profile
                     match TcpStream::connect_timeout(&addr, connect_timeout) {
                         Ok(s) => return Ok(ConnectionType::Tcp(s)),
                         Err(e) => last_err = Some(e),
@@ -215,13 +216,13 @@ impl ConnectionPoolManager {
         }
     }
 
-    /// 获取统计信息
+    /// Getstatisticsinfo
     #[cfg(feature = "connection-pool")]
     pub fn get_stats(&self) -> Vec<PoolStats> {
         let pools = match self.pools.lock() {
             Ok(p) => p,
             Err(e) => {
-                eprintln!("警告: 连接池锁失败: {}", e);
+                eprintln!("warning: connection poollockfailure: {}", e);
                 return Vec::new();
             }
         };
@@ -247,19 +248,19 @@ impl ConnectionPoolManager {
         vec![]
     }
 
-    /// 清理空闲连接
+    /// cleanupempty闲connection
     #[cfg(feature = "connection-pool")]
     pub fn cleanup_idle(&self) {
-        // netconnpool 会自动清理，这里只是提供接口
+        // netconnpool willautomaticcleanup, hereonly is provideinterface
         if let Ok(pools) = self.pools.lock() {
-            println!("连接池状态: {} 个端点", pools.len());
+            println!("connection poolstatus: {} 端点", pools.len());
         }
     }
 
     #[cfg(not(feature = "connection-pool"))]
     pub fn cleanup_idle(&self) {}
 
-    /// 关闭所有连接池
+    /// closeallconnection pool
     #[cfg(feature = "connection-pool")]
     pub fn shutdown(&self) {
         if let Ok(mut pools) = self.pools.lock() {
@@ -267,7 +268,7 @@ impl ConnectionPoolManager {
                 let _ = pool.close();
             }
             pools.clear();
-            println!("所有连接池已关闭");
+            println!("allconnection poolalreadyclose");
         }
     }
 
@@ -275,7 +276,7 @@ impl ConnectionPoolManager {
     pub fn shutdown(&self) {}
 }
 
-/// 连接池统计信息
+/// connection poolstatisticsinfo
 #[derive(Debug, Clone)]
 pub struct PoolStats {
     pub endpoint: String,
@@ -288,7 +289,7 @@ pub struct PoolStats {
 }
 
 impl PoolStats {
-    /// 获取成功率
+    /// Getsuccess率
     pub fn success_rate(&self) -> f64 {
         if self.total_requests == 0 {
             return 0.0;
@@ -296,16 +297,16 @@ impl PoolStats {
         (self.successful_requests as f64 / self.total_requests as f64) * 100.0
     }
 
-    /// 打印统计信息
+    /// printstatisticsinfo
     pub fn print(&self) {
-        println!("\n📊 连接池统计: {}", self.endpoint);
-        println!("  总连接数: {}", self.total_connections);
-        println!("  活跃连接: {}", self.active_connections);
-        println!("  空闲连接: {}", self.idle_connections);
-        println!("  总请求数: {}", self.total_requests);
-        println!("  成功请求: {}", self.successful_requests);
-        println!("  失败请求: {}", self.failed_requests);
-        println!("  成功率: {:.2}%", self.success_rate());
+        println!("\n📊 connection poolstatistics: {}", self.endpoint);
+        println!(" 总connectioncount: {}", self.total_connections);
+        println!(" activeconnection: {}", self.active_connections);
+        println!(" empty闲connection: {}", self.idle_connections);
+        println!(" 总requestcount: {}", self.total_requests);
+        println!(" successrequest: {}", self.successful_requests);
+        println!(" failurerequest: {}", self.failed_requests);
+        println!(" success率: {:.2}%", self.success_rate());
     }
 }
 
@@ -316,7 +317,7 @@ mod tests {
     #[test]
     fn test_pool_manager_creation() {
         let manager = ConnectionPoolManager::default();
-        // 连接池功能未启用时，无需检查内部状态
+        // connection poolFeaturesnotenabled when , no needCheckinside部status
         assert_eq!(manager.get_stats().len(), 0);
     }
 
@@ -334,7 +335,7 @@ mod pool_tests {
     use super::*;
 
     #[test]
-    #[ignore] // 需要网络
+    #[ignore] // neednetwork
     fn test_pool_creation_with_connection() {
         let manager = ConnectionPoolManager::default();
         let result = manager.get_pool("example.com", 80);
@@ -342,11 +343,11 @@ mod pool_tests {
 
         let pool = result.unwrap();
 
-        // 获取一个连接
+        // Getanconnection
         let conn_result = pool.get();
-        // 可能会失败（如果无法连接），但不应该 panic
+        // maywillfailure ( if unable toconnection), but不should panic
         if let Ok(_conn) = conn_result {
-            println!("成功获取连接");
+            println!("successGetconnection");
         }
     }
 
@@ -354,7 +355,7 @@ mod pool_tests {
     fn test_pool_stats() {
         let manager = ConnectionPoolManager::default();
         let stats = manager.get_stats();
-        // 初始应该没有连接池
+        // initialbeginningshouldnoconnection pool
         assert_eq!(stats.len(), 0);
     }
 }

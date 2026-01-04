@@ -1,21 +1,21 @@
-//! 系统级别防护核心抽象
+//! system-level protectioncoreabstract
 //!
-//! 提供系统级别防护的核心抽象和接口，包括系统上下文、网络流量、防护决策等。
+//! providesystem-level protectioncoreabstract and interface, includesystem context, network traffic, protection decision etc..
 //!
-//! ## 核心思想
+//! ## Core Concept
 //!
-//! 从**单一服务防护**提升到**系统级别防护**：
-//! - 从网卡级别拦截、分析和防护所有网络流量
-//! - 不仅仅是 HTTP，还包括 TCP、UDP、ICMP 等所有协议
-//! - 系统级别决策，可以实施防火墙规则、流量限速等系统级防护措施
+//! from **single service protection**improve to **system-level protection**：
+//! - from network interfacelevelintercept, analysis and protectionallnetwork traffic
+//! - not onlyonly is HTTP, stillinclude TCP, UDP, ICMP etc.allprotocol
+//! - systemleveldecision, canactual施firewallrule, trafficrate limit etc.system-level protectionmeasure
 //!
-//! ## 模块结构
+//! ## modulestruct
 //!
-//! - `context`: 系统上下文，包含网络实体的完整信息
-//! - `flow`: 网络流量抽象，表示系统级别的网络流量
-//! - `protection`: 系统级别防护接口和决策
-//! - `analysis`: 系统级别分析接口和结果
-//! - `stats`: 系统级别统计信息
+//! - `context`: system context, includingcomplete network entity information
+//! - `flow`: network trafficabstract, representsystemlevelnetwork traffic
+//! - `protection`: system-level protection interface and decision
+//! - `analysis`: systemlevelanalysis interface and result
+//! - `stats`: systemlevelstatisticsinfo
 
 pub mod analysis;
 pub mod context;
@@ -23,12 +23,12 @@ pub mod flow;
 pub mod protection;
 pub mod stats;
 
-// Re-export 主要类型和接口
+// Re-export maintype and interface
 pub use context::{ProtocolType, SystemContext, TrafficDirection};
 pub use flow::{FlowCharacteristics, NetworkFlow};
 pub use protection::{SystemProtectionDecision, SystemProtectionResult, SystemProtector};
 
-// 注意：NetworkFlow 和 SystemAnalysisResult 实现了 Clone，
-// 但由于包含 Box<dyn Fingerprint>，Clone 时 fingerprints 字段会被清空
+// Note: NetworkFlow and SystemAnalysisResult implement了 Clone,
+// butdue toincluding Box<dyn Fingerprint>, Clone when fingerprints fieldwill被清empty
 pub use analysis::{AnalysisDetails, SystemAnalysisResult, SystemAnalyzer, ThreatType};
 pub use stats::SystemProtectionStats;

@@ -7,22 +7,22 @@
 //! ## Algorithm Overview
 //!
 //! 1. Send 10 TLS Client Hello probes with different configurations:
-//!    - TLS 1.2/1.3 versions
-//!    - Different cipher suites
-//!    - Different TLS extensions
-//!    - ALPN variations
+//! - TLS 1.2/1.3 versions
+//! - Different cipher suites
+//! - Different TLS extensions
+//! - ALPN variations
 //! 2. Parse Server Hello responses (or capture errors/timeouts)
 //! 3. Extract key features from each response:
-//!    - TLS version
-//!    - Cipher suite selected
-//!    - TLS extensions present
+//! - TLS version
+//! - Cipher suite selected
+//! - TLS extensions present
 //! 4. Hash and combine features into 62-character fingerprint
 //!
 //! ## Format
 //!
 //! JARM fingerprint: 62 hexadecimal characters
 //! - First 30 chars: Hashed cipher and version info from first 5 probes
-//! - Next 30 chars: Hashed cipher and version info from last 5 probes  
+//! - Next 30 chars: Hashed cipher and version info from last 5 probes
 //! - Last 2 chars: Hashed extension info from all probes
 //!
 //! ## References
@@ -170,8 +170,8 @@ impl JarmProbe {
     /// Common TLS 1.1 cipher suites (legacy)
     fn all_ciphers_tls11() -> Vec<u16> {
         vec![
-            0xc014, 0xc00a, 0x0039, 0x0038, 0x0035, 0x0016, 0x0013, 0x000a, 0x0033, 0x0032,
-            0x002f, 0x000d, 0x0005, 0x0004,
+            0xc014, 0xc00a, 0x0039, 0x0038, 0x0035, 0x0016, 0x0013, 0x000a, 0x0033, 0x0032, 0x002f,
+            0x000d, 0x0005, 0x0004,
         ]
     }
 
@@ -332,15 +332,15 @@ impl Jarm {
         let mut result = String::with_capacity(62);
 
         // Process first 5 probes (30 characters)
-        for i in 0..5 {
-            let component = responses[i].to_component_string();
+        for response in responses.iter().take(5) {
+            let component = response.to_component_string();
             let hash = Self::hash_component(&component);
             result.push_str(&hash[..6]); // 6 chars per probe
         }
 
         // Process last 5 probes (30 characters)
-        for i in 5..10 {
-            let component = responses[i].to_component_string();
+        for response in responses.iter().take(10).skip(5) {
+            let component = response.to_component_string();
             let hash = Self::hash_component(&component);
             result.push_str(&hash[..6]); // 6 chars per probe
         }
@@ -384,13 +384,9 @@ impl Jarm {
         // Known JARM fingerprints for common servers
         match self.fingerprint.as_str() {
             // Cloudflare
-            s if s.starts_with("27d40d40d29d40d1dc42d43d00041d") => {
-                Some("Cloudflare".to_string())
-            }
+            s if s.starts_with("27d40d40d29d40d1dc42d43d00041d") => Some("Cloudflare".to_string()),
             // AWS ELB
-            s if s.starts_with("27d3ed3ed0003ed1dc42d43d00041d") => {
-                Some("AWS ELB".to_string())
-            }
+            s if s.starts_with("27d3ed3ed0003ed1dc42d43d00041d") => Some("AWS ELB".to_string()),
             // nginx
             s if s.starts_with("27d27d27d29d27d1dc42d43d00041d") => Some("nginx".to_string()),
             // Apache
@@ -509,9 +505,7 @@ mod tests {
 
     #[test]
     fn test_jarm_display() {
-        let responses = (0..10)
-            .map(|_| JarmResponse::no_response())
-            .collect();
+        let responses = (0..10).map(|_| JarmResponse::no_response()).collect();
         let jarm = Jarm::from_responses(responses).unwrap();
 
         let display = format!("{}", jarm);
@@ -532,7 +526,8 @@ mod tests {
 
         // Create a fingerprint starting with Cloudflare pattern
         let mut jarm = Jarm::from_responses(responses).unwrap();
-        jarm.fingerprint = "27d40d40d29d40d1dc42d43d00041d4689ee210389f4f6b4b5b1b93f92252d".to_string();
+        jarm.fingerprint =
+            "27d40d40d29d40d1dc42d43d00041d4689ee210389f4f6b4b5b1b93f92252d".to_string();
 
         let server_type = jarm.detect_server_type();
         assert_eq!(server_type, Some("Cloudflare".to_string()));
@@ -540,9 +535,7 @@ mod tests {
 
     #[test]
     fn test_jarm_server_detection_unknown() {
-        let responses = (0..10)
-            .map(|_| JarmResponse::no_response())
-            .collect();
+        let responses = (0..10).map(|_| JarmResponse::no_response()).collect();
         let jarm = Jarm::from_responses(responses).unwrap();
 
         let server_type = jarm.detect_server_type();

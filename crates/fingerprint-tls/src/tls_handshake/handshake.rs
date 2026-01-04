@@ -1,15 +1,15 @@
-//! TLS 握手层 (Handshake Layer)
+//! TLS handshakelayer (Handshake Layer)
 //!
-//! TLS 握手消息格式：
+//! TLS handshakemessageformat：
 //! ```text
 //! struct {
-//!     HandshakeType msg_type;    // 1 byte
-//!     uint24 length;             // 3 bytes
-//!     opaque body[length];       // length bytes
+//! HandshakeType msg_type; // 1 byte
+//! uint24 length; // 3 bytes
+//! opaque body[length]; // length bytes
 //! } Handshake;
 //! ```
 
-/// TLS 握手类型
+/// TLS handshaketype
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
 pub enum TLSHandshakeType {
@@ -31,27 +31,27 @@ impl TLSHandshakeType {
     }
 }
 
-/// TLS 握手消息
+/// TLS handshakemessage
 #[derive(Debug, Clone)]
 pub struct TLSHandshake {
-    /// 消息类型
+    /// messagetype
     pub msg_type: TLSHandshakeType,
-    /// 消息体
+    /// message体
     pub body: Vec<u8>,
 }
 
 impl TLSHandshake {
-    /// 创建新的握手消息
+    /// Create a newhandshakemessage
     pub fn new(msg_type: TLSHandshakeType, body: Vec<u8>) -> Self {
         Self { msg_type, body }
     }
 
-    /// 创建 ClientHello 握手消息
+    /// Create ClientHello handshakemessage
     pub fn client_hello(body: Vec<u8>) -> Self {
         Self::new(TLSHandshakeType::ClientHello, body)
     }
 
-    /// 序列化为字节流
+    /// serialize as bytesstream
     pub fn to_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
 
@@ -70,10 +70,10 @@ impl TLSHandshake {
         bytes
     }
 
-    /// 从字节流解析
+    /// from bytesstreamParse
     pub fn from_bytes(data: &[u8]) -> Result<(Self, usize), String> {
         if data.len() < 4 {
-            return Err("数据太短，无法解析握手消息".to_string());
+            return Err("countdatatoo short，unable toParsehandshakemessage".to_string());
         }
 
         let msg_type = match data[0] {
@@ -87,16 +87,16 @@ impl TLSHandshake {
             15 => TLSHandshakeType::CertificateVerify,
             16 => TLSHandshakeType::ClientKeyExchange,
             20 => TLSHandshakeType::Finished,
-            _ => return Err(format!("未知的握手类型: {}", data[0])),
+            _ => return Err(format!("not知handshaketype: {}", data[0])),
         };
 
-        // 3 字节长度
+        // 3 byteslength
         let length = ((data[1] as u32) << 16) | ((data[2] as u32) << 8) | (data[3] as u32);
         let length = length as usize;
 
         if data.len() < 4 + length {
             return Err(format!(
-                "数据不完整，需要 {} 字节，实际只有 {} 字节",
+                "countdata不complete，need {} bytes，actualonly {} bytes",
                 4 + length,
                 data.len()
             ));
@@ -119,7 +119,7 @@ mod tests {
 
         let bytes = handshake.to_bytes();
 
-        // 验证格式
+        // Validateformat
         assert_eq!(bytes[0], 1); // ClientHello
         assert_eq!(bytes[1], 0); // Length high byte
         assert_eq!(bytes[2], 0); // Length mid byte

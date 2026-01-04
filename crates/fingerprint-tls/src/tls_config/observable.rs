@@ -1,42 +1,42 @@
-//! TLS 可观察性模块
+//! TLS 可observepropertymodule
 //!
-//! 提供 TLS ClientHello 的可观察性数据提取
-//! 参考：Huginn Net Profiler 的 TlsClientObserved 设计
+//! provide TLS ClientHello 可observepropertycountdataExtract
+//! reference：Huginn Net Profiler TlsClientObserved design
 
 use crate::tls_config::extract::extract_signature;
 use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
-/// TLS ClientHello 可观察数据
-/// 包含所有可以从 ClientHello 中观察到的信息
-/// 参考：Huginn Net Profiler 的 TlsClientObserved
+/// TLS ClientHello 可observecountdata
+/// includingallcan from ClientHello in observe to info
+/// reference：Huginn Net Profiler TlsClientObserved
 #[derive(Debug, Clone, PartialEq)]
 pub struct TlsClientObserved {
-    /// TLS 版本（字符串表示，如 "13", "12"）
+    /// TLS version (stringrepresent, 如 "13", "12")
     pub version: String,
     /// Server Name Indication
     pub sni: Option<String>,
     /// Application-Layer Protocol Negotiation
     pub alpn: Option<String>,
-    /// 密码套件列表
+    /// cipher suitelist
     pub cipher_suites: Vec<u16>,
-    /// 扩展列表
+    /// extensionlist
     pub extensions: Vec<u16>,
-    /// 签名算法列表
+    /// signaturealgorithmlist
     pub signature_algorithms: Vec<u16>,
-    /// 椭圆曲线列表
+    /// elliptic curvelist
     pub elliptic_curves: Vec<CurveID>,
 }
 
 impl TlsClientObserved {
-    /// 从 ClientHelloSpec 创建可观察数据
+    /// from ClientHelloSpec Create可observecountdata
     pub fn from_spec(spec: &ClientHelloSpec) -> Self {
         let signature = extract_signature(spec);
         Self::from_signature(&signature)
     }
 
-    /// 从 ClientHelloSignature 创建可观察数据
+    /// from ClientHelloSignature Create可observecountdata
     pub fn from_signature(signature: &ClientHelloSignature) -> Self {
         Self {
             version: format!("{}", signature.version),
@@ -49,27 +49,27 @@ impl TlsClientObserved {
         }
     }
 
-    /// 获取密码套件数量
+    /// Getcipher suitecount
     pub fn cipher_suite_count(&self) -> usize {
         self.cipher_suites.len()
     }
 
-    /// 获取扩展数量
+    /// Getextensioncount
     pub fn extension_count(&self) -> usize {
         self.extensions.len()
     }
 
-    /// 获取签名算法数量
+    /// Getsignaturealgorithmcount
     pub fn signature_algorithm_count(&self) -> usize {
         self.signature_algorithms.len()
     }
 
-    /// 检查是否包含特定扩展
+    /// Checkwhetherincludingspecificextension
     pub fn has_extension(&self, ext_id: u16) -> bool {
         self.extensions.contains(&ext_id)
     }
 
-    /// 检查是否包含特定密码套件
+    /// Checkwhetherincludingspecificcipher suite
     pub fn has_cipher_suite(&self, suite: u16) -> bool {
         self.cipher_suites.contains(&suite)
     }
@@ -99,9 +99,9 @@ mod tests {
     fn test_has_extension() {
         let spec = ClientHelloSpec::chrome_133();
         let observed = TlsClientObserved::from_spec(&spec);
-        // 检查是否包含 SNI 扩展（0x0000）
+        // Checkwhetherincluding SNI extension (0x0000)
         let has_sni = observed.has_extension(0x0000);
-        // Chrome 133 应该包含 SNI
+        // Chrome 133 shouldincluding SNI
         assert!(has_sni);
     }
 }

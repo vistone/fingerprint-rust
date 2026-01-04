@@ -1,107 +1,107 @@
-//! 系统级别防护接口
+//! system-level protection interface
 //!
-//! 定义系统级别防护的接口和决策类型。
+//! definesystem-level protection interface and decisiontype.
 
 use super::flow::NetworkFlow;
 use super::stats::SystemProtectionStats;
 use std::time::Duration;
 
-/// 系统级别防护决策
+/// system-level protection decision
 ///
-/// 表示系统级别防护系统对网络流量做出的决策。
+/// representsystem-level protectionsystempairnetwork trafficmakedecision.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SystemProtectionDecision {
-    /// 允许通过
+    /// allowthrough
     Allow,
 
-    /// 阻止流量
+    /// blocktraffic
     Deny {
-        /// 阻止原因
+        /// blockreason
         reason: String,
     },
 
-    /// 限速
+    /// rate limit
     RateLimit {
-        /// 每秒最大数据包数
+        /// 每secondsmaximumcountpacketcount
         max_packets_per_second: u64,
 
-        /// 限速持续时间
+        /// rate limitcontinuous when between
         duration: Duration,
     },
 
-    /// 记录但不阻止
+    /// recordbut不block
     Log {
-        /// 记录原因
+        /// recordreason
         reason: String,
     },
 
-    /// 需要进一步分析
+    /// needfurtheranalysis
     RequiresAnalysis,
 }
 
 impl SystemProtectionDecision {
-    /// 判断是否为允许
+    /// judgewhether as allow
     pub fn is_allow(&self) -> bool {
         matches!(self, Self::Allow)
     }
 
-    /// 判断是否为阻止
+    /// judgewhether as block
     pub fn is_deny(&self) -> bool {
         matches!(self, Self::Deny { .. })
     }
 
-    /// 判断是否为限速
+    /// judgewhether as rate limit
     pub fn is_rate_limit(&self) -> bool {
         matches!(self, Self::RateLimit { .. })
     }
 
-    /// 获取决策的描述
+    /// Getdecisiondescribe
     pub fn description(&self) -> String {
         match self {
-            Self::Allow => "允许通过".to_string(),
-            Self::Deny { reason } => format!("阻止: {}", reason),
+            Self::Allow => "allowthrough".to_string(),
+            Self::Deny { reason } => format!("block: {}", reason),
             Self::RateLimit {
                 max_packets_per_second,
                 duration,
             } => {
                 format!(
-                    "限速: {} 包/秒, 持续时间: {:?}",
+                    "rate limit: {} 包/seconds, continuous when between: {:?}",
                     max_packets_per_second, duration
                 )
             }
-            Self::Log { reason } => format!("记录: {}", reason),
-            Self::RequiresAnalysis => "需要进一步分析".to_string(),
+            Self::Log { reason } => format!("record: {}", reason),
+            Self::RequiresAnalysis => "needfurtheranalysis".to_string(),
         }
     }
 }
 
-/// 系统级别防护结果
+/// system-level protectionresult
 ///
-/// 包含防护决策和相关的元数据。
+/// includingprotection decision and relatedmetadata.
 #[derive(Debug, Clone)]
 pub struct SystemProtectionResult {
-    /// 防护决策
+    /// protection decision
     pub decision: SystemProtectionDecision,
 
-    /// 风险评分 (0.0 - 1.0)
-    /// - 0.0: 完全安全
-    /// - 1.0: 极高风险
+    /// risk score (0.0 - 1.0)
+    /// - 0.0: completelysecurity
+    /// - 1.0: 极highrisk
     pub risk_score: f64,
 
-    /// 置信度 (0.0 - 1.0)
-    /// - 0.0: 完全不确信
-    /// - 1.0: 完全确信
+    /// confidence (0.0 - 1.0)
+    /// - 0.0: completelynot confident
+    /// - 1.0: completelyconfident
     pub confidence: f64,
 
-    /// 决策原因
+    /// decisionreason
     pub reason: String,
 
-    /// 建议的后续动作
+    /// suggestbackcontinueaction
     pub suggested_actions: Vec<String>,
 }
 
 impl SystemProtectionResult {
-    /// 创建新的防护结果
+    /// Create a newprotectionresult
     pub fn new(decision: SystemProtectionDecision) -> Self {
         Self {
             decision,
@@ -112,18 +112,18 @@ impl SystemProtectionResult {
         }
     }
 
-    /// 创建允许决策
+    /// Createallowdecision
     pub fn allow() -> Self {
         Self {
             decision: SystemProtectionDecision::Allow,
             risk_score: 0.0,
             confidence: 1.0,
-            reason: "正常流量".to_string(),
+            reason: "normaltraffic".to_string(),
             suggested_actions: Vec::new(),
         }
     }
 
-    /// 创建阻止决策
+    /// Createblockdecision
     pub fn deny(reason: String, risk_score: f64) -> Self {
         Self {
             decision: SystemProtectionDecision::Deny {
@@ -132,11 +132,11 @@ impl SystemProtectionResult {
             risk_score,
             confidence: 1.0,
             reason,
-            suggested_actions: vec!["添加到黑名单".to_string(), "记录日志".to_string()],
+            suggested_actions: vec!["Add to blacklist".to_string(), "recordlog".to_string()],
         }
     }
 
-    /// 创建限速决策
+    /// Createrate limitdecision
     pub fn rate_limit(max_packets_per_second: u64, duration: Duration, risk_score: f64) -> Self {
         Self {
             decision: SystemProtectionDecision::RateLimit {
@@ -145,24 +145,24 @@ impl SystemProtectionResult {
             },
             risk_score,
             confidence: 0.8,
-            reason: "流量异常，需要限速".to_string(),
-            suggested_actions: vec!["监控流量".to_string()],
+            reason: "trafficabnormal，needrate limit".to_string(),
+            suggested_actions: vec!["monitortraffic".to_string()],
         }
     }
 }
 
-/// 系统级别防护接口
+/// system-level protection interface
 ///
-/// 所有系统级别防护器都应该实现这个 trait。
+/// allsystem-level protectioner都shouldimplementthis trait.
 ///
-/// ## 核心思想
+/// ## Core Concept
 ///
-/// 系统级别防护从**系统角度**做出防护决策：
-/// - 不仅仅是单个服务的防护，而是整个系统的防护
-/// - 可以实施系统级别的措施（黑名单、限速、防火墙规则等）
-/// - 需要考虑系统整体的安全状态
+/// system-level protection from **systemperspective**makeprotection decision：
+/// - not onlyonly is single service protection, 而 is wholesystemprotection
+/// - canactual施systemlevelmeasure (blacklist, rate limit, firewallrule etc.)
+/// - needconsidersystemwholesecuritystatus
 ///
-/// ## 实现示例
+/// ## Implementation Example
 ///
 /// ```rust
 /// use fingerprint_core::system::{SystemProtector, NetworkFlow, SystemProtectionResult, SystemProtectionStats};
@@ -170,48 +170,48 @@ impl SystemProtectionResult {
 /// struct MySystemProtector;
 ///
 /// impl SystemProtector for MySystemProtector {
-///     fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult {
-///         // 实现防护逻辑
-///         SystemProtectionResult::allow()
-///     }
+/// fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult {
+/// // implementprotectionlogic
+/// SystemProtectionResult::allow()
+/// }
 ///
-///     fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult) {
-///         // 更新系统状态
-///     }
+/// fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult) {
+/// // Updatesystemstatus
+/// }
 ///
-///     fn get_stats(&self) -> SystemProtectionStats {
-///         // 返回统计信息
-///         SystemProtectionStats::default()
-///     }
+/// fn get_stats(&self) -> SystemProtectionStats {
+/// // returnstatisticsinfo
+/// SystemProtectionStats::default()
+/// }
 /// }
 /// ```
 pub trait SystemProtector: Send {
-    /// 分析网络流量并做出防护决策
+    /// analysisnetwork traffic并makeprotection decision
     ///
-    /// # 参数
+    /// # Parameters
     ///
-    /// - `flow`: 要分析的网络流量
+    /// - `flow`: needanalysisnetwork traffic
     ///
-    /// # 返回
+    /// # Returns
     ///
-    /// 系统级别防护结果，包含决策、风险评分、置信度等信息
+    /// system-level protectionresult, includingdecision, risk score, confidence etc.info
     fn protect(&self, flow: &NetworkFlow) -> SystemProtectionResult;
 
-    /// 更新系统状态
+    /// Updatesystemstatus
     ///
-    /// 在做出防护决策后，可以根据结果更新系统状态（如更新黑名单、统计信息等）。
+    /// in makeprotection decisionback, canBased onresultUpdatesystemstatus (如Updateblacklist, statisticsinfo etc.).
     ///
-    /// # 参数
+    /// # Parameters
     ///
-    /// - `flow`: 网络流量
-    /// - `result`: 防护决策结果
+    /// - `flow`: network traffic
+    /// - `result`: protection decisionresult
     fn update_state(&mut self, flow: &NetworkFlow, result: &SystemProtectionResult);
 
-    /// 获取系统统计信息
+    /// Getsystemstatisticsinfo
     ///
-    /// # 返回
+    /// # Returns
     ///
-    /// 系统级别防护统计信息
+    /// system-level protectionstatisticsinfo
     fn get_stats(&self) -> SystemProtectionStats;
 }
 
@@ -226,7 +226,7 @@ mod tests {
         assert!(!allow.is_deny());
 
         let deny = SystemProtectionDecision::Deny {
-            reason: "恶意IP".to_string(),
+            reason: "maliciousIP".to_string(),
         };
         assert!(deny.is_deny());
         assert!(!deny.is_allow());
@@ -238,7 +238,7 @@ mod tests {
         assert!(allow.decision.is_allow());
         assert_eq!(allow.risk_score, 0.0);
 
-        let deny = SystemProtectionResult::deny("测试".to_string(), 0.9);
+        let deny = SystemProtectionResult::deny("test".to_string(), 0.9);
         assert!(deny.decision.is_deny());
         assert_eq!(deny.risk_score, 0.9);
     }

@@ -3,7 +3,7 @@ fn main() {
     use bytes::Bytes;
     use chrono::Utc;
     use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
-    // use fingerprint_core::Fingerprint; // 未使用，已注释
+    // use fingerprint_core::Fingerprint; // notuse, alreadycomment
     use fingerprint_defense::passive::consistency::ConsistencyAnalyzer;
     use fingerprint_defense::passive::http::HttpAnalyzer;
     use fingerprint_defense::passive::packet::{Packet, TcpHeader, TcpOption};
@@ -11,18 +11,18 @@ fn main() {
     use fingerprint_defense::FingerprintDatabase;
     use std::fs;
 
-    println!("🗄️  Fingerprint Database & Persistence Verification\n");
+    println!("🗄️ Fingerprint Database & Persistence Verification\n");
 
     let db_path = "fingerprints.db";
-    let _ = fs::remove_file(db_path); // 清理旧数据
+    let _ = fs::remove_file(db_path); // cleanup旧countdata
 
     let db = FingerprintDatabase::open(db_path).expect("Failed to open database");
     let analyzer = ConsistencyAnalyzer::new();
     let http_analyzer = HttpAnalyzer::new().expect("Failed to create HttpAnalyzer");
     let tcp_analyzer = TcpAnalyzer::new().expect("Failed to create TcpAnalyzer");
 
-    // 1. 模拟并存储正常的 Chrome 流量
-    println!("1️⃣  存储正常的流量:");
+    // 1. simulate并storenormal Chrome traffic
+    println!("1️⃣ storenormaltraffic:");
     let raw_http = b"GET / HTTP/1.1\r\nUser-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36\r\n\r\n";
     let packet = Packet {
         timestamp: 0,
@@ -68,10 +68,10 @@ fn main() {
     let report = analyzer.analyze_flow(&flow);
     db.store_flow(&flow, report.score, report.bot_detected)
         .expect("Failed to store flow");
-    println!("   ✅ 流量已存入 SQLite");
+    println!(" ✅ trafficalreadystore into SQLite");
 
-    // 2. 模拟并存储机器人流量
-    println!("\n2️⃣  存储机器人流量:");
+    // 2. simulate并store机er人traffic
+    println!("\n2️⃣ store机er人traffic:");
     let packet_bot = Packet {
         src_ip: "192.168.1.101".parse().unwrap(),
         ttl: 64, // Bot TTL
@@ -94,14 +94,14 @@ fn main() {
     let report_bot = analyzer.analyze_flow(&flow_bot);
     db.store_flow(&flow_bot, report_bot.score, report_bot.bot_detected)
         .expect("Failed to store bot flow");
-    println!("   ✅ 机器人流量已存入 SQLite");
+    println!(" ✅ 机er人trafficalreadystore into SQLite");
 
-    // 3. 读取统计信息
-    println!("\n3️⃣  数据库统计:");
+    // 3. readstatisticsinfo
+    println!("\n3️⃣ databasestatistics:");
     let stats = db.get_stats().unwrap();
-    println!("   📊 stats: {}", stats);
+    println!(" 📊 stats: {}", stats);
 
-    println!("\n✨ 数据库验证完成 (文件: fingerprints.db)");
+    println!("\n✨ databaseValidatecomplete (file: fingerprints.db)");
 }
 
 #[cfg(not(feature = "defense"))]

@@ -1,6 +1,6 @@
 //! # fingerprint-profiles
 //!
-//! 浏览器指纹配置模块
+//! Browser fingerprint profiles module
 
 pub mod profiles;
 

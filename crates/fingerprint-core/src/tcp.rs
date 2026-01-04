@@ -1,19 +1,19 @@
-//! TCP 指纹核心类型
+//! TCP fingerprintcoretype
 //!
-//! 定义 TCP 指纹的核心数据结构。
+//! define TCP fingerprintcorecountdatastruct.
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
 use std::hash::{Hash, Hasher};
 
-/// TCP 配置描述文件
-/// 用于主动配置出口连接的 TCP 参数
+/// TCP configurationdescribefile
+/// for main动configurationexitconnection TCP parameter
 #[derive(Debug, Clone, Copy)]
 pub struct TcpProfile {
-    /// 初始 TTL
+    /// initialbeginning TTL
     pub ttl: u8,
 
-    /// 初始窗口大小
+    /// initialbeginningwindowsize
     pub window_size: u16,
 
     /// MSS (Maximum Segment Size)
@@ -26,22 +26,22 @@ pub struct TcpProfile {
 impl Default for TcpProfile {
     fn default() -> Self {
         Self {
-            ttl: 64,            // Linux 默认
-            window_size: 64240, // 典型值
-            mss: None,          // 操作系统默认
-            window_scale: None, // 操作系统默认
+            ttl: 64,            // Linux default
+            window_size: 64240, // typicalvalue
+            mss: None,          // operating systemdefault
+            window_scale: None, // operating systemdefault
         }
     }
 }
 
 impl TcpProfile {
-    /// 根据操作系统类型生成对应的 TCP Profile
+    /// Based onoperating systemtypeGenerates corresponding TCP Profile
     ///
-    /// 确保 TCP 指纹与浏览器指纹（User-Agent）一致
+    /// ensure TCP fingerprint and browserfingerprint (User-Agent)consistent
     pub fn for_os(os: crate::types::OperatingSystem) -> Self {
         match os {
             crate::types::OperatingSystem::Windows10 | crate::types::OperatingSystem::Windows11 => {
-                // Windows: TTL=128, Window Size=64240 (Windows 10/11 典型值)
+                // Windows: TTL=128, Window Size=64240 (Windows 10/11 typicalvalue)
                 Self {
                     ttl: 128,
                     window_size: 64240,
@@ -52,7 +52,7 @@ impl TcpProfile {
             crate::types::OperatingSystem::MacOS13
             | crate::types::OperatingSystem::MacOS14
             | crate::types::OperatingSystem::MacOS15 => {
-                // macOS: TTL=64, Window Size=65535 (macOS 典型值)
+                // macOS: TTL=64, Window Size=65535 (macOS typicalvalue)
                 Self {
                     ttl: 64,
                     window_size: 65535,
@@ -63,7 +63,7 @@ impl TcpProfile {
             crate::types::OperatingSystem::Linux
             | crate::types::OperatingSystem::LinuxUbuntu
             | crate::types::OperatingSystem::LinuxDebian => {
-                // Linux: TTL=64, Window Size=65535 (Linux 典型值)
+                // Linux: TTL=64, Window Size=65535 (Linux typicalvalue)
                 Self {
                     ttl: 64,
                     window_size: 65535,
@@ -74,16 +74,16 @@ impl TcpProfile {
         }
     }
 
-    /// 从 User-Agent 字符串推断操作系统并生成对应的 TCP Profile
+    /// from User-Agent stringinferoperating system并Generates corresponding TCP Profile
     ///
-    /// 这是统一指纹生成的核心函数，确保浏览器指纹和 TCP 指纹同步
+    /// this isunifiedfingerprintGeneratecorefunction, ensurebrowserfingerprint and TCP fingerprintsync
     pub fn from_user_agent(user_agent: &str) -> Self {
         use crate::types::OperatingSystem;
 
-        // 从 User-Agent 推断操作系统
-        // 注意：iPhone/iPad 的 User-Agent 包含 "Mac OS X"，需要先检查移动设备
+        // from User-Agent inferoperating system
+        // Note: iPhone/iPad User-Agent including "Mac OS X", need先Checkmovedevice
         let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
-            // iOS 设备：使用 macOS 的 TCP 指纹（iOS 基于 macOS）
+            // iOS device：use macOS TCP fingerprint (iOS based on macOS)
             OperatingSystem::MacOS14
         } else if user_agent.contains("Windows NT 10.0") {
             OperatingSystem::Windows10
@@ -104,14 +104,14 @@ impl TcpProfile {
         } else if user_agent.contains("Linux") || user_agent.contains("Android") {
             OperatingSystem::Linux
         } else {
-            // 默认使用 Windows（最常见的浏览器环境）
+            // defaultuse Windows (most commonbrowserenvironment)
             OperatingSystem::Windows10
         };
 
         Self::for_os(os)
     }
 
-    /// 从平台字符串（如 "Windows", "macOS", "Linux"）生成 TCP Profile
+    /// from platformstring (如 "Windows", "macOS", "Linux")Generate TCP Profile
     pub fn from_platform(platform: &str) -> Self {
         use crate::types::OperatingSystem;
 
@@ -119,17 +119,17 @@ impl TcpProfile {
             "windows" | r#""Windows""# => OperatingSystem::Windows10,
             "macos" | r#""macOS""# => OperatingSystem::MacOS14,
             "linux" | r#""Linux""# => OperatingSystem::Linux,
-            _ => OperatingSystem::Windows10, // 默认
+            _ => OperatingSystem::Windows10, // default
         };
 
         Self::for_os(os)
     }
 }
 
-/// TCP 指纹
+/// TCP fingerprint
 #[derive(Debug, Clone)]
 pub struct TcpFingerprint {
-    /// 指纹 ID（基于 TCP 特征的哈希）
+    /// fingerprint ID (based on TCP traithash)
     pub id: String,
 
     /// TTL
@@ -144,15 +144,15 @@ pub struct TcpFingerprint {
     /// Window Scale
     pub window_scale: Option<u8>,
 
-    /// TCP 选项字符串（用于 p0f 兼容）
+    /// TCP optionsstring ( for p0f compatible)
     pub options_str: Option<String>,
 
-    /// 元数据
+    /// metadata
     pub metadata: FingerprintMetadata,
 }
 
 impl TcpFingerprint {
-    /// 创建新的 TCP 指纹
+    /// Create a new TCP fingerprint
     pub fn new(ttl: u8, window_size: u16) -> Self {
         let id = Self::calculate_id(ttl, window_size, None, None);
         Self {
@@ -166,7 +166,7 @@ impl TcpFingerprint {
         }
     }
 
-    /// 创建完整的 TCP 指纹
+    /// Createcomplete TCP fingerprint
     pub fn with_options(
         ttl: u8,
         window_size: u16,
@@ -185,7 +185,7 @@ impl TcpFingerprint {
         }
     }
 
-    /// 计算指纹 ID
+    /// Calculatefingerprint ID
     fn calculate_id(
         ttl: u8,
         window_size: u16,
@@ -205,10 +205,10 @@ impl TcpFingerprint {
         format!("{:x}", hasher.finalize())
     }
 
-    /// 推断初始 TTL
+    /// inferinitialbeginning TTL
     pub fn infer_initial_ttl(&self) -> u8 {
-        // 根据 TTL 推断初始 TTL
-        // 常见的初始 TTL 值：64 (Linux), 128 (Windows), 255 (Unix)
+        // Based on TTL inferinitialbeginning TTL
+        // commoninitialbeginning TTL value：64 (Linux), 128 (Windows), 255 (Unix)
         if self.ttl <= 64 {
             64
         } else if self.ttl <= 128 {
@@ -251,8 +251,8 @@ impl Fingerprint for TcpFingerprint {
             return false;
         }
 
-        // TCP 指纹的相似度判断：允许一定的容差
-        // 这里简化处理，实际应该考虑 TTL 的推断值、Window Size 的倍数关系等
+        // TCP fingerprintsimilardegreejudge：allowcertain tolerance
+        // heresimplifyprocess, actualshouldconsider TTL infervalue, Window Size 倍countclosesystem etc.
         self.hash() == other.hash()
     }
 

@@ -1,30 +1,30 @@
 //! # fingerprint
 //!
-//! 一个独立的浏览器 TLS 指纹库，从 golang 版本迁移而来。
+//! anindependentbrowser TLS fingerprintlibrary,  from golang versionmigrate而from.
 //!
-//! ## 特性
+//! ## Features
 //!
-//! - ✅ **真实浏览器指纹**：69+ 个真实浏览器指纹（Chrome、Firefox、Safari、Opera、Edge）
-//! - ✅ **真实 TLS 配置**：完整的 TLS Client Hello Spec（密码套件、椭圆曲线、扩展等）
-//! - ✅ **JA4 指纹生成**：完整的 JA4 TLS 客户端指纹生成（sorted 和 unsorted 版本）
-//! - ✅ **指纹比较**：支持指纹相似度比较和最佳匹配查找
-//! - ✅ **GREASE 处理**：完整的 GREASE 值过滤和处理
-//! - ✅ **移动端支持**：iOS、Android 移动端指纹
-//! - ✅ **HTTP/2 & HTTP/3**：完整的 HTTP/2 配置，兼容 HTTP/3
-//! - ✅ **User-Agent 匹配**：自动生成匹配的 User-Agent
-//! - ✅ **标准 HTTP Headers**：完整的标准 HTTP 请求头
-//! - ✅ **全球语言支持**：30+ 种语言的 Accept-Language
-//! - ✅ **操作系统随机化**：随机选择操作系统
-//! - ✅ **高性能**：零分配的关键操作，并发安全
-//! - ✅ **Rust 标准**：严格遵循 Rust 语言标准和最佳实践
-//! - ✅ **独立库**：不依赖其他 TLS 客户端库
-//! - ✅ **代码质量**：通过所有 Clippy 检查，遵循 Rust 最佳实践
+//! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint (Chrome, Firefox, Safari, Opera, Edge)
+//! - ✅ **real TLS configuration**：complete TLS Client Hello Spec (cipher suite, elliptic curve, extension etc.)
+//! - ✅ **JA4 fingerprintGenerate**：complete JA4 TLS clientfingerprintGenerate (sorted and unsorted version)
+//! - ✅ **fingerprintcompare**：supportfingerprintsimilardegreecompare and most佳matchfind
+//! - ✅ **GREASE process**：complete GREASE valuefilter and process
+//! - ✅ **mobilesupport**：iOS, Android mobilefingerprint
+//! - ✅ **HTTP/2 & HTTP/3**：complete HTTP/2 configuration, compatible HTTP/3
+//! - ✅ **User-Agent match**：automaticGeneratematch User-Agent
+//! - ✅ **standard HTTP Headers**：complete's standard HTTP requestheader
+//! - ✅ **globallanguagesupport**：30+ 种language Accept-Language
+//! - ✅ **operating systemrandom化**：randomly selectoperating system
+//! - ✅ **highperformance**：零allocateclosekeyoperation, concurrentsecurity
+//! - ✅ **Rust standard**：strictfollow Rust languagestandard and best practice
+//! - ✅ **independentlibrary**：不dependother TLS clientlibrary
+//! - ✅ **codequalityquantity**：throughall Clippy Check, follow Rust best practice
 
 #[cfg(feature = "export")]
 pub mod export;
 pub mod random;
 
-// 重新导出所有公共 API
+// reexportallpublic API
 pub use fingerprint_core::{
     extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
     random_choice, random_choice_string, BrowserType, OperatingSystem, OperatingSystems,

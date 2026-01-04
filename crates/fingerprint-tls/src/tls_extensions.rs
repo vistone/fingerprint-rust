@@ -1,8 +1,8 @@
-//! TLS 扩展模块
+//! TLS extensionmodule
 //!
-//! 实现各种 TLS 扩展，对应 Go 版本的 tls.TLSExtension
+//! implementeach种 TLS extension, Corresponds to Go version's tls.TLSExtension
 //!
-//! 参考：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
+//! reference：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
 
 use fingerprint_core::dicttls::extensions::*;
 use fingerprint_core::dicttls::signature_schemes::SignatureScheme;
@@ -10,54 +10,54 @@ use fingerprint_core::dicttls::supported_groups::CurveID;
 use std::any::Any;
 use std::io;
 
-/// TLS 扩展 ID
+/// TLS extension ID
 pub type ExtensionID = u16;
 
 /// Padding length calculation function type
 pub type PaddingLengthFn = Box<dyn Fn(usize) -> (usize, bool)>;
 
 /// Key Share Entry
-/// 对应 Go 版本的 tls.KeyShare
+/// Corresponds to Go version's tls.KeyShare
 #[derive(Debug, Clone)]
 pub struct KeyShare {
     pub group: CurveID,
     pub data: Vec<u8>,
 }
 
-/// TLS 扩展 trait
-/// 对应 Go 版本的 tls.TLSExtension 接口
+/// TLS extension trait
+/// Corresponds to Go version's tls.TLSExtension interface
 pub trait TLSExtension: std::fmt::Debug + Any {
-    /// 获取扩展的长度（包括头部）
-    /// 对应 Go 版本的 Len() int
+    /// Getextensionlength (includeheader)
+    /// Corresponds to Go version's Len() int
     fn len(&self) -> usize;
 
-    /// 检查扩展是否为空
-    /// 默认实现：长度为 0 时为空
+    /// Checkextensionwhether as empty
+    /// defaultimplement：length as 0 when as empty
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// 读取扩展数据到字节缓冲区
-    /// 对应 Go 版本的 Read(p []byte) (n int, err error)
+    /// readextensioncountdata to bytesbuffer
+    /// Corresponds to Go version's Read(p []byte) (n int, err error)
     fn read(&self, buf: &mut [u8]) -> io::Result<usize>;
 
-    /// 获取扩展 ID
+    /// Getextension ID
     fn extension_id(&self) -> ExtensionID;
 
-    /// 转换为 Any trait object，用于向下转型
+    /// convert to Any trait object,  for towarddowntransform
     fn as_any(&self) -> &dyn Any;
 }
 
-/// TLS 扩展 Writer trait
-/// 对应 Go 版本的 tls.TLSExtensionWriter 接口
+/// TLS extension Writer trait
+/// Corresponds to Go version's tls.TLSExtensionWriter interface
 pub trait TLSExtensionWriter: TLSExtension {
-    /// 从字节缓冲区写入扩展数据
-    /// 对应 Go 版本的 Write(b []byte) (n int, err error)
+    /// from bytesbufferwriteextensioncountdata
+    /// Corresponds to Go version's Write(b []byte) (n int, err error)
     fn write(&mut self, buf: &[u8]) -> io::Result<usize>;
 }
 
-/// GREASE 扩展
-/// 对应 Go 版本的 &tls.UtlsGREASEExtension{}
+/// GREASE extension
+/// Corresponds to Go version's &tls.UtlsGREASEExtension{}
 #[derive(Debug, Clone)]
 pub struct UtlsGREASEExtension {
     pub value: u16,
@@ -105,8 +105,8 @@ impl Default for UtlsGREASEExtension {
     }
 }
 
-/// SNI 扩展
-/// 对应 Go 版本的 &tls.SNIExtension{}
+/// SNI extension
+/// Corresponds to Go version's &tls.SNIExtension{}
 #[derive(Debug, Clone)]
 pub struct SNIExtension {
     pub server_name: String,
@@ -178,13 +178,13 @@ impl TLSExtension for SNIExtension {
 
 impl TLSExtensionWriter for SNIExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // SNI Write 是 no-op，因为 SNI 不应该被指纹化，是用户控制的
+        // SNI Write is no-op, because SNI 不should被fingerprint化,  is usercontrol的
         Ok(buf.len())
     }
 }
 
-/// Status Request 扩展
-/// 对应 Go 版本的 &tls.StatusRequestExtension{}
+/// Status Request extension
+/// Corresponds to Go version's &tls.StatusRequestExtension{}
 #[derive(Debug, Clone)]
 pub struct StatusRequestExtension;
 
@@ -238,8 +238,8 @@ impl TLSExtensionWriter for StatusRequestExtension {
     }
 }
 
-/// Supported Curves 扩展
-/// 对应 Go 版本的 &tls.SupportedCurvesExtension{}
+/// Supported Curves extension
+/// Corresponds to Go version's &tls.SupportedCurvesExtension{}
 #[derive(Debug, Clone)]
 pub struct SupportedCurvesExtension {
     pub curves: Vec<CurveID>,
@@ -300,13 +300,13 @@ impl TLSExtension for SupportedCurvesExtension {
 
 impl TLSExtensionWriter for SupportedCurvesExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// Supported Points 扩展
-/// 对应 Go 版本的 &tls.SupportedPointsExtension{}
+/// Supported Points extension
+/// Corresponds to Go version's &tls.SupportedPointsExtension{}
 #[derive(Debug, Clone)]
 pub struct SupportedPointsExtension {
     pub supported_points: Vec<u8>,
@@ -362,13 +362,13 @@ impl TLSExtension for SupportedPointsExtension {
 
 impl TLSExtensionWriter for SupportedPointsExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// Signature Algorithms 扩展
-/// 对应 Go 版本的 &tls.SignatureAlgorithmsExtension{}
+/// Signature Algorithms extension
+/// Corresponds to Go version's &tls.SignatureAlgorithmsExtension{}
 #[derive(Debug, Clone)]
 pub struct SignatureAlgorithmsExtension {
     pub supported_signature_algorithms: Vec<SignatureScheme>,
@@ -431,13 +431,13 @@ impl TLSExtension for SignatureAlgorithmsExtension {
 
 impl TLSExtensionWriter for SignatureAlgorithmsExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// ALPN 扩展
-/// 对应 Go 版本的 &tls.ALPNExtension{}
+/// ALPN extension
+/// Corresponds to Go version's &tls.ALPNExtension{}
 #[derive(Debug, Clone)]
 pub struct ALPNExtension {
     pub alpn_protocols: Vec<String>,
@@ -509,13 +509,13 @@ impl TLSExtension for ALPNExtension {
 
 impl TLSExtensionWriter for ALPNExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// Extended Master Secret 扩展
-/// 对应 Go 版本的 &tls.ExtendedMasterSecretExtension{}
+/// Extended Master Secret extension
+/// Corresponds to Go version's &tls.ExtendedMasterSecretExtension{}
 #[derive(Debug, Clone)]
 pub struct ExtendedMasterSecretExtension;
 
@@ -558,8 +558,8 @@ impl TLSExtensionWriter for ExtendedMasterSecretExtension {
     }
 }
 
-/// Session Ticket 扩展
-/// 对应 Go 版本的 &tls.SessionTicketExtension{}
+/// Session Ticket extension
+/// Corresponds to Go version's &tls.SessionTicketExtension{}
 #[derive(Debug, Clone)]
 pub struct SessionTicketExtension;
 
@@ -602,8 +602,8 @@ impl TLSExtensionWriter for SessionTicketExtension {
     }
 }
 
-/// Supported Versions 扩展
-/// 对应 Go 版本的 &tls.SupportedVersionsExtension{}
+/// Supported Versions extension
+/// Corresponds to Go version's &tls.SupportedVersionsExtension{}
 #[derive(Debug, Clone)]
 pub struct SupportedVersionsExtension {
     pub versions: Vec<u16>,
@@ -663,13 +663,13 @@ impl TLSExtension for SupportedVersionsExtension {
 
 impl TLSExtensionWriter for SupportedVersionsExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// PSK Key Exchange Modes 扩展
-/// 对应 Go 版本的 &tls.PSKKeyExchangeModesExtension{}
+/// PSK Key Exchange Modes extension
+/// Corresponds to Go version's &tls.PSKKeyExchangeModesExtension{}
 #[derive(Debug, Clone)]
 pub struct PSKKeyExchangeModesExtension {
     pub modes: Vec<u8>,
@@ -725,13 +725,13 @@ impl TLSExtension for PSKKeyExchangeModesExtension {
 
 impl TLSExtensionWriter for PSKKeyExchangeModesExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// Key Share 扩展
-/// 对应 Go 版本的 &tls.KeyShareExtension{}
+/// Key Share extension
+/// Corresponds to Go version's &tls.KeyShareExtension{}
 #[derive(Debug, Clone)]
 pub struct KeyShareExtension {
     pub key_shares: Vec<KeyShare>,
@@ -805,13 +805,13 @@ impl TLSExtension for KeyShareExtension {
 
 impl TLSExtensionWriter for KeyShareExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 简化实现
+        // Simplified implementation
         Ok(buf.len())
     }
 }
 
-/// SCT 扩展
-/// 对应 Go 版本的 &tls.SCTExtension{}
+/// SCT extension
+/// Corresponds to Go version's &tls.SCTExtension{}
 #[derive(Debug, Clone)]
 pub struct SCTExtension;
 
@@ -854,8 +854,8 @@ impl TLSExtensionWriter for SCTExtension {
     }
 }
 
-/// Renegotiation Info 扩展
-/// 对应 Go 版本的 &tls.RenegotiationInfoExtension{}
+/// Renegotiation Info extension
+/// Corresponds to Go version's &tls.RenegotiationInfoExtension{}
 #[derive(Debug, Clone)]
 pub struct RenegotiationInfoExtension {
     pub renegotiation: u8,
@@ -910,7 +910,7 @@ impl TLSExtensionWriter for RenegotiationInfoExtension {
 }
 
 /// Application Settings Extension New
-/// 对应 Go 版本的 &tls.ApplicationSettingsExtensionNew{}
+/// Corresponds to Go version's &tls.ApplicationSettingsExtensionNew{}
 #[derive(Debug, Clone)]
 pub struct ApplicationSettingsExtensionNew {
     pub supported_protocols: Vec<String>,
@@ -988,8 +988,8 @@ impl TLSExtensionWriter for ApplicationSettingsExtensionNew {
     }
 }
 
-/// Compress Certificate 扩展
-/// 对应 Go 版本的 &tls.UtlsCompressCertExtension{}
+/// Compress Certificate extension
+/// Corresponds to Go version's &tls.UtlsCompressCertExtension{}
 #[derive(Debug, Clone)]
 pub struct UtlsCompressCertExtension {
     pub algorithms: Vec<u16>,
@@ -1054,8 +1054,8 @@ impl TLSExtensionWriter for UtlsCompressCertExtension {
     }
 }
 
-/// Pre-Shared Key 扩展
-/// 对应 Go 版本的 &tls.UtlsPreSharedKeyExtension{}
+/// Pre-Shared Key extension
+/// Corresponds to Go version's &tls.UtlsPreSharedKeyExtension{}
 #[derive(Debug, Clone)]
 pub struct UtlsPreSharedKeyExtension;
 
@@ -1098,8 +1098,8 @@ impl TLSExtensionWriter for UtlsPreSharedKeyExtension {
     }
 }
 
-/// GREASE ECH 扩展
-/// 对应 Go 版本的 tls.BoringGREASEECH()
+/// GREASE ECH extension
+/// Corresponds to Go version's tls.BoringGREASEECH()
 #[derive(Debug, Clone)]
 pub struct GREASEEncryptedClientHelloExtension {
     pub value: u16,
@@ -1158,8 +1158,8 @@ impl Default for GREASEEncryptedClientHelloExtension {
     }
 }
 
-/// Padding 扩展
-/// 对应 Go 版本的 &tls.UtlsPaddingExtension{}
+/// Padding extension
+/// Corresponds to Go version's &tls.UtlsPaddingExtension{}
 pub struct UtlsPaddingExtension {
     pub padding_len: usize,
     pub will_pad: bool,
@@ -1181,7 +1181,7 @@ impl Clone for UtlsPaddingExtension {
         Self {
             padding_len: self.padding_len,
             will_pad: self.will_pad,
-            get_padding_len: None, // 不克隆函数指针
+            get_padding_len: None, // 不clonefunctionpointer
         }
     }
 }
@@ -1196,7 +1196,7 @@ impl UtlsPaddingExtension {
     }
 
     /// BoringPaddingStyle
-    /// 对应 Go 版本的 BoringPaddingStyle 函数
+    /// Corresponds to Go version's BoringPaddingStyle function
     pub fn boring_padding_style(unpadded_len: usize) -> (usize, bool) {
         if unpadded_len > 0xff && unpadded_len < 0x200 {
             let mut padding_len = 0x200 - unpadded_len;
@@ -1259,7 +1259,7 @@ impl TLSExtension for UtlsPaddingExtension {
 
 impl TLSExtensionWriter for UtlsPaddingExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // 设置 BoringPaddingStyle
+        // settings BoringPaddingStyle
         self.get_padding_len = Some(Box::new(Self::boring_padding_style));
         Ok(buf.len())
     }
@@ -1271,8 +1271,8 @@ impl Default for UtlsPaddingExtension {
     }
 }
 
-/// 从扩展 ID 创建扩展实例
-/// 对应 Go 版本的 ExtensionFromID 函数
+/// from extension ID Createextensioninstance
+/// Corresponds to Go version's ExtensionFromID function
 pub fn extension_from_id(id: ExtensionID) -> Option<Box<dyn TLSExtension>> {
     match id {
         EXT_TYPE_SERVER_NAME => Some(Box::new(SNIExtension::new(String::new()))),
@@ -1299,7 +1299,7 @@ pub fn extension_from_id(id: ExtensionID) -> Option<Box<dyn TLSExtension>> {
         EXT_TYPE_PRE_SHARED_KEY => Some(Box::new(UtlsPreSharedKeyExtension)),
         EXT_TYPE_ECH => Some(Box::new(GREASEEncryptedClientHelloExtension::new())),
         _ => {
-            // 检查是否是 GREASE
+            // Checkwhether is GREASE
             if is_grease_uint16(id) {
                 Some(Box::new(UtlsGREASEExtension::new()))
             } else {
@@ -1309,9 +1309,9 @@ pub fn extension_from_id(id: ExtensionID) -> Option<Box<dyn TLSExtension>> {
     }
 }
 
-/// 检查是否是 GREASE 值
+/// Checkwhether is GREASE value
 fn is_grease_uint16(v: u16) -> bool {
-    // GREASE 值的模式：0x1a1a, 0x2a2a, 0x3a3a, ..., 0xfafa
+    // GREASE valuepattern：0x1a1a, 0x2a2a, 0x3a3a,..., 0xfafa
     let low = v & 0xff;
     let high = (v >> 8) & 0xff;
     low == high && (low & 0x0f) == 0x0a

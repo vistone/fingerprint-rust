@@ -1,8 +1,8 @@
-//! 类型定义模块
+//! type definitionsmodule
 //!
-//! 定义了浏览器类型、操作系统类型等核心类型
+//! define了browsertype, operating systemtype etc.coretype
 
-/// 浏览器类型
+/// browsertype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum BrowserType {
     Chrome,
@@ -13,9 +13,9 @@ pub enum BrowserType {
 }
 
 impl BrowserType {
-    /// 从字符串转换为浏览器类型
+    /// from stringconvert tobrowsertype
     ///
-    /// 注意：此方法名称与标准库的 `FromStr::from_str` 不同，以避免命名冲突
+    /// Note: 此methodname and standardlibrary `FromStr::from_str` different, 以avoidnamingconflict
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {
@@ -28,7 +28,7 @@ impl BrowserType {
         }
     }
 
-    /// 转换为字符串
+    /// convert tostring
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Chrome => "chrome",
@@ -46,7 +46,7 @@ impl std::fmt::Display for BrowserType {
     }
 }
 
-/// 操作系统类型
+/// operating systemtype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 pub enum OperatingSystem {
     Windows10,
@@ -60,7 +60,7 @@ pub enum OperatingSystem {
 }
 
 impl OperatingSystem {
-    /// 获取操作系统的字符串表示
+    /// Getoperating systemstringrepresent
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Windows10 => "Windows NT 10.0; Win64; x64",
@@ -81,7 +81,7 @@ impl std::fmt::Display for OperatingSystem {
     }
 }
 
-/// 操作系统列表（用于随机选择）
+/// operating systemlist ( for randomly select)
 pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
     OperatingSystem::Windows10,
     OperatingSystem::Windows11,
@@ -93,10 +93,10 @@ pub static OPERATING_SYSTEMS: &[OperatingSystem] = &[
     OperatingSystem::LinuxDebian,
 ];
 
-/// 为了保持与 Go 版本的兼容性，提供别名
+/// in order tokeep and Go versioncompatibleproperty, providealias
 pub type OperatingSystems = [OperatingSystem; 8];
 
-/// User-Agent 模板
+/// User-Agent templates
 #[derive(Debug, Clone)]
 pub struct UserAgentTemplate {
     pub browser: BrowserType,

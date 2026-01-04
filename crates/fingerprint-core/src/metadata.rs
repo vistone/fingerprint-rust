@@ -1,43 +1,43 @@
-//! 指纹元数据
+//! fingerprintmetadata
 //!
-//! 定义指纹的元数据，包括浏览器类型、操作系统、置信度等信息.
+//! definefingerprintmetadata, includebrowsertype, operating system, confidence etc.info.
 
 use crate::types::{BrowserType, OperatingSystem};
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-/// 指纹元数据
+/// fingerprintmetadata
 ///
-/// 包含所有指纹类型共用的元数据信息
+/// includingallfingerprinttypesharedmetadatainfo
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct FingerprintMetadata {
-    /// 浏览器类型
+    /// browsertype
     pub browser_type: Option<BrowserType>,
 
-    /// 操作系统类型
+    /// operating systemtype
     pub os_type: Option<OperatingSystem>,
 
-    /// 置信度 (0.0 - 1.0)
+    /// confidence (0.0 - 1.0)
     pub confidence: f64,
 
-    /// 样本数量
+    /// samplecount
     pub sample_count: u64,
 
-    /// 首次发现时间
+    /// 首timediscover when between
     pub first_seen: DateTime<Utc>,
 
-    /// 最后发现时间
+    /// finallydiscover when between
     pub last_seen: DateTime<Utc>,
 
-    /// 标签
+    /// tag
     pub tags: Vec<String>,
 
-    /// 备注
+    /// 备note
     pub notes: Option<String>,
 }
 
 impl FingerprintMetadata {
-    /// 创建新的元数据
+    /// Create a newmetadata
     pub fn new() -> Self {
         let now = Utc::now();
         Self {
@@ -52,7 +52,7 @@ impl FingerprintMetadata {
         }
     }
 
-    /// 创建带浏览器和操作系统的元数据
+    /// Createbringbrowser and operating systemmetadata
     pub fn with_browser_os(
         browser_type: Option<BrowserType>,
         os_type: Option<OperatingSystem>,
@@ -63,43 +63,43 @@ impl FingerprintMetadata {
         metadata
     }
 
-    /// 更新样本（增加样本数，更新最后发现时间）
+    /// Updatesample (increasesamplecount, Updatefinallydiscover when between)
     pub fn update_sample(&mut self) {
         self.sample_count += 1;
         self.last_seen = Utc::now();
     }
 
-    /// 更新置信度
+    /// Updateconfidence
     pub fn update_confidence(&mut self, confidence: f64) {
         self.confidence = confidence.clamp(0.0, 1.0);
     }
 
-    /// 添加标签
+    /// Addtag
     pub fn add_tag(&mut self, tag: String) {
         if !self.tags.contains(&tag) {
             self.tags.push(tag);
         }
     }
 
-    /// 移除标签
+    /// removetag
     pub fn remove_tag(&mut self, tag: &str) {
         self.tags.retain(|t| t != tag);
     }
 
-    /// 检查是否包含标签
+    /// Checkwhetherincludingtag
     pub fn has_tag(&self, tag: &str) -> bool {
         self.tags.contains(&tag.to_string())
     }
 
-    /// 设置自定义属性（通过 tags 存储，格式为 "key:value"）
+    /// settingscustomproperty (through tags store, format as "key:value")
     pub fn set(&mut self, key: &str, value: &str) {
         let tag = format!("{}:{}", key, value);
-        // 先移除旧的同名 key
+        // 先removeold same name key
         self.tags.retain(|t| !t.starts_with(&format!("{}:", key)));
         self.add_tag(tag);
     }
 
-    /// 获取自定义属性（从 tags 中查找，格式为 "key:value"）
+    /// Getcustomproperty ( from tags in find, format as "key:value")
     pub fn get(&self, key: &str) -> Option<String> {
         let prefix = format!("{}:", key);
         self.tags

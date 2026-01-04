@@ -1,36 +1,36 @@
-//! JA4+ 指纹系列实现
+//! JA4+ fingerprintseriesimplement
 //!
-//! 包含 JA4 (TLS), JA4H (HTTP), JA4T (TCP) 等算法的抽象和计算逻辑。
-//! 参考自 FoxIO 的 JA4+ 规范。
+//! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) etc.algorithmabstract and Calculatelogic.
+//! reference自 FoxIO JA4+ specification.
 
 use serde::{Deserialize, Serialize};
 
-/// JA4 TLS 客户端指纹
-/// 格式: t_p_c_e_s_k (例如: t13d1516h2_8daaf6152771_000a)
+/// JA4 TLS clientfingerprint
+/// format: t_p_c_e_s_k (for example: t13d1516h2_8daaf6152771_000a)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4 {
-    /// 传输协议 (t=tcp, q=quic)
+    /// transferprotocol (t=tcp, q=quic)
     pub transport: char,
-    /// TLS 版本
+    /// TLS version
     pub version: String,
-    /// 是否有 SNI (d=domain, i=ip)
+    /// whether有 SNI (d=domain, i=ip)
     pub destination: char,
-    /// 密码套件数量
+    /// cipher suitecount
     pub cipher_count: usize,
-    /// 扩展数量
+    /// extensioncount
     pub extension_count: usize,
-    /// 第一个 ALPN
+    /// first ALPN
     pub alpn: String,
-    /// 密码套件哈希 (前 12 位)
+    /// cipher suitehash (front 12-bit)
     pub cipher_hash: String,
-    /// 扩展哈希 (前 12 位)
+    /// extensionhash (front 12-bit)
     pub extension_hash: String,
-    /// 签名算法哈希 (前 4 位)
+    /// signaturealgorithmhash (front 4-bit)
     pub signature_hash: String,
 }
 
 impl JA4 {
-    /// 计算 JA4 指纹
+    /// Calculate JA4 fingerprint
     pub fn generate(
         transport: char,
         version: &str,
@@ -49,7 +49,7 @@ impl JA4 {
         };
         let d = if has_sni { 'd' } else { 'i' };
 
-        // 过滤并排序密码套件 (GREASE removed)
+        // filter并sortcipher suite (GREASE removed)
         let mut filtered_ciphers: Vec<u16> = ciphers
             .iter()
             .filter(|&&c| !crate::grease::is_grease_value(c))
@@ -59,7 +59,7 @@ impl JA4 {
 
         let c_count = filtered_ciphers.len().min(99);
 
-        // 过滤并排序扩展 (GREASE removed)
+        // filter并sortextension (GREASE removed)
         let mut filtered_extensions: Vec<u16> = extensions
             .iter()
             .filter(|&&e| !crate::grease::is_grease_value(e))
@@ -76,7 +76,7 @@ impl JA4 {
             first_alpn
         };
 
-        // 计算哈希
+        // Calculatehash
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
@@ -111,7 +111,7 @@ impl JA4 {
         }
     }
 
-    /// 转换为标准的 JA4 字符串
+    /// convert tostandard JA4 string
     pub fn to_fingerprint_string(&self) -> String {
         format!(
             "{}{}{}{:02}{:02}{}_{}_{}_{}",
@@ -146,8 +146,8 @@ impl std::fmt::Display for JA4 {
     }
 }
 
-/// JA4H HTTP 指纹
-/// 格式: [Method][Version][Cookie][Referer][HeaderCount][HeaderOrderHash][HeaderValueHash]
+/// JA4H HTTP fingerprint
+/// format: [Method][Version][Cookie][Referer][HeaderCount][HeaderOrderHash][HeaderValueHash]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4H {
     pub method: String,
@@ -160,7 +160,7 @@ pub struct JA4H {
 }
 
 impl JA4H {
-    /// 计算 JA4H 指纹
+    /// Calculate JA4H fingerprint
     pub fn generate(
         method: &str,
         version: &str,
@@ -185,7 +185,7 @@ impl JA4H {
         let r = if has_referer { "r" } else { "n" };
         let count = format!("{:02}", headers.len().min(99));
 
-        // 简化版的 Header Hash
+        // simplify版 Header Hash
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
         let mut hasher = DefaultHasher::new();
@@ -198,8 +198,8 @@ impl JA4H {
     }
 }
 
-/// JA4T TCP 指纹
-/// 格式: [WindowSize]_[TCP_Options]_[MSS]_[TTL]
+/// JA4T TCP fingerprint
+/// format: [WindowSize]_[TCP_Options]_[MSS]_[TTL]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4T {
     pub window_size: u16,
@@ -209,7 +209,7 @@ pub struct JA4T {
 }
 
 impl JA4T {
-    /// 生成 JA4T 字符串
+    /// Generate JA4T string
     pub fn generate(window_size: u16, options: &str, mss: u16, ttl: u8) -> String {
         format!("{}_{}_{}_{}", window_size, options, mss, ttl)
     }
@@ -225,51 +225,51 @@ impl std::fmt::Display for JA4T {
     }
 }
 
-/// JA4S TLS 服务器指纹（JA4 风格）
-/// 
-/// 与 JA3S 类似，但使用 SHA256 而非 MD5
-/// 格式: t_v_c_e (例如: t13d_1301_0000)
-/// 
-/// ## 示例
+/// JA4S TLS serverfingerprint (JA4 style)
+///
+/// and JA3S similar, butuse SHA256 rather than MD5
+/// format: t_v_c_e (for example: t13d_1301_0000)
+///
+/// ## Examples
 /// ```
 /// use fingerprint_core::ja4::JA4S;
 ///
 /// let ja4s = JA4S::generate(
-///     't',           // transport (TCP)
-///     "1.3",         // TLS version
-///     0x1301,        // selected cipher
-///     &[0, 10, 11],  // extensions
-///     None,          // ALPN
+/// 't', // transport (TCP)
+/// "1.3", // TLS version
+/// 0x1301, // selected cipher
+/// &[0, 10, 11], // extensions
+/// None, // ALPN
 /// );
 /// assert!(!ja4s.fingerprint_string().is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4S {
-    /// 传输协议 (t=tcp, q=quic)
+    /// transferprotocol (t=tcp, q=quic)
     pub transport: char,
-    /// TLS 版本
+    /// TLS version
     pub version: String,
-    /// 选择的密码套件数量（通常为 1）
+    /// select's cipher suitescount (usually as 1)
     pub cipher_count: usize,
-    /// 扩展数量
+    /// extensioncount
     pub extension_count: usize,
-    /// 第一个 ALPN（如果有）
+    /// first ALPN ( if 有)
     pub alpn: String,
-    /// 选择的密码套件（十六进制）
+    /// select's cipher suites (hexadecimal)
     pub cipher: u16,
-    /// 扩展哈希 (SHA256 前 12 位)
+    /// extensionhash (SHA256 front 12-bit)
     pub extension_hash: String,
 }
 
 impl JA4S {
-    /// 生成 JA4S 服务器指纹
+    /// Generate JA4S serverfingerprint
     ///
-    /// # 参数
-    /// - `transport`: 传输协议 ('t' for TCP, 'q' for QUIC)
-    /// - `version`: TLS 版本 ("1.0", "1.1", "1.2", "1.3")
-    /// - `cipher`: 服务器选择的密码套件
-    /// - `extensions`: 服务器返回的扩展列表
-    /// - `alpn`: 服务器选择的 ALPN（可选）
+    /// # Parameters
+    /// - `transport`: transferprotocol ('t' for TCP, 'q' for QUIC)
+    /// - `version`: TLS version ("1.0", "1.1", "1.2", "1.3")
+    /// - `cipher`: serverselect's cipher suites
+    /// - `extensions`: serverreturn's extensionslist
+    /// - `alpn`: serverselect ALPN (optional)
     pub fn generate(
         transport: char,
         version: &str,
@@ -285,7 +285,7 @@ impl JA4S {
             _ => "00",
         };
 
-        // 过滤 GREASE 值
+        // filter GREASE value
         let filtered_extensions: Vec<u16> = extensions
             .iter()
             .filter(|&&e| !crate::grease::is_grease_value(e))
@@ -294,14 +294,14 @@ impl JA4S {
 
         let e_count = filtered_extensions.len().min(99);
 
-        // ALPN 处理
+        // ALPN process
         let alpn_id = match alpn {
             Some(a) if a.len() >= 2 => &a[0..2],
             Some(a) => a,
             None => "00",
         };
 
-        // 计算扩展哈希 (SHA256)
+        // Calculateextensionhash (SHA256)
         use sha2::{Digest, Sha256};
         let mut sorted_extensions = filtered_extensions.clone();
         sorted_extensions.sort_unstable();
@@ -321,7 +321,7 @@ impl JA4S {
         Self {
             transport,
             version: v.to_string(),
-            cipher_count: 1, // 服务器只选择一个密码套件
+            cipher_count: 1, // server只select ancipher suite
             extension_count: e_count,
             alpn: alpn_id.to_string(),
             cipher,
@@ -329,8 +329,8 @@ impl JA4S {
         }
     }
 
-    /// 转换为标准的 JA4S 指纹字符串
-    /// 格式: t{version}{cipher_count:02}{extension_count:02}{alpn}_{cipher:04x}_{extension_hash}
+    /// convert tostandard JA4S fingerprintstring
+    /// format: t{version}{cipher_count:02}{extension_count:02}{alpn}_{cipher:04x}_{extension_hash}
     pub fn fingerprint_string(&self) -> String {
         format!(
             "{}{}{:02}{:02}{}_{:04x}_{}",
@@ -351,14 +351,14 @@ impl std::fmt::Display for JA4S {
     }
 }
 
-/// 指纹一致性报告
+/// fingerprintconsistencyreport
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ConsistencyReport {
-    /// 总体得分 (0-100)
+    /// overallscore (0-100)
     pub score: u8,
-    /// 发现的不一致项
+    /// discover不consistentitem
     pub discrepancies: Vec<String>,
-    /// 是否疑似机器人
+    /// whethersuspected machineer人
     pub bot_detected: bool,
 }
 
@@ -393,7 +393,7 @@ mod ja4s_tests {
     #[test]
     fn test_ja4s_generation() {
         let ja4s = JA4S::generate('t', "1.3", 0x1301, &[0, 10, 11, 13], Some("h2"));
-        
+
         assert_eq!(ja4s.transport, 't');
         assert_eq!(ja4s.version, "13");
         assert_eq!(ja4s.cipher, 0x1301);
@@ -406,7 +406,7 @@ mod ja4s_tests {
     #[test]
     fn test_ja4s_tls12() {
         let ja4s = JA4S::generate('t', "1.2", 0xc02f, &[0, 10], None);
-        
+
         assert_eq!(ja4s.version, "12");
         assert_eq!(ja4s.cipher, 0xc02f);
         assert_eq!(ja4s.alpn, "00");
@@ -414,10 +414,10 @@ mod ja4s_tests {
 
     #[test]
     fn test_ja4s_with_grease() {
-        // 测试包含 GREASE 值的情况
+        // testincluding GREASE valuesituation
         let ja4s = JA4S::generate('t', "1.3", 0x1302, &[0x0a0a, 0, 10], Some("http/1.1"));
-        
-        // GREASE 值 0x0a0a 应该被过滤
+
+        // GREASE value 0x0a0a should被filter
         assert!(ja4s.extension_count < 3);
     }
 
@@ -425,8 +425,8 @@ mod ja4s_tests {
     fn test_ja4s_fingerprint_string() {
         let ja4s = JA4S::generate('t', "1.3", 0x1301, &[0, 10, 11], Some("h2"));
         let fingerprint = ja4s.fingerprint_string();
-        
-        // 验证格式
+
+        // Validateformat
         assert!(fingerprint.starts_with("t13"));
         assert!(fingerprint.contains("h2"));
         assert!(fingerprint.contains("1301"));
@@ -436,7 +436,7 @@ mod ja4s_tests {
     fn test_ja4s_display() {
         let ja4s = JA4S::generate('t', "1.2", 0xc030, &[0], Some("h2"));
         let displayed = format!("{}", ja4s);
-        
+
         assert!(!displayed.is_empty());
         assert_eq!(displayed, ja4s.fingerprint_string());
     }
@@ -444,77 +444,77 @@ mod ja4s_tests {
     #[test]
     fn test_ja4s_quic_transport() {
         let ja4s = JA4S::generate('q', "1.3", 0x1301, &[0, 10], Some("h3"));
-        
+
         assert_eq!(ja4s.transport, 'q');
         assert_eq!(ja4s.alpn, "h3");
     }
 
     #[test]
     fn test_ja4s_extension_sorting() {
-        // 测试扩展排序（对哈希的影响）
+        // testextensionsort (pairhashimpact)
         let ja4s1 = JA4S::generate('t', "1.3", 0x1301, &[0, 10, 11], None);
         let ja4s2 = JA4S::generate('t', "1.3", 0x1301, &[11, 10, 0], None);
-        
-        // 排序后应该产生相同的哈希
+
+        // sortbackshouldproducesamehash
         assert_eq!(ja4s1.extension_hash, ja4s2.extension_hash);
     }
 }
 
-/// JA4L - 轻量级指纹（Light Version）
+/// JA4L - lightweightlevelfingerprint (Light Version)
 ///
-/// 简化版 JA4，适用于资源受限环境
-/// - 使用更快的哈希算法
-/// - 减少计算复杂度
-/// - 更小的内存占用
+/// simplify版 JA4, suitable for 资source受limitenvironment
+/// - usemorefasthashalgorithm
+/// - decreaseCalculatecomplexdegree
+/// - moresmallinsidesaveusage
 ///
-/// 格式: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
+/// format: t{version}{cipher_count:02}{extension_count:02}_{cipher_sample}_{ext_sample}
 ///
-/// ## 示例
+/// ## Examples
 /// ```
 /// use fingerprint_core::ja4::JA4L;
 ///
 /// let ja4l = JA4L::generate(
-///     't',
-///     "1.3",
-///     true,
-///     &[0x1301, 0x1302, 0x1303],
-///     &[0, 10, 11, 13],
+/// 't',
+/// "1.3",
+/// true,
+/// &[0x1301, 0x1302, 0x1303],
+/// &[0, 10, 11, 13],
 /// );
 /// assert!(!ja4l.fingerprint_string().is_empty());
 /// ```
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4L {
-    /// 传输协议 (t=tcp, q=quic)
+    /// transferprotocol (t=tcp, q=quic)
     pub transport: char,
-    
-    /// TLS 版本
+
+    /// TLS version
     pub version: String,
-    
-    /// 是否有 SNI (d=domain, i=ip)
+
+    /// whether有 SNI (d=domain, i=ip)
     pub destination: char,
-    
-    /// 密码套件数量
+
+    /// cipher suitecount
     pub cipher_count: usize,
-    
-    /// 扩展数量
+
+    /// extensioncount
     pub extension_count: usize,
-    
-    /// 密码套件采样（前3个，十六进制）
+
+    /// cipher suitesampling (front3, hexadecimal)
     pub cipher_sample: String,
-    
-    /// 扩展采样（前3个，十六进制）
+
+    /// extensionsampling (front3, hexadecimal)
     pub extension_sample: String,
 }
 
 impl JA4L {
-    /// 生成 JA4L 轻量级指纹
+    /// Generate JA4L lightweightlevelfingerprint
     ///
-    /// # 参数
-    /// - `transport`: 传输协议 ('t' for TCP, 'q' for QUIC)
-    /// - `version`: TLS 版本 ("1.0", "1.1", "1.2", "1.3")
-    /// - `has_sni`: 是否包含 SNI 扩展
-    /// - `ciphers`: 密码套件列表
-    /// - `extensions`: 扩展列表
+    /// # Parameters
+    /// - `transport`: transferprotocol ('t' for TCP, 'q' for QUIC)
+    /// - `version`: TLS version ("1.0", "1.1", "1.2", "1.3")
+    /// - `has_sni`: whetherincluding SNI extension
+    /// - `ciphers`: cipher suitelist
+    /// - `extensions`: extensionlist
     pub fn generate(
         transport: char,
         version: &str,
@@ -529,10 +529,10 @@ impl JA4L {
             "1.0" => "10",
             _ => "00",
         };
-        
+
         let d = if has_sni { 'd' } else { 'i' };
 
-        // 过滤 GREASE 值
+        // filter GREASE value
         let filtered_ciphers: Vec<u16> = ciphers
             .iter()
             .filter(|&&c| !crate::grease::is_grease_value(c))
@@ -548,7 +548,7 @@ impl JA4L {
         let cipher_count = filtered_ciphers.len().min(99);
         let extension_count = filtered_extensions.len().min(99);
 
-        // 采样前3个密码套件（轻量级方法）
+        // samplingfront3cipher suite (lightweightlevelmethod)
         let cipher_sample = filtered_ciphers
             .iter()
             .take(3)
@@ -556,7 +556,7 @@ impl JA4L {
             .collect::<Vec<_>>()
             .join("");
 
-        // 采样前3个扩展（轻量级方法）
+        // samplingfront3extension (lightweightlevelmethod)
         let extension_sample = filtered_extensions
             .iter()
             .take(3)
@@ -583,8 +583,8 @@ impl JA4L {
         }
     }
 
-    /// 转换为标准的 JA4L 指纹字符串
-    /// 格式: t{version}{destination}{cipher_count:02}{extension_count:02}_{cipher_sample}_{extension_sample}
+    /// convert tostandard JA4L fingerprintstring
+    /// format: t{version}{destination}{cipher_count:02}{extension_count:02}_{cipher_sample}_{extension_sample}
     pub fn fingerprint_string(&self) -> String {
         format!(
             "{}{}{}{:02}{:02}_{}_{}",
@@ -598,7 +598,7 @@ impl JA4L {
         )
     }
 
-    /// 从完整的 JA4 指纹生成轻量级版本
+    /// from complete JA4 fingerprintGeneratelightweightlevelversion
     pub fn from_ja4(ja4: &JA4) -> Self {
         Self {
             transport: ja4.transport,
@@ -606,19 +606,19 @@ impl JA4L {
             destination: ja4.destination,
             cipher_count: ja4.cipher_count,
             extension_count: ja4.extension_count,
-            // 从哈希中提取采样（简化）
+            // from hash in Extractsampling (simplify)
             cipher_sample: ja4.cipher_hash[0..12.min(ja4.cipher_hash.len())].to_string(),
             extension_sample: ja4.extension_hash[0..12.min(ja4.extension_hash.len())].to_string(),
         }
     }
 
-    /// 估算指纹的计算成本（相对值）
-    /// 返回值：1-10，1 为最轻量，10 为最重
+    /// estimatefingerprintCalculatebecomethis (mutualpairvalue)
+    /// returnvalue：1-10, 1 as mostlightweight, 10 as most重
     pub fn computational_cost() -> u8 {
-        2 // JA4L 是轻量级的，成本评分为 2/10
+        2 // JA4L is lightweightlevel的，成本评分 as 2/10
     }
 
-    /// 估算内存占用（字节）
+    /// estimateinsidesaveusage (bytes)
     pub fn memory_footprint(&self) -> usize {
         std::mem::size_of::<Self>()
             + self.version.capacity()
@@ -684,15 +684,15 @@ mod ja4l_tests {
     #[test]
     fn test_ja4l_computational_cost() {
         let cost = JA4L::computational_cost();
-        assert!(cost <= 3); // 应该是轻量级的
+        assert!(cost <= 3); // should is lightweightlevel的
     }
 
     #[test]
     fn test_ja4l_memory_footprint() {
         let ja4l = JA4L::generate('t', "1.3", true, &[0x1301], &[0]);
         let footprint = ja4l.memory_footprint();
-        
-        // 内存占用应该很小
-        assert!(footprint < 200); // 少于 200 字节
+
+        // insidesaveusageshouldverysmall
+        assert!(footprint < 200); // 少于 200 bytes
     }
 }

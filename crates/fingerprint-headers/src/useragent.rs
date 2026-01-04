@@ -1,19 +1,19 @@
-//! User-Agent 生成模块
+//! User-Agent generation module
 //!
-//! 根据指纹配置生成对应的 User-Agent
+//! Generates corresponding User-Agent based on fingerprint configuration
 
 use fingerprint_core::types::{BrowserType, OperatingSystem, UserAgentTemplate, OPERATING_SYSTEMS};
 use fingerprint_core::utils::random_choice;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
-/// User-Agent 生成器
+/// User-Agent Generator
 pub struct UserAgentGenerator {
     templates: HashMap<String, UserAgentTemplate>,
 }
 
 impl UserAgentGenerator {
-    /// 创建新的 User-Agent 生成器
+    /// Create a new User-Agent Generator
     pub fn new() -> Self {
         let mut gen = Self {
             templates: HashMap::new(),
@@ -22,28 +22,28 @@ impl UserAgentGenerator {
         gen
     }
 
-    /// 初始化 User-Agent 模板
+    /// Initialize User-Agent templates
     fn init_templates(&mut self) {
-        // Chrome User-Agent 模板
+        // Chrome User-Agent templates
         let chrome_templates: &[(&str, &str)] = &[
-            ("103", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"),
-            ("104", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"),
-            ("105", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"),
-            ("106", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"),
-            ("107", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"),
-            ("108", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"),
-            ("109", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"),
-            ("110", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"),
-            ("111", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"),
-            ("112", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"),
-            ("116", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"),
-            ("117", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"),
-            ("120", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
-            ("124", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
-            ("130", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"),
-            ("131", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
-            ("133", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"),
-        ];
+ ("103", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"),
+ ("104", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"),
+ ("105", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36"),
+ ("106", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36"),
+ ("107", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36"),
+ ("108", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36"),
+ ("109", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"),
+ ("110", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.0.0 Safari/537.36"),
+ ("111", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36"),
+ ("112", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"),
+ ("116", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"),
+ ("117", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36"),
+ ("120", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+ ("124", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"),
+ ("130", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"),
+ ("131", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"),
+ ("133", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"),
+ ];
 
         for (version, template) in chrome_templates {
             self.templates.insert(
@@ -58,7 +58,7 @@ impl UserAgentGenerator {
             );
         }
 
-        // Firefox User-Agent 模板
+        // Firefox User-Agent templates
         let firefox_templates: &[(&str, &str)] = &[
             (
                 "102",
@@ -123,18 +123,18 @@ impl UserAgentGenerator {
             );
         }
 
-        // Safari User-Agent 模板
+        // Safari User-Agent templates
         let safari_templates: &[(&str, &str, bool)] = &[
-            ("15_6_1", "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15", false),
-            ("16_0", "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15", false),
-            ("ipad_15_6", "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1", true),
-            ("ios_15_5", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1", true),
-            ("ios_15_6", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1", true),
-            ("ios_16_0", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1", true),
-            ("ios_17_0", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1", true),
-            ("ios_18_0", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", true),
-            ("ios_18_5", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1", true),
-        ];
+ ("15_6_1", "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6.1 Safari/605.1.15", false),
+ ("16_0", "Mozilla/5.0 (%s) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Safari/605.1.15", false),
+ ("ipad_15_6", "Mozilla/5.0 (iPad; CPU OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1", true),
+ ("ios_15_5", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.5 Mobile/15E148 Safari/604.1", true),
+ ("ios_15_6", "Mozilla/5.0 (iPhone; CPU iPhone OS 15_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.6 Mobile/15E148 Safari/604.1", true),
+ ("ios_16_0", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1", true),
+ ("ios_17_0", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1", true),
+ ("ios_18_0", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1", true),
+ ("ios_18_5", "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1", true),
+ ];
 
         for (key, template, mobile) in safari_templates {
             self.templates.insert(
@@ -144,17 +144,17 @@ impl UserAgentGenerator {
                     key.to_string(),
                     template.to_string(),
                     *mobile,
-                    !mobile, // 移动端不需要操作系统信息
+                    !mobile, // mobile does not need OS information
                 ),
             );
         }
 
-        // Opera User-Agent 模板
+        // Opera User-Agent templates
         let opera_templates: &[(&str, &str)] = &[
-            ("89", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 OPR/89.0.0.0"),
-            ("90", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36 OPR/90.0.0.0"),
-            ("91", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 OPR/91.0.0.0"),
-        ];
+ ("89", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36 OPR/89.0.0.0"),
+ ("90", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36 OPR/90.0.0.0"),
+ ("91", "Mozilla/5.0 (%s) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36 OPR/91.0.0.0"),
+ ];
 
         for (version, template) in opera_templates {
             self.templates.insert(
@@ -169,18 +169,18 @@ impl UserAgentGenerator {
             );
         }
 
-        // 移动端和自定义指纹的 User-Agent 模板
-        // iOS 应用指纹
+        // mobile and custom fingerprint User-Agent templates
+        // iOS applicationfingerprint
         let ios_app_templates: &[(&str, &str)] = &[
-            ("zalando_ios_mobile", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
-            ("nike_ios_mobile", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
-            ("mms_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
-            ("mms_ios_2", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
-            ("mms_ios_3", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
-            ("mesh_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
-            ("mesh_ios_2", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
-            ("confirmed_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
-        ];
+ ("zalando_ios_mobile", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
+ ("nike_ios_mobile", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
+ ("mms_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
+ ("mms_ios_2", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
+ ("mms_ios_3", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
+ ("mesh_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
+ ("mesh_ios_2", "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"),
+ ("confirmed_ios", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"),
+ ];
 
         for (key, template) in ios_app_templates {
             self.templates.insert(
@@ -190,20 +190,20 @@ impl UserAgentGenerator {
                     "ios".to_string(),
                     template.to_string(),
                     true,
-                    false, // iOS 移动端不需要操作系统占位符
+                    false, // iOS mobile does not need OS placeholder
                 ),
             );
         }
 
-        // Android 应用指纹
+        // Android applicationfingerprint
         let android_app_templates: &[(&str, &str)] = &[
-            ("zalando_android_mobile", "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("nike_android_mobile", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("mesh_android", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("mesh_android_2", "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("confirmed_android", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("confirmed_android_2", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-        ];
+ ("zalando_android_mobile", "Mozilla/5.0 (Linux; Android 13; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("nike_android_mobile", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("mesh_android", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("mesh_android_2", "Mozilla/5.0 (Linux; Android 13; Pixel 6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("confirmed_android", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("confirmed_android_2", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ];
 
         for (key, template) in android_app_templates {
             self.templates.insert(
@@ -213,21 +213,21 @@ impl UserAgentGenerator {
                     "android".to_string(),
                     template.to_string(),
                     true,
-                    false, // Android 移动端不需要操作系统占位符
+                    false, // Android mobile does not need OS placeholder
                 ),
             );
         }
 
-        // OkHttp4 Android 指纹
+        // OkHttp4 Android fingerprint
         let okhttp_templates: &[(&str, &str)] = &[
-            ("okhttp4_android_7", "Mozilla/5.0 (Linux; Android 7.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("okhttp4_android_8", "Mozilla/5.0 (Linux; Android 8.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("okhttp4_android_9", "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("okhttp4_android_10", "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("okhttp4_android_11", "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("okhttp4_android_12", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-            ("okhttp4_android_13", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
-        ];
+ ("okhttp4_android_7", "Mozilla/5.0 (Linux; Android 7.0; SM-G930F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("okhttp4_android_8", "Mozilla/5.0 (Linux; Android 8.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("okhttp4_android_9", "Mozilla/5.0 (Linux; Android 9; SM-G960F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("okhttp4_android_10", "Mozilla/5.0 (Linux; Android 10; SM-G970F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("okhttp4_android_11", "Mozilla/5.0 (Linux; Android 11; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("okhttp4_android_12", "Mozilla/5.0 (Linux; Android 12; SM-G998B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ("okhttp4_android_13", "Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"),
+ ];
 
         for (key, template) in okhttp_templates {
             self.templates.insert(
@@ -237,32 +237,32 @@ impl UserAgentGenerator {
                     "okhttp4".to_string(),
                     template.to_string(),
                     true,
-                    false, // Android 移动端不需要操作系统占位符
+                    false, // Android mobile does not need OS placeholder
                 ),
             );
         }
 
         // Cloudflare Custom
         self.templates.insert(
-            "cloudflare_custom".to_string(),
-            UserAgentTemplate::new(
-                BrowserType::Chrome,
-                "custom".to_string(),
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
-                false,
-                false, // 固定 User-Agent，不需要操作系统占位符
-            ),
-        );
+ "cloudflare_custom".to_string(),
+ UserAgentTemplate::new(
+ BrowserType::Chrome,
+ "custom".to_string(),
+ "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36".to_string(),
+ false,
+ false, // fixed User-Agent, does not need OS placeholder
+ ),
+ );
     }
 
-    /// 根据指纹名称获取 User-Agent
-    /// 如果指纹需要操作系统信息，会随机选择一个操作系统
+    /// Based on fingerprint nameGet User-Agent
+    /// If fingerprintneed operating system information, will randomly select anoperating system
     pub fn get_user_agent(&self, profile_name: &str) -> Result<String, String> {
         self.get_user_agent_with_os(profile_name, None)
     }
 
-    /// 根据指纹名称和指定操作系统获取 User-Agent
-    /// 如果 os 为 None，且需要操作系统信息，会随机选择一个操作系统
+    /// Based on fingerprint name and specifiedoperating systemGet User-Agent
+    /// If os as None, and need operating system information, will randomly select anoperating system
     pub fn get_user_agent_with_os(
         &self,
         profile_name: &str,
@@ -273,16 +273,16 @@ impl UserAgentGenerator {
         }
 
         if let Some(template) = self.templates.get(profile_name) {
-            // 如果不需要操作系统信息，直接返回模板
+            // Ifdoes not need OS information, directlyreturn templates
             if !template.os_required {
                 return Ok(template.template.clone());
             }
 
-            // 如果需要操作系统信息
+            // if need operating system information
             let os_str = match os {
                 Some(os) => os.as_str(),
                 None => {
-                    // 随机选择操作系统
+                    // randomly selectoperating system
                     random_os().as_str()
                 }
             };
@@ -290,11 +290,11 @@ impl UserAgentGenerator {
             return Ok(template.template.replace("%s", os_str));
         }
 
-        // 尝试从 profileName 中提取浏览器类型和版本
+        // try from profileName in Extractbrowsertype and version
         self.generate_from_profile_name(profile_name, os)
     }
 
-    /// 从 profile 名称生成 User-Agent
+    /// from profile nameGenerate User-Agent
     fn generate_from_profile_name(
         &self,
         profile_name: &str,
@@ -302,7 +302,7 @@ impl UserAgentGenerator {
     ) -> Result<String, String> {
         let profile_name_lower = profile_name.to_lowercase();
 
-        // 解析浏览器类型和版本
+        // Parsebrowsertype and version
         let (browser, version) = if profile_name_lower.starts_with("chrome_") {
             let version = profile_name_lower
                 .strip_prefix("chrome_")
@@ -324,38 +324,38 @@ impl UserAgentGenerator {
             let version = profile_name_lower.strip_prefix("edge_").unwrap_or("133");
             (BrowserType::Edge, version)
         } else {
-            // 默认使用 Chrome 133
+            // defaultuse Chrome 133
             return self.get_user_agent_with_os("chrome_133", os);
         };
 
-        // 生成 User-Agent
+        // Generate User-Agent
         let os_str = match os {
             Some(os) => os.as_str(),
             None => random_os().as_str(),
         };
 
         match browser {
-            BrowserType::Chrome => Ok(format!(
-                "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36",
-                os_str, version
-            )),
-            BrowserType::Firefox => Ok(format!(
-                "Mozilla/5.0 ({}; rv:{}.0) Gecko/20100101 Firefox/{}.0",
-                os_str, version, version
-            )),
-            BrowserType::Safari => Ok(format!(
-                "Mozilla/5.0 ({}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{} Safari/605.1.15",
-                os_str, version
-            )),
-            BrowserType::Opera => Ok(format!(
-                "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36 OPR/{}.0.0.0",
-                os_str, version, version
-            )),
-            BrowserType::Edge => Ok(format!(
-                "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36 Edg/{}.0.0.0",
-                os_str, version, version
-            )),
-        }
+ BrowserType::Chrome => Ok(format!(
+ "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36",
+ os_str, version
+ )),
+ BrowserType::Firefox => Ok(format!(
+ "Mozilla/5.0 ({}; rv:{}.0) Gecko/20100101 Firefox/{}.0",
+ os_str, version, version
+ )),
+ BrowserType::Safari => Ok(format!(
+ "Mozilla/5.0 ({}) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/{} Safari/605.1.15",
+ os_str, version
+ )),
+ BrowserType::Opera => Ok(format!(
+ "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36 OPR/{}.0.0.0",
+ os_str, version, version
+ )),
+ BrowserType::Edge => Ok(format!(
+ "Mozilla/5.0 ({}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{}.0.0.0 Safari/537.36 Edg/{}.0.0.0",
+ os_str, version, version
+ )),
+ }
     }
 }
 
@@ -365,24 +365,24 @@ impl Default for UserAgentGenerator {
     }
 }
 
-/// 全局默认生成器（线程安全）
+/// globaldefaultGenerator (threadsecurity)
 static DEFAULT_GENERATOR: OnceLock<UserAgentGenerator> = OnceLock::new();
 
 fn get_default_generator() -> &'static UserAgentGenerator {
     DEFAULT_GENERATOR.get_or_init(UserAgentGenerator::new)
 }
 
-/// 随机选择一个操作系统
+/// randomly select anoperating system
 pub fn random_os() -> OperatingSystem {
     random_choice(OPERATING_SYSTEMS).unwrap_or(OperatingSystem::Windows10)
 }
 
-/// 为指定的 ClientProfile 获取 User-Agent
+/// as specified ClientProfile Get User-Agent
 pub fn get_user_agent_by_profile_name(profile_name: &str) -> Result<String, String> {
     get_default_generator().get_user_agent(profile_name)
 }
 
-/// 为指定的 ClientProfile 和操作系统获取 User-Agent
+/// as specified ClientProfile and operating systemGet User-Agent
 pub fn get_user_agent_by_profile_name_with_os(
     profile_name: &str,
     os: OperatingSystem,

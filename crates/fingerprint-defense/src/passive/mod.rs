@@ -1,6 +1,6 @@
-//! 被动指纹识别模块
+//! passivefingerprintidentifymodule
 //!
-//! 实现 p0f 风格的被动指纹识别，包括 TCP、HTTP、TLS 分析。
+//! implement p0f stylepassivefingerprintidentify, include TCP, HTTP, TLS analysis.
 
 pub mod consistency;
 pub mod http;
@@ -17,10 +17,10 @@ pub use packet::{Packet, PacketParser};
 pub use tcp::{TcpAnalyzer, TcpFeatures, TcpFingerprint};
 pub use tls::{TlsAnalyzer, TlsFingerprint};
 
-// 使用 core 中的系统级别抽象
+// use core insystem-level abstractions
 use fingerprint_core::system::{NetworkFlow, ProtocolType, SystemContext, TrafficDirection};
 
-/// 被动分析器（多协议）
+/// passiveanalysiser (multipleprotocol)
 pub struct PassiveAnalyzer {
     tcp_analyzer: TcpAnalyzer,
     http_analyzer: HttpAnalyzer,
@@ -28,7 +28,7 @@ pub struct PassiveAnalyzer {
 }
 
 impl PassiveAnalyzer {
-    /// 创建新的被动分析器
+    /// Create a newpassiveanalysiser
     pub fn new() -> Result<Self, PassiveError> {
         Ok(Self {
             tcp_analyzer: TcpAnalyzer::new().map_err(PassiveError::Tcp)?,
@@ -37,21 +37,21 @@ impl PassiveAnalyzer {
         })
     }
 
-    /// 分析数据包
+    /// analysiscountpacket
     pub fn analyze(&self, packet: &Packet) -> AnalysisResult {
         let mut result = AnalysisResult::default();
 
-        // TCP 分析
+        // TCP analysis
         if let Some(tcp_result) = self.tcp_analyzer.analyze(packet) {
             result.tcp = Some(tcp_result);
         }
 
-        // HTTP 分析
+        // HTTP analysis
         if let Some(http_result) = self.http_analyzer.analyze(packet) {
             result.http = Some(http_result);
         }
 
-        // TLS 分析
+        // TLS analysis
         if let Some(tls_result) = self.tls_analyzer.analyze(packet) {
             result.tls = Some(tls_result);
         }
@@ -59,9 +59,9 @@ impl PassiveAnalyzer {
         result
     }
 
-    /// 分析数据包并返回 NetworkFlow（新方法，用于系统级别防护）
+    /// analysiscountpacket并return NetworkFlow (newmethod,  for system-level protection)
     pub fn analyze_to_flow(&self, packet: &Packet) -> Result<NetworkFlow, PassiveError> {
-        // 1. 确定协议类型
+        // 1. determineprotocoltype
         let protocol = match (
             packet.tcp_header.is_some(),
             packet.src_port,
@@ -70,12 +70,12 @@ impl PassiveAnalyzer {
             (true, 80, _) | (true, _, 80) => ProtocolType::Http,
             (true, 443, _) | (true, _, 443) => ProtocolType::Https,
             (true, _, _) => ProtocolType::Tcp,
-            (false, 53, _) | (false, _, 53) => ProtocolType::Udp, // 简单 DNS 识别
+            (false, 53, _) | (false, _, 53) => ProtocolType::Udp, // simple DNS identify
             (false, _, _) if packet.src_port > 0 || packet.dst_port > 0 => ProtocolType::Udp,
             _ => ProtocolType::Icmp,
         };
 
-        // 2. 创建 SystemContext
+        // 2. Create SystemContext
         let mut context = SystemContext::with_ports(
             packet.src_ip,
             packet.dst_ip,
@@ -84,12 +84,12 @@ impl PassiveAnalyzer {
             protocol,
         );
 
-        // 设置其他上下文信息
+        // settingsotherupdowntextinfo
         context.timestamp = chrono::Utc::now();
         context.packet_size = packet.payload.len();
 
-        // 智能方向识别：如果是私有地址发往公网，通常是 Outbound；反之是 Inbound
-        // 这里的逻辑可以根据部署环境（网关 vs 终端）进一步微调
+        // intelligentdirectionidentify： if is privateaddresssendtowardpublic network, usually is Outbound；reverse之 is Inbound
+        // herelogiccanBased ondeployenvironment (gateway vs finalend)furtherfine-tune
         let src_is_local = match packet.src_ip {
             std::net::IpAddr::V4(ip) => ip.is_loopback() || ip.is_private(),
             std::net::IpAddr::V6(ip) => ip.is_loopback(),
@@ -100,16 +100,16 @@ impl PassiveAnalyzer {
             TrafficDirection::Inbound
         };
 
-        // 3. 调用原有的 analyze 方法获取指纹
+        // 3. calloriginal analyze methodGetfingerprint
         let analysis_result = self.analyze(packet);
 
-        // 4. 创建 NetworkFlow
+        // 4. Create NetworkFlow
         let mut flow = NetworkFlow::new(context);
 
-        // 5. 更新流量特征
+        // 5. Updatetraffictrait
         flow.update_characteristics(packet.payload.len());
 
-        // 6. 填充指纹
+        // 6. paddingfingerprint
         if let Some(tcp) = analysis_result.tcp {
             flow.add_fingerprint(Box::new(tcp));
         }
@@ -124,7 +124,7 @@ impl PassiveAnalyzer {
     }
 }
 
-/// 分析结果
+/// analysisresult
 #[derive(Debug, Clone, Default)]
 pub struct AnalysisResult {
     pub tcp: Option<TcpFingerprint>,
@@ -132,22 +132,22 @@ pub struct AnalysisResult {
     pub tls: Option<TlsFingerprint>,
 }
 
-// 导出别名
+// exportalias
 pub use AnalysisResult as PassiveAnalysisResult;
 
-/// 被动分析错误
+/// passiveanalysiserror
 #[derive(Debug, thiserror::Error)]
 pub enum PassiveError {
-    #[error("TCP 分析错误: {0}")]
+    #[error("TCP analysiserror: {0}")]
     Tcp(String),
 
-    #[error("HTTP 分析错误: {0}")]
+    #[error("HTTP analysiserror: {0}")]
     Http(String),
 
-    #[error("TLS 分析错误: {0}")]
+    #[error("TLS analysiserror: {0}")]
     Tls(String),
 
-    #[error("数据包解析错误: {0}")]
+    #[error("countpacketParseerror: {0}")]
     Packet(#[from] crate::passive::packet::PacketError),
 }
 

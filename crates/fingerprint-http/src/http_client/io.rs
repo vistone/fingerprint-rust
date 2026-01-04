@@ -1,20 +1,20 @@
-//! IO 辅助：读取 HTTP/1.x 响应 bytes
+//! IO auxiliary：read HTTP/1.x response bytes
 //!
-//! 目的：避免仅靠 `read_to_end()`（依赖连接关闭）导致的阻塞/等待问题。
-//! 当前实现会：
-//! - 先读到 `\r\n\r\n` 获取响应头
-//! - 若有 `Content-Length`：读取到完整 body 后返回
-//! - 若为 `Transfer-Encoding: chunked`：读取到 `0\r\n\r\n`（无 trailer 的常见场景）后返回
-//! - 否则：读到 EOF（等价于连接关闭）
+//! destination：avoidonly靠 `read_to_end()` (dependconnectionclose)causeblocking/waitissue.
+//! currentimplementwill：
+//! - read first to `\r\n\r\n` Getresponseheader
+//! - 若有 `Content-Length`：read to complete body backreturn
+//! - 若 as `Transfer-Encoding: chunked`：read to `0\r\n\r\n` (none trailer commonscenario)backreturn
+//! - otherwise：读 to EOF ( etc.equivalent toconnectionclose)
 //!
-//! 同时提供最大响应大小保护，防止内存被打爆。
+//! same when providemaximumresponsesizeprotect, preventinsidesavebe overwhelmed.
 
 use std::io;
 use std::io::Read;
 
 pub const DEFAULT_MAX_RESPONSE_BYTES: usize = 16 * 1024 * 1024; // 16MiB
-/// 最大允许的 Content-Length 值（100MB）
-/// 防止恶意服务器发送超大 Content-Length 导致内存耗尽
+/// maximumallow Content-Length value (100MB)
+/// preventmaliciousserversendoversized Content-Length causeinsidememory exhausted
 pub const MAX_CONTENT_LENGTH: usize = 100 * 1024 * 1024; // 100MB
 
 fn find_subsequence(haystack: &[u8], needle: &[u8]) -> Option<usize> {
@@ -49,7 +49,7 @@ fn parse_headers_for_length_and_chunked(header_bytes: &[u8]) -> (Option<usize>, 
     (content_length, is_chunked)
 }
 
-/// 读取 HTTP/1.x 响应原始 bytes（headers + body）
+/// read HTTP/1.x responseoriginalbeginning bytes (headers + body)
 pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> io::Result<Vec<u8>> {
     let mut buf: Vec<u8> = Vec::new();
     let mut tmp = [0u8; 8192];
@@ -67,19 +67,19 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
 
         if buf.len() >= max_bytes {
             return Err(io::Error::other(format!(
-                "响应过大（>{} bytes）",
+                "responsetoo large (>{} bytes)",
                 max_bytes
             )));
         }
 
         let n = reader.read(&mut tmp)?;
         if n == 0 {
-            // EOF：连接关闭（或底层没更多数据）
+            // EOF：connectionclose ( or bottomlayer没morecountdata)
             break;
         }
         buf.extend_from_slice(&tmp[..n]);
 
-        // 解析 headers
+        // Parse headers
         if headers_end.is_none() {
             if let Some(pos) = find_subsequence(&buf, b"\r\n\r\n") {
                 let end = pos + 4;
@@ -87,10 +87,10 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
                 let (cl, chunked) = parse_headers_for_length_and_chunked(&buf[..end]);
                 is_chunked = chunked;
                 if let Some(cl) = cl {
-                    // 安全检查：防止恶意服务器发送超大 Content-Length
+                    // securityCheck：preventmaliciousserversendoversized Content-Length
                     if cl > MAX_CONTENT_LENGTH {
                         return Err(io::Error::other(format!(
-                            "Content-Length 过大: {} bytes (最大: {} bytes)",
+                            "Content-Length too large: {} bytes (maximum: {} bytes)",
                             cl, MAX_CONTENT_LENGTH
                         )));
                     }
@@ -99,13 +99,13 @@ pub fn read_http1_response_bytes<R: Read>(reader: &mut R, max_bytes: usize) -> i
             }
         }
 
-        // chunked：常见无 trailer 的结束标记
+        // chunked：commonnone trailer endmarker
         if is_chunked {
             if let Some(end) = headers_end {
                 let body = &buf[end..];
                 if find_subsequence(body, b"0\r\n\r\n").is_some() {
-                    // 这里不尝试精确定位结束位置（trailer 情况较复杂），
-                    // 只要读到结束标志即可返回，交给后续解析处理。
+                    // here不tryprecisedeterminebitendbitplace (trailer situationcomparecomplex),
+                    // as long as读 to endflagcanreturn, hand overbackcontinueParseprocess.
                     break;
                 }
             }

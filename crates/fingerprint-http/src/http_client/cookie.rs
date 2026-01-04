@@ -1,6 +1,6 @@
-//! Cookie 管理器
+//! Cookie manageer
 //!
-//! 用于管理 HTTP Cookie 的存储、发送和接收
+//! for manage HTTP Cookie store, send and receive
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -20,7 +20,7 @@ pub struct Cookie {
     pub same_site: Option<SameSite>,
 }
 
-/// SameSite 属性
+/// SameSite property
 #[derive(Debug, Clone, PartialEq)]
 pub enum SameSite {
     Strict,
@@ -29,7 +29,7 @@ pub enum SameSite {
 }
 
 impl Cookie {
-    /// 创建新的 Cookie
+    /// Create a new Cookie
     pub fn new(name: String, value: String, domain: String) -> Self {
         Self {
             name,
@@ -44,7 +44,7 @@ impl Cookie {
         }
     }
 
-    /// 检查 Cookie 是否过期
+    /// Check Cookie whetherexpire
     pub fn is_expired(&self) -> bool {
         if let Some(expires) = self.expires {
             return SystemTime::now() > expires;
@@ -52,19 +52,19 @@ impl Cookie {
         false
     }
 
-    /// 转换为 HTTP Cookie 头格式
+    /// convert to HTTP Cookie headerformat
     pub fn to_header_value(&self) -> String {
         format!("{}={}", self.name, self.value)
     }
 
-    /// 从 Set-Cookie 头解析
+    /// from Set-Cookie headerParse
     pub fn parse_set_cookie(header: &str, domain: String) -> Option<Self> {
         let parts: Vec<&str> = header.split(';').collect();
         if parts.is_empty() {
             return None;
         }
 
-        // 解析 name=value
+        // Parse name=value
         let name_value: Vec<&str> = parts[0].split('=').collect();
         if name_value.len() != 2 {
             return None;
@@ -76,7 +76,7 @@ impl Cookie {
             domain,
         );
 
-        // 解析其他属性
+        // Parseotherproperty
         for part in &parts[1..] {
             let part = part.trim();
             if part.to_lowercase().starts_with("domain=") {
@@ -86,7 +86,7 @@ impl Cookie {
             } else if part.to_lowercase().starts_with("max-age=") {
                 if let Ok(secs) = part[8..].parse::<u64>() {
                     cookie.max_age = Some(Duration::from_secs(secs));
-                    // 让 Max-Age 真正生效：转换为绝对 expires 以复用 is_expired()
+                    // let Max-Age true生effect：convert to绝pair expires 以reuse is_expired()
                     cookie.expires = Some(SystemTime::now() + Duration::from_secs(secs));
                 }
             } else if part.to_lowercase() == "secure" {
@@ -108,54 +108,54 @@ impl Cookie {
     }
 }
 
-/// Cookie 存储
+/// Cookie store
 #[derive(Debug, Clone)]
 pub struct CookieStore {
-    /// 按域名存储 Cookie
+    ///  by domainstore Cookie
     cookies: Arc<Mutex<HashMap<String, Vec<Cookie>>>>,
 }
 
 impl CookieStore {
-    /// 创建新的 Cookie 存储
+    /// Create a new Cookie store
     pub fn new() -> Self {
         Self {
             cookies: Arc::new(Mutex::new(HashMap::new())),
         }
     }
 
-    /// 添加 Cookie
+    /// Add Cookie
     pub fn add_cookie(&self, cookie: Cookie) {
         if let Ok(mut cookies) = self.cookies.lock() {
             let domain_cookies = cookies.entry(cookie.domain.clone()).or_default();
 
-            // 检查是否已存在同名 Cookie，如果存在则更新
+            // Checkwhetheralready existssame name Cookie,  if existsthenUpdate
             if let Some(pos) = domain_cookies.iter().position(|c| c.name == cookie.name) {
                 domain_cookies[pos] = cookie;
             } else {
                 domain_cookies.push(cookie);
             }
         } else {
-            eprintln!("警告: Cookie 存储锁失败，无法添加 Cookie");
+            eprintln!("warning: Cookie storelockfailure，unable toAdd Cookie");
         }
     }
 
-    /// 从 Set-Cookie 头添加 Cookie
+    /// from Set-Cookie headerAdd Cookie
     pub fn add_from_response(&self, set_cookie_header: &str, domain: String) {
         if let Some(cookie) = Cookie::parse_set_cookie(set_cookie_header, domain) {
             self.add_cookie(cookie);
         }
     }
 
-    /// 获取指定域名的所有有效 Cookie
+    /// Getspecifieddomainallvalid Cookie
     ///
-    /// 根据 RFC 6265 规范进行域名匹配：
-    /// - Cookie 的 domain 属性（如 `.example.com`）应该匹配 `example.com` 及其所有子域名
-    /// - `example.com` 的 Cookie 应该匹配 `example.com` 和 `*.example.com`
+    /// Based on RFC 6265 specificationperformdomainmatch：
+    /// - Cookie domain property (如 `.example.com`)shouldmatch `example.com` and其allchilddomain
+    /// - `example.com` Cookie shouldmatch `example.com` and `*.example.com`
     pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
         let cookies = match self.cookies.lock() {
             Ok(c) => c,
             Err(e) => {
-                eprintln!("警告: Cookie 存储锁失败: {}", e);
+                eprintln!("warning: Cookie storelockfailure: {}", e);
                 return Vec::new();
             }
         };
@@ -165,17 +165,17 @@ impl CookieStore {
         for (cookie_domain, domain_cookies) in cookies.iter() {
             let cookie_domain_lower = cookie_domain.to_lowercase();
 
-            // 修复：正确的域名匹配逻辑（RFC 6265）
+            // Fix: correctdomainmatchlogic (RFC 6265)
             let matches = if cookie_domain_lower == domain_lower {
-                // 完全匹配
+                // completelymatch
                 true
             } else if let Some(base) = cookie_domain_lower.strip_prefix('.') {
-                // Cookie domain 以 . 开头（如 .example.com）
-                // 应该匹配 example.com 和所有 *.example.com
+                // Cookie domain 以. openheader (如.example.com)
+                // shouldmatch example.com and all *.example.com
                 domain_lower == base || domain_lower.ends_with(&format!(".{}", base))
             } else {
-                // Cookie domain 不以 . 开头（如 example.com）
-                // 应该匹配 example.com 和所有 *.example.com
+                // Cookie domain not. openheader (如 example.com)
+                // shouldmatch example.com and all *.example.com
                 domain_lower == cookie_domain_lower
                     || domain_lower.ends_with(&format!(".{}", cookie_domain_lower))
             };
@@ -192,12 +192,12 @@ impl CookieStore {
         result
     }
 
-    /// 生成 Cookie 头
+    /// Generate Cookie header
     ///
-    /// # 参数
-    /// - `domain`: 请求的域名
-    /// - `path`: 请求的路径
-    /// - `is_secure`: 是否为 HTTPS 连接（用于 Secure Cookie 检查）
+    /// # Parameters
+    /// - `domain`: requestdomain
+    /// - `path`: requestpath
+    /// - `is_secure`: whether as HTTPS connection ( for Secure Cookie Check)
     pub fn generate_cookie_header(
         &self,
         domain: &str,
@@ -209,15 +209,15 @@ impl CookieStore {
             return None;
         }
 
-        // 过滤路径匹配的 Cookie，并检查 Secure 属性
+        // filterpathmatch Cookie, 并Check Secure property
         let matching_cookies: Vec<String> = cookies
             .iter()
             .filter(|c| {
-                // 路径匹配
+                // pathmatch
                 if !path.starts_with(&c.path) {
                     return false;
                 }
-                // 安全修复：Secure Cookie 只能在 HTTPS 连接上发送
+                // securityFix: Secure Cookie can only in HTTPS connectionupsend
                 if c.secure && !is_secure {
                     return false;
                 }
@@ -233,21 +233,21 @@ impl CookieStore {
         }
     }
 
-    /// 清除指定域名的 Cookie
+    /// clearspecifieddomain Cookie
     pub fn clear_domain(&self, domain: &str) {
         if let Ok(mut cookies) = self.cookies.lock() {
             cookies.remove(domain);
         }
     }
 
-    /// 清除所有 Cookie
+    /// clearall Cookie
     pub fn clear_all(&self) {
         if let Ok(mut cookies) = self.cookies.lock() {
             cookies.clear();
         }
     }
 
-    /// 清除过期的 Cookie
+    /// clearexpire Cookie
     pub fn cleanup_expired(&self) {
         if let Ok(mut cookies) = self.cookies.lock() {
             for domain_cookies in cookies.values_mut() {
@@ -256,7 +256,7 @@ impl CookieStore {
         }
     }
 
-    /// 获取所有 Cookie 数量
+    /// Getall Cookie count
     pub fn count(&self) -> usize {
         self.cookies
             .lock()

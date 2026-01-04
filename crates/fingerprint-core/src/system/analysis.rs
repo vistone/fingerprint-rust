@@ -1,56 +1,56 @@
-//! 系统级别分析接口
+//! systemlevelanalysis interface
 //!
-//! 定义系统级别分析的接口和结果类型。
+//! definesystemlevelanalysis interface and resulttype.
 
 use super::flow::NetworkFlow;
 use crate::fingerprint::Fingerprint;
 
-/// 威胁类型
+/// threattype
 ///
-/// 表示检测到的威胁类型。
+/// representdetect to threattype.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ThreatType {
-    /// 未知指纹
+    /// not知fingerprint
     UnknownFingerprint,
 
-    /// 可疑行为
+    /// suspiciousbehavior
     SuspiciousBehavior,
 
-    /// 已知攻击
+    /// already知attack
     KnownAttack,
 
-    /// 异常流量模式
+    /// abnormaltrafficpattern
     AbnormalTrafficPattern,
 
-    /// 恶意 IP
+    /// malicious IP
     MaliciousIP,
 
-    /// DDoS 攻击
+    /// DDoS attack
     DDoS,
 
-    /// 端口扫描
+    /// portscan
     PortScan,
 
-    /// 暴力破解
+    /// brute force
     BruteForce,
 }
 
 impl ThreatType {
-    /// 转换为字符串
+    /// convert tostring
     pub fn as_str(&self) -> &'static str {
         match self {
-            Self::UnknownFingerprint => "未知指纹",
-            Self::SuspiciousBehavior => "可疑行为",
-            Self::KnownAttack => "已知攻击",
-            Self::AbnormalTrafficPattern => "异常流量模式",
-            Self::MaliciousIP => "恶意IP",
-            Self::DDoS => "DDoS攻击",
-            Self::PortScan => "端口扫描",
-            Self::BruteForce => "暴力破解",
+            Self::UnknownFingerprint => "not知fingerprint",
+            Self::SuspiciousBehavior => "suspiciousbehavior",
+            Self::KnownAttack => "already知attack",
+            Self::AbnormalTrafficPattern => "abnormaltrafficpattern",
+            Self::MaliciousIP => "maliciousIP",
+            Self::DDoS => "DDoSattack",
+            Self::PortScan => "portscan",
+            Self::BruteForce => "brute force",
         }
     }
 
-    /// 获取威胁严重程度 (0.0 - 1.0)
+    /// Getthreatseverity (0.0 - 1.0)
     pub fn severity(&self) -> f64 {
         match self {
             Self::UnknownFingerprint => 0.3,
@@ -71,76 +71,76 @@ impl std::fmt::Display for ThreatType {
     }
 }
 
-/// 分析详情
+/// analysisdetails
 ///
-/// 包含分析的详细信息和证据。
+/// includinganalysisdetailedinfo and verifydata.
 #[derive(Debug, Clone, Default)]
 pub struct AnalysisDetails {
-    /// 检测到的指纹类型
+    /// detect to fingerprinttype
     pub fingerprint_types: Vec<crate::fingerprint::FingerprintType>,
 
-    /// 匹配的规则或模式
+    /// matchrule or pattern
     pub matched_rules: Vec<String>,
 
-    /// 行为特征
+    /// behaviortrait
     pub behavior_features: Vec<String>,
 
-    /// 异常指标
+    /// abnormalindicator
     pub anomalies: Vec<String>,
 
-    /// 额外信息
+    /// 额outsideinfo
     pub additional_info: std::collections::HashMap<String, String>,
 }
 
 impl AnalysisDetails {
-    /// 创建新的分析详情
+    /// Create a newanalysisdetails
     pub fn new() -> Self {
         Self::default()
     }
 
-    /// 添加匹配的规则
+    /// Addmatchrule
     pub fn add_matched_rule(&mut self, rule: String) {
         self.matched_rules.push(rule);
     }
 
-    /// 添加行为特征
+    /// Addbehaviortrait
     pub fn add_behavior_feature(&mut self, feature: String) {
         self.behavior_features.push(feature);
     }
 
-    /// 添加异常指标
+    /// Addabnormalindicator
     pub fn add_anomaly(&mut self, anomaly: String) {
         self.anomalies.push(anomaly);
     }
 }
 
-/// 系统级别分析结果
+/// systemlevelanalysisresult
 ///
-/// 包含分析结果、威胁类型、风险评分等信息。
+/// includinganalysisresult, threattype, risk score etc.info.
 pub struct SystemAnalysisResult {
-    /// 检测到的指纹列表
-    /// 注意：由于 trait object 的限制，这里不能直接 Clone
+    /// detect to fingerprintlist
+    /// Note: due to trait object limit, herecannotdirectly Clone
     fingerprints: Vec<Box<dyn Fingerprint>>,
 
-    /// 风险评分 (0.0 - 1.0)
-    /// - 0.0: 完全安全
-    /// - 1.0: 极高风险
+    /// risk score (0.0 - 1.0)
+    /// - 0.0: completelysecurity
+    /// - 1.0: 极highrisk
     pub risk_score: f64,
 
-    /// 置信度 (0.0 - 1.0)
-    /// - 0.0: 完全不确信
-    /// - 1.0: 完全确信
+    /// confidence (0.0 - 1.0)
+    /// - 0.0: completelynot confident
+    /// - 1.0: completelyconfident
     pub confidence: f64,
 
-    /// 威胁类型列表
+    /// threattypelist
     pub threat_types: Vec<ThreatType>,
 
-    /// 分析详情
+    /// analysisdetails
     pub details: AnalysisDetails,
 }
 
 impl SystemAnalysisResult {
-    /// 创建新的分析结果
+    /// Create a newanalysisresult
     pub fn new() -> Self {
         Self {
             fingerprints: Vec::new(),
@@ -151,7 +151,7 @@ impl SystemAnalysisResult {
         }
     }
 
-    /// 创建安全的结果（无威胁）
+    /// Createsecurityresult (nonethreat)
     pub fn safe() -> Self {
         Self {
             fingerprints: Vec::new(),
@@ -162,31 +162,31 @@ impl SystemAnalysisResult {
         }
     }
 
-    /// 添加指纹
+    /// Addfingerprint
     pub fn add_fingerprint(&mut self, fingerprint: Box<dyn Fingerprint>) {
         self.fingerprints.push(fingerprint);
     }
 
-    /// 获取所有指纹的引用
+    /// Getallfingerprintreference
     pub fn fingerprints(&self) -> &[Box<dyn Fingerprint>] {
         &self.fingerprints
     }
 
-    /// 添加威胁类型
+    /// Addthreattype
     pub fn add_threat_type(&mut self, threat_type: ThreatType) {
         if !self.threat_types.contains(&threat_type) {
             self.threat_types.push(threat_type);
-            // 根据威胁类型更新风险评分
+            // Based onthreattypeUpdaterisk score
             self.update_risk_score();
         }
     }
 
-    /// 更新风险评分（基于威胁类型）
+    /// Updaterisk score (based onthreattype)
     fn update_risk_score(&mut self) {
         if self.threat_types.is_empty() {
             self.risk_score = 0.0;
         } else {
-            // 使用最高严重程度作为风险评分
+            // usemosthighseverityasrisk score
             self.risk_score = self
                 .threat_types
                 .iter()
@@ -195,12 +195,12 @@ impl SystemAnalysisResult {
         }
     }
 
-    /// 判断是否存在威胁
+    /// judgewhether existsthreat
     pub fn has_threats(&self) -> bool {
         !self.threat_types.is_empty() && self.risk_score > 0.0
     }
 
-    /// 判断是否为高风险
+    /// judgewhether as highrisk
     pub fn is_high_risk(&self) -> bool {
         self.risk_score >= 0.7
     }
@@ -212,7 +212,7 @@ impl Default for SystemAnalysisResult {
     }
 }
 
-// 手动实现 Debug，因为 Box<dyn Fingerprint> 不能自动实现 Debug
+// Manual implementation Debug, because Box<dyn Fingerprint> cannotautomaticimplement Debug
 impl std::fmt::Debug for SystemAnalysisResult {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.debug_struct("SystemAnalysisResult")
@@ -225,12 +225,12 @@ impl std::fmt::Debug for SystemAnalysisResult {
     }
 }
 
-// 手动实现 Clone，因为 Box<dyn Fingerprint> 不能自动 Clone
+// Manual implementation Clone, because Box<dyn Fingerprint> cannotautomatic Clone
 impl Clone for SystemAnalysisResult {
     fn clone(&self) -> Self {
-        // 注意：fingerprints 不能 Clone，所以新实例从空列表开始
+        // Note: fingerprints cannot Clone, sonewinstance from emptyliststart
         Self {
-            fingerprints: Vec::new(), // 不能 Clone trait object
+            fingerprints: Vec::new(), // cannot Clone trait object
             risk_score: self.risk_score,
             confidence: self.confidence,
             threat_types: self.threat_types.clone(),
@@ -239,18 +239,18 @@ impl Clone for SystemAnalysisResult {
     }
 }
 
-/// 系统级别分析接口
+/// systemlevelanalysis interface
 ///
-/// 所有系统级别分析器都应该实现这个 trait。
+/// allsystemlevelanalysiser都shouldimplementthis trait.
 ///
-/// ## 核心思想
+/// ## Core Concept
 ///
-/// 系统级别分析从**系统角度**分析网络流量：
-/// - 不仅仅是单个协议的解析，而是综合分析
-/// - 考虑系统整体的行为模式
-/// - 检测系统级别的威胁（DDoS、扫描、异常流量等）
+/// systemlevelanalysis from **systemperspective**analysisnetwork traffic：
+/// - not onlyonly is singleprotocolParse, 而 is comprehensiveanalysis
+/// - considersystemwholebehaviorpattern
+/// - detectsystemlevelthreat (DDoS, scan, abnormaltraffic etc.)
 ///
-/// ## 实现示例
+/// ## Implementation Example
 ///
 /// ```rust
 /// use fingerprint_core::system::{SystemAnalyzer, NetworkFlow, SystemAnalysisResult};
@@ -258,37 +258,37 @@ impl Clone for SystemAnalysisResult {
 /// struct MySystemAnalyzer;
 ///
 /// impl SystemAnalyzer for MySystemAnalyzer {
-///     fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult {
-///         // 实现分析逻辑
-///         SystemAnalysisResult::safe()
-///     }
+/// fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult {
+/// // implementanalysislogic
+/// SystemAnalysisResult::safe()
+/// }
 ///
-///     fn analyze_batch(&self, flows: &[NetworkFlow]) -> Vec<SystemAnalysisResult> {
-///         flows.iter().map(|f| self.analyze(f)).collect()
-///     }
+/// fn analyze_batch(&self, flows: &[NetworkFlow]) -> Vec<SystemAnalysisResult> {
+/// flows.iter().map(|f| self.analyze(f)).collect()
+/// }
 /// }
 /// ```
 pub trait SystemAnalyzer: Send + Sync {
-    /// 分析网络流量
+    /// analysisnetwork traffic
     ///
-    /// # 参数
+    /// # Parameters
     ///
-    /// - `flow`: 要分析的网络流量
+    /// - `flow`: needanalysisnetwork traffic
     ///
-    /// # 返回
+    /// # Returns
     ///
-    /// 系统级别分析结果，包含指纹、威胁类型、风险评分等信息
+    /// systemlevelanalysisresult, includingfingerprint, threattype, risk score etc.info
     fn analyze(&self, flow: &NetworkFlow) -> SystemAnalysisResult;
 
-    /// 批量分析多个流量
+    /// bulkanalysismultipletraffic
     ///
-    /// # 参数
+    /// # Parameters
     ///
-    /// - `flows`: 要分析的网络流量列表
+    /// - `flows`: needanalysisnetwork trafficlist
     ///
-    /// # 返回
+    /// # Returns
     ///
-    /// 分析结果列表
+    /// analysisresultlist
     fn analyze_batch(&self, flows: &[NetworkFlow]) -> Vec<SystemAnalysisResult> {
         flows.iter().map(|f| self.analyze(f)).collect()
     }

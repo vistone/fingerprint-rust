@@ -1,22 +1,22 @@
-//! 指纹核心抽象
+//! fingerprintcoreabstract
 //!
-//! 定义统一的指纹抽象，支持 TLS、HTTP、TCP 等多种指纹类型。
+//! defineunifiedfingerprint abstractions, support TLS, HTTP, TCP etc.multiple fingerprint types.
 
 use crate::metadata::FingerprintMetadata;
 
-/// 指纹类型
+/// fingerprinttype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FingerprintType {
-    /// TLS 指纹
+    /// TLS fingerprint
     Tls,
-    /// HTTP 指纹
+    /// HTTP fingerprint
     Http,
-    /// TCP 指纹
+    /// TCP fingerprint
     Tcp,
 }
 
 impl FingerprintType {
-    /// 转换为字符串
+    /// convert tostring
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Tls => "tls",
@@ -32,50 +32,50 @@ impl std::fmt::Display for FingerprintType {
     }
 }
 
-/// 指纹抽象 trait
+/// fingerprint abstractions trait
 ///
-/// 所有指纹类型（TLS、HTTP、TCP）都应该实现这个 trait
+/// allfingerprinttype (TLS, HTTP, TCP)都shouldimplementthis trait
 pub trait Fingerprint: Send + Sync {
-    /// 获取指纹类型
+    /// Getfingerprinttype
     fn fingerprint_type(&self) -> FingerprintType;
 
-    /// 获取指纹的唯一标识符（通常是哈希值）
+    /// Getfingerprintuniqueidentifiersymbol (usually is hashvalue)
     fn id(&self) -> String;
 
-    /// 获取指纹的元数据
+    /// Getfingerprintmetadata
     fn metadata(&self) -> &FingerprintMetadata;
 
-    /// 获取指纹的元数据（可变引用）
+    /// Getfingerprintmetadata (mutablereference)
     fn metadata_mut(&mut self) -> &mut FingerprintMetadata;
 
-    /// 计算指纹的哈希值（用于快速比较）
+    /// Calculatefingerprinthashvalue ( for fastcompare)
     fn hash(&self) -> u64;
 
-    /// 比较两个指纹是否相似
+    /// compare twofingerprintwhethersimilar
     fn similar_to(&self, other: &dyn Fingerprint) -> bool;
 
-    /// 获取指纹的字符串表示（用于调试和日志）
+    /// Getfingerprintstringrepresent ( for debug and log)
     fn to_string(&self) -> String;
 }
 
-/// 指纹比较结果
+/// fingerprintcompareresult
 #[derive(Debug, Clone, PartialEq)]
 pub struct FingerprintComparison {
-    /// 相似度分数 (0.0 - 1.0)
+    /// similardegreeminutecount (0.0 - 1.0)
     pub similarity: f64,
 
-    /// 是否匹配
+    /// whethermatch
     pub matched: bool,
 
-    /// 匹配的字段
+    /// matchfield
     pub matched_fields: Vec<String>,
 
-    /// 不匹配的字段
+    /// does not matchfield
     pub unmatched_fields: Vec<String>,
 }
 
 impl FingerprintComparison {
-    /// 创建新的比较结果
+    /// Create a newcompareresult
     pub fn new(similarity: f64, matched: bool) -> Self {
         Self {
             similarity,
@@ -85,7 +85,7 @@ impl FingerprintComparison {
         }
     }
 
-    /// 创建完全匹配的结果
+    /// Createcompletelymatchresult
     pub fn perfect_match() -> Self {
         Self {
             similarity: 1.0,
@@ -95,7 +95,7 @@ impl FingerprintComparison {
         }
     }
 
-    /// 创建完全不匹配的结果
+    /// Createcompletelydoes not matchresult
     pub fn no_match() -> Self {
         Self {
             similarity: 0.0,
@@ -106,38 +106,38 @@ impl FingerprintComparison {
     }
 }
 
-/// 指纹比较器
+/// fingerprintcompareer
 pub struct FingerprintComparator;
 
 impl FingerprintComparator {
-    /// 比较两个指纹
+    /// compare twofingerprint
     pub fn compare(f1: &dyn Fingerprint, f2: &dyn Fingerprint) -> FingerprintComparison {
-        // 类型必须相同
+        // typemustsame
         if f1.fingerprint_type() != f2.fingerprint_type() {
             return FingerprintComparison::no_match();
         }
 
-        // 使用 similar_to 方法进行比较
+        // use similar_to methodperformcompare
         if f1.similar_to(f2) {
             FingerprintComparison::perfect_match()
         } else {
-            // 计算相似度（基于哈希值）
+            // Calculatesimilardegree (based onhashvalue)
             let h1 = f1.hash();
             let h2 = f2.hash();
 
-            // 简单的相似度计算（基于哈希值的汉明距离）
+            // simplesimilardegreeCalculate (based onhashvalue汉cleardistance)
             let similarity = if h1 == h2 {
                 1.0
             } else {
-                // 计算哈希值的差异
+                // Calculatehashvaluedifference
                 let diff = (h1 ^ h2).count_ones() as f64;
-                let max_diff = 64.0; // u64 的最大位数
+                let max_diff = 64.0; // u64 maximumbit count
                 1.0 - (diff / max_diff)
             };
 
             FingerprintComparison {
                 similarity,
-                matched: similarity > 0.8, // 相似度阈值
+                matched: similarity > 0.8, // similarthresholdvalue
                 matched_fields: Vec::new(),
                 unmatched_fields: Vec::new(),
             }

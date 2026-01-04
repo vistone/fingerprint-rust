@@ -23,16 +23,16 @@
 //!
 //! // Add fingerprint
 //! let entry = FingerprintEntry::new(
-//!     FingerprintType::JA3,
-//!     "d8321312332df7ff".to_string(),
-//!     Some("Chrome 119".to_string()),
-//!     ThreatLevel::Safe,
+//! FingerprintType::JA3,
+//! "d8321312332df7ff".to_string(),
+//! Some("Chrome 119".to_string()),
+//! ThreatLevel::Safe,
 //! );
 //! db.add(entry);
 //!
 //! // Query fingerprint
 //! if let Some(entry) = db.get_ja3("d8321312332df7ff") {
-//!     println!("Found: {} - Threat level: {}", entry.client_info.unwrap(), entry.threat_level);
+//! println!("Found: {} - Threat level: {}", entry.client_info.unwrap(), entry.threat_level);
 //! }
 //! ```
 
@@ -238,7 +238,7 @@ impl FingerprintDatabase {
     /// Add a fingerprint entry to the database
     pub fn add(&mut self, entry: FingerprintEntry) {
         let map = self.get_map_mut(entry.fingerprint_type);
-        
+
         // If entry already exists, update observation count
         if let Some(existing) = map.get_mut(&entry.fingerprint) {
             existing.record_observation();
@@ -248,19 +248,31 @@ impl FingerprintDatabase {
     }
 
     /// Get a fingerprint entry by type and fingerprint value
-    pub fn get(&self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<&FingerprintEntry> {
+    pub fn get(
+        &self,
+        fingerprint_type: FingerprintType,
+        fingerprint: &str,
+    ) -> Option<&FingerprintEntry> {
         let map = self.get_map(fingerprint_type);
         map.get(fingerprint)
     }
 
     /// Get a mutable reference to a fingerprint entry
-    pub fn get_mut(&mut self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<&mut FingerprintEntry> {
+    pub fn get_mut(
+        &mut self,
+        fingerprint_type: FingerprintType,
+        fingerprint: &str,
+    ) -> Option<&mut FingerprintEntry> {
         let map = self.get_map_mut(fingerprint_type);
         map.get_mut(fingerprint)
     }
 
     /// Remove a fingerprint entry
-    pub fn remove(&mut self, fingerprint_type: FingerprintType, fingerprint: &str) -> Option<FingerprintEntry> {
+    pub fn remove(
+        &mut self,
+        fingerprint_type: FingerprintType,
+        fingerprint: &str,
+    ) -> Option<FingerprintEntry> {
         let map = self.get_map_mut(fingerprint_type);
         map.remove(fingerprint)
     }
@@ -294,7 +306,7 @@ impl FingerprintDatabase {
     /// Get all threat entries (Suspicious or Malicious)
     pub fn get_threats(&self) -> Vec<&FingerprintEntry> {
         let mut threats = Vec::new();
-        
+
         for map in self.all_maps() {
             for entry in map.values() {
                 if entry.is_threat() {
@@ -302,14 +314,14 @@ impl FingerprintDatabase {
                 }
             }
         }
-        
+
         threats
     }
 
     /// Get entries with specific tags
     pub fn find_by_tag(&self, tag: &str) -> Vec<&FingerprintEntry> {
         let mut results = Vec::new();
-        
+
         for map in self.all_maps() {
             for entry in map.values() {
                 if entry.tags.contains(&tag.to_string()) {
@@ -317,7 +329,7 @@ impl FingerprintDatabase {
                 }
             }
         }
-        
+
         results
     }
 
@@ -378,7 +390,10 @@ impl FingerprintDatabase {
     }
 
     /// Get mutable reference to the appropriate map
-    fn get_map_mut(&mut self, fingerprint_type: FingerprintType) -> &mut HashMap<String, FingerprintEntry> {
+    fn get_map_mut(
+        &mut self,
+        fingerprint_type: FingerprintType,
+    ) -> &mut HashMap<String, FingerprintEntry> {
         match fingerprint_type {
             FingerprintType::JA3 => &mut self.ja3,
             FingerprintType::JA3S => &mut self.ja3s,
@@ -543,7 +558,10 @@ mod tests {
         assert_eq!(db.total_entries(), 1);
         let retrieved = db.get_ja3("test_fingerprint");
         assert!(retrieved.is_some());
-        assert_eq!(retrieved.unwrap().client_info, Some("Test Client".to_string()));
+        assert_eq!(
+            retrieved.unwrap().client_info,
+            Some("Test Client".to_string())
+        );
     }
 
     #[test]

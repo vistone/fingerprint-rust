@@ -1,32 +1,32 @@
-//! HTTP 指纹核心类型
+//! HTTP fingerprintcoretype
 //!
-//! 定义 HTTP 指纹的核心数据结构。
+//! define HTTP fingerprintcorecountdatastruct.
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-/// HTTP 指纹
+/// HTTP fingerprint
 #[derive(Debug, Clone)]
 pub struct HttpFingerprint {
-    /// 指纹 ID（基于 User-Agent 和 Headers 的哈希）
+    /// fingerprint ID (based on User-Agent and Headers hash)
     pub id: String,
 
     /// User-Agent
     pub user_agent: String,
 
-    /// HTTP 头
+    /// HTTP header
     pub headers: HashMap<String, String>,
 
-    /// HTTP/2 设置（如果有）
+    /// HTTP/2 settings ( if 有)
     pub http2_settings: Option<Http2Settings>,
 
-    /// 元数据
+    /// metadata
     pub metadata: FingerprintMetadata,
 }
 
-/// HTTP/2 设置
+/// HTTP/2 settings
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Http2Settings {
     /// Header Table Size
@@ -49,7 +49,7 @@ pub struct Http2Settings {
 }
 
 impl HttpFingerprint {
-    /// 创建新的 HTTP 指纹
+    /// Create a new HTTP fingerprint
     pub fn new(user_agent: String, headers: HashMap<String, String>) -> Self {
         let id = Self::calculate_id(&user_agent, &headers);
         Self {
@@ -61,13 +61,13 @@ impl HttpFingerprint {
         }
     }
 
-    /// 计算指纹 ID
+    /// Calculatefingerprint ID
     fn calculate_id(user_agent: &str, headers: &HashMap<String, String>) -> String {
         use sha2::{Digest, Sha256};
         let mut hasher = Sha256::new();
         hasher.update(user_agent.as_bytes());
 
-        // 对 headers 进行排序后哈希
+        // pair headers performsortbackhash
         let mut header_vec: Vec<_> = headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
@@ -78,10 +78,10 @@ impl HttpFingerprint {
         format!("{:x}", hasher.finalize())
     }
 
-    /// 设置 HTTP/2 设置
+    /// settings HTTP/2 settings
     pub fn with_http2_settings(mut self, settings: Http2Settings) -> Self {
         self.http2_settings = Some(settings);
-        // 重新计算 ID（包含 HTTP/2 设置）
+        // reCalculate ID (including HTTP/2 settings)
         self.id = Self::calculate_id(&self.user_agent, &self.headers);
         self
     }
@@ -109,7 +109,7 @@ impl Fingerprint for HttpFingerprint {
         let mut hasher = DefaultHasher::new();
         self.user_agent.hash(&mut hasher);
 
-        // 对 headers 进行排序后哈希
+        // pair headers performsortbackhash
         let mut header_vec: Vec<_> = self.headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
@@ -134,8 +134,8 @@ impl Fingerprint for HttpFingerprint {
             return false;
         }
 
-        // 尝试转换为 HttpFingerprint
-        // 注意：这里需要类型转换，但由于 trait 的限制，我们只能比较哈希值
+        // tryconvert to HttpFingerprint
+        // Note: hereneedtypeConvert, butdue to trait limit, wecan onlycomparehashvalue
         self.hash() == other.hash()
     }
 
@@ -167,7 +167,7 @@ mod tests {
         headers2.insert("Accept".to_string(), "text/html".to_string());
         let fp2 = HttpFingerprint::new("Mozilla/5.0".to_string(), headers2);
 
-        // 相同的输入应该产生相同的哈希
+        // sameinputshouldproducesame的hash
         assert_eq!(fp1.hash(), fp2.hash());
     }
 }

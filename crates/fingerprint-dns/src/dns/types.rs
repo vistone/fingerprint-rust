@@ -1,39 +1,39 @@
-//! DNS 模块类型定义
+//! DNS moduletype definitions
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 
-/// IP 地址详细信息（对应 Go 版本的 IPInfo 结构）
+/// IP addressdetailedinfo (Corresponds to Go version's IPInfo struct)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct IPInfo {
-    /// IP 地址
+    /// IP address
     pub ip: String,
-    /// 主机名（可选）
+    /// host名 (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hostname: Option<String>,
-    /// 城市（可选）
+    /// 城市 (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
-    /// 地区（可选）
+    /// region (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub region: Option<String>,
-    /// 国家代码（可选）
+    /// 国家code (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
-    /// 地理坐标（可选）
+    /// geographic坐mark (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub loc: Option<String>,
-    /// 组织/ISP（可选）
+    /// group织/ISP (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub org: Option<String>,
-    /// 时区（可选）
+    /// when area (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub timezone: Option<String>,
 }
 
 impl IPInfo {
-    /// 从 IP 地址创建空的 IPInfo
+    /// from IP addressCreateempty IPInfo
     pub fn new(ip: String) -> Self {
         Self {
             ip,
@@ -48,19 +48,19 @@ impl IPInfo {
     }
 }
 
-/// 域名 IP 地址信息（对应 Go 版本的 DomainIPs 结构）
+/// domain IP addressinfo (Corresponds to Go version's DomainIPs struct)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct DomainIPs {
-    /// IPv4 地址列表
+    /// IPv4 addresslist
     #[serde(default)]
     pub ipv4: Vec<IPInfo>,
-    /// IPv6 地址列表
+    /// IPv6 addresslist
     #[serde(default)]
     pub ipv6: Vec<IPInfo>,
 }
 
 impl DomainIPs {
-    /// 创建空的 DomainIPs
+    /// Createempty DomainIPs
     pub fn new() -> Self {
         Self {
             ipv4: Vec::new(),
@@ -68,7 +68,7 @@ impl DomainIPs {
         }
     }
 
-    /// 获取所有 IP 地址（IPv4 + IPv6）
+    /// Getall IP address (IPv4 + IPv6)
     pub fn all_ips(&self) -> Vec<String> {
         let mut ips = Vec::new();
         for info in &self.ipv4 {
@@ -80,15 +80,15 @@ impl DomainIPs {
         ips
     }
 
-    /// 检查是否有新的 IP 地址（与另一个 DomainIPs 比较）
+    /// Checkwhether有new IP address ( and 另an DomainIPs compare)
     ///
-    /// `self` 是新解析的 IP 集合，`other` 是之前保存的 IP 集合
-    /// 如果 `self` 中有 `other` 没有的 IP，返回 true（发现新 IP）
+    /// `self` is newParse IP set, `other` is beforesave IP set
+    /// If `self` in 有 `other` no IP, return true (discovernew IP)
     pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
         let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
         let other_ips: HashSet<String> = other.all_ips().into_iter().collect();
 
-        // 检查 self 中是否有 other 没有的 IP
+        // Check self is否有 other no IP
         self_ips.difference(&other_ips).next().is_some()
     }
 }
@@ -99,66 +99,66 @@ impl Default for DomainIPs {
     }
 }
 
-/// DNS 解析结果
+/// DNS Parseresult
 #[derive(Debug, Clone)]
 pub struct DNSResult {
-    /// 域名
+    /// domain
     pub domain: String,
-    /// 解析到的 IP 地址（IPv4 和 IPv6）
+    /// Parse to IP address (IPv4 and IPv6)
     pub ips: DomainIPs,
 }
 
-/// DNS 配置验证错误
+/// DNS configurationValidateerror
 #[derive(Debug, thiserror::Error)]
 pub enum DNSError {
-    #[error("配置错误: {0}")]
+    #[error("configurationerror: {0}")]
     Config(String),
-    #[error("DNS 解析错误: {0}")]
+    #[error("DNS Parseerror: {0}")]
     Resolver(String),
-    #[error("IPInfo 错误: {0}")]
+    #[error("IPInfo error: {0}")]
     IPInfo(String),
-    #[error("存储错误: {0}")]
+    #[error("storeerror: {0}")]
     Storage(String),
-    #[error("IO 错误: {0}")]
+    #[error("IO error: {0}")]
     IO(#[from] std::io::Error),
-    #[error("JSON 错误: {0}")]
+    #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
-    #[error("YAML 错误: {0}")]
+    #[error("YAML error: {0}")]
     Yaml(String),
-    #[error("TOML 解析错误: {0}")]
+    #[error("TOML Parseerror: {0}")]
     Toml(#[from] toml::de::Error),
-    #[error("HTTP 错误: {0}")]
+    #[error("HTTP error: {0}")]
     Http(String),
-    #[error("TOML 序列化错误: {0}")]
+    #[error("TOML serializeerror: {0}")]
     TomlSerialize(String),
-    #[error("内部错误: {0}")]
+    #[error("inside部error: {0}")]
     Internal(String),
 }
 
-/// DNS 配置结构（对应 Go 版本的 Config 结构）
+/// DNS configurationstruct (Corresponds to Go version's Config struct)
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DNSConfig {
-    /// IPInfo.io API Token（必填）
+    /// IPInfo.io API Token (required)
     pub ipinfo_token: String,
-    /// 域名列表（必填）
+    /// domainlist (required)
     pub domain_list: Vec<String>,
-    /// 存储目录（可选，默认当前目录）
+    /// storedirectory (optional, defaultcurrentdirectory)
     #[serde(default = "default_domain_ips_dir")]
     pub domain_ips_dir: String,
-    /// 检查间隔（可选，默认 "2m"）
+    /// Checkinterval (optional, default "2m")
     #[serde(default = "default_interval")]
     pub interval: String,
-    /// DNS 查询最大并发数（可选，默认 500）
+    /// DNS querymaximumconcurrentcount (optional, default 500)
     #[serde(default = "default_max_concurrency")]
     pub max_concurrency: usize,
-    /// DNS 查询超时（可选，默认 "4s"）
+    /// DNS querytimeout (optional, default "4s")
     #[serde(default = "default_dns_timeout")]
     pub dns_timeout: String,
-    /// HTTP 请求超时（可选，默认 "20s"）
+    /// HTTP Request timeout (optional, default "20s")
     #[serde(default = "default_http_timeout")]
     pub http_timeout: String,
-    /// IP 信息获取最大并发数（可选，默认 50）
+    /// IP infoGetmaximumconcurrentcount (optional, default 50)
     #[serde(default = "default_max_ip_fetch_conc")]
     pub max_ip_fetch_conc: usize,
 }
@@ -188,15 +188,15 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
-    /// 创建新的 DNS 配置（便利方法，可以直接使用字符串字面量）
+    /// Create a new DNS configuration (conveniencemethod, candirectlyusestring字面quantity)
     ///
-    /// # 示例
+    /// # Examples
     /// ```
     /// use fingerprint_dns::DNSConfig;
     ///
     /// let config = DNSConfig::new(
-    ///     "your-token",
-    ///     &["google.com", "github.com"],  // 可以直接使用 &str
+    /// "your-token",
+    /// &["google.com", "github.com"], // candirectlyuse &str
     /// );
     /// ```
     pub fn new<S: AsRef<str>>(ipinfo_token: &str, domain_list: &[S]) -> Self {
@@ -212,7 +212,7 @@ impl DNSConfig {
         }
     }
 
-    /// 验证配置
+    /// Validateconfiguration
     pub fn validate(&self) -> Result<(), DNSError> {
         if self.ipinfo_token.is_empty() {
             return Err(DNSError::Config("ipinfoToken is required".to_string()));
@@ -237,14 +237,20 @@ mod tests {
         let mut new_ips = DomainIPs::new();
         new_ips.ipv4.push(IPInfo::new("8.8.8.8".to_string()));
         new_ips.ipv4.push(IPInfo::new("8.8.4.4".to_string()));
-        new_ips.ipv4.push(IPInfo::new("1.1.1.1".to_string())); // 新 IP
+        new_ips.ipv4.push(IPInfo::new("1.1.1.1".to_string())); // new IP
 
-        assert!(new_ips.has_new_ips(&old_ips), "应该检测到新 IP 1.1.1.1");
+        assert!(
+            new_ips.has_new_ips(&old_ips),
+            "shoulddetect to new IP 1.1.1.1"
+        );
 
         let mut same_ips = DomainIPs::new();
         same_ips.ipv4.push(IPInfo::new("8.8.8.8".to_string()));
         same_ips.ipv4.push(IPInfo::new("8.8.4.4".to_string()));
 
-        assert!(!same_ips.has_new_ips(&old_ips), "相同 IP 应该返回 false");
+        assert!(
+            !same_ips.has_new_ips(&old_ips),
+            "same IP shouldreturn false"
+        );
     }
 }

@@ -1,6 +1,6 @@
-//! DNS 服务器池模块
+//! DNS serverpoolmodule
 //!
-//! 管理 DNS 服务器列表，包括从本地文件加载/保存和健康检查功能
+//! manage DNS serverlist, include from localfileload/save and healthCheckFeatures
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -9,25 +9,25 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-/// 默认服务器池文件名（对应 Go 项目的 dnsservernames.json）
+/// defaultserverpoolfile名 (pairshould Go item dnsservernames.json)
 const DEFAULT_SERVER_FILE: &str = "dnsservernames.json";
 
-/// DNS 服务器列表的 JSON 结构（对应 Go 项目的 DNSServerList）
+/// DNS serverlist JSON struct (pairshould Go item DNSServerList)
 #[derive(Debug, Serialize, Deserialize)]
 struct DNSServerList {
     servers: std::collections::HashMap<String, String>,
 }
 
-/// DNS 服务器性能统计
+/// DNS serverperformancestatistics
 #[derive(Debug, Clone)]
 struct ServerStats {
-    /// 总响应时间（毫秒）
+    /// totalresponse when between (milliseconds)
     total_response_time_ms: u64,
-    /// 成功查询次数
+    /// successquerytimecount
     success_count: u64,
-    /// 失败查询次数
+    /// failurequerytimecount
     failure_count: u64,
-    /// 最后更新时间
+    /// finallyUpdate when between
     last_update: std::time::Instant,
 }
 
@@ -41,20 +41,20 @@ impl ServerStats {
         }
     }
 
-    /// 记录成功查询
+    /// recordsuccessquery
     fn record_success(&mut self, response_time: Duration) {
         self.success_count += 1;
         self.total_response_time_ms += response_time.as_millis() as u64;
         self.last_update = std::time::Instant::now();
     }
 
-    /// 记录失败查询
+    /// recordfailurequery
     fn record_failure(&mut self) {
         self.failure_count += 1;
         self.last_update = std::time::Instant::now();
     }
 
-    /// 获取平均响应时间（毫秒）
+    /// Getaverageresponse when between (milliseconds)
     fn avg_response_time_ms(&self) -> f64 {
         if self.success_count > 0 {
             self.total_response_time_ms as f64 / self.success_count as f64
@@ -63,7 +63,7 @@ impl ServerStats {
         }
     }
 
-    /// 获取失败率
+    /// Getfailure率
     fn failure_rate(&self) -> f64 {
         let total = self.success_count + self.failure_count;
         if total > 0 {
@@ -74,16 +74,16 @@ impl ServerStats {
     }
 }
 
-/// DNS 服务器池
+/// DNS serverpool
 #[derive(Debug, Clone)]
 pub struct ServerPool {
     servers: Arc<Vec<String>>,
-    /// 服务器性能统计（仅在运行时使用，不持久化）
+    /// serverperformancestatistics (only in run when use, 不persistent化)
     stats: Arc<std::sync::RwLock<HashMap<String, ServerStats>>>,
 }
 
 impl ServerPool {
-    /// 创建新的服务器池
+    /// Create a newserverpool
     pub fn new(servers: Vec<String>) -> Self {
         Self {
             servers: Arc::new(servers),
@@ -91,7 +91,7 @@ impl ServerPool {
         }
     }
 
-    /// 创建默认服务器池（使用公共 DNS 服务器）
+    /// Createdefaultserverpool (usepublic DNS server)
     #[allow(clippy::new_without_default, clippy::should_implement_trait)]
     pub fn default() -> Self {
         Self::new(vec![
@@ -102,7 +102,7 @@ impl ServerPool {
         ])
     }
 
-    /// 记录服务器响应时间（成功）
+    /// recordserverresponse when between (success)
     pub fn record_success(
         &self,
         _server: &str,
@@ -119,7 +119,7 @@ impl ServerPool {
         Ok(())
     }
 
-    /// 记录服务器失败
+    /// recordserverfailure
     pub fn record_failure(&self, _server: &str) -> Result<(), crate::dns::types::DNSError> {
         let mut stats = self
             .stats
@@ -132,26 +132,26 @@ impl ServerPool {
         Ok(())
     }
 
-    /// 淘汰慢的服务器（平均响应时间超过阈值或失败率过高）
-    /// 返回新的服务器池，不阻塞主线程
-    /// 修复：增加 min_active_servers 参数，确保至少保留指定数量的服务器（按性能排序）
+    /// slow eliminationserver (averageresponse when betweenexceedthresholdvalue or failure率overhigh)
+    /// returnnewserverpool, non-blockingmainthread
+    /// Fix: increase min_active_servers parameter, ensureat leastpreservespecifiedcountserver ( by performancesort)
     pub fn remove_slow_servers(
         &self,
         max_avg_response_time_ms: f64,
         max_failure_rate: f64,
         min_active_servers: usize,
     ) -> Self {
-        // 安全修复：处理锁中毒情况
+        // securityFix: processlock in 毒situation
         let stats_guard = match self.stats.read() {
             Ok(guard) => guard,
             Err(e) => {
                 eprintln!("Warning: Lock poisoned in remove_slow_servers: {}", e);
-                // 如果锁中毒，返回所有服务器（不淘汰任何服务器）
+                // Iflock in 毒, returnallserver (不eliminateanyserver)
                 return Self::new(self.servers.iter().cloned().collect());
             }
         };
 
-        // 收集所有服务器的分数
+        // collectallserverminutecount
         let mut scored_servers: Vec<(String, f64, f64)> = self
             .servers
             .iter()
@@ -163,22 +163,22 @@ impl ServerPool {
                         stat.failure_rate(),
                     )
                 } else {
-                    // 没有统计数据的服务器（新服务器）认为性能最好
+                    // nostatisticscountdataserver (newserver)considerperformancemostgood
                     (server.clone(), 0.0, 0.0)
                 }
             })
             .collect();
 
-        // 初步过滤符合条件的服务器
+        // initialstepfiltersymbol合conditionserver
         let mut filtered: Vec<String> = scored_servers
             .iter()
             .filter(|(_, avg, fail)| *avg <= max_avg_response_time_ms && *fail <= max_failure_rate)
             .map(|(s, _, _)| s.clone())
             .collect();
 
-        // 容错保障：如果过滤后剩下的服务器太少，按性能排序强行保留 top N
+        // fault tolerance guarantee： if filterback剩downservertoo少,  by performancesortforcepreserve top N
         if filtered.len() < min_active_servers && !scored_servers.is_empty() {
-            // 按 失败率 (第一关键字) 和 响应时间 (第二关键字) 升序排序
+            //  by  failure率 (firstclosekey字) and response when between (secondclosekey字) 升sequencesort
             scored_servers.sort_by(|a, b| {
                 a.2.partial_cmp(&b.2)
                     .unwrap_or(std::cmp::Ordering::Equal)
@@ -192,17 +192,17 @@ impl ServerPool {
                 .collect();
 
             eprintln!(
-                "[DNS ServerPool] 满足条件的服务器不足 (仅 {} 个)，强行保留性能前 {} 名",
-                filtered.len(),
-                min_active_servers
-            );
+ "[DNS ServerPool] 满足条件serverinsufficient (only {} )，forcepreserveperformancefront {} 名",
+ filtered.len(),
+ min_active_servers
+ );
         }
 
         Self::new(filtered)
     }
 
-    /// 从本地 JSON 文件加载服务器池（对应 Go 的 loadDefault）
-    /// 如果文件不存在或为空，返回空池
+    /// from local JSON fileloadserverpool (pairshould Go loadDefault)
+    /// Iffile不 exists or as empty, returnemptypool
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, crate::dns::types::DNSError> {
         let path = path.as_ref();
 
@@ -210,18 +210,19 @@ impl ServerPool {
             return Ok(Self::new(Vec::new()));
         }
 
-        let content = fs::read_to_string(path)
-            .map_err(|e| crate::dns::types::DNSError::Config(format!("无法读取文件: {}", e)))?;
+        let content = fs::read_to_string(path).map_err(|e| {
+            crate::dns::types::DNSError::Config(format!("unable toreadfile: {}", e))
+        })?;
 
         let list: DNSServerList =
             serde_json::from_str(&content).map_err(crate::dns::types::DNSError::Json)?;
 
-        // 提取所有 IP 地址（Go 项目使用 GetAllServers 返回所有 IP）
+        // Extractall IP address (Go itemuse GetAllServers returnall IP)
         let servers: Vec<String> = list
             .servers
             .values()
             .map(|ip| {
-                // 如果没有端口，添加默认端口 53
+                // Ifnoport, Adddefaultport 53
                 if ip.contains(':') {
                     ip.clone()
                 } else {
@@ -233,22 +234,22 @@ impl ServerPool {
         Ok(Self::new(servers))
     }
 
-    /// 保存服务器池到本地 JSON 文件（对应 Go 的 Save）
+    /// saveserverpool to local JSON file (pairshould Go Save)
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> Result<(), crate::dns::types::DNSError> {
         let path = path.as_ref();
 
-        // 构建服务器映射（名称 -> IP）
-        // Go 项目使用 "Auto-IP" 作为名称
+        // Buildservermap (name -> IP)
+        // Go itemuse "Auto-IP" asname
         let mut servers_map = std::collections::HashMap::new();
         for server in self.servers.iter() {
-            // 提取 IP 地址（去掉端口）
+            // Extract IP address (remove掉port)
             let ip = if let Some(colon_pos) = server.find(':') {
                 &server[..colon_pos]
             } else {
                 server.as_str()
             };
 
-            // 生成名称（对应 Go 的 "Auto-IP" 格式）
+            // Generatename (pairshould Go "Auto-IP" format)
             let name = format!("Auto-{}", ip);
             servers_map.insert(name, ip.to_string());
         }
@@ -260,37 +261,38 @@ impl ServerPool {
         let json_content =
             serde_json::to_string_pretty(&list).map_err(crate::dns::types::DNSError::Json)?;
 
-        // 安全修复：原子性写入，使用唯一的临时文件名防止竞态条件
-        // 使用进程 ID 确保临时文件名唯一，避免多进程同时写入时的竞态条件
+        // securityFix: originalchildpropertywrite, useunique temporaryfile名preventrace condition
+        // useprocess ID ensuretemporaryfile名unique, avoidmultipleprocesssame when write when race condition
         let temp_path = path.with_extension(format!("tmp.{}", std::process::id()));
-        fs::write(&temp_path, json_content)
-            .map_err(|e| crate::dns::types::DNSError::Config(format!("无法写入文件: {}", e)))?;
+        fs::write(&temp_path, json_content).map_err(|e| {
+            crate::dns::types::DNSError::Config(format!("unable towritefile: {}", e))
+        })?;
         fs::rename(&temp_path, path).map_err(|e| {
-            // 如果重命名失败，清理临时文件
+            // Ifrenamefailure, cleanuptemporaryfile
             let _ = std::fs::remove_file(&temp_path);
-            crate::dns::types::DNSError::Config(format!("无法重命名文件: {}", e))
+            crate::dns::types::DNSError::Config(format!("unable torenamefile: {}", e))
         })?;
 
         Ok(())
     }
 
-    /// 从默认文件加载服务器池（对应 Go 的 NewServerPool）
+    /// from defaultfileloadserverpool (pairshould Go NewServerPool)
     pub fn load_default() -> Self {
         Self::load_from_file(DEFAULT_SERVER_FILE).unwrap_or_else(|_| Self::new(Vec::new()))
     }
 
-    /// 保存到默认文件
+    /// save to defaultfile
     pub fn save_default(&self) -> Result<(), crate::dns::types::DNSError> {
         self.save_to_file(DEFAULT_SERVER_FILE)
     }
 
-    /// 添加服务器并返回新的 ServerPool（对应 Go 的 AddServer）
-    /// 返回 (新池, 是否是新添加的)
+    /// Addserver并returnnew ServerPool (pairshould Go AddServer)
+    /// return (newpool, whether is newAdd的)
     pub fn with_added_server(&self, ip: &str) -> (Self, bool) {
         use std::net::IpAddr;
         use std::str::FromStr;
 
-        // 验证 IP 地址格式
+        // Validate IP addressformat
         let ip_str = if let Some(colon_pos) = ip.find(':') {
             &ip[..colon_pos]
         } else {
@@ -301,47 +303,47 @@ impl ServerPool {
             return (self.clone(), false);
         }
 
-        // 格式化服务器地址
+        // Formatserveraddress
         let server = if ip.contains(':') {
             ip.to_string()
         } else {
             format!("{}:53", ip)
         };
 
-        // 检查是否已存在
+        // Checkwhetheralready exists
         if self.servers.iter().any(|s| s == &server) {
             return (self.clone(), false);
         }
 
-        // 添加新服务器
+        // Addnewserver
         let mut new_servers = (*self.servers).clone();
         new_servers.push(server);
         (
             Self {
                 servers: Arc::new(new_servers),
-                stats: self.stats.clone(), // 修复：继承原有的统计数据，避免丢失历史性能数据
+                stats: self.stats.clone(), // Fix: 继承originalstatisticscountdata，avoid丢失历史performancecountdata
             },
             true,
         )
     }
 
-    /// 获取所有服务器
+    /// Getallserver
     pub fn servers(&self) -> &[String] {
         &self.servers
     }
 
-    /// 获取服务器数量
+    /// Getservercount
     pub fn len(&self) -> usize {
         self.servers.len()
     }
 
-    /// 检查是否为空
+    /// Checkwhether as empty
     pub fn is_empty(&self) -> bool {
         self.servers.is_empty()
     }
 
-    /// 健康检查并增量保存：高并发测试 DNS 服务器，每检测到一批可用服务器就立即保存
-    /// 在后台任务中运行，不阻塞主线程
+    /// healthCheck并incrementalsave：highconcurrenttest DNS server, 每detect to 一batchavailableserverthenimmediatelysave
+    /// in backbackground task in run, non-blockingmainthread
     pub async fn health_check_and_save_incremental(
         &self,
         test_domain: &str,
@@ -362,7 +364,7 @@ impl ServerPool {
         let servers = self.servers();
         let test_domain = test_domain.to_string();
 
-        // 解析服务器地址
+        // Parseserveraddress
         let servers_to_test: Vec<_> = servers
             .iter()
             .filter_map(|server_str| {
@@ -382,22 +384,22 @@ impl ServerPool {
             })
             .collect();
 
-        // 配置解析选项
+        // configurationParseoptions
         let mut opts = ResolverOpts::default();
         opts.timeout = timeout;
         opts.attempts = 1;
 
-        // 用于收集可用服务器的共享状态
+        // for collectavailableserversharedstatus
         let available_servers: Arc<Mutex<Vec<String>>> = Arc::new(Mutex::new(Vec::new()));
         let processed_count: Arc<Mutex<usize>> = Arc::new(Mutex::new(0));
         let total_count = servers_to_test.len();
 
-        // 克隆用于闭包内部和外部使用
+        // clone for closepackageinside部 and outside部use
         let available_servers_for_closure = available_servers.clone();
         let available_servers_for_progress = available_servers.clone();
         let processed_count_for_progress = processed_count.clone();
 
-        // 并发测试服务器，流式处理
+        // concurrenttestserver, streamstyleprocess
         let mut test_tasks = stream::iter(servers_to_test)
             .map(move |(server_str, socket_addr)| {
                 let test_domain = test_domain.clone();
@@ -405,7 +407,7 @@ impl ServerPool {
                 let available_servers = available_servers_for_closure.clone();
 
                 async move {
-                    // 为每个服务器创建独立的 resolver
+                    // as eachserver Createindependent resolver
                     let mut config = ResolverConfig::new();
                     let name_server = NameServerConfig {
                         socket_addr,
@@ -418,53 +420,56 @@ impl ServerPool {
 
                     let resolver = TokioAsyncResolver::tokio(config, opts);
 
-                    // 测试查询（查询 A 记录）
+                    // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {
                         Ok(lookup_result) => {
-                            // 检查是否真的返回了IP地址
+                            // Checkwhethertruereturn了IPaddress
                             let ip_count = lookup_result.iter().count();
                             if ip_count > 0 {
-                                // 查询成功且返回了IP地址，服务器可用，立即添加到列表
+                                // querysuccess and return了IPaddress, serveravailable, immediatelyAdd to list
                                 let mut servers = match available_servers.lock() {
                                     Ok(guard) => guard,
                                     Err(e) => {
                                         eprintln!("Warning: Lock poisoned in health check: {}", e);
-                                        // 如果锁中毒，跳过这个服务器
+                                        // Iflock in 毒, skipthisserver
                                         return None;
                                     }
                                 };
                                 servers.push(server_str.clone());
                                 let current_count = servers.len();
 
-                                // 每达到批次大小就保存一次
+                                // 每reach to batchtimesizethensaveonce
                                 if current_count.is_multiple_of(save_batch_size) {
                                     let pool = Self::new(servers.clone());
                                     if let Err(e) = pool.save_default() {
-                                        eprintln!("Warning: 增量保存失败: {}", e);
+                                        eprintln!("Warning: incrementalsavefailure: {}", e);
                                     } else {
-                                        eprintln!("已保存 {} 个可用服务器到文件", current_count);
+                                        eprintln!(
+                                            "alreadysave {} availableserver to file",
+                                            current_count
+                                        );
                                     }
                                 }
 
                                 Some(server_str)
                             } else {
-                                // 查询成功但没有返回IP地址，服务器不可用
+                                // querysuccessbutnoreturnIPaddress, serverunavailable
                                 None
                             }
                         }
-                        Err(_) => None, // 查询失败，服务器不可用
+                        Err(_) => None, // queryfailure，serverunavailable
                     }
                 }
             })
             .buffer_unordered(max_concurrency);
 
-        // 流式处理所有测试任务
+        // streamstyleprocessalltesttask
         while let Some(_result) = test_tasks.next().await {
             let mut count = match processed_count_for_progress.lock() {
                 Ok(guard) => guard,
                 Err(e) => {
                     eprintln!("Warning: Lock poisoned in progress tracking: {}", e);
-                    continue; // 跳过这次更新
+                    continue; // skip这次Update
                 }
             };
             *count += 1;
@@ -473,41 +478,44 @@ impl ServerPool {
                 Ok(guard) => guard.len(),
                 Err(e) => {
                     eprintln!("Warning: Lock poisoned in progress tracking: {}", e);
-                    0 // 如果锁中毒，使用 0 作为默认值
+                    0 // Iflock in 毒, use 0 asdefaultvalue
                 }
             };
 
-            // 每处理1000个就输出一次进度
+            // 每process1000thenoutputonceprogress
             if current_processed.is_multiple_of(1000) {
                 eprintln!(
-                    "已测试 {}/{} 个服务器，发现 {} 个可用",
+                    "alreadytest {}/{} server，discover {} available",
                     current_processed, total_count, current_available
                 );
             }
         }
 
-        // 最终保存所有可用服务器
+        // mostfinalsaveallavailableserver
         let final_servers = match available_servers_for_progress.lock() {
             Ok(guard) => guard.clone(),
             Err(e) => {
                 eprintln!("Warning: Lock poisoned in final save: {}", e);
-                Vec::new() // 如果锁中毒，返回空列表
+                Vec::new() // Iflock in 毒, returnemptylist
             }
         };
         if !final_servers.is_empty() {
             let pool = Self::new(final_servers.clone());
             if let Err(e) = pool.save_default() {
-                eprintln!("Warning: 最终保存失败: {}", e);
+                eprintln!("Warning: 最finalsavefailure: {}", e);
             } else {
-                eprintln!("最终保存了 {} 个可用服务器到文件", final_servers.len());
+                eprintln!(
+                    "最finalsave了 {} availableserver to file",
+                    final_servers.len()
+                );
             }
         }
 
         Self::new(final_servers)
     }
 
-    /// 健康检查：测试哪些 DNS 服务器是可用的
-    /// 通过查询一个已知域名（如 google.com）来测试服务器是否可用
+    /// healthCheck：testwhich DNS server is available的
+    /// throughqueryanalready知domain (如 google.com)fromtestserverwhetheravailable
     pub async fn health_check(
         &self,
         test_domain: &str,
@@ -526,7 +534,7 @@ impl ServerPool {
         let servers = self.servers();
         let test_domain = test_domain.to_string();
 
-        // 解析服务器地址
+        // Parseserveraddress
         let servers_to_test: Vec<_> = servers
             .iter()
             .filter_map(|server_str| {
@@ -546,19 +554,19 @@ impl ServerPool {
             })
             .collect();
 
-        // 配置解析选项
+        // configurationParseoptions
         let mut opts = ResolverOpts::default();
         opts.timeout = timeout;
         opts.attempts = 1;
 
-        // 并发测试服务器
+        // concurrenttestserver
         let test_tasks = stream::iter(servers_to_test)
             .map(move |(server_str, socket_addr)| {
                 let test_domain = test_domain.clone();
                 let opts = opts.clone();
 
                 async move {
-                    // 为每个服务器创建独立的 resolver
+                    // as eachserver Createindependent resolver
                     let mut config = ResolverConfig::new();
                     let name_server = NameServerConfig {
                         socket_addr,
@@ -571,24 +579,24 @@ impl ServerPool {
 
                     let resolver = TokioAsyncResolver::tokio(config, opts);
 
-                    // 测试查询（查询 A 记录）
+                    // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {
                         Ok(lookup_result) => {
-                            // 检查是否真的返回了IP地址
+                            // Checkwhethertruereturn了IPaddress
                             let ip_count = lookup_result.iter().count();
                             if ip_count > 0 {
-                                Some(server_str) // 查询成功且返回了IP地址，服务器可用
+                                Some(server_str) // querysuccess and return了IPaddress，serveravailable
                             } else {
-                                None // 查询成功但没有返回IP地址，服务器不可用
+                                None // querysuccessbutnoreturnIPaddress，serverunavailable
                             }
                         }
-                        Err(_) => None, // 查询失败，服务器不可用
+                        Err(_) => None, // queryfailure，serverunavailable
                     }
                 }
             })
             .buffer_unordered(max_concurrency);
 
-        // 收集可用的服务器
+        // collectavailableserver
         let available_servers: Vec<String> = test_tasks
             .filter_map(|result| async move { result })
             .collect()

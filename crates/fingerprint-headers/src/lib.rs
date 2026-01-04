@@ -1,6 +1,6 @@
 //! # fingerprint-headers
 //!
-//! HTTP Headers 和 User-Agent 生成模块
+//! HTTP Headers and User-Agent generation module
 
 pub mod headers;
 pub mod http2_config;
