@@ -14,5 +14,5 @@ pub use signature_schemes::*;
 // Note: supported_groups in GREASE_PLACEHOLDER and cipher_suites inconflict
 // when used needexplicitspecifiedmodulepath
 pub use supported_groups::{
- CURVE_P256, CURVE_P384, SECP256R1, SECP384R1, SECP521R1, X25519, X25519_MLKEM768, X448,
+    CURVE_P256, CURVE_P384, SECP256R1, SECP384R1, SECP521R1, X25519, X25519_MLKEM768, X448,
 };

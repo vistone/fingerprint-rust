@@ -1,6 +1,6 @@
 //! DNS preParselibrary
 //!
-//! provide DNS Parse service, regularParsedomainlist, 并setbecome IPInfo.io Get IP geographicinfo. 
+//! provide DNS Parse service, regularParsedomainlist, 并setbecome IPInfo.io Get IP geographicinfo.
 //!
 //! ## Features
 //!

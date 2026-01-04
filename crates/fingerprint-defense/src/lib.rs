@@ -1,10 +1,10 @@
 //! # fingerprint-defense
 //!
-//! **system-level protectionimplementlayer**, based on `fingerprint-core` system-level abstractionsBuild. 
+//! **system-level protectionimplementlayer**, based on `fingerprint-core` system-level abstractionsBuild.
 //!
 //! ## core positioning
 //!
-//! `fingerprint-defense` is `fingerprint-core` system-level protection interfaceconcreteimplement. 
+//! `fingerprint-defense` is `fingerprint-core` system-level protection interfaceconcreteimplement.
 //!
 //! ## itemfrontalreadyimplementFeatures
 //!
@@ -31,6 +31,6 @@ pub use learner::SelfLearningAnalyzer;
 
 // Re-export maintype
 pub use passive::{
- ConsistencyAnalyzer, HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult,
- PassiveAnalyzer, PassiveError, TcpFingerprint, TlsFingerprint,
+    ConsistencyAnalyzer, HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult,
+    PassiveAnalyzer, PassiveError, TcpFingerprint, TlsFingerprint,
 };

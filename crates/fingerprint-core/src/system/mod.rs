@@ -1,6 +1,6 @@
 //! system-level protectioncoreabstract
 //!
-//! providesystem-level protectioncoreabstract and interface, includesystem context, network traffic, protection decision etc.. 
+//! providesystem-level protectioncoreabstract and interface, includesystem context, network traffic, protection decision etc..
 //!
 //! ## Core Concept
 //!
@@ -28,7 +28,7 @@ pub use context::{ProtocolType, SystemContext, TrafficDirection};
 pub use flow::{FlowCharacteristics, NetworkFlow};
 pub use protection::{SystemProtectionDecision, SystemProtectionResult, SystemProtector};
 
-// Note: NetworkFlow and SystemAnalysisResult implement了 Clone, 
+// Note: NetworkFlow and SystemAnalysisResult implement了 Clone,
 // butdue toincluding Box<dyn Fingerprint>, Clone when fingerprints fieldwill被清empty
 pub use analysis::{AnalysisDetails, SystemAnalysisResult, SystemAnalyzer, ThreatType};
 pub use stats::SystemProtectionStats;

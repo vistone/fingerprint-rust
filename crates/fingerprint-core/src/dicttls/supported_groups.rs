@@ -7,15 +7,15 @@
 /// Corresponds to Go version's tls.CurveID constant
 #[allow(clippy::module_inception)]
 pub mod supported_groups {
- // elliptic curve
- pub const SECP256R1: u16 = 0x0017; // 23
- pub const SECP384R1: u16 = 0x0018; // 24
- pub const SECP521R1: u16 = 0x0019; // 25
- pub const X25519: u16 = 0x001d; // 29
- pub const X448: u16 = 0x001a; // 30
+    // elliptic curve
+    pub const SECP256R1: u16 = 0x0017; // 23
+    pub const SECP384R1: u16 = 0x0018; // 24
+    pub const SECP521R1: u16 = 0x0019; // 25
+    pub const X25519: u16 = 0x001d; // 29
+    pub const X448: u16 = 0x001a; // 30
 
- // GREASE placeholder
- pub const GREASE_PLACEHOLDER: u16 = 0x0a0a;
+    // GREASE placeholder
+    pub const GREASE_PLACEHOLDER: u16 = 0x0a0a;
 }
 
 pub use supported_groups::*;
