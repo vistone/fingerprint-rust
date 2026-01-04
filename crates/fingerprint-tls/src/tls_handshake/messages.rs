@@ -39,10 +39,10 @@ impl ClientHelloMessage {
     ///
     /// # Errors
     ///
-    /// Ifunable toGetencryptionsecurityrandomcount ( in no `crypto` feature when ), willreturnerror.
-    /// suggest in productionenvironment in enabled `crypto` feature 以ensuresecurityproperty.
+    /// If unable to get cryptographically secure random data (when `crypto` feature is disabled), will return error.
+    /// It is recommended to enable the `crypto` feature in production environment to ensure security.
     pub fn from_spec(spec: &ClientHelloSpec, server_name: &str) -> Result<Self, String> {
-        // use TLS 1.2 asclientversion (in order tocompatibleproperty)
+        // Use TLS 1.2 as client version (for compatibility)
         let client_version = spec.tls_vers_max.max(0x0303);
 
         // Generaterandomcount (32 bytes)

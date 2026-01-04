@@ -1,6 +1,6 @@
-//! randomfingerprintGeneratemodule
+//! Random fingerprint generation module
 //!
-//! providerandomGetfingerprint and User-Agent Features
+//! Provides random fingerprint selection and User-Agent features
 
 use fingerprint_core::types::{BrowserType, OperatingSystem};
 use fingerprint_core::utils::{
@@ -12,20 +12,20 @@ use fingerprint_headers::useragent::{
 };
 use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
 
-/// fingerprintresult, includingfingerprint, User-Agent and standard HTTP Headers
+/// Fingerprint result, including fingerprint, User-Agent and standard HTTP headers
 #[derive(Debug, Clone)]
 pub struct FingerprintResult {
-    /// TLS fingerprintconfiguration
+    /// TLS fingerprint configuration
     pub profile: ClientProfile,
-    /// pairshould User-Agent
+    /// Matching User-Agent
     pub user_agent: String,
-    /// Client Hello ID ( and tls-client keepconsistent)
+    /// Client Hello ID (consistent with tls-client)
     pub hello_client_id: String,
-    /// standard HTTP requestheader (includinggloballanguagesupport)
+    /// Standard HTTP request headers (including global language support)
     pub headers: fingerprint_headers::headers::HTTPHeaders,
 }
 
-/// browsertypenot找 to error
+/// Browser type not found error
 #[derive(Debug, Clone)]
 pub struct BrowserNotFoundError {
     pub browser: String,
@@ -39,14 +39,14 @@ impl std::fmt::Display for BrowserNotFoundError {
 
 impl std::error::Error for BrowserNotFoundError {}
 
-/// randomGetanfingerprint and pairshould User-Agent
-/// operating systemwill randomly select
+/// Randomly get a fingerprint and matching User-Agent
+/// Operating system will be randomly selected
 pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
     get_random_fingerprint_with_os(None)
 }
 
-/// randomGetanfingerprint and pairshould User-Agent, 并specifiedoperating system
-/// If os as None, thenrandomly selectoperating system
+/// Randomly get a fingerprint and matching User-Agent, with specified operating system
+/// If os is None, then operating system is randomly selected
 pub fn get_random_fingerprint_with_os(
     os: Option<OperatingSystem>,
 ) -> Result<FingerprintResult, String> {
@@ -55,10 +55,10 @@ pub fn get_random_fingerprint_with_os(
         return Err("no TLS client profiles available".to_string());
     }
 
-    // Getallavailablefingerprint name
+    // Get all available fingerprint names
     let names: Vec<String> = clients.keys().cloned().collect();
 
-    // randomly select an (threadsecurity)
+    // Randomly select one (thread-safe)
     let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();
     let random_name = random_choice_string(&name_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -75,17 +75,17 @@ pub fn get_random_fingerprint_with_os(
         ));
     }
 
-    // Getpairshould User-Agent
+    // Get matching User-Agent
     let ua = match os {
         Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 closekeyFix: Based on User-Agent sync TCP Profile
-    // ensurebrowserfingerprint and TCP fingerprintcompletelyconsistent
+    // 🔥 Critical fix: Based on User-Agent sync TCP profile
+    // Ensure browser fingerprint and TCP fingerprint are completely consistent
     profile = profile.with_synced_tcp_profile(&ua);
 
-    // Generatestandard HTTP Headers
+    // Generate standard HTTP headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
     let browser_type = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);

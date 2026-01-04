@@ -105,10 +105,10 @@ impl ClientHelloSpec {
     /// use fingerprint_tls::tls_config::ClientHelloSpecBuilder;
     /// let (extensions, _metadata) = ClientHelloSpecBuilder::chrome_133_extensions();
     /// let spec = ClientHelloSpecBuilder::new()
-    ///.cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
-    ///.compression_methods(vec![0])
-    ///.extensions(extensions)
-    ///.build();
+    ///     .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
+    ///     .compression_methods(vec![0])
+    ///     .extensions(extensions)
+    ///     .build();
     /// ```
     pub fn chrome_133() -> Self {
         use crate::tls_config::ClientHelloSpecBuilder;
