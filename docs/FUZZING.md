@@ -195,9 +195,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@nightly
       - run: cargo install cargo-fuzz
       - run: |
           for target in $(cargo fuzz list); do

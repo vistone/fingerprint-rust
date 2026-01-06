@@ -124,7 +124,7 @@ impl Benchmark {
 
         // Calculate percentiles
         let mut sorted_times = total_times.clone();
-        sorted_times.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        sorted_times.sort_by(|a, b| a.total_cmp(b));  // Use total_cmp for f64 to handle NaN
         let p50 = sorted_times[sorted_times.len() / 2];
         let p95 = sorted_times[sorted_times.len() * 95 / 100];
         let p99 = sorted_times[sorted_times.len() * 99 / 100];

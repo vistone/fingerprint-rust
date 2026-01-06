@@ -10,6 +10,13 @@ use fingerprint::{chrome_133, HttpClient, HttpClientConfig};
 use std::time::Duration;
 use thiserror::Error;
 
+/// Default Chrome user agent string
+const DEFAULT_USER_AGENT: &str = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36";
+
+/// Formatting width for output separators
+const OUTPUT_WIDTH: usize = 70;
+const OUTPUT_WIDTH_SMALL: usize = 50;
+
 /// Custom error types for this application
 #[derive(Error, Debug)]
 enum AppError {
@@ -75,7 +82,7 @@ fn make_request(url: &str) -> Result<String, AppError> {
 
     // Create configuration
     let config = HttpClientConfig {
-        user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36".to_string(),
+        user_agent: DEFAULT_USER_AGENT.to_string(),
         timeout: Duration::from_secs(30),
         max_redirects: 5,
         prefer_http2: true,
@@ -149,9 +156,9 @@ fn make_request_with_retry(url: &str, max_retries: u32) -> Result<String, AppErr
 fn process_urls(urls: &[&str]) -> Vec<Result<String, AppError>> {
     urls.iter()
         .map(|url| {
-            println!("\n{'=':<50}");
+            println!("\n{:=<width$}", "", width = OUTPUT_WIDTH_SMALL);
             println!("Processing: {}", url);
-            println!("{'=':<50}");
+            println!("{:=<width$}", "", width = OUTPUT_WIDTH_SMALL);
             make_request(url)
         })
         .collect()
@@ -161,9 +168,9 @@ fn main() -> Result<(), AppError> {
     println!("🦀 Error Handling Best Practices Example\n");
 
     // Example 1: Simple request with error handling
-    println!("{'=':<70}");
+    println!("{:=<width$}", "", width = OUTPUT_WIDTH);
     println!(" Example 1: Basic Request with Error Handling");
-    println!("{'=':<70}");
+    println!("{:=<width$}", "", width = OUTPUT_WIDTH);
 
     match make_request("https://httpbin.org/get") {
         Ok(body) => {
@@ -177,9 +184,9 @@ fn main() -> Result<(), AppError> {
     }
 
     // Example 2: Request with retry logic
-    println!("\n{'=':<70}");
+    println!("\n{:=<width$}", "", width = OUTPUT_WIDTH);
     println!(" Example 2: Request with Retry Logic");
-    println!("{'=':<70}");
+    println!("{:=<width$}", "", width = OUTPUT_WIDTH);
 
     match make_request_with_retry("https://httpbin.org/get", 3) {
         Ok(_) => println!("✅ Request succeeded with retry"),
@@ -187,9 +194,9 @@ fn main() -> Result<(), AppError> {
     }
 
     // Example 3: Multiple URLs with error collection
-    println!("\n{'=':<70}");
+    println!("\n{:=<width$}", "", width = OUTPUT_WIDTH);
     println!(" Example 3: Processing Multiple URLs");
-    println!("{'=':<70}");
+    println!("{:=<width$}", "", width = OUTPUT_WIDTH);
 
     let urls = vec![
         "https://httpbin.org/get",
@@ -219,9 +226,9 @@ fn main() -> Result<(), AppError> {
     }
 
     // Example 4: Error recovery and fallback
-    println!("\n{'=':<70}");
+    println!("\n{:=<width$}", "", width = OUTPUT_WIDTH);
     println!(" Example 4: Error Recovery and Fallback");
-    println!("{'=':<70}");
+    println!("{:=<width$}", "", width = OUTPUT_WIDTH);
 
     let primary_url = "https://httpbin.org/status/500"; // Will fail
     let fallback_url = "https://httpbin.org/get"; // Should succeed
