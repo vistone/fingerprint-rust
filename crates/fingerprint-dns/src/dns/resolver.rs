@@ -447,6 +447,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
+    #[ignore] // Requires network access
     async fn test_resolve() {
         let resolver = DNSResolver::new(Duration::from_secs(4));
         let result = resolver.resolve("google.com").await;

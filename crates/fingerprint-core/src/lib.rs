@@ -34,6 +34,7 @@
 //! - **type system**: `BrowserType`, `OperatingSystem` etc.coretype
 //! - **utility functions**: GREASE process, randomly select etc.utility functions
 
+pub mod benchmark;
 pub mod database;
 pub mod dicttls;
 pub mod fingerprint;
@@ -49,7 +50,7 @@ pub mod system;
 pub mod tcp;
 pub mod types;
 pub mod utils;
-pub mod version;
+pub mod version; // Performance benchmarking utilities
 
 // Re-export public API
 
@@ -87,6 +88,9 @@ pub use utils::{
     extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
     random_choice, random_choice_string,
 };
+
+// benchmarking (optional, for performance testing)
+pub use benchmark::{Benchmark, HttpMetrics, Timer};
 
 // system-level abstractions
 pub use system::{
