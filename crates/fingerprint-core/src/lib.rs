@@ -50,6 +50,7 @@ pub mod tcp;
 pub mod types;
 pub mod utils;
 pub mod version;
+pub mod benchmark;  // Performance benchmarking utilities
 
 // Re-export public API
 
@@ -87,6 +88,9 @@ pub use utils::{
     extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
     random_choice, random_choice_string,
 };
+
+// benchmarking (optional, for performance testing)
+pub use benchmark::{Benchmark, HttpMetrics, Timer};
 
 // system-level abstractions
 pub use system::{

@@ -22,9 +22,12 @@ target/
 *.dll
 *.so
 *.dylib
+*.rlib
 
 # Test artifacts
 *.log
+*.pcap
+*.cap
 
 # Validation reports (temporary)
 validation_report_*.txt
@@ -41,5 +44,33 @@ vendor/rustls/
 dns_output/
 dnsservernames.json
 test_dns_data/
-*.rlib
+
+# Database files
 *.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+
+# Benchmark results
+benchmark_results/
+*.bench
+
+# Coverage reports
+coverage/
+*.profdata
+*.profraw
+
+# Security sensitive files
+.env
+.env.local
+secrets.toml
+credentials.json
+
+# Fuzzing artifacts
+fuzz/artifacts/
+fuzz/corpus/
