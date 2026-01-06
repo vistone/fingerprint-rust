@@ -1,27 +1,23 @@
 //! DNS preParselibrary
 //!
-//! provide DNS Parse service, regularParsedomainlist, 并setbecome IPInfo.io Get IP geographicinfo.
+//! provide DNS Parse service, regularParsedomainlist, andsetbecome IPInfo.io Get IP geographicinfo.
 //!
 //! ## Features
 //!
 //! - ✅ **concurrent DNS Parse**：supporthighconcurrent DNS query
 //! - ✅ **multipleformatconfiguration**：support JSON, YAML, TOML threeconfigurationformat
-//! - ✅ **IP geographicinfo**：setbecome IPInfo.io Getdetailedgeographicbitplace and ISP info
+//! - ✅ **IP geographicinfo**：setbecome IPInfo.io Getdetailedgeographicplace and ISP info
 //! - ✅ **intelligentintervaladjust**：discovernew IP when highfrequencydetect, otherwisepointcountbackoff
 //! - ✅ **multipleformatoutput**：support JSON, YAML, TOML threeoutputformat
 //! - ✅ **originalchildpropertywrite**：usetemporaryfileensurecountdatasecurity
-//! - ✅ **easy于setbecome**：providesimple Start/Stop interface, supportaslibraryuse
-
-mod collector;
+//! - ✅ **easysetbecome**：providesimple Start/Stop interface, supportaslibraryuse mod collector;
 mod config;
 mod ipinfo;
 mod resolver;
 mod serverpool;
 mod service;
 mod storage;
-mod types;
-
-pub use collector::ServerCollector;
+mod types; pub use collector::ServerCollector;
 pub use config::load_config;
 pub use ipinfo::IPInfoClient;
 pub use resolver::DNSResolver;

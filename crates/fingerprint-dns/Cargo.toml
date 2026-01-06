@@ -9,18 +9,16 @@ documentation.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "DNS 预解析服务模块"
+description = "DNS parsing务module"
 
 [features]
 default = []
-# hickory-resolver 功能（默认启用，因为它是核心依赖）
+# hickory-resolver functionality（defaultenable，因为它Core dependencies）
 hickory-resolver = []
 
 [dependencies]
 fingerprint-core = { path = "../fingerprint-core" }
-fingerprint-http = { path = "../fingerprint-http", default-features = false, features = ["rustls-tls"] }
-
-# DNS 解析功能
+fingerprint-http = { path = "../fingerprint-http", default-features = false, features = ["rustls-tls"] } # DNS parsingfunctionality
 hickory-resolver = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }

@@ -12,33 +12,35 @@ keywords = ["security", "defense", "fingerprint", "database", "learning"]
 categories = ["network-programming", "security"]
 
 [dependencies]
-# 核心依赖
+# Core dependencies
 fingerprint-core = { path = "../fingerprint-core" }
 fingerprint-tls = { path = "../fingerprint-tls" }
 fingerprint-http = { path = "../fingerprint-http" }
 # fingerprint-ja4 = { path = "../fingerprint-ja4" } # Replaced by fingerprint-tls internal JA4
 
-# 数据库
+# Database library
 rusqlite = { version = "0.31", features = ["bundled"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 
-# 时间处理
+# Time handling
 chrono = { workspace = true, features = ["serde"] }
 
-# 并发
+# Async runtime
 tokio = { workspace = true, features = ["full"] }
 dashmap = "5.5"
 
-# 错误处理
+# Error processing
 thiserror.workspace = true
 
-# 工具
+# Utilities
 once_cell = { workspace = true }
 
-# 网络包解析（纯 Rust 实现，无系统依赖）
-pcap-file = "3.0.0-rc1"  # pcap 文件读取（纯 Rust）
-pnet = "0.35.0"          # 实时网络捕获（纯 Rust）
+# Network packet parsing (pure Rust implementation, no system dependencies)
+pcap-file = "3.0.0-rc1"
+
+# pcap file parsing (pure Rust)
+pnet = "0.35.0" # Real-time network capture (pure Rust)
 bytes = { workspace = true }
 
 [dev-dependencies]

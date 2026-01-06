@@ -319,7 +319,7 @@ impl FingerprintDatabase {
     }
 
     /// Get entries with specific tags
-    pub fn find_by_tag(&self, tag: &str) -> Vec<&FingerprintEntry> {
+    pub fn Find_by_tag(&self, tag: &str) -> Vec<&FingerprintEntry> {
         let mut results = Vec::new();
 
         for map in self.all_maps() {
@@ -639,7 +639,7 @@ mod tests {
     }
 
     #[test]
-    fn test_database_find_by_tag() {
+    fn test_database_Find_by_tag() {
         let mut db = FingerprintDatabase::new();
 
         let mut entry1 = FingerprintEntry::new(
@@ -670,10 +670,10 @@ mod tests {
         entry3.add_tag("ssh".to_string());
         db.add(entry3);
 
-        let browser_entries = db.find_by_tag("browser");
+        let browser_entries = db.Find_by_tag("browser");
         assert_eq!(browser_entries.len(), 2);
 
-        let mobile_entries = db.find_by_tag("mobile");
+        let mobile_entries = db.Find_by_tag("mobile");
         assert_eq!(mobile_entries.len(), 1);
     }
 

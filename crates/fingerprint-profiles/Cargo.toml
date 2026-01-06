@@ -9,7 +9,7 @@ documentation.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "浏览器指纹配置模块"
+description = "Browser fingerprintconfiguration module"
 
 [dependencies]
 fingerprint-core = { path = "../fingerprint-core" }

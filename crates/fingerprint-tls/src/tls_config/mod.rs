@@ -36,7 +36,7 @@ mod stats;
 mod version;
 
 pub use builder::ClientHelloSpecBuilder;
-pub use comparison::{compare_signatures, compare_specs, find_best_match, FingerprintMatch};
+pub use comparison::{compare_signatures, compare_specs, Find_best_match, FingerprintMatch};
 pub use extract::extract_signature;
 pub use grease::{filter_grease_values, is_grease_value, remove_grease_values, TLS_GREASE_VALUES};
 pub use ja4::{

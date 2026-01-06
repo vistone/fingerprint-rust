@@ -9,7 +9,7 @@ documentation.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "HTTP 客户端实现模块（HTTP/1.1、HTTP/2、HTTP/3）"
+description = "HTTP clientimplementation module（HTTP/1.1、HTTP/2、HTTP/3）"
 
 [dependencies]
 fingerprint-core = { path = "../fingerprint-core" }
@@ -17,36 +17,22 @@ fingerprint-tls = { path = "../fingerprint-tls" }
 fingerprint-profiles = { path = "../fingerprint-profiles" }
 fingerprint-headers = { path = "../fingerprint-headers" }
 once_cell = { workspace = true }
-socket2 = { workspace = true }
-
-# HTTP 客户端依赖 (可选)
+socket2 = { workspace = true } # HTTP client dependencies (optional)
 rustls = { workspace = true, optional = true }
 webpki-roots = { workspace = true, optional = true }
 flate2 = { workspace = true, optional = true }
-brotli-decompressor = { workspace = true, optional = true }
-
-# HTTP/2 支持
+brotli-decompressor = { workspace = true, optional = true } # HTTP/2 support
 h2 = { workspace = true, optional = true }
 http = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true }
-tokio-rustls = { workspace = true, optional = true }
-
-# HTTP/3 支持
+tokio-rustls = { workspace = true, optional = true } # HTTP/3 support
 quinn = { workspace = true, optional = true }
 h3 = { workspace = true, optional = true }
 h3-quinn = { workspace = true, optional = true }
-bytes = { workspace = true, optional = true }
-
-# 网络连接池
-netconnpool = { workspace = true, optional = true }
-
-# 时间处理
-chrono = { workspace = true, optional = true }
-
-# HTTP 解析
-httparse = { workspace = true, optional = true }
-
-# 密码学库
+bytes = { workspace = true, optional = true } # Network connection pool
+netconnpool = { workspace = true, optional = true } # Time handling
+chrono = { workspace = true, optional = true } # HTTP parsing
+httparse = { workspace = true, optional = true } # Cryptography library
 ring = { workspace = true, optional = true }
 
 [features]
