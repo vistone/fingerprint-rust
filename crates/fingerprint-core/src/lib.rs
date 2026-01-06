@@ -34,6 +34,7 @@
 //! - **type system**: `BrowserType`, `OperatingSystem` etc.coretype
 //! - **utility functions**: GREASE process, randomly select etc.utility functions
 
+pub mod benchmark;
 pub mod database;
 pub mod dicttls;
 pub mod fingerprint;
@@ -49,8 +50,7 @@ pub mod system;
 pub mod tcp;
 pub mod types;
 pub mod utils;
-pub mod version;
-pub mod benchmark;  // Performance benchmarking utilities
+pub mod version; // Performance benchmarking utilities
 
 // Re-export public API
 

@@ -1,5 +1,5 @@
 //! Performance benchmarking utilities for fingerprint-rust
-//! 
+//!
 //! This module provides comprehensive benchmarking tools to measure
 //! and track performance across different components.
 
@@ -91,9 +91,14 @@ impl Benchmark {
         for i in 0..self.iterations {
             let metrics = f()?;
             self.metrics.push(metrics);
-            
+
             if (i + 1) % 10 == 0 {
-                println!("[{}] Completed {}/{} iterations", self.name, i + 1, self.iterations);
+                println!(
+                    "[{}] Completed {}/{} iterations",
+                    self.name,
+                    i + 1,
+                    self.iterations
+                );
             }
         }
         Ok(())
@@ -106,7 +111,8 @@ impl Benchmark {
             return;
         }
 
-        let total_times: Vec<f64> = self.metrics
+        let total_times: Vec<f64> = self
+            .metrics
             .iter()
             .map(|m| m.total_duration.as_secs_f64() * 1000.0)
             .collect();
@@ -116,22 +122,24 @@ impl Benchmark {
         let max = total_times.iter().fold(f64::NEG_INFINITY, |a, &b| a.max(b));
 
         // Calculate standard deviation
-        let variance = total_times
-            .iter()
-            .map(|&x| (x - avg).powi(2))
-            .sum::<f64>() / total_times.len() as f64;
+        let variance =
+            total_times.iter().map(|&x| (x - avg).powi(2)).sum::<f64>() / total_times.len() as f64;
         let std_dev = variance.sqrt();
 
         // Calculate percentiles
         let mut sorted_times = total_times.clone();
-        sorted_times.sort_by(|a, b| a.total_cmp(b));  // Use total_cmp for f64 to handle NaN
+        sorted_times.sort_by(|a, b| a.total_cmp(b)); // Use total_cmp for f64 to handle NaN
         let p50 = sorted_times[sorted_times.len() / 2];
         let p95 = sorted_times[sorted_times.len() * 95 / 100];
         let p99 = sorted_times[sorted_times.len() * 99 / 100];
 
         // Calculate total throughput
         let total_bytes: usize = self.metrics.iter().map(|m| m.response_size).sum();
-        let total_time: f64 = self.metrics.iter().map(|m| m.total_duration.as_secs_f64()).sum();
+        let total_time: f64 = self
+            .metrics
+            .iter()
+            .map(|m| m.total_duration.as_secs_f64())
+            .sum();
         let avg_throughput = if total_time > 0.0 {
             total_bytes as f64 / total_time / 1024.0 / 1024.0 // MB/s
         } else {
@@ -151,7 +159,10 @@ impl Benchmark {
         println!("\nThroughput:");
         println!("  Average:  {:.2} MB/s", avg_throughput);
         println!("  Total:    {} bytes", total_bytes);
-        println!("  Requests: {:.2} req/s", self.iterations as f64 / total_time);
+        println!(
+            "  Requests: {:.2} req/s",
+            self.iterations as f64 / total_time
+        );
         println!("=====================================\n");
     }
 }
