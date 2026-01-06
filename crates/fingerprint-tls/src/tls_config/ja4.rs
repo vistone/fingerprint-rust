@@ -1,35 +1,319 @@
 //! JA4 fingerprintGeneratemodule
 //!
-//! implementcomplete JA4 TLS client fingerprintGenerate
-//! reference：Huginn Net JA4 implement and official FoxIO specification use crate::tls_config::grease::filter_grease_values;
+//! implementcomplete JA4 TLS clientfingerprintGenerate
+//! reference：Huginn Net JA4 implement and official FoxIO specification
+
+use crate::tls_config::grease::filter_grease_values;
 use crate::tls_config::version::TlsVersion;
 use sha2::{Digest, Sha256};
-use std::fmt; /// JA4 fingerprint (sort/notsort)
+use std::fmt;
+
+/// JA4 fingerprint (sort/notsort)
 #[derive(Debug, Clone, PartialEq)]
-pub enum Ja4Fingerprint { /// sortversion (ja4) Sorted(String), /// notsortversion (ja4_o, originalbeginningorder) Unsorted(String),
-} impl fmt::Display for Ja4Fingerprint { fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { match self { Ja4Fingerprint::Sorted(s) => write!(f, "{s}"), Ja4Fingerprint::Unsorted(s) => write!(f, "{s}"), } }
-} impl Ja4Fingerprint { /// Getvariantname ("ja4" or "ja4_o") pub fn variant_name(&self) -> &'static str { match self { Ja4Fingerprint::Sorted(_) => "ja4", Ja4Fingerprint::Unsorted(_) => "ja4_o", } } /// Getfingerprintvalue pub fn value(&self) -> &str { match self { Ja4Fingerprint::Sorted(s) => s, Ja4Fingerprint::Unsorted(s) => s, } }
-} /// JA4 originalbeginningfingerprint (completeversion, sort/notsort)
+pub enum Ja4Fingerprint {
+    /// sortversion (ja4)
+    Sorted(String),
+    /// notsortversion (ja4_o, originalbeginningorder)
+    Unsorted(String),
+}
+
+impl fmt::Display for Ja4Fingerprint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Ja4Fingerprint::Sorted(s) => write!(f, "{s}"),
+            Ja4Fingerprint::Unsorted(s) => write!(f, "{s}"),
+        }
+    }
+}
+
+impl Ja4Fingerprint {
+    /// Getvariantname ("ja4" or "ja4_o")
+    pub fn variant_name(&self) -> &'static str {
+        match self {
+            Ja4Fingerprint::Sorted(_) => "ja4",
+            Ja4Fingerprint::Unsorted(_) => "ja4_o",
+        }
+    }
+
+    /// Getfingerprintvalue
+    pub fn value(&self) -> &str {
+        match self {
+            Ja4Fingerprint::Sorted(s) => s,
+            Ja4Fingerprint::Unsorted(s) => s,
+        }
+    }
+}
+
+/// JA4 originalbeginningfingerprint (completeversion, sort/notsort)
 #[derive(Debug, Clone, PartialEq)]
-pub enum Ja4RawFingerprint { /// sortversion (ja4_r) Sorted(String), /// notsortversion (ja4_ro, originalbeginningorder) Unsorted(String),
-} impl fmt::Display for Ja4RawFingerprint { fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { match self { Ja4RawFingerprint::Sorted(s) => write!(f, "{s}"), Ja4RawFingerprint::Unsorted(s) => write!(f, "{s}"), } }
-} impl Ja4RawFingerprint { /// Getvariantname ("ja4_r" or "ja4_ro") pub fn variant_name(&self) -> &'static str { match self { Ja4RawFingerprint::Sorted(_) => "ja4_r", Ja4RawFingerprint::Unsorted(_) => "ja4_ro", } } /// Getfingerprintvalue pub fn value(&self) -> &str { match self { Ja4RawFingerprint::Sorted(s) => s, Ja4RawFingerprint::Unsorted(s) => s, } }
-} /// JA4 payloadstruct
+pub enum Ja4RawFingerprint {
+    /// sortversion (ja4_r)
+    Sorted(String),
+    /// notsortversion (ja4_ro, originalbeginningorder)
+    Unsorted(String),
+}
+
+impl fmt::Display for Ja4RawFingerprint {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Ja4RawFingerprint::Sorted(s) => write!(f, "{s}"),
+            Ja4RawFingerprint::Unsorted(s) => write!(f, "{s}"),
+        }
+    }
+}
+
+impl Ja4RawFingerprint {
+    /// Getvariantname ("ja4_r" or "ja4_ro")
+    pub fn variant_name(&self) -> &'static str {
+        match self {
+            Ja4RawFingerprint::Sorted(_) => "ja4_r",
+            Ja4RawFingerprint::Unsorted(_) => "ja4_ro",
+        }
+    }
+
+    /// Getfingerprintvalue
+    pub fn value(&self) -> &str {
+        match self {
+            Ja4RawFingerprint::Sorted(s) => s,
+            Ja4RawFingerprint::Unsorted(s) => s,
+        }
+    }
+}
+
+/// JA4 payloadstruct
 /// followofficial FoxIO specification
 #[derive(Debug, Clone, PartialEq)]
-pub struct Ja4Payload { /// JA4_a: TLS version + SNI + cipher suitecount + extensioncount + ALPN pub ja4_a: String, /// JA4_b: cipher suite (originalbeginningstring) pub ja4_b: String, /// JA4_c: extension + signaturealgorithm (originalbeginningstring) pub ja4_c: String, /// JA4 fingerprint (hash, sort/notsort) pub full: Ja4Fingerprint, /// JA4 originalbeginningfingerprint (complete, sort/notsort) pub raw: Ja4RawFingerprint,
-} /// from ALPN stringExtractfirst and lastcharacter
+pub struct Ja4Payload {
+    /// JA4_a: TLS version + SNI + cipher suitecount + extensioncount + ALPN
+    pub ja4_a: String,
+    /// JA4_b: cipher suite (originalbeginningstring)
+    pub ja4_b: String,
+    /// JA4_c: extension + signaturealgorithm (originalbeginningstring)
+    pub ja4_c: String,
+    /// JA4 fingerprint (hash, sort/notsort)
+    pub full: Ja4Fingerprint,
+    /// JA4 originalbeginningfingerprint (complete, sort/notsort)
+    pub raw: Ja4RawFingerprint,
+}
+
+/// from ALPN stringExtractfirst and lastcharacter
 /// non ASCII characterreplace as '9'
-pub fn first_last_alpn(s: &str) -> (char, char) { let replace_nonascii_with_9 = |c: char| { if c.is_ascii() { c } else { '9' } }; let mut chars = s.chars(); let first = chars.next().map(replace_nonascii_with_9).unwrap_or('0'); let last = chars .next_back() .map(replace_nonascii_with_9) .unwrap_or('0'); (first, if s.len() == 1 { '0' } else { last })
-} /// Generate 12 characterhash (SHA256 front 12character)
+pub fn first_last_alpn(s: &str) -> (char, char) {
+    let replace_nonascii_with_9 = |c: char| {
+        if c.is_ascii() {
+            c
+        } else {
+            '9'
+        }
+    };
+    let mut chars = s.chars();
+    let first = chars.next().map(replace_nonascii_with_9).unwrap_or('0');
+    let last = chars
+        .next_back()
+        .map(replace_nonascii_with_9)
+        .unwrap_or('0');
+    (first, if s.len() == 1 { '0' } else { last })
+}
+
+/// Generate 12 characterhash (SHA256 front 12character)
 ///
 /// SHA256 hashalwaysproduce 64hexadecimalcharacter, sofront 12characteralways exists.
-/// thisfunction for JA4 fingerprintGenerate.
-pub fn hash12(input: &str) -> String { let hash = Sha256::digest(input.as_bytes()); let hash_hex = format!("{:x}", hash); // SHA256 hashalways 64hexadecimalcharacter, sofront 12characteralways exists // use get() methodsecurityGetslice, avoidpotential in panic hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
-} /// TLS ClientHello signature ( for JA4 Generate)
+/// 此function for JA4 fingerprintGenerate.
+pub fn hash12(input: &str) -> String {
+    let hash = Sha256::digest(input.as_bytes());
+    let hash_hex = format!("{:x}", hash);
+    // SHA256 hashalways 64hexadecimalcharacter, sofront 12characteralways exists
+    // use get() methodsecurity地Getslice, avoidpotential in panic
+    hash_hex.get(..12).unwrap_or(&hash_hex).to_string()
+}
+
+/// TLS ClientHello signature ( for JA4 Generate)
 #[derive(Debug, Clone)]
-pub struct Ja4Signature { /// TLS version pub version: TlsVersion, /// cipher suitelist (including GREASE) pub cipher_suites: Vec<u16>, /// extensionlist (including GREASE) pub extensions: Vec<u16>, /// signaturealgorithmlist (including GREASE) pub signature_algorithms: Vec<u16>, /// Server Name Indication pub sni: Option<String>, /// Application-Layer Protocol Negotiation pub alpn: Option<String>,
-} impl Ja4Signature { /// Generate JA4 fingerprint (sortversion) pub fn generate_ja4(&self) -> Ja4Payload { self.generate_ja4_with_order(false) } /// Generate JA4 fingerprint (originalbeginningorderversion) pub fn generate_ja4_original(&self) -> Ja4Payload { self.generate_ja4_with_order(true) } /// Generate JA4 fingerprint (specifiedorder) /// original_order: true representnotsort (originalbeginningorder), false representsort fn generate_ja4_with_order(&self, original_order: bool) -> Ja4Payload { // filter GREASE value let filtered_ciphers = filter_grease_values(&self.cipher_suites); let filtered_extensions = filter_grease_values(&self.extensions); let filtered_sig_algs = filter_grease_values(&self.signature_algorithms); // protocolmarker (TLS as 't', QUIC as 'q') let protocol = "t"; // TLS version let tls_version_str = format!("{}", self.version); // SNI indicateer：'d' if exists SNI, 'i' if not exists let sni_indicator = if self.sni.is_some() { "d" } else { "i" }; // cipher suitecount (2-decimal, maximum 99)- useoriginalbeginningcount (filterfront) let cipher_count = format!("{:02}", self.cipher_suites.len().min(99)); // extensioncount (2-decimal, maximum 99)- useoriginalbeginningcount (filterfront) let extension_count = format!("{:02}", self.extensions.len().min(99)); // ALPN first and lastcharacter let (alpn_first, alpn_last) = match &self.alpn { Some(alpn) => first_last_alpn(alpn), None => ('0', '0'), }; // JA4_a format：protocol + version + sni + cipher_count + extension_count + alpn_first + alpn_last let ja4_a = format!( "{protocol}{tls_version_str}{sni_indicator}{cipher_count}{extension_count}{alpn_first}{alpn_last}" ); // JA4_b: cipher suite (sort or originalbeginningorder, comma-separated, 4-hexadecimal)- filter GREASE let mut ciphers_for_b = filtered_ciphers; if !original_order { ciphers_for_b.sort_unstable(); } let ja4_b_raw = ciphers_for_b .iter() .map(|c| format!("{c:04x}")) .collect::<Vec<String>>() .join(","); // JA4_c: extension (sort or originalbeginningorder, comma-separated, 4-hexadecimal)+ "_" + signaturealgorithm let mut extensions_for_c = filtered_extensions; // for sortversion：remove SNI (0x0000) and ALPN (0x0010) andsort // for originalbeginningversion：preserve SNI/ALPN andkeeporiginalbeginningorder if !original_order { extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010); extensions_for_c.sort_unstable(); } let extensions_str = extensions_for_c .iter() .map(|e| format!("{e:04x}")) .collect::<Vec<String>>() .join(","); // signaturealgorithmnotsort (Based onspecification), butfilter GREASE let sig_algs_str = filtered_sig_algs .iter() .map(|s| format!("{s:04x}")) .collect::<Vec<String>>() .join(","); // Based onspecification, if nosignaturealgorithm, stringnotbelowunderscoreending let ja4_c_raw = if sig_algs_str.is_empty() { extensions_str } else if extensions_str.is_empty() { sig_algs_str } else { format!("{extensions_str}_{sig_algs_str}") }; // Generate JA4_b and JA4_c hash (SHA256 front 12character) let ja4_b_hash = hash12(&ja4_b_raw); let ja4_c_hash = hash12(&ja4_c_raw); // JA4 hash：ja4_a + "_" + ja4_b_hash + "_" + ja4_c_hash let ja4_hashed = format!("{ja4_a}_{ja4_b_hash}_{ja4_c_hash}"); // JA4 originalbeginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw let ja4_raw_full = format!("{ja4_a}_{ja4_b_raw}_{ja4_c_raw}"); // Based onorderCreatecorrespondingenumvariant let ja4_fingerprint = if original_order { Ja4Fingerprint::Unsorted(ja4_hashed) } else { Ja4Fingerprint::Sorted(ja4_hashed) }; let ja4_raw_fingerprint = if original_order { Ja4RawFingerprint::Unsorted(ja4_raw_full) } else { Ja4RawFingerprint::Sorted(ja4_raw_full) }; Ja4Payload { ja4_a, ja4_b: ja4_b_raw, ja4_c: ja4_c_raw, full: ja4_fingerprint, raw: ja4_raw_fingerprint, } }
-} #[cfg(test)]
-mod tests { use super::*; #[test] fn test_first_last_alpn() { assert_eq!(first_last_alpn("h2"), ('h', '2')); assert_eq!(first_last_alpn("http/1.1"), ('h', '1')); assert_eq!(first_last_alpn("h"), ('h', '0')); } #[test] fn test_hash12() { let hash = hash12("test"); assert_eq!(hash.len(), 12); } #[test] fn test_generate_ja4() { let sig = Ja4Signature { version: TlsVersion::V1_3, cipher_suites: vec![0x0a0a, 0x1301, 0x1302], // including GREASE extensions: vec![0x0000, 0x0010, 0x002b], signature_algorithms: vec![0x0403, 0x0804], sni: Some("example.com".to_string()), alpn: Some("h2".to_string()), }; let ja4 = sig.generate_ja4(); assert!(!ja4.ja4_a.is_empty()); assert!(!ja4.ja4_b.is_empty()); assert!(!ja4.ja4_c.is_empty()); assert_eq!(ja4.full.variant_name(), "ja4"); assert_eq!(ja4.raw.variant_name(), "ja4_r"); } #[test] fn test_generate_ja4_original() { let sig = Ja4Signature { version: TlsVersion::V1_2, cipher_suites: vec![0x0a0a, 0x0017], extensions: vec![0x0000], signature_algorithms: vec![], sni: None, alpn: None, }; let ja4 = sig.generate_ja4_original(); assert_eq!(ja4.full.variant_name(), "ja4_o"); assert_eq!(ja4.raw.variant_name(), "ja4_ro"); }
+pub struct Ja4Signature {
+    /// TLS version
+    pub version: TlsVersion,
+    /// cipher suitelist (including GREASE)
+    pub cipher_suites: Vec<u16>,
+    /// extensionlist (including GREASE)
+    pub extensions: Vec<u16>,
+    /// signaturealgorithmlist (including GREASE)
+    pub signature_algorithms: Vec<u16>,
+    /// Server Name Indication
+    pub sni: Option<String>,
+    /// Application-Layer Protocol Negotiation
+    pub alpn: Option<String>,
+}
+
+impl Ja4Signature {
+    /// Generate JA4 fingerprint (sortversion)
+    pub fn generate_ja4(&self) -> Ja4Payload {
+        self.generate_ja4_with_order(false)
+    }
+
+    /// Generate JA4 fingerprint (originalbeginningorderversion)
+    pub fn generate_ja4_original(&self) -> Ja4Payload {
+        self.generate_ja4_with_order(true)
+    }
+
+    /// Generate JA4 fingerprint (specifiedorder)
+    /// original_order: true representnotsort (originalbeginningorder), false representsort
+    fn generate_ja4_with_order(&self, original_order: bool) -> Ja4Payload {
+        // filter GREASE value
+        let filtered_ciphers = filter_grease_values(&self.cipher_suites);
+        let filtered_extensions = filter_grease_values(&self.extensions);
+        let filtered_sig_algs = filter_grease_values(&self.signature_algorithms);
+
+        // protocolmarker (TLS as 't', QUIC as 'q')
+        let protocol = "t";
+
+        // TLS version
+        let tls_version_str = format!("{}", self.version);
+
+        // SNI indicateer：'d' if exists SNI, 'i' if 不 exists
+        let sni_indicator = if self.sni.is_some() { "d" } else { "i" };
+
+        // cipher suitecount (2-bitdecimal, maximum 99)- useoriginalbeginningcount (filterfront)
+        let cipher_count = format!("{:02}", self.cipher_suites.len().min(99));
+
+        // extensioncount (2-bitdecimal, maximum 99)- useoriginalbeginningcount (filterfront)
+        let extension_count = format!("{:02}", self.extensions.len().min(99));
+
+        // ALPN first and lastcharacter
+        let (alpn_first, alpn_last) = match &self.alpn {
+            Some(alpn) => first_last_alpn(alpn),
+            None => ('0', '0'),
+        };
+
+        // JA4_a format：protocol + version + sni + cipher_count + extension_count + alpn_first + alpn_last
+        let ja4_a = format!(
+ "{protocol}{tls_version_str}{sni_indicator}{cipher_count}{extension_count}{alpn_first}{alpn_last}"
+ );
+
+        // JA4_b: cipher suite (sort or originalbeginningorder, comma-separated, 4-bithexadecimal)- filter GREASE
+        let mut ciphers_for_b = filtered_ciphers;
+        if !original_order {
+            ciphers_for_b.sort_unstable();
+        }
+        let ja4_b_raw = ciphers_for_b
+            .iter()
+            .map(|c| format!("{c:04x}"))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        // JA4_c: extension (sort or originalbeginningorder, comma-separated, 4-bithexadecimal)+ "_" + signaturealgorithm
+        let mut extensions_for_c = filtered_extensions;
+
+        // for sortversion：remove SNI (0x0000) and ALPN (0x0010) 并sort
+        // for originalbeginningversion：preserve SNI/ALPN 并keeporiginalbeginningorder
+        if !original_order {
+            extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010);
+            extensions_for_c.sort_unstable();
+        }
+
+        let extensions_str = extensions_for_c
+            .iter()
+            .map(|e| format!("{e:04x}"))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        // signaturealgorithm不sort (Based onspecification), butfilter GREASE
+        let sig_algs_str = filtered_sig_algs
+            .iter()
+            .map(|s| format!("{s:04x}"))
+            .collect::<Vec<String>>()
+            .join(",");
+
+        // Based onspecification,  if nosignaturealgorithm, string不belowunderscoreending
+        let ja4_c_raw = if sig_algs_str.is_empty() {
+            extensions_str
+        } else if extensions_str.is_empty() {
+            sig_algs_str
+        } else {
+            format!("{extensions_str}_{sig_algs_str}")
+        };
+
+        // Generate JA4_b and JA4_c hash (SHA256 front 12character)
+        let ja4_b_hash = hash12(&ja4_b_raw);
+        let ja4_c_hash = hash12(&ja4_c_raw);
+
+        // JA4 hash：ja4_a + "_" + ja4_b_hash + "_" + ja4_c_hash
+        let ja4_hashed = format!("{ja4_a}_{ja4_b_hash}_{ja4_c_hash}");
+
+        // JA4 originalbeginning：ja4_a + "_" + ja4_b_raw + "_" + ja4_c_raw
+        let ja4_raw_full = format!("{ja4_a}_{ja4_b_raw}_{ja4_c_raw}");
+
+        // Based onorderCreatecorrespondingenumvariant
+        let ja4_fingerprint = if original_order {
+            Ja4Fingerprint::Unsorted(ja4_hashed)
+        } else {
+            Ja4Fingerprint::Sorted(ja4_hashed)
+        };
+
+        let ja4_raw_fingerprint = if original_order {
+            Ja4RawFingerprint::Unsorted(ja4_raw_full)
+        } else {
+            Ja4RawFingerprint::Sorted(ja4_raw_full)
+        };
+
+        Ja4Payload {
+            ja4_a,
+            ja4_b: ja4_b_raw,
+            ja4_c: ja4_c_raw,
+            full: ja4_fingerprint,
+            raw: ja4_raw_fingerprint,
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_first_last_alpn() {
+        assert_eq!(first_last_alpn("h2"), ('h', '2'));
+        assert_eq!(first_last_alpn("http/1.1"), ('h', '1'));
+        assert_eq!(first_last_alpn("h"), ('h', '0'));
+    }
+
+    #[test]
+    fn test_hash12() {
+        let hash = hash12("test");
+        assert_eq!(hash.len(), 12);
+    }
+
+    #[test]
+    fn test_generate_ja4() {
+        let sig = Ja4Signature {
+            version: TlsVersion::V1_3,
+            cipher_suites: vec![0x0a0a, 0x1301, 0x1302], // including GREASE
+            extensions: vec![0x0000, 0x0010, 0x002b],
+            signature_algorithms: vec![0x0403, 0x0804],
+            sni: Some("example.com".to_string()),
+            alpn: Some("h2".to_string()),
+        };
+
+        let ja4 = sig.generate_ja4();
+        assert!(!ja4.ja4_a.is_empty());
+        assert!(!ja4.ja4_b.is_empty());
+        assert!(!ja4.ja4_c.is_empty());
+        assert_eq!(ja4.full.variant_name(), "ja4");
+        assert_eq!(ja4.raw.variant_name(), "ja4_r");
+    }
+
+    #[test]
+    fn test_generate_ja4_original() {
+        let sig = Ja4Signature {
+            version: TlsVersion::V1_2,
+            cipher_suites: vec![0x0a0a, 0x0017],
+            extensions: vec![0x0000],
+            signature_algorithms: vec![],
+            sni: None,
+            alpn: None,
+        };
+
+        let ja4 = sig.generate_ja4_original();
+        assert_eq!(ja4.full.variant_name(), "ja4_o");
+        assert_eq!(ja4.raw.variant_name(), "ja4_ro");
+    }
 }

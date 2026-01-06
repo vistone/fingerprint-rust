@@ -9,7 +9,7 @@ documentation.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "Core types and utility functions module"
+description = "核心类型和工具函数模块"
 
 [dependencies]
 rand.workspace = true

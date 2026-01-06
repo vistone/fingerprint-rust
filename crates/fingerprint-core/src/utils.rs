@@ -1,11 +1,11 @@
-//! Utility functions module
+//! utility functionsmodule
 //!
-//! Provide random selection, string processing etc.utility functions
+//! providerandomly select, stringprocess etc.utility functions
 
 use rand::Rng;
 
-/// Randomly select an element from a slice (thread-safe)
-/// Use thread_rng() to ensure thread safety
+/// from slice in randomly select anelement (threadsecurity)
+/// use thread_rng() ensurethreadsecurity
 pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     if items.is_empty() {
         return None;
@@ -15,34 +15,34 @@ pub fn random_choice<T: Clone>(items: &[T]) -> Option<T> {
     Some(items[index].clone())
 }
 
-/// Randomly select an element from a string slice (thread-safe)
+/// from stringslice in randomly select anelement (threadsecurity)
 pub fn random_choice_string(items: &[&str]) -> Option<String> {
     random_choice(items).map(|s| s.to_string())
 }
 
-/// Extract from User-Agent Chrome version number
+/// from User-Agent in Extract Chrome versionnumber
 pub fn extract_chrome_version(user_agent: &str) -> String {
-    // Find "Chrome/" followed by version number
-    if let Some(start) = user_agent.Find("Chrome/") {
+    // find "Chrome/" back面versionnumber
+    if let Some(start) = user_agent.find("Chrome/") {
         let version_start = start + 7; // "Chrome/".len()
         if let Some(end) =
-            user_agent[version_start..].Find(|c: char| !c.is_ascii_digit() && c != '.')
+            user_agent[version_start..].find(|c: char| !c.is_ascii_digit() && c != '.')
         {
             return user_agent[version_start..version_start + end].to_string();
         }
-        // If not found until the end, return to string end
+        // Ifnot found to endbitplace, return to stringend尾
         return user_agent[version_start..]
             .split_whitespace()
             .next()
             .unwrap_or("120")
             .to_string();
     }
-    "120".to_string() // default version
+    "120".to_string() // defaultversion
 }
 
-/// Extract from User-Agentplatforminfo
+/// from User-Agent in Extractplatforminfo
 pub fn extract_platform(user_agent: &str) -> String {
-    // Extract platform info for Sec-CH-UA-Platform
+    // Extractplatforminfo for Sec-CH-UA-Platform
     if user_agent.contains("Windows") {
         return r#""Windows""#.to_string();
     } else if user_agent.contains("Macintosh") || user_agent.contains("Mac OS X") {
@@ -54,16 +54,16 @@ pub fn extract_platform(user_agent: &str) -> String {
     } else if user_agent.contains("iPhone") || user_agent.contains("iPad") {
         return r#""iOS""#.to_string();
     }
-    r#""Windows""#.to_string() // default platform
+    r#""Windows""#.to_string() // defaultplatform
 }
 
-/// Extract from User-Agent operating system type
+/// from User-Agent in Extractoperating systemtype
 ///
-/// for unified fingerprint generation, ensure browser fingerprint and TCP fingerprint sync
+/// for unifiedfingerprintGenerate, ensurebrowserfingerprint and TCP fingerprintsync
 pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSystem {
     use crate::types::OperatingSystem;
 
-    // Note: iPhone/iPad User-Agent includes "Mac OS X", need to check mobile device first
+    // Note: iPhone/iPad User-Agent including "Mac OS X", need先Checkmovedevice
     if user_agent.contains("iPhone") || user_agent.contains("iPad") {
         // iOS device：use macOS TCP fingerprint (iOS based on macOS)
         OperatingSystem::MacOS14
@@ -86,12 +86,12 @@ pub fn extract_os_from_user_agent(user_agent: &str) -> crate::types::OperatingSy
     } else if user_agent.contains("Linux") || user_agent.contains("Android") {
         OperatingSystem::Linux
     } else {
-        // default to Windows (most common browser environment)
+        // defaultuse Windows (most commonbrowserenvironment)
         OperatingSystem::Windows10
     }
 }
 
-/// Infer browser type from profile name
+/// from profile nameinferbrowsertype
 pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     let name_lower = profile_name.to_lowercase();
     if name_lower.starts_with("chrome_") {
@@ -109,7 +109,7 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
         || name_lower.contains("android")
         || name_lower.contains("mobile")
     {
-        // mobile application fingerprint
+        // mobileapplicationfingerprint
         if name_lower.contains("ios") {
             ("safari".to_string(), true)
         } else {
@@ -120,7 +120,7 @@ pub fn infer_browser_from_profile_name(profile_name: &str) -> (String, bool) {
     }
 }
 
-/// Check whether it is a mobile profile
+/// judgewhether as mobile profile
 pub fn is_mobile_profile(profile_name: &str) -> bool {
     let name = profile_name.to_lowercase();
     name.contains("ios")

@@ -9,7 +9,7 @@ documentation.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "HTTP Headers and User-Agent generation module"
+description = "HTTP Headers 和 User-Agent 生成模块"
 
 [dependencies]
 fingerprint-core = { path = "../fingerprint-core" }

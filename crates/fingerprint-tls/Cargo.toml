@@ -9,7 +9,7 @@ documentation.workspace = true
 homepage.workspace = true
 keywords.workspace = true
 categories.workspace = true
-description = "TLS configuration extension and handshake module"
+description = "TLS 配置、扩展和握手模块"
 
 [dependencies]
 fingerprint-core = { path = "../fingerprint-core" }
@@ -19,7 +19,7 @@ rand = { workspace = true, optional = true }
 ring = { workspace = true, optional = true }
 
 [features]
-# Security fix: enable crypto feature by default to ensure all platforms work correctly
-# Without crypto enabled, it will fail on systems without /dev/urandom (like Windows)
+# 安全修复：默认启用 crypto feature，确保在所有平台上都能正常工作
+# 如果不启用 crypto，在 Windows 等没有 /dev/urandom 的系统上会运行时失败
 default = ["crypto"]
-crypto = ["ring", "rand"] # Real key generation (for TLS Handshake)
+crypto = ["ring", "rand"]  # 真实密钥生成（用于 TLS Handshake）

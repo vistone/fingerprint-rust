@@ -365,7 +365,7 @@ impl Default for UserAgentGenerator {
     }
 }
 
-/// globaldefaultGenerator (thread-safe)
+/// globaldefaultGenerator (threadsecurity)
 static DEFAULT_GENERATOR: OnceLock<UserAgentGenerator> = OnceLock::new();
 
 fn get_default_generator() -> &'static UserAgentGenerator {
