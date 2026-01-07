@@ -1,0 +1,36 @@
+[package]
+name = "fingerprint-fuzz"
+version = "0.0.0"
+authors = ["Automatically generated"]
+publish = false
+edition = "2021"
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+fingerprint-core = { path = "../crates/fingerprint-core" }
+fingerprint-tls = { path = "../crates/fingerprint-tls" }
+
+# Prevent this from interfering with workspaces
+[workspace]
+members = ["."]
+
+[[bin]]
+name = "fuzz_ja3_generation"
+path = "fuzz_targets/fuzz_ja3_generation.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_packet_parsing"
+path = "fuzz_targets/fuzz_packet_parsing.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "fuzz_tls_clienthello"
+path = "fuzz_targets/fuzz_tls_clienthello.rs"
+test = false
+doc = false

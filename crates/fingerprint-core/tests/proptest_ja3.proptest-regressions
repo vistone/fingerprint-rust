@@ -1,0 +1,7 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 8b171f192a434db063acb71b0a29eb49b2b9e46bf7b8e116458f39fa51d034d5 # shrinks to version = 768, non_grease_ciphers = [25700]
