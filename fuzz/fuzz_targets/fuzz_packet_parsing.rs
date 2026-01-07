@@ -1,7 +1,7 @@
 #![no_main]
 
 use libfuzzer_sys::fuzz_target;
-use fingerprint_defense::passive::packet::PacketParser;
+use fingerprint_defense::PacketParser;
 
 fuzz_target!(|data: &[u8]| {
     // Attempt to parse as generic packet (IPv4 or IPv6)
