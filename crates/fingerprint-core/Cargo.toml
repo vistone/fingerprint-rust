@@ -25,3 +25,4 @@ serde_json.workspace = true
 [dev-dependencies]
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+proptest = "1.4"
