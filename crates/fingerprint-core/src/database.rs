@@ -32,7 +32,7 @@
 //!
 //! // Query fingerprint
 //! if let Some(entry) = db.get_ja3("d8321312332df7ff") {
-//! println!("Found: {} - Threat level: {}", entry.client_info.unwrap(), entry.threat_level);
+//! println!("Found: {} - Threat level: {}", entry.client_info.as_ref().unwrap(), entry.threat_level);
 //! }
 //! ```
 

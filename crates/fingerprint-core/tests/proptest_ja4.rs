@@ -12,8 +12,8 @@ use proptest::prelude::*;
 /// Strategy for generating transport protocol
 fn transport_strategy() -> impl Strategy<Value = char> {
     prop_oneof![
-        Just('t'),  // TCP
-        Just('q'),  // QUIC
+        Just('t'), // TCP
+        Just('q'), // QUIC
     ]
 }
 
@@ -68,7 +68,7 @@ proptest! {
         let alpn_ref = alpn.as_deref();
         let ja4_1 = JA4::generate(transport, &version, has_sni, &ciphers, &extensions, alpn_ref, &signature_algorithms);
         let ja4_2 = JA4::generate(transport, &version, has_sni, &ciphers, &extensions, alpn_ref, &signature_algorithms);
-        
+
         prop_assert_eq!(ja4_1.to_fingerprint_string(), ja4_2.to_fingerprint_string());
     }
 
@@ -86,24 +86,24 @@ proptest! {
         let alpn_ref = alpn.as_deref();
         let ja4 = JA4::generate(transport, &version, has_sni, &ciphers, &extensions, alpn_ref, &signature_algorithms);
         let fingerprint = ja4.to_fingerprint_string();
-        
+
         // JA4 format: t13d1516h2_8daaf6152771_000a (transport + version + destination + counts + alpn _ hashes)
         // Should contain underscores separating parts
         prop_assert!(fingerprint.contains('_'), "JA4 fingerprint should contain underscores");
-        
+
         // Transport should be 't' or 'q'
         prop_assert!(ja4.transport == 't' || ja4.transport == 'q');
-        
+
         // Version should be 2 digits
         prop_assert_eq!(ja4.version.len(), 2);
-        
+
         // Destination should be 'd' or 'i'
         prop_assert!(ja4.destination == 'd' || ja4.destination == 'i');
-        
+
         // Counts should be within bounds
         prop_assert!(ja4.cipher_count <= 99);
         prop_assert!(ja4.extension_count <= 99);
-        
+
         // Hash lengths should be correct
         prop_assert_eq!(ja4.cipher_hash.len(), 12);
         prop_assert_eq!(ja4.extension_hash.len(), 12);
@@ -121,9 +121,9 @@ proptest! {
         let mut ciphers = vec![0x1301, 0x1302, 0x1303]; // Non-GREASE TLS 1.3 ciphers
         ciphers.push(0x0a0a); // GREASE
         ciphers.push(0x1a1a); // GREASE
-        
+
         let ja4 = JA4::generate(transport, &version, has_sni, &ciphers, &[], None, &[]);
-        
+
         // Cipher count should exclude GREASE values
         prop_assert_eq!(ja4.cipher_count, 3, "GREASE values should be filtered");
     }
@@ -136,7 +136,7 @@ proptest! {
         has_sni in any::<bool>()
     ) {
         let ja4 = JA4::generate(transport, &version, has_sni, &[], &[], None, &[]);
-        
+
         prop_assert_eq!(ja4.cipher_count, 0);
         prop_assert_eq!(ja4.extension_count, 0);
         prop_assert_eq!(ja4.cipher_hash.len(), 12);
@@ -169,13 +169,13 @@ proptest! {
         let large_ciphers: Vec<u16> = (0..200).map(|i| i as u16).collect();
         let large_extensions: Vec<u16> = (0..200).map(|i| i as u16).collect();
         let large_signatures: Vec<u16> = (0..100).map(|i| i as u16).collect();
-        
+
         let ja4 = JA4::generate(transport, &version, has_sni, &large_ciphers, &large_extensions, None, &large_signatures);
-        
+
         // Counts should be capped at 99
         prop_assert!(ja4.cipher_count <= 99);
         prop_assert!(ja4.extension_count <= 99);
-        
+
         // Hashes should still be correct length
         prop_assert_eq!(ja4.cipher_hash.len(), 12);
         prop_assert_eq!(ja4.extension_hash.len(), 12);
@@ -203,7 +203,7 @@ proptest! {
     ) {
         let ja4_with_sni = JA4::generate(transport, &version, true, &[], &[], None, &[]);
         let ja4_without_sni = JA4::generate(transport, &version, false, &[], &[], None, &[]);
-        
+
         prop_assert_eq!(ja4_with_sni.destination, 'd');
         prop_assert_eq!(ja4_without_sni.destination, 'i');
     }
@@ -212,7 +212,7 @@ proptest! {
 #[cfg(test)]
 mod additional_tests {
     use super::*;
-    
+
     #[test]
     fn test_ja4_consistency_with_known_values() {
         // Test with known Chrome-like values
@@ -225,13 +225,13 @@ mod additional_tests {
             Some("h2"),
             &[0x0403, 0x0804],
         );
-        
+
         // Should produce consistent output
         assert!(!ja4.to_fingerprint_string().is_empty());
         assert_eq!(ja4.transport, 't');
         assert_eq!(ja4.version, "13");
         assert_eq!(ja4.destination, 'd');
-        
+
         // Re-generate and verify consistency
         let ja4_2 = JA4::generate(
             't',
@@ -242,28 +242,28 @@ mod additional_tests {
             Some("h2"),
             &[0x0403, 0x0804],
         );
-        
+
         assert_eq!(ja4.to_fingerprint_string(), ja4_2.to_fingerprint_string());
     }
-    
+
     #[test]
     fn test_ja4_sorting() {
         // JA4 sorts ciphers and extensions (unlike JA3)
         let ja4_1 = JA4::generate('t', "1.2", true, &[0x1301, 0x1302], &[], None, &[]);
         let ja4_2 = JA4::generate('t', "1.2", true, &[0x1302, 0x1301], &[], None, &[]);
-        
+
         // Same ciphers in different order should produce same fingerprint after sorting
         assert_eq!(ja4_1.to_fingerprint_string(), ja4_2.to_fingerprint_string());
     }
-    
+
     #[test]
     fn test_ja4_alpn_truncation() {
         let ja4_short = JA4::generate('t', "1.3", true, &[], &[], Some("h2"), &[]);
         let ja4_long = JA4::generate('t', "1.3", true, &[], &[], Some("http/1.1"), &[]);
-        
+
         // Short ALPN should be preserved
         assert_eq!(ja4_short.alpn, "h2");
-        
+
         // Long ALPN should be truncated to 2 characters
         assert_eq!(ja4_long.alpn, "ht");
     }
