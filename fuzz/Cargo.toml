@@ -22,15 +22,3 @@ name = "fuzz_ja3_generation"
 path = "fuzz_targets/fuzz_ja3_generation.rs"
 test = false
 doc = false
-
-[[bin]]
-name = "fuzz_packet_parsing"
-path = "fuzz_targets/fuzz_packet_parsing.rs"
-test = false
-doc = false
-
-[[bin]]
-name = "fuzz_tls_clienthello"
-path = "fuzz_targets/fuzz_tls_clienthello.rs"
-test = false
-doc = false

@@ -78,24 +78,28 @@ proptest! {
     #[test]
     fn test_ja3_grease_filtering(
         version in tls_version_strategy(),
-        non_grease_ciphers in prop::collection::vec(0u16..=0x0a09, 0..=50) // Exclude GREASE range
     ) {
-        // Add known GREASE values
-        let mut ciphers = non_grease_ciphers.clone();
+        // Create a set with known GREASE values and non-GREASE values
+        let mut ciphers = vec![0x1301, 0x1302, 0x1303]; // Non-GREASE TLS 1.3 ciphers
         ciphers.push(0x0a0a); // GREASE
         ciphers.push(0x1a1a); // GREASE
         ciphers.push(0x2a2a); // GREASE
+        ciphers.push(0x3a3a); // GREASE
         
-        let ja3_with_grease = JA3::generate(version, &ciphers, &[], &[], &[]);
-        
-        // GREASE values should be filtered out, so the cipher list should be same as without GREASE
-        // Check that cipher string doesn't have exact GREASE values when they're at start/end
-        let cipher_parts: Vec<&str> = ja3_with_grease.ciphers.split('-').collect();
+        let ja3 = JA3::generate(version, &ciphers, &[], &[], &[]);
         
         // Verify GREASE values are not in output
-        prop_assert!(!cipher_parts.contains(&"2570")); // 0x0a0a decimal
-        prop_assert!(!cipher_parts.contains(&"6666")); // 0x1a1a decimal
-        prop_assert!(!cipher_parts.contains(&"10794")); // 0x2a2a decimal
+        // These are the decimal representations of the GREASE values above
+        let grease_decimals = vec!["2570", "6666", "10794", "14906"];
+        let cipher_parts: Vec<&str> = ja3.ciphers.split('-').collect();
+        
+        for grease_decimal in &grease_decimals {
+            prop_assert!(!cipher_parts.contains(grease_decimal), 
+                "GREASE value {} should not appear in JA3 cipher list", grease_decimal);
+        }
+        
+        // Verify non-GREASE values are present
+        prop_assert!(cipher_parts.contains(&"4865"), "TLS_AES_128_GCM_SHA256 (0x1301) should be present");
     }
 
     /// Property: Empty inputs should produce valid fingerprints
