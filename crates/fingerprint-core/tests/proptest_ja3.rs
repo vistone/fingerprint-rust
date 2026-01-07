@@ -12,11 +12,11 @@ use proptest::prelude::*;
 /// Strategy for generating valid TLS versions
 fn tls_version_strategy() -> impl Strategy<Value = u16> {
     prop_oneof![
-        Just(768u16),  // SSL 3.0
-        Just(769u16),  // TLS 1.0
-        Just(770u16),  // TLS 1.1
-        Just(771u16),  // TLS 1.2
-        Just(772u16),  // TLS 1.3
+        Just(768u16), // SSL 3.0
+        Just(769u16), // TLS 1.0
+        Just(770u16), // TLS 1.1
+        Just(771u16), // TLS 1.2
+        Just(772u16), // TLS 1.3
     ]
 }
 
@@ -53,7 +53,7 @@ proptest! {
     ) {
         let ja3_1 = JA3::generate(version, &ciphers, &extensions, &curves, &formats);
         let ja3_2 = JA3::generate(version, &ciphers, &extensions, &curves, &formats);
-        
+
         prop_assert_eq!(ja3_1.fingerprint, ja3_2.fingerprint);
         prop_assert_eq!(ja3_1.ja3_string, ja3_2.ja3_string);
     }
@@ -69,7 +69,7 @@ proptest! {
     ) {
         let ja3 = JA3::generate(version, &ciphers, &extensions, &curves, &formats);
         prop_assert_eq!(ja3.fingerprint.len(), 32);
-        
+
         // Verify all characters are hexadecimal
         prop_assert!(ja3.fingerprint.chars().all(|c| c.is_ascii_hexdigit()));
     }
@@ -85,19 +85,19 @@ proptest! {
         ciphers.push(0x1a1a); // GREASE
         ciphers.push(0x2a2a); // GREASE
         ciphers.push(0x3a3a); // GREASE
-        
+
         let ja3 = JA3::generate(version, &ciphers, &[], &[], &[]);
-        
+
         // Verify GREASE values are not in output
         // These are the decimal representations of the GREASE values above
         let grease_decimals = vec!["2570", "6666", "10794", "14906"];
         let cipher_parts: Vec<&str> = ja3.ciphers.split('-').collect();
-        
+
         for grease_decimal in &grease_decimals {
-            prop_assert!(!cipher_parts.contains(grease_decimal), 
+            prop_assert!(!cipher_parts.contains(grease_decimal),
                 "GREASE value {} should not appear in JA3 cipher list", grease_decimal);
         }
-        
+
         // Verify non-GREASE values are present
         prop_assert!(cipher_parts.contains(&"4865"), "TLS_AES_128_GCM_SHA256 (0x1301) should be present");
     }
@@ -106,7 +106,7 @@ proptest! {
     #[test]
     fn test_ja3_empty_inputs(version in tls_version_strategy()) {
         let ja3 = JA3::generate(version, &[], &[], &[], &[]);
-        
+
         prop_assert_eq!(ja3.fingerprint.len(), 32);
         prop_assert_eq!(ja3.ciphers, "");
         prop_assert_eq!(ja3.extensions, "");
@@ -122,11 +122,11 @@ proptest! {
         formats in ec_point_formats_strategy()
     ) {
         let ja3 = JA3::generate(version, &ciphers, &extensions, &curves, &formats);
-        
+
         // JA3 string should contain exactly 4 commas (5 parts)
         let comma_count = ja3.ja3_string.chars().filter(|&c| c == ',').count();
         prop_assert_eq!(comma_count, 4);
-        
+
         // First part should be the version number
         let parts: Vec<&str> = ja3.ja3_string.split(',').collect();
         prop_assert_eq!(parts.len(), 5);
@@ -142,7 +142,7 @@ proptest! {
     ) {
         let ja3s_1 = JA3S::generate(version, cipher, &extensions);
         let ja3s_2 = JA3S::generate(version, cipher, &extensions);
-        
+
         prop_assert_eq!(ja3s_1.fingerprint, ja3s_2.fingerprint);
         prop_assert_eq!(ja3s_1.ja3s_string, ja3s_2.ja3s_string);
     }
@@ -167,11 +167,11 @@ proptest! {
         extensions in extensions_strategy()
     ) {
         let ja3s = JA3S::generate(version, cipher, &extensions);
-        
+
         // JA3S string should contain exactly 2 commas (3 parts)
         let comma_count = ja3s.ja3s_string.chars().filter(|&c| c == ',').count();
         prop_assert_eq!(comma_count, 2);
-        
+
         let parts: Vec<&str> = ja3s.ja3s_string.split(',').collect();
         prop_assert_eq!(parts.len(), 3);
         prop_assert_eq!(parts[0], version.to_string());
@@ -209,9 +209,9 @@ proptest! {
         let large_extensions: Vec<u16> = (0..500).map(|i| i as u16).collect();
         let large_curves: Vec<u16> = (0..100).map(|i| i as u16).collect();
         let large_formats: Vec<u8> = (0..50).map(|i| i as u8).collect();
-        
+
         let ja3 = JA3::generate(version, &large_ciphers, &large_extensions, &large_curves, &large_formats);
-        
+
         // Should still produce valid fingerprint
         prop_assert_eq!(ja3.fingerprint.len(), 32);
         prop_assert!(ja3.fingerprint.chars().all(|c| c.is_ascii_hexdigit()));
@@ -221,7 +221,7 @@ proptest! {
 #[cfg(test)]
 mod additional_tests {
     use super::*;
-    
+
     #[test]
     fn test_ja3_consistency_with_known_values() {
         // Test with known Chrome-like values
@@ -232,11 +232,11 @@ mod additional_tests {
             &[23, 24, 25],
             &[0],
         );
-        
+
         // Should produce consistent output
         assert!(!ja3.fingerprint.is_empty());
         assert_eq!(ja3.ssl_version, 771);
-        
+
         // Re-generate and verify consistency
         let ja3_2 = JA3::generate(
             771,
@@ -245,24 +245,24 @@ mod additional_tests {
             &[23, 24, 25],
             &[0],
         );
-        
+
         assert_eq!(ja3.fingerprint, ja3_2.fingerprint);
     }
-    
+
     #[test]
     fn test_ja3_ordering_independence() {
         // JA3 does not sort, so order matters
         let ja3_1 = JA3::generate(771, &[0x1301, 0x1302], &[], &[], &[]);
         let ja3_2 = JA3::generate(771, &[0x1302, 0x1301], &[], &[], &[]);
-        
+
         // Different orders should produce different fingerprints
         assert_ne!(ja3_1.fingerprint, ja3_2.fingerprint);
     }
-    
+
     #[test]
     fn test_ja3s_consistency() {
         let ja3s = JA3S::generate(771, 0x1301, &[0, 10, 11]);
-        
+
         // Should be consistent
         assert!(!ja3s.fingerprint.is_empty());
         assert_eq!(ja3s.ssl_version, 771);
