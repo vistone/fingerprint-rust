@@ -98,7 +98,7 @@ jobs:
     
     - name: Generate coverage report
       run: |
-        cargo llvm-cov report --workspace --features "${{ env.TEST_FEATURES }}"
+        cargo llvm-cov report
         echo "Coverage report generated"
 
   lint:
