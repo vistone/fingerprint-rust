@@ -51,8 +51,8 @@ pub use random::{
 
 #[cfg(feature = "dns")]
 pub use fingerprint_dns::{
-    load_config as load_dns_config, CachedDNSResolver, DNSCache, DNSConfig, DNSError,
-    DNSResolver, DNSResolverTrait, DNSResult, DomainIPs, IPInfo, ServerCollector, ServerPool,
+    load_config as load_dns_config, CachedDNSResolver, DNSCache, DNSConfig, DNSError, DNSResolver,
+    DNSResolverTrait, DNSResult, DomainIPs, IPInfo, ServerCollector, ServerPool,
     Service as DNSService,
 };
 

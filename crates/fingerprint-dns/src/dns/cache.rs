@@ -58,7 +58,7 @@ impl DNSCache {
     /// * `None` - 如果缓存未命中或已过期
     pub fn get(&self, domain: &str) -> Option<DomainIPs> {
         let cache = self.cache.read().ok()?;
-        
+
         if let Some(entry) = cache.get(domain) {
             if !entry.is_expired() {
                 return Some(entry.ips.clone());
@@ -221,7 +221,8 @@ mod tests {
 
         // 存入缓存
         let mut ips = DomainIPs::new();
-        ips.ipv4.push(crate::dns::types::IPInfo::new("93.184.216.34".to_string()));
+        ips.ipv4
+            .push(crate::dns::types::IPInfo::new("93.184.216.34".to_string()));
         cache.put(domain, ips.clone());
 
         // 缓存命中
@@ -241,7 +242,8 @@ mod tests {
         let domain = "example.com";
 
         let mut ips = DomainIPs::new();
-        ips.ipv4.push(crate::dns::types::IPInfo::new("93.184.216.34".to_string()));
+        ips.ipv4
+            .push(crate::dns::types::IPInfo::new("93.184.216.34".to_string()));
         cache.put(domain, ips);
 
         // 立即访问：应该命中
@@ -260,11 +262,13 @@ mod tests {
 
         // 添加两个域名
         let mut ips1 = DomainIPs::new();
-        ips1.ipv4.push(crate::dns::types::IPInfo::new("1.1.1.1".to_string()));
+        ips1.ipv4
+            .push(crate::dns::types::IPInfo::new("1.1.1.1".to_string()));
         cache.put("domain1.com", ips1);
 
         let mut ips2 = DomainIPs::new();
-        ips2.ipv4.push(crate::dns::types::IPInfo::new("2.2.2.2".to_string()));
+        ips2.ipv4
+            .push(crate::dns::types::IPInfo::new("2.2.2.2".to_string()));
         cache.put("domain2.com", ips2);
 
         // 验证统计
@@ -300,7 +304,8 @@ mod tests {
 
         // 添加一个条目
         let mut ips = DomainIPs::new();
-        ips.ipv4.push(crate::dns::types::IPInfo::new("1.1.1.1".to_string()));
+        ips.ipv4
+            .push(crate::dns::types::IPInfo::new("1.1.1.1".to_string()));
         cache.put("example.com", ips);
 
         let (total, expired) = cache.stats();

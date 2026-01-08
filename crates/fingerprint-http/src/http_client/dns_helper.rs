@@ -48,13 +48,16 @@ impl DNSHelper {
 
         // 尝试从缓存获取
         if let Some(cached_ips) = self.get_cached(host) {
-            return Ok(cached_ips.iter().map(|ip| SocketAddr::new(*ip, port)).collect());
+            return Ok(cached_ips
+                .iter()
+                .map(|ip| SocketAddr::new(*ip, port))
+                .collect());
         }
 
         // 缓存未命中，执行实际解析
         let addr = format!("{}:{}", host, port);
         let addrs: Vec<SocketAddr> = addr.to_socket_addrs()?.collect();
-        
+
         // 提取 IP 地址并缓存
         let ips: Vec<IpAddr> = addrs.iter().map(|addr| addr.ip()).collect();
         self.put_cache(host, ips);
@@ -136,7 +139,10 @@ impl DNSHelper {
         };
 
         let expired = if let Ok(cache_time) = self.cache_time.read() {
-            cache_time.values().filter(|time| time.elapsed() > self.ttl).count()
+            cache_time
+                .values()
+                .filter(|time| time.elapsed() > self.ttl)
+                .count()
         } else {
             0
         };

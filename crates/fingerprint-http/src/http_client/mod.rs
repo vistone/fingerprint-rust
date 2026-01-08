@@ -9,6 +9,7 @@
 //! - TLS layer designed to be replaceable
 
 pub mod cookie;
+pub mod dns_helper;
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 mod h2_session_pool;
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -33,7 +34,6 @@ mod rustls_client_hello_customizer;
 mod rustls_utils;
 pub mod tcp_fingerprint;
 pub mod tls;
-pub mod dns_helper;
 
 pub use cookie::{Cookie, CookieStore, SameSite};
 pub use dns_helper::DNSHelper;
@@ -145,7 +145,7 @@ impl Default for HttpClientConfig {
             prefer_http2: true,  // defaultpriorityuse HTTP/2
             prefer_http3: false, // HTTP/3 defaultclose (needspecialconfiguration)
             cookie_store: None,
-            dns_helper: None,    // DNS 辅助器默认关闭（可选功能）
+            dns_helper: None, // DNS 辅助器默认关闭（可选功能）
         }
     }
 }
