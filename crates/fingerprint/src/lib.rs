@@ -38,9 +38,9 @@ pub use fingerprint_headers::{
     HTTPHeaders, UserAgentGenerator,
 };
 pub use fingerprint_http::{
-    Cookie, CookieStore, HttpClient, HttpClientConfig, HttpClientError, HttpMethod, HttpRequest,
-    HttpResponse, ProxyConfig, ProxyType, ReportFormat, ReportSection, SameSite, TlsConnector,
-    ValidationReport,
+    Cookie, CookieStore, DNSHelper, HttpClient, HttpClientConfig, HttpClientError, HttpMethod,
+    HttpRequest, HttpResponse, ProxyConfig, ProxyType, ReportFormat, ReportSection, SameSite,
+    TlsConnector, ValidationReport,
 };
 pub use fingerprint_profiles::*;
 pub use fingerprint_tls::*;
@@ -51,8 +51,9 @@ pub use random::{
 
 #[cfg(feature = "dns")]
 pub use fingerprint_dns::{
-    load_config as load_dns_config, DNSConfig, DNSError, DNSResult, DomainIPs, IPInfo,
-    ServerCollector, ServerPool, Service as DNSService,
+    load_config as load_dns_config, CachedDNSResolver, DNSCache, DNSConfig, DNSError,
+    DNSResolver, DNSResolverTrait, DNSResult, DomainIPs, IPInfo, ServerCollector, ServerPool,
+    Service as DNSService,
 };
 
 #[cfg(feature = "defense")]
