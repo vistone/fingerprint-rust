@@ -4,6 +4,12 @@
 
 `dns` 模块提供 DNS 预解析服务，定期解析域名列表，并集成 IPInfo.io 获取 IP 地理信息。该模块设计为自动维护，无需人工干预。
 
+**v2.1 新增功能**：
+- ✅ **DNS 缓存 (DNSCache)**：内存缓存功能，减少重复解析，提高性能
+- ✅ **HTTP 客户端集成**：通过 `DNSHelper` 无缝集成到 HTTP 客户端
+- ✅ **智能 IP 选择**：基于地理位置信息实现智能 IP 路由
+- ✅ **缓存管理**：自动过期清理和手动失效控制
+
 ## 模块位置
 
 **Crate**: `fingerprint-dns`  
@@ -116,6 +122,155 @@ impl IPInfoClient {
     
     /// 并发获取多个 IP 的详细信息
     pub async fn get_ip_infos(&self, ips: Vec<String>, max_concurrency: usize) -> Vec<IPInfo>;
+}
+```
+
+### DNSCache (v2.1 新增)
+
+DNS 缓存模块，提供内存缓存功能。
+
+```rust
+pub struct DNSCache {
+    cache: Arc<RwLock<HashMap<String, CacheEntry>>>,
+    default_ttl: Duration,
+}
+
+impl DNSCache {
+    /// 创建新的 DNS 缓存
+    pub fn new(default_ttl: Duration) -> Self;
+    
+    /// 从缓存获取域名的 IP 信息
+    pub fn get(&self, domain: &str) -> Option<DomainIPs>;
+    
+    /// 将域名的 IP 信息存入缓存
+    pub fn put(&self, domain: &str, ips: DomainIPs);
+    
+    /// 使缓存失效（删除）
+    pub fn invalidate(&self, domain: &str);
+    
+    /// 清理所有过期的缓存条目
+    pub fn cleanup_expired(&self) -> usize;
+    
+    /// 获取缓存统计信息
+    pub fn stats(&self) -> (usize, usize);
+}
+```
+
+### DNSHelper (HTTP 客户端集成)
+
+DNS 辅助器，提供简化的 DNS 缓存功能，专为 HTTP 客户端设计。
+
+```rust
+pub struct DNSHelper {
+    cache: Arc<RwLock<HashMap<String, Vec<IpAddr>>>>,
+    ttl: Duration,
+}
+
+impl DNSHelper {
+    /// 创建新的 DNS 辅助器
+    pub fn new(ttl: Duration) -> Self;
+    
+    /// 解析域名到 IP 地址（带缓存）
+    pub fn resolve(&self, host: &str, port: u16) -> std::io::Result<Vec<SocketAddr>>;
+    
+    /// 预热缓存（预先解析一组域名）
+    pub fn warmup(&self, domains: &[&str]);
+    
+    /// 清除缓存
+    pub fn clear_cache(&self);
+    
+    /// 获取缓存统计信息
+    pub fn stats(&self) -> (usize, usize);
+}
+```
+
+## HTTP 客户端集成
+
+### 集成方式 1: 使用 DNSHelper（推荐）
+
+`DNSHelper` 提供简单的 DNS 缓存功能，可以直接集成到 `HttpClientConfig`：
+
+```rust
+use fingerprint::{HttpClient, HttpClientConfig, DNSHelper, chrome_133};
+use std::sync::Arc;
+use std::time::Duration;
+
+// 1. 创建 DNS 辅助器
+let dns_helper = Arc::new(DNSHelper::new(Duration::from_secs(300)));
+
+// 2. 可选：预热缓存
+dns_helper.warmup(&["www.google.com", "www.github.com"]);
+
+// 3. 配置 HTTP 客户端
+let config = HttpClientConfig {
+    user_agent: "Mozilla/5.0 ...".to_string(),
+    prefer_http2: true,
+    profile: Some(chrome_133()),
+    dns_helper: Some(dns_helper.clone()),  // 集成 DNS 缓存
+    ..Default::default()
+};
+
+// 4. 创建客户端并使用
+let client = HttpClient::new(config);
+let response = client.get("https://www.google.com/")?;
+```
+
+### 集成方式 2: 使用完整 DNS 模块
+
+使用 `DNSCache` 和 `DNSResolver` 实现更高级的功能：
+
+```rust
+use fingerprint::{DNSCache, DNSResolver, HttpClient, HttpClientConfig};
+use std::time::Duration;
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. 创建 DNS 缓存
+    let dns_cache = DNSCache::new(Duration::from_secs(300));
+    
+    // 2. 创建 DNS 解析器
+    let resolver = DNSResolver::new(Duration::from_secs(4));
+    
+    // 3. 预解析域名
+    let domains = vec!["www.google.com", "www.github.com"];
+    for domain in &domains {
+        let result = resolver.resolve(domain).await?;
+        dns_cache.put(domain, result.ips);
+    }
+    
+    // 4. 创建 HTTP 客户端（DNS 已缓存）
+    let client = HttpClient::new(HttpClientConfig::default());
+    
+    // 5. 发送请求（受益于预解析的 DNS）
+    let response = client.get("https://www.google.com/")?;
+    
+    Ok(())
+}
+```
+
+### 集成方式 3: DNS 服务自动维护
+
+使用 DNS 服务自动维护域名 IP 列表：
+
+```rust
+use fingerprint::{DNSService, DNSConfig};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 1. 配置 DNS 服务
+    let config = DNSConfig::new(
+        "your-ipinfo-token",
+        &["google.com", "github.com"],
+    );
+    
+    // 2. 创建并启动服务
+    let service = DNSService::new(config)?;
+    service.start().await?;
+    
+    // 3. 服务会自动维护域名 IP，保存到 dns_output 目录
+    // 4. HTTP 客户端可以从文件读取最新 IP 信息
+    
+    Ok(())
 }
 ```
 

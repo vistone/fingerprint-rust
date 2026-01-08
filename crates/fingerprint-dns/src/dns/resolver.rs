@@ -14,6 +14,15 @@ use hickory_resolver::{
     TokioAsyncResolver,
 };
 
+/// DNS 解析器 trait
+///
+/// 定义 DNS 解析器的通用接口，便于实现缓存和其他功能
+#[async_trait::async_trait]
+pub trait DNSResolverTrait: Send + Sync {
+    /// 解析域名
+    async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError>;
+}
+
 /// DNS Parseer
 pub struct DNSResolver {
     /// DNS querytimeout duration
@@ -439,6 +448,14 @@ impl DNSResolver {
             .buffer_unordered(max_concurrency);
 
         tasks.collect().await
+    }
+}
+
+/// Implement DNSResolverTrait for DNSResolver
+#[async_trait::async_trait]
+impl DNSResolverTrait for DNSResolver {
+    async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError> {
+        self.resolve(domain).await
     }
 }
 

@@ -29,3 +29,4 @@ serde_yaml = { workspace = true }
 tokio = { workspace = true }
 futures = { workspace = true }
 thiserror.workspace = true
+async-trait = "0.1"

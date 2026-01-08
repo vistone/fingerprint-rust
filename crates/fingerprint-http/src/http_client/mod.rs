@@ -9,6 +9,7 @@
 //! - TLS layer designed to be replaceable
 
 pub mod cookie;
+pub mod dns_helper;
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 mod h2_session_pool;
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -35,6 +36,7 @@ pub mod tcp_fingerprint;
 pub mod tls;
 
 pub use cookie::{Cookie, CookieStore, SameSite};
+pub use dns_helper::DNSHelper;
 pub use pool::{ConnectionPoolManager, PoolManagerConfig, PoolStats};
 pub use proxy::{ProxyConfig, ProxyType};
 pub use reporter::{ReportFormat, ReportSection, ValidationReport};
@@ -125,6 +127,8 @@ pub struct HttpClientConfig {
     pub prefer_http3: bool,
     /// Cookie store (optional)
     pub cookie_store: Option<Arc<CookieStore>>,
+    /// DNS 辅助器（可选，用于 DNS 缓存和预解析）
+    pub dns_helper: Option<Arc<DNSHelper>>,
 }
 
 impl Default for HttpClientConfig {
@@ -141,6 +145,7 @@ impl Default for HttpClientConfig {
             prefer_http2: true,  // defaultpriorityuse HTTP/2
             prefer_http3: false, // HTTP/3 defaultclose (needspecialconfiguration)
             cookie_store: None,
+            dns_helper: None, // DNS 辅助器默认关闭（可选功能）
         }
     }
 }
