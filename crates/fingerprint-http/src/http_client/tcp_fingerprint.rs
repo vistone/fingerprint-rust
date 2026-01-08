@@ -6,6 +6,8 @@ use fingerprint_core::tcp::TcpProfile;
 use socket2::{Domain, Protocol, Socket, Type};
 use std::io;
 use std::net::SocketAddr;
+
+#[cfg(any(feature = "http2", feature = "http3", feature = "async"))]
 use tokio::net::TcpStream;
 
 /// application TCP Profile to socket
@@ -80,6 +82,7 @@ pub fn create_tcp_socket_with_profile(
 ///
 /// # Returns
 /// returnconfigurationgood tokio::net::TcpStream
+#[cfg(any(feature = "http2", feature = "http3", feature = "async"))]
 pub async fn connect_tcp_with_profile(
     addr: SocketAddr,
     tcp_profile: Option<&TcpProfile>,
