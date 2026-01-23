@@ -38,7 +38,6 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
         use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
         use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
         use rustls::{DigitallySignedStruct, Error as RustlsError, SignatureScheme};
-        use std::time::SystemTime;
 
         #[derive(Debug)]
         struct NoCertificateVerification;
