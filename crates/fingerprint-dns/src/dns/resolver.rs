@@ -9,9 +9,11 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use hickory_resolver::proto::rr::{RData, RecordType};
+use hickory_resolver::proto::xfer::Protocol;
 use hickory_resolver::{
-    config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
-    TokioAsyncResolver,
+    config::{NameServerConfig, ResolverConfig, ResolverOpts},
+    name_server::TokioConnectionProvider,
+    TokioResolver,
 };
 
 /// DNS 解析器 trait
@@ -31,8 +33,7 @@ pub struct DNSResolver {
     server_pool: Arc<ServerPool>,
     /// Fix: cache resolver instance, avoidfrequentCreate and destroy
     /// use Arc<Mutex<HashMap>> storeeach DNS server resolver
-    resolver_cache:
-        Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioAsyncResolver>>>>,
+    resolver_cache: Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioResolver>>>>,
 }
 
 impl DNSResolver {
@@ -214,16 +215,10 @@ impl DNSResolver {
  } else {
  // Create a new resolver 并cache
  let mut config = ResolverConfig::new();
- let name_server = NameServerConfig {
- socket_addr,
- protocol: Protocol::Udp,
- tls_dns_name: None,
- trust_negative_responses: false,
- bind_addr: None,
- };
+ let name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
  config.add_name_server(name_server);
 
- let resolver = Arc::new(TokioAsyncResolver::tokio(config, opts.clone()));
+ let resolver = Arc::new(TokioResolver::builder_with_config(config, TokioConnectionProvider::default()).with_options(opts.clone()).build());
  cache.insert(server_str.clone(), resolver.clone());
  resolver
  }
@@ -241,7 +236,7 @@ impl DNSResolver {
  // traverse历allrecord, collectall IP address
  for record in lookup.record_iter() {
  record_count += 1;
- if let Some(rdata) = record.data() {
+ let rdata = record.data(); if true {
  let ip_str = match rdata {
  RData::A(ipv4) if !ipv6 => {
  ipv4.to_string()

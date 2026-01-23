@@ -61,7 +61,7 @@ pub fn send_https_request(
 
     #[cfg(feature = "rustls-tls")]
     {
-        use rustls::client::ServerName;
+        use rustls::pki_types::ServerName;
         use std::sync::Arc;
 
         // Build TLS configuration (尊重 verify_tls)
@@ -71,7 +71,7 @@ pub fn send_https_request(
             config.profile.as_ref(),
         );
 
-        let server_name = ServerName::try_from(host)
+        let server_name = ServerName::try_from(host.to_string())
             .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
         let conn =
@@ -159,7 +159,7 @@ pub fn send_https_request_with_pool(
     // rustls path and send_https_request keepconsistent
     #[cfg(feature = "rustls-tls")]
     {
-        use rustls::client::ServerName;
+        use rustls::pki_types::ServerName;
         use std::sync::Arc;
 
         let tls_config = super::rustls_utils::build_client_config(
@@ -167,7 +167,7 @@ pub fn send_https_request_with_pool(
             Vec::new(),
             config.profile.as_ref(),
         );
-        let server_name = ServerName::try_from(host)
+        let server_name = ServerName::try_from(host.to_string())
             .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
         let conn_tls =
             rustls::ClientConnection::new(Arc::new(tls_config), server_name).map_err(|e| {
