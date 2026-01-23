@@ -34,7 +34,7 @@ socket2 = "0.5"
 
 # HTTP client dependencies (optional)
 rustls = { version = "0.23", features = ["ring"] }
-webpki-roots = "0.26"
+webpki-roots = "1.0"
 flate2 = "1.0"
 brotli-decompressor = "5.0"
 
