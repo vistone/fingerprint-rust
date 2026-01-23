@@ -80,3 +80,21 @@ futures = "0.3"
 # [workspace.dev-dependencies]
 # Note: Workspace-level dev-dependencies are not supported in Cargo
 # Each crate needs to define dev-dependencies in its own Cargo.toml
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+strip = true
+panic = "abort"
+
+[profile.bench]
+inherits = "release"
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.test]
+opt-level = 1
+

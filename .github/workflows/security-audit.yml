@@ -1,17 +1,30 @@
 name: Security Audit
 
 on:
-  push:
-    branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   schedule:
-    - cron: '0 0 * * 0' # Weekly on Sunday
+    # Run daily
+    - cron: '0 0 * * *'
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
-  audit:
-    name: Security Audit
+  security_audit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v1.4.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+  
+  cargo_deny:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
@@ -26,16 +39,8 @@ jobs:
       - name: Install cargo-deny
         run: |
           if ! command -v cargo-deny &> /dev/null; then
-            # 使用最新版本（支持 Rust 1.92.0+ 和 CVSS 4.0）
             cargo install cargo-deny --locked
           fi
       
-      - name: Run security audit
-        run: |
-          echo "🔍 运行安全审计..."
-          cargo deny check advisories bans licenses sources
-          if [ $? -ne 0 ]; then
-            echo "❌ 安全审计失败！"
-            exit 1
-          fi
-          echo "✅ 安全审计通过！"
+      - name: Run cargo-deny
+        run: cargo deny check advisories bans licenses sources

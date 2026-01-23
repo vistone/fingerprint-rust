@@ -2,6 +2,9 @@
 
 **Languages**: [English](README.md) | [中文](README.zh.md)
 
+[![CI](https://github.com/vistone/fingerprint-rust/workflows/CI/badge.svg)](https://github.com/vistone/fingerprint-rust/actions/workflows/ci.yml)
+[![Security Audit](https://github.com/vistone/fingerprint-rust/workflows/Security%20Audit/badge.svg)](https://github.com/vistone/fingerprint-rust/actions/workflows/security-audit.yml)
+[![codecov](https://codecov.io/gh/vistone/fingerprint-rust/branch/main/graph/badge.svg)](https://codecov.io/gh/vistone/fingerprint-rust)
 [![Rust](https://img.shields.io/badge/rust-1.92.0%2B-orange.svg)](https://www.rust-lang.org/)
 [![License](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-100%25_passing-brightgreen.svg)](#test-results)
