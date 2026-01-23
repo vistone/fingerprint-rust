@@ -353,9 +353,11 @@ impl ServerPool {
     ) -> Self {
         use futures::stream::{self, StreamExt};
         use hickory_resolver::proto::rr::RecordType;
+        use hickory_resolver::proto::xfer::Protocol;
         use hickory_resolver::{
-            config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
-            TokioAsyncResolver,
+            config::{NameServerConfig, ResolverConfig, ResolverOpts},
+            name_server::TokioConnectionProvider,
+            TokioResolver,
         };
         use std::net::{IpAddr, SocketAddr};
         use std::str::FromStr;
@@ -409,16 +411,13 @@ impl ServerPool {
                 async move {
                     // as eachserver Createindependent resolver
                     let mut config = ResolverConfig::new();
-                    let name_server = NameServerConfig {
-                        socket_addr,
-                        protocol: Protocol::Udp,
-                        tls_dns_name: None,
-                        trust_negative_responses: false,
-                        bind_addr: None,
-                    };
+                    let mut name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+                    name_server.trust_negative_responses = false;
                     config.add_name_server(name_server);
 
-                    let resolver = TokioAsyncResolver::tokio(config, opts);
+                    let resolver = TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
+                        .with_options(opts)
+                        .build();
 
                     // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {
@@ -524,9 +523,11 @@ impl ServerPool {
     ) -> Self {
         use futures::stream::{self, StreamExt};
         use hickory_resolver::proto::rr::RecordType;
+        use hickory_resolver::proto::xfer::Protocol;
         use hickory_resolver::{
-            config::{NameServerConfig, Protocol, ResolverConfig, ResolverOpts},
-            TokioAsyncResolver,
+            config::{NameServerConfig, ResolverConfig, ResolverOpts},
+            name_server::TokioConnectionProvider,
+            TokioResolver,
         };
         use std::net::{IpAddr, SocketAddr};
         use std::str::FromStr;
@@ -568,16 +569,13 @@ impl ServerPool {
                 async move {
                     // as eachserver Createindependent resolver
                     let mut config = ResolverConfig::new();
-                    let name_server = NameServerConfig {
-                        socket_addr,
-                        protocol: Protocol::Udp,
-                        tls_dns_name: None,
-                        trust_negative_responses: false,
-                        bind_addr: None,
-                    };
+                    let mut name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+                    name_server.trust_negative_responses = false;
                     config.add_name_server(name_server);
 
-                    let resolver = TokioAsyncResolver::tokio(config, opts);
+                    let resolver = TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
+                        .with_options(opts)
+                        .build();
 
                     // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {

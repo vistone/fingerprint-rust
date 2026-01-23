@@ -20,13 +20,7 @@ use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
 /// Build rustls rootcertificatestore (Mozilla roots)
 pub fn build_root_store() -> rustls::RootCertStore {
     let mut root_store = rustls::RootCertStore::empty();
-    root_store.add_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
-        rustls::OwnedTrustAnchor::from_subject_spki_name_constraints(
-            ta.subject,
-            ta.spki,
-            ta.name_constraints,
-        )
-    }));
+    root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
     root_store
 }
 
@@ -37,14 +31,14 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
         return;
     }
 
-    // Note: rustls 0.21 API maydifferent
+    // Note: rustls 0.23 API changed - dangerous features now under danger module
     // If verify_tls=false, use dangerous configurationacceptallcertificate
     // thisneed rustls dangerous_configuration feature
     #[cfg(feature = "dangerous_configuration")]
     {
-        use rustls::client::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
-        use rustls::{Certificate, Error as RustlsError, ServerName};
-        use std::time::SystemTime;
+        use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
+        use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
+        use rustls::{DigitallySignedStruct, Error as RustlsError, SignatureScheme};
 
         #[derive(Debug)]
         struct NoCertificateVerification;
@@ -52,12 +46,11 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
         impl ServerCertVerifier for NoCertificateVerification {
             fn verify_server_cert(
                 &self,
-                _end_entity: &Certificate,
-                _intermediates: &[Certificate],
+                _end_entity: &CertificateDer,
+                _intermediates: &[CertificateDer],
                 _server_name: &ServerName,
-                _scts: &mut dyn Iterator<Item = &[u8]>,
                 _ocsp_response: &[u8],
-                _now: SystemTime,
+                _now: UnixTime,
             ) -> std::result::Result<ServerCertVerified, RustlsError> {
                 Ok(ServerCertVerified::assertion())
             }
@@ -65,8 +58,8 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
             fn verify_tls12_signature(
                 &self,
                 _message: &[u8],
-                _cert: &Certificate,
-                _dss: &rustls::DigitallySignedStruct,
+                _cert: &CertificateDer,
+                _dss: &DigitallySignedStruct,
             ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
                 Ok(HandshakeSignatureValid::assertion())
             }
@@ -74,10 +67,28 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
             fn verify_tls13_signature(
                 &self,
                 _message: &[u8],
-                _cert: &Certificate,
-                _dss: &rustls::DigitallySignedStruct,
+                _cert: &CertificateDer,
+                _dss: &DigitallySignedStruct,
             ) -> std::result::Result<HandshakeSignatureValid, RustlsError> {
                 Ok(HandshakeSignatureValid::assertion())
+            }
+
+            fn supported_verify_schemes(&self) -> Vec<SignatureScheme> {
+                vec![
+                    SignatureScheme::RSA_PKCS1_SHA1,
+                    SignatureScheme::ECDSA_SHA1_Legacy,
+                    SignatureScheme::RSA_PKCS1_SHA256,
+                    SignatureScheme::ECDSA_NISTP256_SHA256,
+                    SignatureScheme::RSA_PKCS1_SHA384,
+                    SignatureScheme::ECDSA_NISTP384_SHA384,
+                    SignatureScheme::RSA_PKCS1_SHA512,
+                    SignatureScheme::ECDSA_NISTP521_SHA512,
+                    SignatureScheme::RSA_PSS_SHA256,
+                    SignatureScheme::RSA_PSS_SHA384,
+                    SignatureScheme::RSA_PSS_SHA512,
+                    SignatureScheme::ED25519,
+                    SignatureScheme::ED448,
+                ]
             }
         }
 
@@ -103,7 +114,6 @@ pub fn build_client_config(
 
     // defaultconfiguration ( if unable toBased on profile match, thenback to securitydefaultvalue)
     let builder = rustls::ClientConfig::builder()
-        .with_safe_defaults()
         .with_root_certificates(root_store)
         .with_no_client_auth();
 

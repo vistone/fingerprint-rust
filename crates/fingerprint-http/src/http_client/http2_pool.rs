@@ -61,7 +61,7 @@ pub async fn send_http2_request_with_pool(
         config.profile.as_ref(),
     );
     let connector = TlsConnector::from(std::sync::Arc::new(tls_config));
-    let server_name = rustls::ServerName::try_from(host)
+    let server_name = rustls::pki_types::ServerName::try_from(host.to_string())
         .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
     let tls_stream = connector

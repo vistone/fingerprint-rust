@@ -58,7 +58,11 @@ pub async fn send_http3_request_with_pool(
                 config.profile.as_ref(),
             );
 
-            let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(tls_config));
+            let mut client_config = quinn::ClientConfig::new(std::sync::Arc::new(
+                quinn::crypto::rustls::QuicClientConfig::try_from(tls_config).map_err(|e| {
+                    HttpClientError::TlsError(format!("Failed to create QUIC config: {}", e))
+                })?,
+            ));
 
             // optimizetransferconfiguration以improveperformance
             let mut transport_config = quinn::TransportConfig::default();
