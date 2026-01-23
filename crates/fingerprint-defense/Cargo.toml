@@ -28,7 +28,7 @@ chrono = { workspace = true, features = ["serde"] }
 
 # 并发
 tokio = { workspace = true, features = ["full"] }
-dashmap = "5.5"
+dashmap = "6.1"
 
 # 错误处理
 thiserror.workspace = true
