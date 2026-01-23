@@ -38,11 +38,4 @@ jobs:
           fi
       
       - name: Run cargo-deny
-        run: |
-          echo "🔍 Running cargo-deny security audit..."
-          cargo deny check advisories bans licenses sources
-          if [ $? -ne 0 ]; then
-            echo "❌ Security audit failed!"
-            exit 1
-          fi
-          echo "✅ Security audit passed!"
+        run: cargo deny check advisories bans licenses sources
