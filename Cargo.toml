@@ -7,6 +7,7 @@ members = [
     "crates/fingerprint-http",
     "crates/fingerprint-dns",
     "crates/fingerprint-defense",
+    "crates/fingerprint-api-noise",
     "crates/fingerprint",
 ]
 resolver = "2"
