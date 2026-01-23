@@ -1,9 +1,6 @@
-use std::collections::HashMap;
-
 /// WebGL 参数噪声
 pub struct WebGLNoiseInjector {
-    #[allow(dead_code)]
-    noise_patterns: HashMap<String, NoisePattern>,
+    seed: u64,
 }
 
 #[derive(Clone)]
@@ -15,19 +12,12 @@ pub struct NoisePattern {
 
 impl WebGLNoiseInjector {
     pub fn new() -> Self {
-        let mut noise_patterns = HashMap::new();
-        
-        // 常见的 WebGL 指纹参数
-        noise_patterns.insert(
-            "RENDERER".to_string(),
-            NoisePattern {
-                parameter: "RENDERER".to_string(),
-                original_value: "".to_string(),
-                noise_range: 0.01,
-            }
-        );
-        
-        Self { noise_patterns }
+        Self::with_seed(0)
+    }
+
+    /// 使用指定种子创建 WebGL 噪声注入器
+    pub fn with_seed(seed: u64) -> Self {
+        Self { seed }
     }
 
     /// 为 WebGL 参数添加噪声
@@ -37,16 +27,18 @@ impl WebGLNoiseInjector {
         // 对浮点参数添加微小噪声
         if let Some(aliased_line_width_range) = &mut result.aliased_line_width_range {
             // 添加 ±0.01 的噪声
-            aliased_line_width_range[0] += self.generate_small_noise();
-            aliased_line_width_range[1] += self.generate_small_noise();
+            aliased_line_width_range[0] += self.generate_small_noise(0);
+            aliased_line_width_range[1] += self.generate_small_noise(1);
         }
         
         result
     }
 
-    fn generate_small_noise(&self) -> f32 {
-        use rand::Rng;
-        let mut rng = rand::thread_rng();
+    fn generate_small_noise(&self, index: u64) -> f32 {
+        use rand::{Rng, SeedableRng};
+        use rand_chacha::ChaCha8Rng;
+        
+        let mut rng = ChaCha8Rng::seed_from_u64(self.seed + index);
         rng.gen_range(-0.01..0.01)
     }
 }

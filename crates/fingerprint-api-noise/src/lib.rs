@@ -67,7 +67,7 @@ impl ApiNoiseInjector {
     pub fn new(config: NoiseConfig) -> Self {
         Self {
             canvas: CanvasNoiseInjector::new(config.seed, config.canvas_noise_level),
-            webgl: WebGLNoiseInjector::new(),
+            webgl: WebGLNoiseInjector::with_seed(config.seed),
             audio: AudioNoiseInjector::new(config.seed),
             fonts: FontNoiseInjector::new(),
             config,

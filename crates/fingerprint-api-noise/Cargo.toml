@@ -10,7 +10,6 @@ keywords = ["fingerprint", "anti-detection", "canvas", "webgl", "privacy"]
 categories = ["web-programming", "cryptography"]
 
 [dependencies]
-fingerprint-core = { path = "../fingerprint-core" }
 rand = { workspace = true }
 rand_chacha = "0.3"
 sha2 = { workspace = true }

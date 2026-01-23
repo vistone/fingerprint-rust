@@ -81,6 +81,30 @@ fn test_webgl_params_noise() {
 }
 
 #[test]
+fn test_webgl_noise_reproducibility() {
+    let injector1 = webgl::WebGLNoiseInjector::with_seed(12345);
+    let injector2 = webgl::WebGLNoiseInjector::with_seed(12345);
+    
+    let params = webgl::WebGLParams {
+        renderer: "Test Renderer".to_string(),
+        vendor: "Test Vendor".to_string(),
+        aliased_line_width_range: Some([1.0, 2.0]),
+        aliased_point_size_range: None,
+        max_texture_size: None,
+        max_viewport_dims: None,
+    };
+    
+    let noisy1 = injector1.add_webgl_noise(&params);
+    let noisy2 = injector2.add_webgl_noise(&params);
+    
+    // 相同种子应产生相同的噪声
+    assert_eq!(
+        noisy1.aliased_line_width_range,
+        noisy2.aliased_line_width_range
+    );
+}
+
+#[test]
 fn test_api_noise_injector_creation() {
     let config = NoiseConfig {
         seed: 12345,
