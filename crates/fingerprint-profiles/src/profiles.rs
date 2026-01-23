@@ -340,6 +340,29 @@ pub fn chrome_135() -> ClientProfile {
     )
 }
 
+/// Chrome 134 fingerprint configuration (2026 stable version)
+pub fn chrome_134() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "134",
+            fingerprint_tls::tls_config::chrome_133_spec, // use 133 TLS struct
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
 /// Firefox 135 fingerprintconfiguration
 pub fn firefox_135() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
@@ -352,6 +375,52 @@ pub fn firefox_135() -> ClientProfile {
         ClientHelloID::new(
             "Firefox",
             "135",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        default_tcp_profile,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 134 fingerprint configuration (2026 version)
+pub fn firefox_134() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "134",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        default_tcp_profile,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 136 fingerprint configuration (2026 Nightly version)
+pub fn firefox_136() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "136",
             fingerprint_tls::tls_config::firefox_133_spec,
         ),
         settings,
@@ -382,6 +451,52 @@ pub fn safari_16_0() -> ClientProfile {
         Vec::new(),
         None,
         None,
+        safari_header_order(),
+    )
+}
+
+/// Safari 18.2 fingerprint configuration (2026 macOS Sequoia version)
+pub fn safari_18_2() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::MacOS14,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari",
+            "18.2",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        default_tcp_profile,
+        safari_header_order(),
+    )
+}
+
+/// Safari iOS 18.2 fingerprint configuration (2026 iOS version)
+pub fn safari_ios_18_2() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::MacOS14,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari",
+            "iOS_18.2",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        default_tcp_profile,
         safari_header_order(),
     )
 }
@@ -456,6 +571,45 @@ pub fn edge_133() -> ClientProfile {
     )
 }
 
+/// Edge 134 fingerprint configuration (2026 version)
+/// Edge use Chromium insidecore, TLS fingerprint and Chrome same
+pub fn edge_134() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new("Edge", "134", fingerprint_tls::tls_config::chrome_133_spec),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome Mobile 134 fingerprint configuration (2026 Android version)
+pub fn chrome_mobile_134() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Linux,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new("Chrome Mobile", "134", fingerprint_tls::tls_config::chrome_133_spec),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
 /// Initializeallfingerprintconfigurationmaptable
 fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     let mut map = HashMap::new();
@@ -483,19 +637,21 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("chrome_131_PSK".to_string(), chrome_133());
     map.insert("chrome_133".to_string(), chrome_133());
     map.insert("chrome_133_PSK".to_string(), chrome_133());
-    map.insert("chrome_134".to_string(), chrome_135());
+    map.insert("chrome_134".to_string(), chrome_134());
     map.insert("chrome_135".to_string(), chrome_135());
     map.insert("chrome_136".to_string(), chrome_136());
 
     // Safari series
     map.insert("safari_15_6_1".to_string(), safari_16_0());
     map.insert("safari_16_0".to_string(), safari_16_0());
+    map.insert("safari_18_2".to_string(), safari_18_2());
     map.insert("safari_ipad_15_6".to_string(), safari_16_0());
     map.insert("safari_ios_15_5".to_string(), safari_16_0());
     map.insert("safari_ios_15_6".to_string(), safari_16_0());
     map.insert("safari_ios_16_0".to_string(), safari_16_0());
     map.insert("safari_ios_17_0".to_string(), safari_16_0());
     map.insert("safari_ios_18_0".to_string(), safari_16_0());
+    map.insert("safari_ios_18_2".to_string(), safari_ios_18_2());
     map.insert("safari_ios_18_5".to_string(), safari_16_0());
 
     // Firefox series
@@ -510,8 +666,9 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("firefox_123".to_string(), firefox_133());
     map.insert("firefox_132".to_string(), firefox_133());
     map.insert("firefox_133".to_string(), firefox_133());
-    map.insert("firefox_134".to_string(), firefox_135());
+    map.insert("firefox_134".to_string(), firefox_134());
     map.insert("firefox_135".to_string(), firefox_135());
+    map.insert("firefox_136".to_string(), firefox_136());
 
     // Opera series
     map.insert("opera_89".to_string(), opera_91());
@@ -522,8 +679,10 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("edge_120".to_string(), edge_120());
     map.insert("edge_124".to_string(), edge_124());
     map.insert("edge_133".to_string(), edge_133());
+    map.insert("edge_134".to_string(), edge_134());
 
     // mobile and customfingerprint
+    map.insert("chrome_mobile_134".to_string(), chrome_mobile_134());
     map.insert("zalando_android_mobile".to_string(), chrome_133());
     map.insert("zalando_ios_mobile".to_string(), safari_16_0());
     map.insert("nike_ios_mobile".to_string(), safari_16_0());
@@ -675,5 +834,111 @@ mod tests {
         let tcp_profile = synced_profile.tcp_profile.unwrap();
         assert_eq!(tcp_profile.ttl, 64);
         assert_eq!(tcp_profile.window_size, 65535);
+    }
+
+    // Tests for 2026 browser fingerprints
+    #[test]
+    fn test_chrome_134_fingerprint() {
+        let profile = chrome_134();
+        assert_eq!(profile.get_client_hello_str(), "Chrome-134");
+        
+        // Verify TLS fingerprint can be generated
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+        let spec = spec.unwrap();
+        assert!(!spec.cipher_suites.is_empty());
+    }
+
+    #[test]
+    fn test_firefox_134_fingerprint() {
+        let profile = firefox_134();
+        assert_eq!(profile.get_client_hello_str(), "Firefox-134");
+        
+        // Verify TLS fingerprint
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+    }
+
+    #[test]
+    fn test_firefox_136_fingerprint() {
+        let profile = firefox_136();
+        assert_eq!(profile.get_client_hello_str(), "Firefox-136");
+        
+        // Verify TLS fingerprint
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+    }
+
+    #[test]
+    fn test_safari_18_2_fingerprint() {
+        let profile = safari_18_2();
+        assert_eq!(profile.get_client_hello_str(), "Safari-18.2");
+        
+        // Verify TLS fingerprint
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+    }
+
+    #[test]
+    fn test_safari_ios_18_2_fingerprint() {
+        let profile = safari_ios_18_2();
+        assert_eq!(profile.get_client_hello_str(), "Safari-iOS_18.2");
+        
+        // Verify TLS fingerprint
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+    }
+
+    #[test]
+    fn test_edge_134_fingerprint() {
+        let profile = edge_134();
+        assert_eq!(profile.get_client_hello_str(), "Edge-134");
+        
+        // Verify TLS fingerprint
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+    }
+
+    #[test]
+    fn test_chrome_mobile_134_fingerprint() {
+        let profile = chrome_mobile_134();
+        assert_eq!(profile.get_client_hello_str(), "Chrome Mobile-134");
+        
+        // Verify TLS fingerprint
+        let spec = profile.get_client_hello_spec();
+        assert!(spec.is_ok());
+    }
+
+    #[test]
+    fn test_2026_fingerprints_in_map() {
+        let clients = mapped_tls_clients();
+        
+        // Verify all 2026 fingerprints are registered
+        assert!(clients.contains_key("chrome_134"));
+        assert!(clients.contains_key("firefox_134"));
+        assert!(clients.contains_key("firefox_136"));
+        assert!(clients.contains_key("safari_18_2"));
+        assert!(clients.contains_key("safari_ios_18_2"));
+        assert!(clients.contains_key("edge_134"));
+        assert!(clients.contains_key("chrome_mobile_134"));
+    }
+
+    #[test]
+    fn test_2026_profiles_have_tcp_profiles() {
+        // Verify that 2026 profiles have TCP profiles set
+        let chrome = chrome_134();
+        assert!(chrome.tcp_profile.is_some());
+        
+        let firefox = firefox_134();
+        assert!(firefox.tcp_profile.is_some());
+        
+        let safari = safari_18_2();
+        assert!(safari.tcp_profile.is_some());
+        
+        let edge = edge_134();
+        assert!(edge.tcp_profile.is_some());
+        
+        let chrome_mobile = chrome_mobile_134();
+        assert!(chrome_mobile.tcp_profile.is_some());
     }
 }
