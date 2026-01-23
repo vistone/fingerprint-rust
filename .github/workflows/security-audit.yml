@@ -12,6 +12,9 @@ on:
 jobs:
   security_audit:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
     steps:
       - uses: actions/checkout@v4
       - uses: rustsec/audit-check@v1.4.1
@@ -20,6 +23,8 @@ jobs:
   
   cargo_deny:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       
