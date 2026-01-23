@@ -50,11 +50,11 @@ async fn send_http3_request_async(
         config.profile.as_ref(),
     );
 
-    // Quinn 0.11+ requires wrapping rustls::ClientConfig with QuicClientConfig
-    let quic_client_config = quinn::crypto::rustls::QuicClientConfig::try_from(tls_config)
-        .map_err(|e| HttpClientError::ConnectionFailed(format!("QUIC TLS config error: {}", e)))?;
-
-    let mut client_config = ClientConfig::new(Arc::new(quic_client_config));
+    let mut client_config = ClientConfig::new(Arc::new(
+        quinn::crypto::rustls::QuicClientConfig::try_from(tls_config).map_err(|e| {
+            HttpClientError::TlsError(format!("Failed to create QUIC config: {}", e))
+        })?,
+    ));
 
     // optimizetransferconfiguration以improveperformance and connectionmigratecapability
     let mut transport = TransportConfig::default();

@@ -24,13 +24,14 @@ pub fn build_root_store() -> rustls::RootCertStore {
     root_store
 }
 
+/// 若 verify_tls=false, thensafeinstall"acceptallcertificate" verifier (dangerousFeatures, only for debug)
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     if verify_tls {
         return;
     }
 
-    // Note: rustls 0.23 has different API for dangerous configuration
+    // Note: rustls 0.23 API changed - dangerous features now under danger module
     // If verify_tls=false, use dangerous configurationacceptallcertificate
     // thisneed rustls dangerous_configuration feature
     #[cfg(feature = "dangerous_configuration")]
@@ -76,11 +77,13 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 
             fn supported_verify_schemes(&self) -> Vec<SignatureScheme> {
                 vec![
+                    SignatureScheme::RSA_PKCS1_SHA1,
+                    SignatureScheme::ECDSA_SHA1_Legacy,
                     SignatureScheme::RSA_PKCS1_SHA256,
-                    SignatureScheme::RSA_PKCS1_SHA384,
-                    SignatureScheme::RSA_PKCS1_SHA512,
                     SignatureScheme::ECDSA_NISTP256_SHA256,
+                    SignatureScheme::RSA_PKCS1_SHA384,
                     SignatureScheme::ECDSA_NISTP384_SHA384,
+                    SignatureScheme::RSA_PKCS1_SHA512,
                     SignatureScheme::ECDSA_NISTP521_SHA512,
                     SignatureScheme::RSA_PSS_SHA256,
                     SignatureScheme::RSA_PSS_SHA384,

@@ -353,10 +353,10 @@ impl ServerPool {
     ) -> Self {
         use futures::stream::{self, StreamExt};
         use hickory_resolver::proto::rr::RecordType;
+        use hickory_resolver::proto::xfer::Protocol;
         use hickory_resolver::{
             config::{NameServerConfig, ResolverConfig, ResolverOpts},
             name_server::TokioConnectionProvider,
-            proto::xfer::Protocol,
             TokioResolver,
         };
         use std::net::{IpAddr, SocketAddr};
@@ -411,7 +411,8 @@ impl ServerPool {
                 async move {
                     // as eachserver Createindependent resolver
                     let mut config = ResolverConfig::new();
-                    let name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+                    let mut name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+                    name_server.trust_negative_responses = false;
                     config.add_name_server(name_server);
 
                     let resolver = TokioResolver::builder_with_config(
@@ -525,10 +526,10 @@ impl ServerPool {
     ) -> Self {
         use futures::stream::{self, StreamExt};
         use hickory_resolver::proto::rr::RecordType;
+        use hickory_resolver::proto::xfer::Protocol;
         use hickory_resolver::{
             config::{NameServerConfig, ResolverConfig, ResolverOpts},
             name_server::TokioConnectionProvider,
-            proto::xfer::Protocol,
             TokioResolver,
         };
         use std::net::{IpAddr, SocketAddr};
@@ -571,7 +572,8 @@ impl ServerPool {
                 async move {
                     // as eachserver Createindependent resolver
                     let mut config = ResolverConfig::new();
-                    let name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+                    let mut name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+                    name_server.trust_negative_responses = false;
                     config.add_name_server(name_server);
 
                     let resolver = TokioResolver::builder_with_config(

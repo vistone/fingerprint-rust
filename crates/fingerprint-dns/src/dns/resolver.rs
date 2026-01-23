@@ -215,10 +215,15 @@ impl DNSResolver {
  } else {
  // Create a new resolver 并cache
  let mut config = ResolverConfig::new();
- let name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+ let mut name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
+ name_server.trust_negative_responses = false;
  config.add_name_server(name_server);
 
- let resolver = Arc::new(TokioResolver::builder_with_config(config, TokioConnectionProvider::default()).with_options(opts.clone()).build());
+ let resolver = Arc::new(
+ TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
+ .with_options(opts.clone())
+ .build()
+ );
  cache.insert(server_str.clone(), resolver.clone());
  resolver
  }
@@ -236,7 +241,7 @@ impl DNSResolver {
  // traverse历allrecord, collectall IP address
  for record in lookup.record_iter() {
  record_count += 1;
- let rdata = record.data(); if true {
+ let rdata = record.data();
  let ip_str = match rdata {
  RData::A(ipv4) if !ipv6 => {
  ipv4.to_string()
@@ -247,7 +252,6 @@ impl DNSResolver {
  _ => continue,
  };
  ips.push(ip_str);
- }
  }
 
  // recordsuccessresponse when between
