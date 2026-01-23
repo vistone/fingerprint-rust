@@ -61,3 +61,6 @@ pub use fingerprint_defense::{
     HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult, PassiveAnalyzer, PassiveError,
     TcpFingerprint, TlsFingerprint,
 };
+
+#[cfg(feature = "api-noise")]
+pub use fingerprint_api_noise as api_noise;

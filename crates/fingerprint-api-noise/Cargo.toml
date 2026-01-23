@@ -1,0 +1,20 @@
+[package]
+name = "fingerprint-api-noise"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "浏览器 API 噪声注入模块，对抗 JavaScript 指纹识别"
+keywords = ["fingerprint", "anti-detection", "canvas", "webgl", "privacy"]
+categories = ["web-programming", "cryptography"]
+
+[dependencies]
+rand = { workspace = true }
+rand_chacha = "0.3"
+sha2 = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+criterion = "0.5"
