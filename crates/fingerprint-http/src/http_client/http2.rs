@@ -263,7 +263,7 @@ async fn perform_tls_handshake(
     config: &HttpClientConfig,
 ) -> Result<tokio_rustls::client::TlsStream<tokio::net::TcpStream>> {
     use std::sync::Arc;
-    use tokio_rustls::rustls::ServerName;
+    use rustls::pki_types::ServerName;
     use tokio_rustls::TlsConnector;
 
     let tls_config = super::rustls_utils::build_client_config(
@@ -274,7 +274,7 @@ async fn perform_tls_handshake(
 
     let connector = TlsConnector::from(Arc::new(tls_config));
 
-    let server_name = ServerName::try_from(host)
+    let server_name = ServerName::try_from(host.to_string())
         .map_err(|_| HttpClientError::TlsError("Invalid server name".to_string()))?;
 
     connector
