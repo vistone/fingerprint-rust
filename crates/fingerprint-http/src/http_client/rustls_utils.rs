@@ -35,7 +35,9 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     // thisneed rustls dangerous_configuration feature
     #[cfg(feature = "dangerous_configuration")]
     {
-        use rustls::client::danger::{HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier};
+        use rustls::client::danger::{
+            HandshakeSignatureValid, ServerCertVerified, ServerCertVerifier,
+        };
         use rustls::pki_types::{CertificateDer, ServerName, UnixTime};
         use rustls::{DigitallySignedStruct, Error as RustlsError, SignatureScheme};
 

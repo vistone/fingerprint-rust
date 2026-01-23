@@ -354,7 +354,9 @@ impl ServerPool {
         use futures::stream::{self, StreamExt};
         use hickory_resolver::proto::rr::RecordType;
         use hickory_resolver::{
-            config::{NameServerConfig, ResolverConfig, ResolverOpts}, proto::xfer::Protocol, name_server::TokioConnectionProvider,
+            config::{NameServerConfig, ResolverConfig, ResolverOpts},
+            name_server::TokioConnectionProvider,
+            proto::xfer::Protocol,
             TokioResolver,
         };
         use std::net::{IpAddr, SocketAddr};
@@ -412,7 +414,12 @@ impl ServerPool {
                     let name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
                     config.add_name_server(name_server);
 
-                    let resolver = TokioResolver::builder_with_config(config, TokioConnectionProvider::default()).with_options(opts).build();
+                    let resolver = TokioResolver::builder_with_config(
+                        config,
+                        TokioConnectionProvider::default(),
+                    )
+                    .with_options(opts)
+                    .build();
 
                     // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {
@@ -519,7 +526,9 @@ impl ServerPool {
         use futures::stream::{self, StreamExt};
         use hickory_resolver::proto::rr::RecordType;
         use hickory_resolver::{
-            config::{NameServerConfig, ResolverConfig, ResolverOpts}, proto::xfer::Protocol, name_server::TokioConnectionProvider,
+            config::{NameServerConfig, ResolverConfig, ResolverOpts},
+            name_server::TokioConnectionProvider,
+            proto::xfer::Protocol,
             TokioResolver,
         };
         use std::net::{IpAddr, SocketAddr};
@@ -565,7 +574,12 @@ impl ServerPool {
                     let name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
                     config.add_name_server(name_server);
 
-                    let resolver = TokioResolver::builder_with_config(config, TokioConnectionProvider::default()).with_options(opts).build();
+                    let resolver = TokioResolver::builder_with_config(
+                        config,
+                        TokioConnectionProvider::default(),
+                    )
+                    .with_options(opts)
+                    .build();
 
                     // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {
