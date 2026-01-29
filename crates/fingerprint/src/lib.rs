@@ -23,15 +23,16 @@
 #[cfg(feature = "export")]
 pub mod export;
 pub mod random;
+/// Re-export types module from fingerprint_core for backward compatibility
 pub mod types {
-    pub use fingerprint_core::types::OPERATING_SYSTEMS;
+    pub use fingerprint_core::types::*;
 }
 
 // reexportallpublic API
 pub use fingerprint_core::{
     extract_chrome_version, extract_platform, infer_browser_from_profile_name, is_mobile_profile,
     random_choice, random_choice_string, BrowserType, OperatingSystem, OperatingSystems,
-    UserAgentTemplate, OPERATING_SYSTEMS,
+    UserAgentTemplate,
 };
 pub use fingerprint_headers::{
     chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
