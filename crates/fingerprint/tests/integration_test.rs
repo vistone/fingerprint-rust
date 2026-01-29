@@ -2,7 +2,7 @@
 //!
 //! 全面测试 fingerprint 库的各项功能
 
-use fingerprint::headers::generate_headers;
+use fingerprint::generate_headers;
 use fingerprint::types::OPERATING_SYSTEMS;
 use fingerprint::*;
 

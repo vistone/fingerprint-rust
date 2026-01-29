@@ -23,6 +23,10 @@
 #[cfg(feature = "export")]
 pub mod export;
 pub mod random;
+/// Re-export types module from fingerprint_core for backward compatibility
+pub mod types {
+    pub use fingerprint_core::types::*;
+}
 
 // reexportallpublic API
 pub use fingerprint_core::{
@@ -32,16 +36,21 @@ pub use fingerprint_core::{
 };
 pub use fingerprint_headers::{
     chrome_header_priority, chrome_http2_settings, chrome_pseudo_header_order,
-    firefox_http2_settings, firefox_pseudo_header_order, get_user_agent_by_profile_name,
-    get_user_agent_by_profile_name_with_os, random_language, random_os, safari_http2_settings,
-    safari_pseudo_header_order, HTTP2Priority, HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings,
-    HTTPHeaders, UserAgentGenerator,
+    firefox_http2_settings, firefox_pseudo_header_order, generate_headers,
+    get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os, random_language,
+    random_os, safari_http2_settings, safari_pseudo_header_order, HTTP2Priority,
+    HTTP2PriorityParam, HTTP2SettingID, HTTP2Settings, HTTPHeaders, UserAgentGenerator,
+    CHROME_CONNECTION_FLOW,
 };
 pub use fingerprint_http::{
     Cookie, CookieStore, DNSHelper, HttpClient, HttpClientConfig, HttpClientError, HttpMethod,
     HttpRequest, HttpResponse, ProxyConfig, ProxyType, ReportFormat, ReportSection, SameSite,
     TlsConnector, ValidationReport,
 };
+
+#[cfg(feature = "connection-pool")]
+pub use fingerprint_http::{ConnectionPoolManager, PoolManagerConfig, PoolStats};
+
 pub use fingerprint_profiles::*;
 pub use fingerprint_tls::*;
 pub use random::{

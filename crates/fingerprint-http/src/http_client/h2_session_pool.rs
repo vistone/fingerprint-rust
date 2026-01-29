@@ -71,20 +71,20 @@ impl H2SessionPool {
         >,
         IO: tokio::io::AsyncRead + tokio::io::AsyncWrite + Send + Unpin + 'static,
     {
-        // 先try from pool in Get
+        // Try to get from pool first
         {
-            let mut sessions = self.sessions.lock().unwrap_or_else(|e| {
-                eprintln!("warning: sessionpoollockfailure: {}", e);
-                // Iflockfailure, try from in 毒lock in restore
-                drop(e.into_inner());
-                self.sessions.lock().expect("unable toGetsessionpoollock")
+            // Use unwrap_or_else to handle poisoned mutex gracefully
+            // If the mutex is poisoned, we recover the guard from the poison error
+            let mut sessions = self.sessions.lock().unwrap_or_else(|poisoned| {
+                eprintln!("warning: session pool lock was poisoned, recovering...");
+                poisoned.into_inner()
             });
 
-            // cleanupexpire and invalidsession
+            // Cleanup expired and invalid sessions
             self.cleanup_expired_sessions(&mut sessions);
 
-            // Checkwhether有availablesession
-            // 先Checksessionwhether exists and valid, avoid in holdlock when performcomplexoperation
+            // Check if there's an available session
+            // First check if session exists and is valid, avoid complex operations while holding lock
             let session_valid = sessions.get(key).and_then(|session| {
                 let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
                 let is_finished = session._background_task.is_finished();
@@ -111,12 +111,13 @@ impl H2SessionPool {
             }
         }
 
-        // Ifnoavailablesession, Checkwhetherpositive in Create in (Race Condition Fix)
+        // If no available session, check if one is being created (Race Condition Fix)
         let rx = {
+            // Use unwrap_or_else to handle poisoned mutex gracefully
             let mut pending = self
                 .pending_sessions
                 .lock()
-                .unwrap_or_else(|e| e.into_inner());
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
             if let Some(rx) = pending.get(key) {
                 Some(rx.clone())
             } else {

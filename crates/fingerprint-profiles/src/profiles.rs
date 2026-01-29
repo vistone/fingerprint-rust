@@ -489,9 +489,7 @@ pub fn safari_ios_18_2() -> ClientProfile {
             "Safari",
             "iOS_18.2",
             fingerprint_tls::tls_config::safari_16_0_spec,
-        )47
- 
-,
+        ),
         settings,
         settings_order,
         safari_pseudo_header_order(),
@@ -521,12 +519,10 @@ pub fn opera_91() -> ClientProfile {
     )
 }
 
-/// Edge 120 fingerprintconfiguration
-/// Edge use Chromium insidecore, TLS fingerprint and Chrome same
+/// Edge 120 fingerprint configuration
+/// Edge uses Chrome core, TLS fingerprint matches Chrome
 pub fn edge_120() -> ClientProfile {
-    // Ed47
- 
-ge use Chrome insidecore, configuration and Chrome same
+    // Edge uses Chrome core, configuration matches Chrome
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge use Chrome TLS configuration

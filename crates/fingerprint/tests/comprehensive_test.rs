@@ -271,7 +271,7 @@ fn test_user_agent_generation() {
 
     // 测试随机操作系统
     let os = random_os();
-    assert!(crate::types::OPERATING_SYSTEMS.contains(&os));
+    assert!(fingerprint::types::OPERATING_SYSTEMS.contains(&os));
 
     println!("✅ User-Agent 生成正常");
     println!("   示例 UA: {}", ua1);

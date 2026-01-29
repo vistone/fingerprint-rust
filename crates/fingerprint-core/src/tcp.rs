@@ -152,6 +152,14 @@ pub struct TcpFingerprint {
 }
 
 impl TcpFingerprint {
+    /// Valid MSS range (minimum Ethernet-compatible MTU minus IP+TCP headers)
+    /// Minimum: 536 (RFC 879 minimum), Maximum: 9000 (practical jumbo frame limit)
+    const MIN_MSS: u16 = 536;
+    const MAX_MSS: u16 = 9000; // Conservative jumbo frame MSS limit
+
+    /// Valid window scale range (0-14 per RFC 7323)
+    const MAX_WINDOW_SCALE: u8 = 14;
+
     /// Create a new TCP fingerprint
     pub fn new(ttl: u8, window_size: u16) -> Self {
         let id = Self::calculate_id(ttl, window_size, None, None);
@@ -166,7 +174,62 @@ impl TcpFingerprint {
         }
     }
 
-    /// Createcomplete TCP fingerprint
+    /// Create a TCP fingerprint with validation
+    ///
+    /// Returns an error if parameters are outside valid ranges:
+    /// - MSS: 536-9000 (RFC 879 minimum to practical jumbo frame limit)
+    /// - Window Scale: 0-14 (RFC 7323)
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use fingerprint_core::tcp::TcpFingerprint;
+    ///
+    /// let fp = TcpFingerprint::new_validated(64, 65535, Some(1460), Some(7));
+    /// assert!(fp.is_ok());
+    ///
+    /// let invalid = TcpFingerprint::new_validated(64, 65535, Some(100), Some(7));
+    /// assert!(invalid.is_err()); // MSS too small
+    /// ```
+    pub fn new_validated(
+        ttl: u8,
+        window_size: u16,
+        mss: Option<u16>,
+        window_scale: Option<u8>,
+    ) -> Result<Self, String> {
+        // Validate MSS if provided
+        if let Some(mss_val) = mss {
+            if mss_val < Self::MIN_MSS {
+                return Err(format!(
+                    "MSS value {} is below minimum {} (RFC 879)",
+                    mss_val,
+                    Self::MIN_MSS
+                ));
+            }
+            if mss_val > Self::MAX_MSS {
+                return Err(format!(
+                    "MSS value {} exceeds maximum {}",
+                    mss_val,
+                    Self::MAX_MSS
+                ));
+            }
+        }
+
+        // Validate window scale if provided
+        if let Some(ws_val) = window_scale {
+            if ws_val > Self::MAX_WINDOW_SCALE {
+                return Err(format!(
+                    "Window scale {} exceeds maximum {} (RFC 7323)",
+                    ws_val,
+                    Self::MAX_WINDOW_SCALE
+                ));
+            }
+        }
+
+        Ok(Self::with_options(ttl, window_size, mss, window_scale))
+    }
+
+    /// Create complete TCP fingerprint (no validation, use new_validated for safe construction)
     pub fn with_options(
         ttl: u8,
         window_size: u16,
@@ -293,5 +356,66 @@ mod tests {
 
         let fp3 = TcpFingerprint::new(200, 65535);
         assert_eq!(fp3.infer_initial_ttl(), 255);
+    }
+
+    #[test]
+    fn test_new_validated_valid_params() {
+        let fp = TcpFingerprint::new_validated(64, 65535, Some(1460), Some(7));
+        assert!(fp.is_ok());
+        let fp = fp.unwrap();
+        assert_eq!(fp.ttl, 64);
+        assert_eq!(fp.window_size, 65535);
+        assert_eq!(fp.mss, Some(1460));
+        assert_eq!(fp.window_scale, Some(7));
+    }
+
+    #[test]
+    fn test_new_validated_mss_too_small() {
+        let fp = TcpFingerprint::new_validated(64, 65535, Some(100), Some(7));
+        assert!(fp.is_err());
+        assert!(fp.unwrap_err().contains("MSS"));
+    }
+
+    #[test]
+    fn test_new_validated_mss_at_boundaries() {
+        // Test MSS at minimum boundary (should pass)
+        let fp_min = TcpFingerprint::new_validated(64, 65535, Some(536), Some(7));
+        assert!(fp_min.is_ok());
+
+        // Test MSS at maximum boundary (should pass)
+        let fp_max = TcpFingerprint::new_validated(64, 65535, Some(9000), Some(7));
+        assert!(fp_max.is_ok());
+
+        // Test MSS just above maximum (should fail)
+        let fp_over = TcpFingerprint::new_validated(64, 65535, Some(9001), Some(7));
+        assert!(fp_over.is_err());
+
+        // Test MSS just below minimum (should fail)
+        let fp_under = TcpFingerprint::new_validated(64, 65535, Some(535), Some(7));
+        assert!(fp_under.is_err());
+    }
+
+    #[test]
+    fn test_new_validated_window_scale_too_large() {
+        let fp = TcpFingerprint::new_validated(64, 65535, Some(1460), Some(15));
+        assert!(fp.is_err());
+        assert!(fp.unwrap_err().contains("Window scale"));
+    }
+
+    #[test]
+    fn test_new_validated_window_scale_at_boundary() {
+        // Test window scale at maximum (should pass)
+        let fp_max = TcpFingerprint::new_validated(64, 65535, Some(1460), Some(14));
+        assert!(fp_max.is_ok());
+
+        // Test window scale at zero (should pass)
+        let fp_zero = TcpFingerprint::new_validated(64, 65535, Some(1460), Some(0));
+        assert!(fp_zero.is_ok());
+    }
+
+    #[test]
+    fn test_new_validated_none_options() {
+        let fp = TcpFingerprint::new_validated(128, 32768, None, None);
+        assert!(fp.is_ok());
     }
 }

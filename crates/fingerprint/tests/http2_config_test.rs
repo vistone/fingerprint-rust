@@ -1,6 +1,6 @@
 //! HTTP/2 配置模块测试
 
-use fingerprint::http2_config::*;
+use fingerprint::*;
 
 #[test]
 fn test_chrome_http2_settings() {

@@ -1,9 +1,31 @@
-//! rustls configurationtool (provide HTTP/1/2/3 reuse)
+//! rustls configuration utilities (provides HTTP/1/2/3 reuse)
 //!
-//! target：
-//! - single entryBuild root store
-//! - single entryapplication verify_tls (optionaldisabledvalidate, only for debug/inside网)
-//! - single entryconfiguration ALPN
+//! This module provides utility functions for building rustls configurations.
+//!
+//! ## Features
+//!
+//! - `build_root_store()`: Build root certificate store using Mozilla roots
+//! - `apply_verify_tls()`: Configure TLS certificate verification
+//! - `build_client_config()`: Build complete rustls ClientConfig with ALPN and verification
+//!
+//! ## Security Warning
+//!
+//! **The `dangerous_configuration` feature allows disabling TLS certificate verification.**
+//!
+//! **DO NOT USE IN PRODUCTION!** This feature is intended only for:
+//! - Local development and testing
+//! - Internal network environments where certificates cannot be properly issued
+//! - Debugging TLS handshake issues
+//!
+//! Disabling certificate verification exposes your application to:
+//! - Man-in-the-middle (MITM) attacks
+//! - Credential theft
+//! - Data interception
+//!
+//! If you need to work with self-signed certificates in production, consider:
+//! - Using certificate pinning instead
+//! - Adding custom root certificates to the trust store
+//! - Using proper PKI infrastructure
 
 #![cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
 
@@ -11,20 +33,56 @@
 use std::sync::Arc;
 
 use fingerprint_profiles::profiles::ClientProfile;
+use std::sync::Once;
 
 // Note: ProfileClientHelloCustomizer needsupport ClientHelloCustomizer rustls fork
 // current被disabled, becausestandard rustls excluding ClientHelloCustomizer API
 #[cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
 
+/// Ensure the crypto provider is installed (ring)
+static INIT_CRYPTO_PROVIDER: Once = Once::new();
+
+/// Initialize the rustls crypto provider (ring) if not already done.
+/// This must be called before any TLS operations.
+fn ensure_crypto_provider() {
+    INIT_CRYPTO_PROVIDER.call_once(|| {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+    });
+}
+
 /// Build rustls rootcertificatestore (Mozilla roots)
 pub fn build_root_store() -> rustls::RootCertStore {
+    ensure_crypto_provider();
     let mut root_store = rustls::RootCertStore::empty();
     root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
     root_store
 }
 
-/// 若 verify_tls=false, thensafeinstall"acceptallcertificate" verifier (dangerousFeatures, only for debug)
+/// If verify_tls=false, install an "accept all certificates" verifier (dangerous feature, only for debug)
+///
+/// # Security Warning
+///
+/// **This function can completely disable TLS certificate verification when the
+/// `dangerous_configuration` feature is enabled and `verify_tls` is set to `false`.**
+///
+/// This makes your application vulnerable to:
+/// - Man-in-the-middle (MITM) attacks
+/// - Credential theft and data interception
+/// - Impersonation attacks
+///
+/// # Arguments
+///
+/// * `cfg` - The rustls ClientConfig to modify
+/// * `verify_tls` - If true, certificates are verified normally. If false and
+///   the `dangerous_configuration` feature is enabled, all certificates are accepted.
+///
+/// # Example
+///
+/// ```ignore
+/// // DO NOT USE IN PRODUCTION
+/// apply_verify_tls(&mut config, false);
+/// ```
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     if verify_tls {
@@ -32,8 +90,8 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     }
 
     // Note: rustls 0.23 API changed - dangerous features now under danger module
-    // If verify_tls=false, use dangerous configurationacceptallcertificate
-    // thisneed rustls dangerous_configuration feature
+    // If verify_tls=false, use dangerous configuration to accept all certificates.
+    // This needs the rustls dangerous_configuration feature.
     #[cfg(feature = "dangerous_configuration")]
     {
         use rustls::client::danger::{
@@ -100,13 +158,13 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 
     #[cfg(not(feature = "dangerous_configuration"))]
     {
-        // Ifno dangerous_configuration feature, ignore verify_tls=false settings
-        // beginningfinalValidatecertificate (moresecurity)
-        eprintln!("warning: verify_tls=false need dangerous_configuration feature，alreadyignore");
+        // If dangerous_configuration feature is not enabled, ignore verify_tls=false setting
+        // and always validate certificates (more secure)
+        eprintln!("warning: verify_tls=false requires dangerous_configuration feature, ignoring");
     }
 }
 
-/// Build rustls::ClientConfig, 并settings ALPN/verify_tls, andBased on fingerprintmatchcipher suite.
+/// Build rustls::ClientConfig with ALPN/verify_tls settings, and match cipher suites based on fingerprint profile.
 pub fn build_client_config(
     verify_tls: bool,
     alpn_protocols: Vec<Vec<u8>>,
