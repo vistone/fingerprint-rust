@@ -71,7 +71,7 @@ impl PerformanceMetrics {
         if len == 0 {
             return 0.0;
         }
-        if len % 2 == 0 {
+        if len.is_multiple_of(2) {
             (sorted[len / 2 - 1] + sorted[len / 2]) as f64 / 2.0
         } else {
             sorted[len / 2] as f64
