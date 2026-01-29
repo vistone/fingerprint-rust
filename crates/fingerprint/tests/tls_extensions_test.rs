@@ -2,14 +2,17 @@
 //!
 //! 测试各种 TLS 扩展的功能
 
-use fingerprint::tls_extensions::*;
 use fingerprint::is_grease_value;
+use fingerprint::tls_extensions::*;
 
 #[test]
 fn test_grease_extension() {
     let ext = UtlsGREASEExtension::new();
     // GREASE value should be a valid GREASE value (random each time)
-    assert!(is_grease_value(ext.extension_id()), "Extension ID should be a valid GREASE value");
+    assert!(
+        is_grease_value(ext.extension_id()),
+        "Extension ID should be a valid GREASE value"
+    );
     assert_eq!(ext.len(), 4);
 
     let mut buf = vec![0u8; 4];
