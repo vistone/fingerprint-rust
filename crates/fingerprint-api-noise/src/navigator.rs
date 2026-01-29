@@ -14,7 +14,7 @@ impl NavigatorNoiseInjector {
         use rand_chacha::ChaCha8Rng;
 
         let mut rng = ChaCha8Rng::seed_from_u64(self.seed);
-        
+
         // 有 20% 的概率修改核心数 ±1
         if rng.gen::<f64>() < 0.2 {
             let noise = if rng.gen::<bool>() { 1 } else { -1 };
@@ -30,7 +30,7 @@ impl NavigatorNoiseInjector {
         use rand_chacha::ChaCha8Rng;
 
         let mut rng = ChaCha8Rng::seed_from_u64(self.seed);
-        
+
         // 有 15% 的概率修改内存 ±1 GB
         if rng.gen::<f64>() < 0.15 {
             let noise = if rng.gen::<bool>() { 1 } else { -1 };

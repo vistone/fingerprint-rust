@@ -415,9 +415,12 @@ impl ServerPool {
                     name_server.trust_negative_responses = false;
                     config.add_name_server(name_server);
 
-                    let resolver = TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
-                        .with_options(opts)
-                        .build();
+                    let resolver = TokioResolver::builder_with_config(
+                        config,
+                        TokioConnectionProvider::default(),
+                    )
+                    .with_options(opts)
+                    .build();
 
                     // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {
@@ -573,9 +576,12 @@ impl ServerPool {
                     name_server.trust_negative_responses = false;
                     config.add_name_server(name_server);
 
-                    let resolver = TokioResolver::builder_with_config(config, TokioConnectionProvider::default())
-                        .with_options(opts)
-                        .build();
+                    let resolver = TokioResolver::builder_with_config(
+                        config,
+                        TokioConnectionProvider::default(),
+                    )
+                    .with_options(opts)
+                    .build();
 
                     // testquery (query A record)
                     match resolver.lookup(&test_domain, RecordType::A).await {

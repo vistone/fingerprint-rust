@@ -28,9 +28,10 @@ impl AudioNoiseInjector {
     /// 生成 Audio 指纹（带噪声）
     pub fn audio_fingerprint(&self, samples: &[f32]) -> Vec<u8> {
         let noisy_samples = self.add_audio_noise(samples);
-        
+
         // 转换为字节用于哈希
-        noisy_samples.iter()
+        noisy_samples
+            .iter()
             .flat_map(|&f| f.to_le_bytes())
             .collect()
     }

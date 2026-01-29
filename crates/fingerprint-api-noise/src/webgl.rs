@@ -23,21 +23,21 @@ impl WebGLNoiseInjector {
     /// 为 WebGL 参数添加噪声
     pub fn add_webgl_noise(&self, params: &WebGLParams) -> WebGLParams {
         let mut result = params.clone();
-        
+
         // 对浮点参数添加微小噪声
         if let Some(aliased_line_width_range) = &mut result.aliased_line_width_range {
             // 添加 ±0.01 的噪声
             aliased_line_width_range[0] += self.generate_small_noise(0);
             aliased_line_width_range[1] += self.generate_small_noise(1);
         }
-        
+
         result
     }
 
     fn generate_small_noise(&self, index: u64) -> f32 {
         use rand::{Rng, SeedableRng};
         use rand_chacha::ChaCha8Rng;
-        
+
         let mut rng = ChaCha8Rng::seed_from_u64(self.seed + index);
         rng.gen_range(-0.01..0.01)
     }

@@ -33,8 +33,7 @@ pub struct DNSResolver {
     server_pool: Arc<ServerPool>,
     /// Fix: cache resolver instance, avoidfrequentCreate and destroy
     /// use Arc<Mutex<HashMap>> storeeach DNS server resolver
-    resolver_cache:
-        Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioResolver>>>>,
+    resolver_cache: Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioResolver>>>>,
 }
 
 impl DNSResolver {

@@ -38,11 +38,11 @@ impl CanvasNoiseInjector {
     /// 生成 Canvas 指纹哈希（带噪声）
     pub fn fingerprint_hash(&self, canvas_data: &[u8]) -> String {
         use sha2::{Digest, Sha256};
-        
+
         let noisy_data = self.add_noise(canvas_data);
         let mut hasher = Sha256::new();
         hasher.update(&noisy_data);
-        
+
         format!("{:x}", hasher.finalize())
     }
 }
@@ -55,15 +55,17 @@ mod tests {
     fn test_canvas_noise() {
         let injector = CanvasNoiseInjector::new(12345, 0.1);
         let data = vec![255, 128, 64, 255].repeat(100); // 100 像素
-        
+
         let noisy = injector.add_noise(&data);
-        
+
         // 噪声应该存在但很小
         assert_eq!(noisy.len(), data.len());
         assert_ne!(noisy, data); // 应该有差异
-        
+
         // 差异应该很小
-        let diff: i32 = data.iter().zip(&noisy)
+        let diff: i32 = data
+            .iter()
+            .zip(&noisy)
             .map(|(a, b)| (*a as i32 - *b as i32).abs())
             .sum();
         assert!(diff < 200); // 总差异应该很小

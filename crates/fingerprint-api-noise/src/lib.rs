@@ -1,9 +1,9 @@
 //! # fingerprint-api-noise
-//! 
+//!
 //! 浏览器 API 噪声注入模块，用于对抗基于 JavaScript 的指纹识别。
-//! 
+//!
 //! ## 功能
-//! 
+//!
 //! - Canvas 指纹噪声
 //! - WebGL 参数噪声
 //! - AudioContext 噪声
@@ -11,17 +11,17 @@
 //! - 屏幕信息噪声
 //! - Navigator API 噪声
 
-pub mod canvas;
-pub mod webgl;
 pub mod audio;
+pub mod canvas;
 pub mod fonts;
-pub mod screen;
 pub mod navigator;
+pub mod screen;
+pub mod webgl;
 
-pub use canvas::CanvasNoiseInjector;
-pub use webgl::{WebGLNoiseInjector, WebGLParams};
 pub use audio::AudioNoiseInjector;
+pub use canvas::CanvasNoiseInjector;
 pub use fonts::FontNoiseInjector;
+pub use webgl::{WebGLNoiseInjector, WebGLParams};
 
 use rand::Rng;
 

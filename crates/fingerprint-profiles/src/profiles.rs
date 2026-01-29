@@ -489,7 +489,9 @@ pub fn safari_ios_18_2() -> ClientProfile {
             "Safari",
             "iOS_18.2",
             fingerprint_tls::tls_config::safari_16_0_spec,
-        ),
+        )47
+ 
+,
         settings,
         settings_order,
         safari_pseudo_header_order(),
@@ -522,7 +524,9 @@ pub fn opera_91() -> ClientProfile {
 /// Edge 120 fingerprintconfiguration
 /// Edge use Chromium insidecore, TLS fingerprint and Chrome same
 pub fn edge_120() -> ClientProfile {
-    // Edge use Chrome insidecore, configuration and Chrome same
+    // Ed47
+ 
+ge use Chrome insidecore, configuration and Chrome same
     let (settings, settings_order) = chrome_http2_settings();
     ClientProfile::new(
         ClientHelloID::new("Edge", "120", fingerprint_tls::tls_config::chrome_133_spec), // Edge use Chrome TLS configuration
@@ -598,7 +602,11 @@ pub fn chrome_mobile_134() -> ClientProfile {
         fingerprint_core::types::OperatingSystem::Linux,
     ));
     ClientProfile::new(
-        ClientHelloID::new("Chrome Mobile", "134", fingerprint_tls::tls_config::chrome_133_spec),
+        ClientHelloID::new(
+            "Chrome Mobile",
+            "134",
+            fingerprint_tls::tls_config::chrome_133_spec,
+        ),
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -841,7 +849,7 @@ mod tests {
     fn test_chrome_134_fingerprint() {
         let profile = chrome_134();
         assert_eq!(profile.get_client_hello_str(), "Chrome-134");
-        
+
         // Verify TLS fingerprint can be generated
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -853,7 +861,7 @@ mod tests {
     fn test_firefox_134_fingerprint() {
         let profile = firefox_134();
         assert_eq!(profile.get_client_hello_str(), "Firefox-134");
-        
+
         // Verify TLS fingerprint
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -863,7 +871,7 @@ mod tests {
     fn test_firefox_136_fingerprint() {
         let profile = firefox_136();
         assert_eq!(profile.get_client_hello_str(), "Firefox-136");
-        
+
         // Verify TLS fingerprint
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -873,7 +881,7 @@ mod tests {
     fn test_safari_18_2_fingerprint() {
         let profile = safari_18_2();
         assert_eq!(profile.get_client_hello_str(), "Safari-18.2");
-        
+
         // Verify TLS fingerprint
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -883,7 +891,7 @@ mod tests {
     fn test_safari_ios_18_2_fingerprint() {
         let profile = safari_ios_18_2();
         assert_eq!(profile.get_client_hello_str(), "Safari-iOS_18.2");
-        
+
         // Verify TLS fingerprint
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -893,7 +901,7 @@ mod tests {
     fn test_edge_134_fingerprint() {
         let profile = edge_134();
         assert_eq!(profile.get_client_hello_str(), "Edge-134");
-        
+
         // Verify TLS fingerprint
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -903,7 +911,7 @@ mod tests {
     fn test_chrome_mobile_134_fingerprint() {
         let profile = chrome_mobile_134();
         assert_eq!(profile.get_client_hello_str(), "Chrome Mobile-134");
-        
+
         // Verify TLS fingerprint
         let spec = profile.get_client_hello_spec();
         assert!(spec.is_ok());
@@ -912,7 +920,7 @@ mod tests {
     #[test]
     fn test_2026_fingerprints_in_map() {
         let clients = mapped_tls_clients();
-        
+
         // Verify all 2026 fingerprints are registered
         assert!(clients.contains_key("chrome_134"));
         assert!(clients.contains_key("firefox_134"));
@@ -928,16 +936,16 @@ mod tests {
         // Verify that 2026 profiles have TCP profiles set
         let chrome = chrome_134();
         assert!(chrome.tcp_profile.is_some());
-        
+
         let firefox = firefox_134();
         assert!(firefox.tcp_profile.is_some());
-        
+
         let safari = safari_18_2();
         assert!(safari.tcp_profile.is_some());
-        
+
         let edge = edge_134();
         assert!(edge.tcp_profile.is_some());
-        
+
         let chrome_mobile = chrome_mobile_134();
         assert!(chrome_mobile.tcp_profile.is_some());
     }
