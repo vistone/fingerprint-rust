@@ -68,14 +68,13 @@ impl H3SessionPool {
             )>,
         >,
     {
-        // try from pool in Get
+        // Try to get from pool first
         {
-            let mut sessions = self.sessions.lock().unwrap_or_else(|e| {
-                eprintln!("warning: H3 sessionpoollockfailure: {}", e);
-                drop(e.into_inner());
-                self.sessions
-                    .lock()
-                    .expect("unable toGet H3 sessionpoollock")
+            // Use unwrap_or_else to handle poisoned mutex gracefully
+            // If the mutex is poisoned, we recover the guard from the poison error
+            let mut sessions = self.sessions.lock().unwrap_or_else(|poisoned| {
+                eprintln!("warning: H3 session pool lock was poisoned, recovering...");
+                poisoned.into_inner()
             });
 
             self.cleanup_expired_sessions(&mut sessions);
@@ -105,12 +104,13 @@ impl H3SessionPool {
             }
         }
 
-        // Checkwhetherpositive in Create in (Race Condition Fix)
+        // Check if session is being created (Race Condition Fix)
         let rx = {
+            // Use unwrap_or_else to handle poisoned mutex gracefully
             let mut pending = self
                 .pending_sessions
                 .lock()
-                .unwrap_or_else(|e| e.into_inner());
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
             if let Some(rx) = pending.get(key) {
                 Some(rx.clone())
             } else {

@@ -1,9 +1,31 @@
-//! rustls configurationtool (provide HTTP/1/2/3 reuse)
+//! rustls configuration utilities (provides HTTP/1/2/3 reuse)
 //!
-//! target：
-//! - single entryBuild root store
-//! - single entryapplication verify_tls (optionaldisabledvalidate, only for debug/inside网)
-//! - single entryconfiguration ALPN
+//! This module provides utility functions for building rustls configurations.
+//!
+//! ## Features
+//!
+//! - `build_root_store()`: Build root certificate store using Mozilla roots
+//! - `apply_verify_tls()`: Configure TLS certificate verification
+//! - `build_client_config()`: Build complete rustls ClientConfig with ALPN and verification
+//!
+//! ## Security Warning
+//!
+//! **The `dangerous_configuration` feature allows disabling TLS certificate verification.**
+//!
+//! **DO NOT USE IN PRODUCTION!** This feature is intended only for:
+//! - Local development and testing
+//! - Internal network environments where certificates cannot be properly issued
+//! - Debugging TLS handshake issues
+//!
+//! Disabling certificate verification exposes your application to:
+//! - Man-in-the-middle (MITM) attacks
+//! - Credential theft
+//! - Data interception
+//!
+//! If you need to work with self-signed certificates in production, consider:
+//! - Using certificate pinning instead
+//! - Adding custom root certificates to the trust store
+//! - Using proper PKI infrastructure
 
 #![cfg(any(feature = "rustls-tls", feature = "http2", feature = "http3"))]
 
@@ -24,7 +46,30 @@ pub fn build_root_store() -> rustls::RootCertStore {
     root_store
 }
 
-/// 若 verify_tls=false, thensafeinstall"acceptallcertificate" verifier (dangerousFeatures, only for debug)
+/// If verify_tls=false, install an "accept all certificates" verifier (dangerous feature, only for debug)
+///
+/// # Security Warning
+///
+/// **This function can completely disable TLS certificate verification when the
+/// `dangerous_configuration` feature is enabled and `verify_tls` is set to `false`.**
+///
+/// This makes your application vulnerable to:
+/// - Man-in-the-middle (MITM) attacks
+/// - Credential theft and data interception
+/// - Impersonation attacks
+///
+/// # Arguments
+///
+/// * `cfg` - The rustls ClientConfig to modify
+/// * `verify_tls` - If true, certificates are verified normally. If false and
+///   the `dangerous_configuration` feature is enabled, all certificates are accepted.
+///
+/// # Example
+///
+/// ```ignore
+/// // DO NOT USE IN PRODUCTION
+/// apply_verify_tls(&mut config, false);
+/// ```
 #[allow(unused_variables)]
 pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     if verify_tls {
