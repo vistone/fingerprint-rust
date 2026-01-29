@@ -520,7 +520,7 @@ pub fn opera_91() -> ClientProfile {
 }
 
 /// Edge 120 fingerprint configuration
-/// Edge uses Chromium core, TLS fingerprint matches Chrome
+/// Edge uses Chrome core, TLS fingerprint matches Chrome
 pub fn edge_120() -> ClientProfile {
     // Edge uses Chrome core, configuration matches Chrome
     let (settings, settings_order) = chrome_http2_settings();
