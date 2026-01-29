@@ -4,8 +4,7 @@
 
 #![cfg(feature = "dns")]
 
-use fingerprint::dns::DNSConfig;
-use fingerprint::dns::Service;
+use fingerprint::{DNSConfig, DNSService};
 use std::time::Duration;
 use tokio::time::sleep;
 
@@ -22,7 +21,7 @@ async fn test_service_start_stop() {
     config.interval = "300s".to_string(); // 5分钟，测试中不会触发第二次解析
 
     // 创建服务
-    let service = Service::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("创建服务失败");
 
     // 检查初始状态
     assert!(!service.is_running().await, "服务初始状态应该是未运行");
@@ -80,7 +79,7 @@ async fn test_service_double_start() {
     config.domain_ips_dir = "./test_dns_data".to_string();
     config.interval = "5s".to_string();
 
-    let service = Service::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("创建服务失败");
 
     // 第一次启动应该成功
     let result1 = service.start().await;
@@ -102,7 +101,7 @@ async fn test_service_stop_before_start() {
     // 测试在未启动时停止服务
     let config = DNSConfig::new("test_token", &["google.com"]);
 
-    let service = Service::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("创建服务失败");
 
     // 未启动时停止应该返回错误或正常处理
     let result = service.stop().await;
@@ -120,7 +119,7 @@ async fn test_service_background_resolution() {
     // 设置很长的间隔，避免在测试期间触发第二次解析
     config.interval = "600s".to_string(); // 10分钟
 
-    let service = Service::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("创建服务失败");
 
     println!("[测试] 启动服务进行后台解析测试...");
     let start_result = service.start().await;
@@ -155,13 +154,13 @@ async fn test_service_config_validation() {
     // 缺少 ipinfo_token 应该失败
     let invalid_config = DNSConfig::new("", &["google.com"]);
 
-    let result = Service::new(invalid_config);
+    let result = DNSService::new(invalid_config);
     assert!(result.is_err(), "空 ipinfo_token 应该导致验证失败");
 
     // 缺少 domain_list 应该失败
     let invalid_config2 = DNSConfig::new("test_token", &[] as &[&str]); // 空列表
 
-    let result2 = Service::new(invalid_config2);
+    let result2 = DNSService::new(invalid_config2);
     assert!(result2.is_err(), "空 domain_list 应该导致验证失败");
 
     println!("[测试] 配置验证测试通过");

@@ -33,14 +33,27 @@
 use std::sync::Arc;
 
 use fingerprint_profiles::profiles::ClientProfile;
+use std::sync::Once;
 
 // Note: ProfileClientHelloCustomizer needsupport ClientHelloCustomizer rustls fork
 // current被disabled, becausestandard rustls excluding ClientHelloCustomizer API
 #[cfg(false)] // 暂 when disabled，becausestandard rustls 不support
 use super::rustls_client_hello_customizer::ProfileClientHelloCustomizer;
 
+/// Ensure the crypto provider is installed (ring)
+static INIT_CRYPTO_PROVIDER: Once = Once::new();
+
+/// Initialize the rustls crypto provider (ring) if not already done.
+/// This must be called before any TLS operations.
+fn ensure_crypto_provider() {
+    INIT_CRYPTO_PROVIDER.call_once(|| {
+        let _ = rustls::crypto::ring::default_provider().install_default();
+    });
+}
+
 /// Build rustls rootcertificatestore (Mozilla roots)
 pub fn build_root_store() -> rustls::RootCertStore {
+    ensure_crypto_provider();
     let mut root_store = rustls::RootCertStore::empty();
     root_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
     root_store

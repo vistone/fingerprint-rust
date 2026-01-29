@@ -45,3 +45,7 @@ rustls-client-hello-customizer = ["fingerprint-http/rustls-client-hello-customiz
 dns = ["fingerprint-dns", "fingerprint-http/rustls-tls"]
 defense = ["fingerprint-defense"]
 api-noise = ["fingerprint-api-noise"]
+
+[dev-dependencies]
+netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.4" }
+libc = "0.2"

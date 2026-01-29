@@ -11,13 +11,13 @@ async fn test_collect_public_dns_standalone() {
         let url = "https://public-dns.info/nameservers.txt";
 
         // 使用项目内部的 HttpClient
-        let config = fingerprint::http_client::HttpClientConfig {
+        let config = fingerprint::HttpClientConfig {
             connect_timeout: timeout,
             read_timeout: timeout,
             write_timeout: timeout,
             ..Default::default()
         };
-        let client = fingerprint::http_client::HttpClient::new(config);
+        let client = fingerprint::HttpClient::new(config);
 
         // 在异步上下文中执行同步的 HTTP 请求
         let response = tokio::task::spawn_blocking(move || client.get(url))
