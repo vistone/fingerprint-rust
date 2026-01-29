@@ -77,8 +77,8 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
     }
 
     // Note: rustls 0.23 API changed - dangerous features now under danger module
-    // If verify_tls=false, use dangerous configurationacceptallcertificate
-    // thisneed rustls dangerous_configuration feature
+    // If verify_tls=false, use dangerous configuration to accept all certificates.
+    // This needs the rustls dangerous_configuration feature.
     #[cfg(feature = "dangerous_configuration")]
     {
         use rustls::client::danger::{
@@ -145,13 +145,13 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 
     #[cfg(not(feature = "dangerous_configuration"))]
     {
-        // Ifno dangerous_configuration feature, ignore verify_tls=false settings
-        // beginningfinalValidatecertificate (moresecurity)
-        eprintln!("warning: verify_tls=false need dangerous_configuration feature，alreadyignore");
+        // If dangerous_configuration feature is not enabled, ignore verify_tls=false setting
+        // and always validate certificates (more secure)
+        eprintln!("warning: verify_tls=false requires dangerous_configuration feature, ignoring");
     }
 }
 
-/// Build rustls::ClientConfig, 并settings ALPN/verify_tls, andBased on fingerprintmatchcipher suite.
+/// Build rustls::ClientConfig with ALPN/verify_tls settings, and match cipher suites based on fingerprint profile.
 pub fn build_client_config(
     verify_tls: bool,
     alpn_protocols: Vec<Vec<u8>>,

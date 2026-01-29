@@ -80,11 +80,11 @@ impl H2SessionPool {
                 poisoned.into_inner()
             });
 
-            // cleanupexpire and invalidsession
+            // Cleanup expired and invalid sessions
             self.cleanup_expired_sessions(&mut sessions);
 
-            // Checkwhether有availablesession
-            // 先Checksessionwhether exists and valid, avoid in holdlock when performcomplexoperation
+            // Check if there's an available session
+            // First check if session exists and is valid, avoid complex operations while holding lock
             let session_valid = sessions.get(key).and_then(|session| {
                 let is_valid = session.is_valid.lock().ok().map(|v| *v).unwrap_or(false);
                 let is_finished = session._background_task.is_finished();
