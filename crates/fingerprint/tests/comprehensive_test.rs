@@ -99,7 +99,7 @@ fn test_tls_handshake_builder() {
         assert!(client_hello_result.is_ok(), "应该能构建 ClientHello");
 
         let client_hello = client_hello_result.unwrap();
-        assert!(client_hello.len() > 0, "ClientHello 应该不为空");
+        assert!(!client_hello.is_empty(), "ClientHello 应该不为空");
 
         println!("✅ ClientHello 大小: {} bytes", client_hello.len());
         #[cfg(feature = "export")]
