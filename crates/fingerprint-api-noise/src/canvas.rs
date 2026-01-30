@@ -54,7 +54,7 @@ mod tests {
     #[test]
     fn test_canvas_noise() {
         let injector = CanvasNoiseInjector::new(12345, 0.1);
-        let data = vec![255, 128, 64, 255].repeat(100); // 100 像素
+        let data = [255, 128, 64, 255].repeat(100); // 100 像素
 
         let noisy = injector.add_noise(&data);
 
