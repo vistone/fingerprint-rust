@@ -99,7 +99,7 @@ fn test_tls_handshake_builder() {
         assert!(client_hello_result.is_ok(), "应该能构建 ClientHello");
 
         let client_hello = client_hello_result.unwrap();
-        assert!(client_hello.len() > 0, "ClientHello 应该不为空");
+        assert!(!client_hello.is_empty(), "ClientHello 应该不为空");
 
         println!("✅ ClientHello 大小: {} bytes", client_hello.len());
         #[cfg(feature = "export")]
@@ -253,8 +253,7 @@ fn test_user_agent_generation() {
 
     // 测试按配置名称和操作系统生成
     let ua2 = get_user_agent_by_profile_name_with_os("Firefox-133", OperatingSystem::Linux);
-    if ua2.is_ok() {
-        let ua2 = ua2.unwrap();
+    if let Ok(ua2) = ua2 {
         // Firefox User-Agent 可能包含 "Firefox" 或 "Gecko"
         assert!(
             ua2.contains("Firefox") || ua2.contains("Gecko"),
@@ -263,8 +262,7 @@ fn test_user_agent_generation() {
     } else {
         // 如果失败，可能是配置名称格式问题，尝试其他格式
         let ua2_alt = get_user_agent_by_profile_name("firefox_133");
-        if ua2_alt.is_ok() {
-            let ua2_alt = ua2_alt.unwrap();
+        if let Ok(ua2_alt) = ua2_alt {
             assert!(ua2_alt.contains("Firefox") || ua2_alt.contains("Gecko"));
         }
     }
@@ -632,13 +630,12 @@ fn test_error_handling() {
     // 测试无效 User-Agent 生成
     let result = get_user_agent_by_profile_name("Invalid-Profile");
     // 可能返回空字符串而不是错误，这是可接受的
-    if result.is_err() {
-        println!("✅ 无效配置返回错误（符合预期）");
-    } else {
-        let ua = result.unwrap();
+    if let Ok(ua) = result {
         if ua.is_empty() {
             println!("✅ 无效配置返回空字符串（可接受）");
         }
+    } else {
+        println!("✅ 无效配置返回错误（符合预期）");
     }
 
     println!("✅ 错误处理正常");

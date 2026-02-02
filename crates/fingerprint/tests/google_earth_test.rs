@@ -27,8 +27,8 @@ const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 #[test]
 #[ignore] // 需要网络连接
 fn test_google_earth_http1() {
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     let config = HttpClientConfig {
         user_agent,
@@ -43,10 +43,18 @@ fn test_google_earth_http1() {
     match client.get(TEST_URL) {
         Ok(response) => {
             let elapsed = start.elapsed();
-            assert!(response.is_success(), "预期成功响应，实际状态码: {}", response.status_code);
+            assert!(
+                response.is_success(),
+                "预期成功响应，实际状态码: {}",
+                response.status_code
+            );
             assert_eq!(response.status_code, 200);
             assert!(!response.body.is_empty(), "响应体不应该为空");
-            println!("✅ HTTP/1.1: {} ({}ms)", response.status_code, elapsed.as_millis());
+            println!(
+                "✅ HTTP/1.1: {} ({}ms)",
+                response.status_code,
+                elapsed.as_millis()
+            );
         }
         Err(e) => panic!("❌ HTTP/1.1 测试失败: {}", e),
     }
@@ -57,8 +65,8 @@ fn test_google_earth_http1() {
 #[cfg(feature = "http2")]
 #[ignore] // 需要网络连接
 fn test_google_earth_http2() {
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     let config = HttpClientConfig {
         user_agent,
@@ -73,7 +81,11 @@ fn test_google_earth_http2() {
     match client.get(TEST_URL) {
         Ok(response) => {
             let elapsed = start.elapsed();
-            assert!(response.is_success(), "预期成功响应，实际状态码: {}", response.status_code);
+            assert!(
+                response.is_success(),
+                "预期成功响应，实际状态码: {}",
+                response.status_code
+            );
             assert_eq!(response.status_code, 200);
             assert!(!response.body.is_empty(), "响应体不应该为空");
             assert!(
@@ -81,7 +93,11 @@ fn test_google_earth_http2() {
                 "预期 HTTP/2 响应，实际: {}",
                 response.http_version
             );
-            println!("✅ HTTP/2: {} ({}ms)", response.status_code, elapsed.as_millis());
+            println!(
+                "✅ HTTP/2: {} ({}ms)",
+                response.status_code,
+                elapsed.as_millis()
+            );
         }
         Err(e) => panic!("❌ HTTP/2 测试失败: {}", e),
     }
@@ -92,8 +108,8 @@ fn test_google_earth_http2() {
 #[cfg(feature = "http3")]
 #[ignore] // 需要网络连接
 fn test_google_earth_http3() {
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     let config = HttpClientConfig {
         user_agent,
@@ -108,7 +124,11 @@ fn test_google_earth_http3() {
     match client.get(TEST_URL) {
         Ok(response) => {
             let elapsed = start.elapsed();
-            assert!(response.is_success(), "预期成功响应，实际状态码: {}", response.status_code);
+            assert!(
+                response.is_success(),
+                "预期成功响应，实际状态码: {}",
+                response.status_code
+            );
             assert_eq!(response.status_code, 200);
             assert!(!response.body.is_empty(), "响应体不应该为空");
             assert!(
@@ -118,7 +138,11 @@ fn test_google_earth_http3() {
                 "预期 HTTP/3 响应，实际: {}",
                 response.http_version
             );
-            println!("✅ HTTP/3: {} ({}ms)", response.status_code, elapsed.as_millis());
+            println!(
+                "✅ HTTP/3: {} ({}ms)",
+                response.status_code,
+                elapsed.as_millis()
+            );
         }
         Err(e) => panic!("❌ HTTP/3 测试失败: {}", e),
     }
@@ -135,8 +159,8 @@ fn test_google_earth_all_protocols() {
     println!("\n=== Google Earth API 全协议测试 ===");
     println!("URL: {}\n", TEST_URL);
 
-    let user_agent = get_user_agent_by_profile_name("chrome_133")
-        .unwrap_or_else(|_| "Mozilla/5.0".to_string());
+    let user_agent =
+        get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
 
     let mut results = Vec::new();
 
@@ -153,7 +177,11 @@ fn test_google_earth_all_protocols() {
     match client_h1.get(TEST_URL) {
         Ok(response) => {
             let elapsed = start.elapsed();
-            println!("  ✅ HTTP/1.1: {} ({}ms)", response.status_code, elapsed.as_millis());
+            println!(
+                "  ✅ HTTP/1.1: {} ({}ms)",
+                response.status_code,
+                elapsed.as_millis()
+            );
             results.push(("HTTP/1.1", true, response.status_code));
         }
         Err(e) => {
@@ -177,7 +205,11 @@ fn test_google_earth_all_protocols() {
         match client_h2.get(TEST_URL) {
             Ok(response) => {
                 let elapsed = start.elapsed();
-                println!("  ✅ HTTP/2: {} ({}ms)", response.status_code, elapsed.as_millis());
+                println!(
+                    "  ✅ HTTP/2: {} ({}ms)",
+                    response.status_code,
+                    elapsed.as_millis()
+                );
                 results.push(("HTTP/2", true, response.status_code));
             }
             Err(e) => {
@@ -202,7 +234,11 @@ fn test_google_earth_all_protocols() {
         match client_h3.get(TEST_URL) {
             Ok(response) => {
                 let elapsed = start.elapsed();
-                println!("  ✅ HTTP/3: {} ({}ms)", response.status_code, elapsed.as_millis());
+                println!(
+                    "  ✅ HTTP/3: {} ({}ms)",
+                    response.status_code,
+                    elapsed.as_millis()
+                );
                 results.push(("HTTP/3", true, response.status_code));
             }
             Err(e) => {
@@ -272,7 +308,12 @@ fn test_google_earth_all_browsers() {
         match client.get(TEST_URL) {
             Ok(response) => {
                 let elapsed = start.elapsed();
-                println!("  ✅ {}: {} ({}ms)", browser_name, response.status_code, elapsed.as_millis());
+                println!(
+                    "  ✅ {}: {} ({}ms)",
+                    browser_name,
+                    response.status_code,
+                    elapsed.as_millis()
+                );
                 results.push((browser_name, true, response.status_code));
             }
             Err(e) => {
