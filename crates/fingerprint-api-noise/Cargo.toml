@@ -11,7 +11,7 @@ categories = ["web-programming", "cryptography"]
 
 [dependencies]
 rand = { workspace = true }
-rand_chacha = "0.3"
+rand_chacha = "0.10"
 sha2 = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
