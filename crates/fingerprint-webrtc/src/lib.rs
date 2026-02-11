@@ -204,11 +204,13 @@ mod tests {
 
     #[test]
     fn test_mdns_hiding() {
+        // mDNS地址以.local结尾（RFC 6762)
         let candidates = vec![
             "candidate:1 1 udp 192.168.1.1",
-            "candidate:2 1 udp local.ip",
+            "candidate:2 1 udp device.local", // 真正的mDNS格式
         ];
         let filtered = WebRTCProtection::hide_mdns_candidates(&candidates);
-        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered.len(), 1); // 只有第一个非mDNS候选保留
+        assert_eq!(filtered[0], "candidate:1 1 udp 192.168.1.1");
     }
 }

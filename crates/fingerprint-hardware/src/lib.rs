@@ -111,9 +111,13 @@ impl HardwareDetector {
     /// 识别设备类型
     fn identify_device_type(width: u32, height: u32, memory: u64) -> DeviceType {
         match (width, height, memory) {
-            (w, h, _) if (w <= 768 && h <= 1024) || (w <= 1024 && h <= 768) => DeviceType::Tablet,
+            // 手机条件要在Tablet之前，因为更具体
             (w, h, _) if (w <= 480 && h <= 960) || (w <= 540 && h <= 960) => DeviceType::Phone,
+            // Tablet: 7-13 英寸屏幕通常为 600-1024 宽
+            (w, h, _) if (w <= 800 && h <= 1280) || (w <= 1280 && h <= 800) => DeviceType::Tablet,
+            // 桌面: 内存多于16GB
             (_, _, m) if m > 16 => DeviceType::Desktop,
+            // 默认为笔记本
             _ => DeviceType::Laptop,
         }
     }

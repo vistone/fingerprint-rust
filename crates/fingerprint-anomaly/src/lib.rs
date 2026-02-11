@@ -170,8 +170,14 @@ mod tests {
 
     #[test]
     fn test_contradiction_detection() {
+        // Chrome和Firefox同时有高分是矛盾的（不能同时识别为两个不同浏览器）
         let fingerprints = vec![("Chrome", 0.9), ("Firefox", 0.85)];
         let contradictions = ContradictionDetector::detect_contradictions(&fingerprints);
-        assert_eq!(contradictions.len(), 0); // 这两个不矛盾
+        assert_eq!(contradictions.len(), 1); // 应该检测到1个矛盾
+
+        // 如果其中一个分数低，则不矛盾
+        let non_contradictory = vec![("Chrome", 0.9), ("Firefox", 0.3)];
+        let contradictions2 = ContradictionDetector::detect_contradictions(&non_contradictory);
+        assert_eq!(contradictions2.len(), 0); // 低分浏览器不构成矛盾
     }
 }

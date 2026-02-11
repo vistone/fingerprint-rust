@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<skill>
+  <metadata>
+    <id>fingerprint-rust-comprehensive</id>
+    <name>fingerprint-rust: Multi-Layer Browser & Network Fingerprinting</name>
+    <version>2.1.0</version>
+    <author>fingerprint-rust team</author>
+    <license>BSD-3-Clause</license>
+    <repository>https://github.com/vistone/fingerprint-rust</repository>
+    <documentation>https://github.com/vistone/fingerprint-rust/blob/main/SKILL.md</documentation>
+  </metadata>
+
+  <description>
+    A comprehensive, production-grade Rust library providing multi-layer browser and network identification through 19 specialized modules. Supports TLS fingerprinting (JA3/JA4), HTTP fingerprinting (JA4H), browser API fingerprinting (Canvas, WebGL, WebRTC, Audio, Fonts, Hardware), TCP fingerprinting (JA4T), and advanced threat detection with machine learning and anomaly scoring.
+    
+    Core capabilities:
+    - 69+ browser fingerprint profiles across 6 core browsers
+    - High-performance HTTP client (HTTP/1.1, HTTP/2, HTTP/3 with QUIC)
+    - Real TLS key generation with ring cryptography library
+    - Cross-layer consistency auditing for bot/manipulation detection
+    - JA4+ full-stack fingerprinting (TLS, HTTP, TCP)
+    - ML-based anomaly detection and threat classification
+    - Browser API fingerprinting (10+ APIs: Canvas, WebGL, WebRTC, Audio, Fonts, Hardware, Timing, Storage)
+    - Real-time network traffic capture via Pcap
+    - SQLite-based persistent analysis database
+    
+    Use this skill for: browser identification, bot detection, fraud prevention, fingerprint analysis, security research, API testing, privacy research, threat detection systems, and legitimate browser automation.
+  </description>
+
+  <categories>
+    <category>Network Programming</category>
+    <category>Security</category>
+    <category>Browser Technology</category>
+    <category>Protocol Implementation</category>
+    <category>Rust Development</category>
+    <category>Threat Detection</category>
+    <category>Machine Learning</category>
+  </categories>
+
+  <keywords>
+    <keyword>browser-fingerprinting</keyword>
+    <keyword>tls-fingerprinting</keyword>
+    <keyword>ja4</keyword>
+    <keyword>ja3</keyword>
+    <keyword>ja4h</keyword>
+    <keyword>ja4t</keyword>
+    <keyword>bot-detection</keyword>
+    <keyword>fraud-prevention</keyword>
+    <keyword>http-client</keyword>
+    <keyword>http2</keyword>
+    <keyword>http3</keyword>
+    <keyword>quic</keyword>
+    <keyword>network-identification</keyword>
+    <keyword>browser-api-fingerprinting</keyword>
+    <keyword>canvas-fingerprinting</keyword>
+    <keyword>webgl-fingerprinting</keyword>
+    <keyword>webrtc</keyword>
+    <keyword>audio-fingerprinting</keyword>
+    <keyword>font-fingerprinting</keyword>
+    <keyword>hardware-fingerprinting</keyword>
+    <keyword>anomaly-detection</keyword>
+    <keyword>threat-detection</keyword>
+    <keyword>machine-learning</keyword>
+    <keyword>security</keyword>
+    <keyword>rust</keyword>
+    <keyword>cryptography</keyword>
+    <keyword>rustls</keyword>
+    <keyword>ring</keyword>
+    <keyword>tokio</keyword>
+    <keyword>async-rust</keyword>
+  </keywords>
+
+  <capabilities>
+    <capability name="TLS Fingerprinting">
+      <description>Generate and analyze TLS ClientHello fingerprints using JA3/JA4 standards with real key generation</description>
+      <modules>
+        <module>fingerprint-core</module>
+        <module>fingerprint-tls</module>
+        <module>fingerprint-defense</module>
+      </modules>
+    </capability>
+
+    <capability name="Browser Profile Management">
+      <description>Manage 69+ browser fingerprint configurations across Chrome, Firefox, Safari, Opera, and Edge</description>
+      <modules>
+        <module>fingerprint-profiles</module>
+        <module>fingerprint-headers</module>
+      </modules>
+    </capability>
+
+    <capability name="HTTP Client">
+      <description>Multi-protocol HTTP client supporting HTTP/1.1, HTTP/2, HTTP/3 (QUIC) with automatic protocol negotiation</description>
+      <modules>
+        <module>fingerprint-http</module>
+        <module>fingerprint-dns</module>
+      </modules>
+    </capability>
+
+    <capability name="Browser API Fingerprinting">
+      <description>Fingerprinting detection for Canvas, WebGL, WebRTC, Audio, Fonts, Hardware, Timing, and Storage APIs</description>
+      <modules>
+        <module>fingerprint-canvas</module>
+        <module>fingerprint-webgl</module>
+        <module>fingerprint-webrtc</module>
+        <module>fingerprint-audio</module>
+        <module>fingerprint-fonts</module>
+        <module>fingerprint-hardware</module>
+        <module>fingerprint-timing</module>
+        <module>fingerprint-storage</module>
+      </modules>
+    </capability>
+
+    <capability name="Threat Detection & Analysis">
+      <description>Cross-layer consistency checking, JA4+ generation, anomaly scoring, and ML-based threat classification</description>
+      <modules>
+        <module>fingerprint-defense</module>
+        <module>fingerprint-anomaly</module>
+        <module>fingerprint-ml</module>
+      </modules>
+    </capability>
+
+    <capability name="Network Obfuscation">
+      <description>API noise injection and fingerprint evasion through plausible value generation</description>
+      <modules>
+        <module>fingerprint-api-noise</module>
+      </modules>
+    </capability>
+  </capabilities>
+
+  <crates>
+    <crate>
+      <name>fingerprint-core</name>
+      <description>Core data types, browser/OS definitions, TLS dictionary, and utility functions</description>
+      <tier>foundation</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-tls</name>
+      <description>TLS ClientHello specification, extensions, handshake builders, real key generation</description>
+      <tier>foundation</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-profiles</name>
+      <description>69+ browser fingerprint profiles with version management and lookup</description>
+      <tier>core</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-headers</name>
+      <description>HTTP headers, User-Agent generation, HTTP/2 pseudo-headers</description>
+      <tier>core</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-http</name>
+      <description>Multi-protocol HTTP client (HTTP/1.1, HTTP/2, HTTP/3) with compression and redirects</description>
+      <tier>core</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-dns</name>
+      <description>DNS resolver with caching, domain resolution, timeout handling</description>
+      <tier>core</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-defense</name>
+      <description>JA4+ generation, passive analysis, consistency auditing, self-learning, Pcap support</description>
+      <tier>defense</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-canvas</name>
+      <description>Canvas fingerprinting detection and analysis</description>
+      <tier>browser-api</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-webgl</name>
+      <description>WebGL capability fingerprinting and renderer analysis</description>
+      <tier>browser-api</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-audio</name>
+      <description>Audio context fingerprinting and oscillator analysis</description>
+      <tier>browser-api</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-fonts</name>
+      <description>Font enumeration detection and system font fingerprinting</description>
+      <tier>browser-api</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-webrtc</name>
+      <description>WebRTC IP leakage detection and ICE candidate analysis</description>
+      <tier>browser-api</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-hardware</name>
+      <description>Hardware capability detection (CPU, memory, GPU, sensors)</description>
+      <tier>browser-api</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-timing</name>
+      <description>Performance timing and request timing fingerprinting</description>
+      <tier>advanced</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-storage</name>
+      <description>LocalStorage, IndexedDB, and cookie analysis</description>
+      <tier>advanced</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-ml</name>
+      <description>Machine learning models for browser classification and threat detection</description>
+      <tier>advanced</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-anomaly</name>
+      <description>ML-based anomaly detection and threat scoring</description>
+      <tier>defense</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint-api-noise</name>
+      <description>API obfuscation and fingerprint evasion through noise injection</description>
+      <tier>advanced</tier>
+    </crate>
+
+    <crate>
+      <name>fingerprint</name>
+      <description>Main library with unified public API, feature management, and configuration export</description>
+      <tier>main</tier>
+    </crate>
+  </crates>
+
+  <useCases>
+    <useCase>
+      <name>Bot Detection & Fraud Prevention</name>
+      <description>Detect bots, scrapers, and automated attacks through TLS/HTTP inconsistencies and cross-layer analysis</description>
+      <modules>fingerprint-defense, fingerprint-anomaly, fingerprint-ml</modules>
+      <complexity>Advanced</complexity>
+    </useCase>
+
+    <useCase>
+      <name>Browser Identification</name>
+      <description>Identify legitimate browsers and versions using JA3/JA4 TLS fingerprints</description>
+      <modules>fingerprint-defense, fingerprint-core</modules>
+      <complexity>Beginner</complexity>
+    </useCase>
+
+    <useCase>
+      <name>Legitimate Browser Automation</name>
+      <description>Generate realistic browser fingerprints for legitimate automation and testing</description>
+      <modules>fingerprint-profiles, fingerprint-headers, fingerprint-http</modules>
+      <complexity>Intermediate</complexity>
+    </useCase>
+
+    <useCase>
+      <name>Security Monitoring</name>
+      <description>Monitor and analyze traffic for anomalies and threat indicators</description>
+      <modules>fingerprint-defense, fingerprint-anomaly</modules>
+      <complexity>Advanced</complexity>
+    </useCase>
+
+    <useCase>
+      <name>Privacy Research</name>
+      <description>Study fingerprinting techniques and privacy implications across multiple API layers</description>
+      <modules>fingerprint-canvas, fingerprint-webgl, fingerprint-audio, fingerprint-fonts, fingerprint-hardware, fingerprint-storage</modules>
+      <complexity>Beginner</complexity>
+    </useCase>
+
+    <useCase>
+      <name>API Testing &amp; QA</name>
+      <description>Test APIs against realistic browser fingerprints and protocols</description>
+      <modules>fingerprint-profiles, fingerprint-http</modules>
+      <complexity>Intermediate</complexity>
+    </useCase>
+
+    <useCase>
+      <name>WAF/DDoS Protection</name>
+      <description>Implement web application firewall rules based on fingerprinting analysis</description>
+      <modules>fingerprint-defense, fingerprint-anomaly, fingerprint-ml</modules>
+      <complexity>Advanced</complexity>
+    </useCase>
+  </useCases>
+
+  <performanceMetrics>
+    <metric name="TLS Fingerprint Generation">
+      <value>0.564 microseconds</value>
+      <throughput>1.8 million ops/sec</throughput>
+    </metric>
+
+    <metric name="HTTP Client Creation">
+      <value>0.098 microseconds</value>
+      <throughput>10.2 million ops/sec</throughput>
+    </metric>
+
+    <metric name="HTTP/1.1 Average Response">
+      <value>44.4 milliseconds</value>
+    </metric>
+
+    <metric name="HTTP/2 Average Response">
+      <value>48.0 milliseconds</value>
+    </metric>
+
+    <metric name="HTTP/3 Average Response">
+      <value>40.3 milliseconds</value>
+      <note>Fastest protocol</note>
+    </metric>
+
+    <metric name="Test Pass Rate">
+      <value>100%</value>
+      <coverage>15 browser × protocol combinations</coverage>
+    </metric>
+  </performanceMetrics>
+
+  <dependencies>
+    <core>
+      <dep name="rustls" version="0.23">TLS implementation</dep>
+      <dep name="ring" version="0.17.14">Cryptography and real key generation</dep>
+      <dep name="tokio" version="1.40">Async runtime</dep>
+    </core>
+
+    <http>
+      <dep name="h2" version="0.4">HTTP/2 implementation</dep>
+      <dep name="quinn" version="0.11">QUIC implementation</dep>
+      <dep name="h3" version="0.0.8">HTTP/3 implementation</dep>
+    </http>
+
+    <utilities>
+      <dep name="serde" version="1.0">Serialization</dep>
+      <dep name="rand" version="0.8">Random number generation</dep>
+      <dep name="chrono" version="0.4">Time handling</dep>
+    </utilities>
+
+    <testing>
+      <dep name="proptest" version="1.4">Property-based testing</dep>
+      <dep name="criterion" version="*">Benchmarking</dep>
+    </testing>
+  </dependencies>
+
+  <qualityMetrics>
+    <testCoverage>100%</testCoverage>
+    <testTypes>
+      <type>Unit Tests</type>
+      <type>Integration Tests</type>
+      <type>Property-Based Tests (proptest)</type>
+      <type>Fuzzing (cargo-fuzz)</type>
+      <type>Performance Benchmarks</type>
+      <type>Real Environment E2E Tests</type>
+    </testTypes>
+    <securityAudits>Regular cargo audit in CI/CD</securityAudits>
+    <rustStandards>Edition 2021, 1.92.0+</rustStandards>
+  </qualityMetrics>
+
+  <documentation>
+    <doc name="README" path="README.md" description="Quick start and feature overview"/>
+    <doc name="Architecture" path="docs/ARCHITECTURE.md" description="Deep design documentation"/>
+    <doc name="API Reference" path="docs/API.md" description="Comprehensive API documentation"/>
+    <doc name="Tutorials" path="docs/TUTORIALS.md" description="Step-by-step usage guides"/>
+    <doc name="Troubleshooting" path="docs/TROUBLESHOOTING.md" description="Common issues and solutions"/>
+    <doc name="Changelog" path="docs/CHANGELOG.md" description="Version history and releases"/>
+    <doc name="Enhancement Summary" path="docs/ENHANCEMENT_SUMMARY.md" description="Recent improvements and features"/>
+    <doc name="Contributing" path="CONTRIBUTING.md" description="Development guidelines"/>
+    <doc name="Security" path="SECURITY.md" description="Security policies and disclosure"/>
+  </documentation>
+
+  <examples>
+    <example name="Basic Usage" file="examples/basic.rs"/>
+    <example name="Unified Fingerprinting" file="examples/unified_fingerprint_demo.rs"/>
+    <example name="HTTP Headers" file="examples/http_headers.rs"/>
+    <example name="Connection Pool" file="examples/connection_pool.rs"/>
+    <example name="DNS Integration" file="examples/dns_full_integration.rs"/>
+    <example name="TLS Fingerprinting" file="examples/tls_fingerprint.rs"/>
+    <example name="Error Handling" file="examples/error_handling_best_practices.rs"/>
+    <example name="Export Configuration" file="examples/export_config.rs"/>
+  </examples>
+
+  <learningPaths>
+    <path name="Beginner - Browser Identification">
+      <step>Read README.md</step>
+      <step>Run examples/basic.rs</step>
+      <step>Run examples/unified_fingerprint_demo.rs</step>
+      <step>Study docs/API.md</step>
+    </path>
+
+    <path name="Intermediate - HTTP Integration">
+      <step>Study docs/API.md</step>
+      <step>Run examples/http_headers.rs and http_pool.rs</step>
+      <step>Implement custom HTTP requests</step>
+      <step>Integrate into your application</step>
+    </path>
+
+    <path name="Advanced - Defense &amp; Detection">
+      <step>Read docs/ARCHITECTURE.md</step>
+      <step>Study fingerprint-defense source code</step>
+      <step>Implement custom anomaly detectors</step>
+      <step>Deploy threat detection service</step>
+    </path>
+
+    <path name="Expert - Custom Development">
+      <step>Deep dive into TLS specifications</step>
+      <step>Implement custom browser profiles</step>
+      <step>Develop new detection methods</step>
+      <step>Publish research</step>
+    </path>
+  </learningPaths>
+
+  <browserSupport>
+    <browser>
+      <name>Google Chrome</name>
+      <versions>103-133 (31 versions)</versions>
+      <type>Core</type>
+    </browser>
+
+    <browser>
+      <name>Mozilla Firefox</name>
+      <versions>102-135 (20+ versions)</versions>
+      <type>Core</type>
+    </browser>
+
+    <browser>
+      <name>Apple Safari</name>
+      <versions>16.0-17.x (5+ versions)</versions>
+      <type>Core</type>
+    </browser>
+
+    <browser>
+      <name>Microsoft Edge</name>
+      <versions>120-133 (14+ versions)</versions>
+      <type>Core</type>
+    </browser>
+
+    <browser>
+      <name>Opera</name>
+      <versions>89-91+ (3+ versions)</versions>
+      <type>Core</type>
+    </browser>
+
+    <browser>
+      <name>Mobile Clients</name>
+      <versions>iOS Safari, Android Chrome (22+ variants)</versions>
+      <type>Mobile</type>
+    </browser>
+
+    <total>69+ fingerprint profiles</total>
+  </browserSupport>
+
+  <integrationPoints>
+    <framework>Tokio async runtime</framework>
+    <cryptography>Ring library for key generation</cryptography>
+    <tls>rustls (0.23)</tls>
+    <http2>h2 (0.4)</http2>
+    <http3>quinn (0.11) + h3 (0.0.8)</http3>
+    <dns>hickory-resolver (0.25)</dns>
+    <serialization>serde, JSON, YAML, TOML</serialization>
+    <compression>gzip, deflate, brotli</compression>
+    <database>SQLite (via fingerprint-defense)</database>
+  </integrationPoints>
+
+  <community>
+    <repository>https://github.com/vistone/fingerprint-rust</repository>
+    <issues>https://github.com/vistone/fingerprint-rust/issues</issues>
+    <discussions>https://github.com/vistone/fingerprint-rust/discussions</discussions>
+    <securityDisclosure>See SECURITY.md for responsible disclosure</securityDisclosure>
+  </community>
+
+  <tags>
+    <tag>production-ready</tag>
+    <tag>100-percent-tests</tag>
+    <tag>security-audited</tag>
+    <tag>multi-language-support</tag>
+    <tag>comprehensive-documentation</tag>
+    <tag>active-development</tag>
+    <tag>bsd3-license</tag>
+  </tags>
+</skill>
