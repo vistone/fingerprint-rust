@@ -10,7 +10,7 @@ members = [
     "crates/fingerprint-api-noise",
     "crates/fingerprint", "crates/fingerprint-canvas", "crates/fingerprint-webgl",
     "crates/fingerprint-canvas",
-    "crates/fingerprint-webgl",
+    "crates/fingerprint-webgl", "crates/fingerprint-audio", "crates/fingerprint-fonts", "crates/fingerprint-storage", "crates/fingerprint-webrtc", "crates/fingerprint-hardware", "crates/fingerprint-timing", "crates/fingerprint-ml", "crates/fingerprint-anomaly",
 ]
 resolver = "2"
 
