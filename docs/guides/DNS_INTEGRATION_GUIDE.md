@@ -572,22 +572,112 @@ tokio::spawn(async move {
 
 ---
 
-## 📚 相关文档
+## 🔐 安全修复与最佳实践
 
-- [DNS 模块文档](../modules/dns.md)
-- [HTTP 客户端文档](../modules/http_client.md)
-- [架构设计文档](../ARCHITECTURE.md)
+### 安全改进 (v2.1.0)
+
+#### IPInfo Token 泄露修复
+
+**问题**: 之前的实现中，IPInfo API Token 通过 URL 参数传递，可能导致：
+- 日志文件中暴露 Token
+- HTTP 代理和中间件可见 Token
+- 浏览器历史记录中泄露 Token
+
+**修复方案**: 使用 HTTP Header 替代 URL 参数
+```rust
+// ❌ 之前的不安全做法
+let url = format!("https://ipinfo.io/json?token={}", token);
+
+// ✅ 修复后的安全做法
+let headers = vec![
+    ("Authorization", format!("Bearer {}", token)),
+];
+// Token 通过请求头传递，不会出现在 URL 中
+```
+
+#### DNS 解析器的锁中毒处理
+
+**问题**: 使用 `unwrap()` 处理 mutex 锁，如果线程 panic 会导致锁中毒。
+
+**修复方案**: 正确处理锁中毒
+```rust
+// ✅ 改进后的错误处理
+match cache.lock() {
+    Ok(mut cache_map) => {
+        // 处理缓存
+    }
+    Err(poisoned) => {
+        // 重新初始化而不是 panic
+        let mut cache_map = poisoned.into_inner();
+        cache_map.clear();
+    }
+}
+```
+
+#### 文件写入原子性保证
+
+**问题**: DNS 服务器池配置文件的写入可能因并发而损坏。
+
+**修复方案**: 使用唯一临时文件名和原子操作
+```rust
+// ✅ 安全的文件写入
+let temp_path = path.with_extension(
+    format!("tmp.{}", std::process::id())
+);
+// 写入到临时文件
+// 原子重命名到目标位置
+std::fs::rename(&temp_path, &path)?;
+```
+
+### 安全最佳实践
+
+#### 1. Token 管理
+```rust
+// ✅ 推荐做法
+use std::env;
+
+// 从环境变量读取敏感信息
+let token = env::var("IPINFO_TOKEN")?;
+
+// 通过安全的 API 调用
+let ipinfo = DNSResolver::new_with_ipinfo(token)?;
+```
+
+#### 2. DNS 缓存安全
+```rust
+// ✅ 设置缓存过期时间，防止缓存污染
+let dns_resolver = DNSResolver::new_with_ttl(
+    Duration::from_secs(300)  // 5 分钟过期
+);
+
+// 定期清理过期缓存
+tokio::spawn(async move {
+    loop {
+        tokio::time::sleep(Duration::from_secs(300)).await;
+        dns_resolver.cleanup_expired();
+    }
+});
+```
+
+#### 3. 错误日志处理
+```rust
+// ✅ 确保敏感信息不会被记录
+match dns_resolver.resolve(domain).await {
+    Ok(ips) => println!("Resolved: {:?}", ips),
+    Err(e) => {
+        // ⚠️ 不要记录完整的错误，其中可能包含 Token
+        eprintln!("DNS resolution failed for {}", domain);
+        // 详细错误仅用于调试
+        debug!("Error details: {}", e);
+    }
+}
+```
+
+### 审计建议
+
+- 定期检查日志中是否有泄露的敏感信息
+- 使用环境变量而不是硬编码 Token
+- 实施访问控制，限制谁可以访问 DNS 配置
+- 定期更新依赖以获取最新的安全补丁
 
 ---
-
-## 🎉 总结
-
-DNS 模块增强为 `fingerprint-rust` 项目带来了：
-
-1. **性能提升**：通过缓存减少 DNS 查询延迟
-2. **灵活集成**：多种集成方式适应不同场景
-3. **智能路由**：基于 IP 地理位置实现智能选择
-4. **高可用性**：支持多 IP 故障转移
-5. **易用性**：零侵入式集成，向后兼容
-
-通过合理使用 DNS 缓存和预解析功能，可以显著提升 HTTP 客户端的性能和可靠性。

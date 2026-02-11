@@ -1,24 +1,24 @@
 //! # fingerprint
 //!
-//! anindependentbrowser TLS fingerprintlibrary,  from golang versionmigrate而from.
+//! An independent browser TLS fingerprint library, migrated from golang version.
 //!
 //! ## Features
 //!
-//! - ✅ **realbrowserfingerprint**：69+ realbrowserfingerprint (Chrome, Firefox, Safari, Opera, Edge)
-//! - ✅ **real TLS configuration**：complete TLS Client Hello Spec (cipher suite, elliptic curve, extension etc.)
-//! - ✅ **JA4 fingerprintGenerate**：complete JA4 TLS clientfingerprintGenerate (sorted and unsorted version)
-//! - ✅ **fingerprintcompare**：supportfingerprintsimilardegreecompare and most佳matchfind
-//! - ✅ **GREASE process**：complete GREASE valuefilter and process
-//! - ✅ **mobilesupport**：iOS, Android mobilefingerprint
-//! - ✅ **HTTP/2 & HTTP/3**：complete HTTP/2 configuration, compatible HTTP/3
-//! - ✅ **User-Agent match**：automaticGeneratematch User-Agent
-//! - ✅ **standard HTTP Headers**：complete's standard HTTP requestheader
-//! - ✅ **globallanguagesupport**：30+ 种language Accept-Language
-//! - ✅ **operating systemrandom化**：randomly selectoperating system
-//! - ✅ **highperformance**：零allocateclosekeyoperation, concurrentsecurity
-//! - ✅ **Rust standard**：strictfollow Rust languagestandard and best practice
-//! - ✅ **independentlibrary**：不dependother TLS clientlibrary
-//! - ✅ **codequalityquantity**：throughall Clippy Check, follow Rust best practice
+//! - ✅ **Real browser fingerprints**: 69+ real browser fingerprints (Chrome, Firefox, Safari, Opera, Edge)
+//! - ✅ **Real TLS configuration**: Complete TLS Client Hello Spec (cipher suite, elliptic curve, extension, etc.)
+//! - ✅ **JA4 fingerprint generation**: Complete JA4 TLS client fingerprint generation (sorted and unsorted versions)
+//! - ✅ **Fingerprint comparison**: Support fingerprint similarity comparison and best match finding
+//! - ✅ **GREASE processing**: Complete GREASE value filtering and handling
+//! - ✅ **Mobile support**: iOS and Android mobile device fingerprints
+//! - ✅ **HTTP/2 & HTTP/3**: Complete HTTP/2 configuration with HTTP/3 compatibility
+//! - ✅ **User-Agent matching**: Automatic matching of User-Agent strings
+//! - ✅ **Standard HTTP Headers**: Complete standard HTTP request headers
+//! - ✅ **Global language support**: 30+ languages for Accept-Language
+//! - ✅ **Operating system randomization**: Randomly selectable operating systems
+//! - ✅ **High performance**: Zero-allocation on critical paths, concurrent safe
+//! - ✅ **Rust standards**: Strictly follows Rust language standards and best practices
+//! - ✅ **Independent library**: Does not depend on other TLS client libraries
+//! - ✅ **Code quality**: Passes all Clippy checks, follows Rust best practices
 
 #[cfg(feature = "export")]
 pub mod export;
