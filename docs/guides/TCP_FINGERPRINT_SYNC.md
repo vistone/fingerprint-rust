@@ -23,6 +23,7 @@
 3. **`get_random_fingerprint_with_os(os)`**
    - 指定操作系统随机选择
    - 自动根据生成的 User-Agent 同步 TCP Profile
+   - **注意**：当指定操作系统时，会自动过滤移动端 profile（如 Android、iOS），因为移动端 profile 的 User-Agent 是固定的，无法切换到其他操作系统
 
 4. **`get_random_fingerprint_by_browser_with_os(browser_type, os)`**
    - 按浏览器类型和操作系统选择

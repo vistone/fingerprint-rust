@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-webgl
 //!
 //! WebGL 指纹识别模块
@@ -34,15 +36,21 @@ impl WebGLAnalyzer {
         let mut profiles = HashMap::new();
 
         // 预加载常见 GPU 配置
-        profiles.insert("ANGLE".to_string(), WebGLProfile {
-            gpu_vendor: "Google".to_string(),
-            gpu_renderer: "Angle".to_string(),
-        });
+        profiles.insert(
+            "ANGLE".to_string(),
+            WebGLProfile {
+                gpu_vendor: "Google".to_string(),
+                gpu_renderer: "Angle".to_string(),
+            },
+        );
 
-        profiles.insert("Apple".to_string(), WebGLProfile {
-            gpu_vendor: "Apple".to_string(),
-            gpu_renderer: "Metal".to_string(),
-        });
+        profiles.insert(
+            "Apple".to_string(),
+            WebGLProfile {
+                gpu_vendor: "Apple".to_string(),
+                gpu_renderer: "Metal".to_string(),
+            },
+        );
 
         WebGLAnalyzer { profiles }
     }

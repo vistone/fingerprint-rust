@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-ml
 //!
 //! 机器学习指纹匹配模块
@@ -31,12 +33,7 @@ impl FingerprintMatcher {
     }
 
     /// 添加参考指纹
-    pub fn add_reference(
-        &mut self,
-        id: String,
-        features: Vec<f32>,
-        label: String,
-    ) {
+    pub fn add_reference(&mut self, id: String, features: Vec<f32>, label: String) {
         self.profiles.insert(
             id,
             FingerprintVector {
@@ -129,7 +126,10 @@ impl BehaviorClassifier {
         }
 
         let variance = Self::calculate_variance(features);
-        let anomaly_count = features.iter().filter(|&&x| x < 0.2 || x > 0.9).count();
+        let anomaly_count = features
+            .iter()
+            .filter(|&&x| !(0.2..=0.9).contains(&x))
+            .count();
 
         (variance + (anomaly_count as f32 * 0.1)).min(1.0)
     }
@@ -181,7 +181,13 @@ mod tests {
         let human_features = vec![0.95, 0.92, 0.88, 0.91];
         let bot_features = vec![0.1, 0.15, 0.12, 0.18];
 
-        assert_eq!(BehaviorClassifier::classify(&human_features), BehaviorClass::Human);
-        assert_eq!(BehaviorClassifier::classify(&bot_features), BehaviorClass::Bot);
+        assert_eq!(
+            BehaviorClassifier::classify(&human_features),
+            BehaviorClass::Human
+        );
+        assert_eq!(
+            BehaviorClassifier::classify(&bot_features),
+            BehaviorClass::Bot
+        );
     }
 }

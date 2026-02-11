@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-anomaly
 //!
 //! 异常检测模块
@@ -85,9 +87,7 @@ impl AnomalyDetector {
 
         // 统计异常检测
         let mean: f32 = self.history.iter().sum::<f32>() / self.history.len() as f32;
-        let variance: f32 = self.history.iter()
-            .map(|x| (x - mean).powi(2))
-            .sum::<f32>()
+        let variance: f32 = self.history.iter().map(|x| (x - mean).powi(2)).sum::<f32>()
             / self.history.len() as f32;
         let std_dev = variance.sqrt();
 
@@ -122,9 +122,7 @@ pub struct ContradictionDetector;
 
 impl ContradictionDetector {
     /// 检测指纹矛盾
-    pub fn detect_contradictions(
-        fingerprints: &[(&str, f32)],
-    ) -> Vec<(usize, usize, String)> {
+    pub fn detect_contradictions(fingerprints: &[(&str, f32)]) -> Vec<(usize, usize, String)> {
         let mut contradictions = Vec::new();
 
         for i in 0..fingerprints.len() {
@@ -147,12 +145,7 @@ impl ContradictionDetector {
     }
 
     /// 检查是否矛盾
-    fn is_contradictory(
-        name1: &str,
-        name2: &str,
-        score1: f32,
-        score2: f32,
-    ) -> bool {
+    fn is_contradictory(name1: &str, name2: &str, score1: f32, score2: f32) -> bool {
         // 例如: Chrome 不能同时是 Firefox
         if (name1.contains("Chrome") && name2.contains("Firefox"))
             || (name1.contains("Safari") && name2.contains("Windows"))

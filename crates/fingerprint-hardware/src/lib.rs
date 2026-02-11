@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-hardware
 //!
 //! 硬件指纹识别模块

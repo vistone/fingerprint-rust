@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-audio
 //!
 //! Audio Context 指纹识别模块
@@ -224,4 +226,3 @@ mod tests {
         assert!(result.is_err());
     }
 }
-

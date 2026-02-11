@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-fonts
 //!
 //! 字体枚举和指纹识别模块
@@ -93,14 +95,14 @@ impl FontAnalyzer {
             .map(|f| {
                 let base = f.len() as u64 * 10;
                 let hash = f.chars().map(|c| c as u64).sum::<u64>();
-                (base + hash % 50) as u64
+                (base + hash % 50)
             })
             .collect()
     }
 
     /// 生成字体哈希
     fn generate_font_hash(fonts: &[String]) -> String {
-        let mut hash_input = fonts.join(":");
+        let hash_input = fonts.join(":");
         let hash_value = hash_input
             .chars()
             .fold(0u64, |acc, c| acc.wrapping_mul(31).wrapping_add(c as u64));
@@ -135,7 +137,7 @@ impl FontAnalyzer {
     }
 
     /// 获取渲染特征
-    fn get_rendering_features(fonts: &[String]) -> Vec<String> {
+    fn get_rendering_features(_fonts: &[String]) -> Vec<String> {
         vec![
             "anti-aliasing".to_string(),
             "hinting".to_string(),

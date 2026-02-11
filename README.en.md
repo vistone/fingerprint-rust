@@ -54,16 +54,16 @@ A **production-grade** Rust browser fingerprinting library supporting complete T
 
 ```toml
 [dependencies]
-fingerprint = { version = "2.0", features = ["rustls-tls", "http2", "http3"] }
+fingerprint = { version = "2.1", features = ["rustls-tls", "http2", "http3"] }
 ```
 
 **Recommended Feature Combinations**:
 ```toml
 # Full features (recommended)
-fingerprint = { version = "2.0", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
+fingerprint = { version = "2.1", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
 
 # Minimal configuration
-fingerprint = { version = "2.0", features = ["rustls-tls"] }
+fingerprint = { version = "2.1", features = ["rustls-tls"] }
 ```
 
 ### Basic Usage
@@ -269,13 +269,13 @@ dns = ["serde", "serde_json", "toml", "serde_yaml", "tokio", "futures", "rustls-
 
 ```toml
 # Production (full features)
-fingerprint = { version = "2.0", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
+fingerprint = { version = "2.1", features = ["rustls-tls", "compression", "http2", "http3", "connection-pool"] }
 
 # Development (fast compilation)
 fingerprint = { version = "2.0", features = ["rustls-tls", "http2"] }
 
 # Minimal dependencies
-fingerprint = { version = "2.0", features = ["rustls-tls"] }
+fingerprint = { version = "2.1", features = ["rustls-tls"] }
 ```
 
 ---
@@ -619,7 +619,7 @@ Thanks to the following open source projects:
 
 ## 📊 Project Status
 
-**Version**: v2.0.1 (Workspace)  
+**Version**: v2.1.0 (Workspace)  
 **Status**: ✅ **Production Ready**  
 **Last Updated**: 2025-12-14
 

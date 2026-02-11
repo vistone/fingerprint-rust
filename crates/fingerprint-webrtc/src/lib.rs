@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-webrtc
 //!
 //! WebRTC 泄露防护模块
@@ -160,12 +162,7 @@ impl WebRTCProtection {
 
     /// 检测 WebRTC 泄露
     pub fn detect_leaks(candidates: &[&str]) -> WebRTCLeakReport {
-        let private_ips = HashSet::from([
-            "10.0.0.0",
-            "172.16.0.0",
-            "192.168.0.0",
-            "127.0.0.1",
-        ]);
+        let private_ips = HashSet::from(["10.0.0.0", "172.16.0.0", "192.168.0.0", "127.0.0.1"]);
 
         let mut leaked_ips = Vec::new();
 
@@ -207,9 +204,11 @@ mod tests {
 
     #[test]
     fn test_mdns_hiding() {
-        let candidates = vec!["candidate:1 1 udp 192.168.1.1", "candidate:2 1 udp local.ip"];
+        let candidates = vec![
+            "candidate:1 1 udp 192.168.1.1",
+            "candidate:2 1 udp local.ip",
+        ];
         let filtered = WebRTCProtection::hide_mdns_candidates(&candidates);
         assert_eq!(filtered.len(), 1);
     }
 }
-

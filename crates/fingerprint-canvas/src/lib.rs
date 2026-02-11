@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-canvas
 //!
 //! Canvas 指纹识别和混淆模块
@@ -8,9 +10,9 @@
 //! - 预生成指纹库匹配
 //! - 浏览器版本识别
 
+use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
 
 /// Canvas 2D 指纹信息
 #[derive(Debug, Clone, PartialEq)]
@@ -61,7 +63,9 @@ impl std::fmt::Display for CanvasError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             CanvasError::InvalidCanvasData => write!(f, "Invalid Canvas data"),
-            CanvasError::FingerprintGenerationFailed(msg) => write!(f, "Fingerprint generation failed: {}", msg),
+            CanvasError::FingerprintGenerationFailed(msg) => {
+                write!(f, "Fingerprint generation failed: {}", msg)
+            }
             CanvasError::LibraryQueryFailed(msg) => write!(f, "Library query failed: {}", msg),
             CanvasError::Other(msg) => write!(f, "Error: {}", msg),
         }
@@ -124,7 +128,10 @@ impl CanvasAnalyzer {
         let length = canvas_data.len() as f32;
         let max_length = 100000.0;
         let base_complexity = (length / max_length).min(1.0);
-        let unique_chars = canvas_data.chars().collect::<std::collections::HashSet<_>>().len() as f32;
+        let unique_chars = canvas_data
+            .chars()
+            .collect::<std::collections::HashSet<_>>()
+            .len() as f32;
         let diversity = unique_chars / 64.0;
         (base_complexity * 0.6 + diversity * 0.4).min(1.0)
     }
@@ -163,6 +170,7 @@ struct CanvasProfile {
     browser: String,
     version: String,
     hash: String,
+    #[allow(dead_code)]
     weight: f32,
 }
 

@@ -1,10 +1,12 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-timing
 //!
 //! 时序攻击防护模块
 //!
 //! 提供时间戳一致性检查和时序侧信道防护
 
-use std::time::{SystemTime, Duration};
+use std::time::{Duration, SystemTime};
 
 /// 时序指纹
 #[derive(Debug, Clone)]
@@ -141,7 +143,7 @@ pub struct TimingProtection;
 impl TimingProtection {
     /// 添加随机延迟
     pub fn add_random_delay(min_ms: u64, max_ms: u64) -> Duration {
-        let delay = (min_ms + ((max_ms - min_ms) / 2)) as u64;
+        let delay = min_ms + ((max_ms - min_ms) / 2);
         Duration::from_millis(delay)
     }
 

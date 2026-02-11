@@ -47,6 +47,10 @@ pub fn get_random_fingerprint() -> Result<FingerprintResult, String> {
 
 /// Randomly get a fingerprint and matching User-Agent, with specified operating system
 /// If os is None, then operating system is randomly selected
+///
+/// # Note
+/// When os is specified (Some), mobile profiles (e.g., Android, iOS) are automatically filtered out
+/// because mobile profiles have fixed User-Agent strings that cannot be changed to other operating systems
 pub fn get_random_fingerprint_with_os(
     os: Option<OperatingSystem>,
 ) -> Result<FingerprintResult, String> {
@@ -56,7 +60,15 @@ pub fn get_random_fingerprint_with_os(
     }
 
     // Get all available fingerprint names
-    let names: Vec<String> = clients.keys().cloned().collect();
+    // If OS is specified, filter out mobile profiles (mobile profiles have fixed UA that cannot change OS)
+    let names: Vec<String> = match os {
+        Some(_) => clients
+            .keys()
+            .filter(|name| !is_mobile_profile(name))
+            .cloned()
+            .collect(),
+        None => clients.keys().cloned().collect(),
+    };
 
     // Randomly select one (thread-safe)
     let name_refs: Vec<&str> = names.iter().map(|s| s.as_str()).collect();

@@ -63,13 +63,21 @@ feature-depth = 1
 # More documentation for the advisories section can be found here:
 # https://embarkstudios.github.io/cargo-deny/checks/advisories/cfg.html
 [advisories]
-# 忽略的漏洞 ID（如果需要）
-# 注意：cargo-deny 0.17.0 默认启用所有安全检查
-# 如果项目不依赖有漏洞的包，可以移除对应的 ignore 项
+# 使用默认的 advisory 数据库（来自 RustSec）
+# 注意：RUSTSEC-2025-0149 是一个与 'below' crate 相关的漏洞
+# 因为 'below' 不是本项目的依赖，这个漏洞不影响项目安全
+# 但 cargo-deny < 0.18 不支持 CVSS 4.0 格式，会导致解析错误
+#
+# 如果出现解析错误，说明需要升级 cargo-deny 或手动移除无法解析的文件
+
+# 漏洞忽略列表 - 仅包含实际影响项目的漏洞
 ignore = [
-    # 如果发现需要忽略的安全建议，在这里添加
-    # 格式: "RUSTSEC-YYYY-NNNN"
+    # 当前项目无已知安全漏洞
 ]
+
+# 如果遇到无法解析的 advisory 文件，可以临时使用本地数据库
+# fetch-github-advisory-db = false
+# advisory-db-path = ""
 # If this is true, then cargo deny will use the git executable to fetch advisory database.
 # If this is false, then it uses a built-in git library.
 # Setting this to true can be helpful if you have special authentication requirements that cargo-deny does not support.
@@ -95,6 +103,8 @@ allow = [
     "Unlicense",
     "Zlib",
     "Unicode-3.0",  # Unicode License Agreement v3.0 (OSI approved)
+    "CDLA-Permissive-2.0",
+    "OpenSSL",  # OpenSSL License - used by aws-lc-sys
 ]
 # The confidence threshold for detecting a license from license text.
 # The higher the value, the more closely the license text must be to the

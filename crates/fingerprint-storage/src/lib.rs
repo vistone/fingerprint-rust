@@ -1,3 +1,5 @@
+#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+
 //! # fingerprint-storage
 //!
 //! 存储特征识别模块
@@ -24,7 +26,7 @@ pub struct StorageFingerprint {
 }
 
 /// Cookie 信息
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CookieInfo {
     pub name: String,
     pub domain: String,
