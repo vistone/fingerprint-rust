@@ -122,6 +122,45 @@ impl ClientHelloSpec {
         spec
     }
 
+    /// Chrome 133 with PSK (Pre-Shared Key) for session resumption
+    pub fn chrome_133_psk() -> Self {
+        use crate::tls_config::ClientHelloSpecBuilder;
+        let (extensions, metadata) = ClientHelloSpecBuilder::chrome_psk_extensions();
+        let mut spec = ClientHelloSpecBuilder::new()
+            .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
+            .compression_methods(vec![COMPRESSION_NONE])
+            .extensions(extensions)
+            .build();
+        spec.metadata = Some(metadata);
+        spec
+    }
+
+    /// Chrome 133 with 0-RTT (Early Data)
+    pub fn chrome_133_0rtt() -> Self {
+        use crate::tls_config::ClientHelloSpecBuilder;
+        let (extensions, metadata) = ClientHelloSpecBuilder::chrome_0rtt_extensions();
+        let mut spec = ClientHelloSpecBuilder::new()
+            .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
+            .compression_methods(vec![COMPRESSION_NONE])
+            .extensions(extensions)
+            .build();
+        spec.metadata = Some(metadata);
+        spec
+    }
+
+    /// Chrome 133 with PSK + 0-RTT (combined)
+    pub fn chrome_133_psk_0rtt() -> Self {
+        use crate::tls_config::ClientHelloSpecBuilder;
+        let (extensions, metadata) = ClientHelloSpecBuilder::chrome_psk_0rtt_extensions();
+        let mut spec = ClientHelloSpecBuilder::new()
+            .cipher_suites(ClientHelloSpecBuilder::chrome_cipher_suites())
+            .compression_methods(vec![COMPRESSION_NONE])
+            .extensions(extensions)
+            .build();
+        spec.metadata = Some(metadata);
+        spec
+    }
+
     /// Create Chrome 133 fingerprint ClientHelloSpec (oldimplement, preserve for compatible)
     #[deprecated(note = "use ClientHelloSpecBuilder 代替")]
     pub fn chrome_133_old() -> Self {
@@ -432,6 +471,21 @@ pub fn chrome_136_spec() -> Result<ClientHelloSpec, String> {
 /// Corresponds to Go version's Chrome_133 SpecFactory
 pub fn chrome_133_spec() -> Result<ClientHelloSpec, String> {
     Ok(ClientHelloSpec::chrome_133())
+}
+
+/// Chrome 133 PSK Spec Factory (Session Resumption)
+pub fn chrome_133_psk_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::chrome_133_psk())
+}
+
+/// Chrome 133 0-RTT Spec Factory (Early Data)
+pub fn chrome_133_0rtt_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::chrome_133_0rtt())
+}
+
+/// Chrome 133 PSK + 0-RTT Spec Factory (Combined)
+pub fn chrome_133_psk_0rtt_spec() -> Result<ClientHelloSpec, String> {
+    Ok(ClientHelloSpec::chrome_133_psk_0rtt())
 }
 
 /// Firefox 133 Spec Factory

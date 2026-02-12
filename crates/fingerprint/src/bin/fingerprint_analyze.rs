@@ -146,7 +146,7 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
     let mut ja3_fingerprint: Option<String> = None;
     let mut tls_confidence: Option<f64> = None;
     let mut ja3_match: Option<BrowserMatch> = None;
-    
+
     // Initialize JA3 database
     let ja3_db = JA3Database::new();
 
@@ -271,7 +271,7 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
         }
         confidence = confidence.min(1.0);
     }
-    
+
     // Additional boost from JA3 database match
     if let Some(ref match_info) = ja3_match {
         let ja3_boost = match_info.confidence * 0.10; // Up to 10% boost
@@ -431,12 +431,18 @@ fn print_fingerprint_report(filename: &str, fp: &BrowserFingerprint) {
         if let Some(conf) = fp.tls_confidence {
             println!("    TLS Match: {:.1}% confidence", conf * 100.0);
         }
-        
+
         // JA3 database match
         if let Some(ref match_info) = fp.ja3_match {
             println!("\n  Browser Identification:");
-            println!("    Detected: {} {}", match_info.browser, match_info.version);
-            println!("    Match Confidence: {:.1}%", match_info.confidence * 100.0);
+            println!(
+                "    Detected: {} {}",
+                match_info.browser, match_info.version
+            );
+            println!(
+                "    Match Confidence: {:.1}%",
+                match_info.confidence * 100.0
+            );
             if let Some(ref notes) = match_info.notes {
                 println!("    Notes: {}", notes);
             }

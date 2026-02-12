@@ -1055,17 +1055,45 @@ impl TLSExtensionWriter for UtlsCompressCertExtension {
 }
 
 /// Pre-Shared Key extension
-/// Corresponds to Go version's &tls.UtlsPreSharedKeyExtension{}
+/// Pre-Shared Key Extension (RFC 8446 Section 4.2.11)
+/// Supports TLS 1.3 PSK for session resumption
 #[derive(Debug, Clone)]
-pub struct UtlsPreSharedKeyExtension;
+pub struct PreSharedKeyExtension {
+    /// Identities offered by the client
+    pub identities: Vec<Vec<u8>>,
+    /// Binders (signatures) for each identity
+    pub binders: Vec<Vec<u8>>,
+}
 
-impl TLSExtension for UtlsPreSharedKeyExtension {
+impl PreSharedKeyExtension {
+    /// Create a new PSK extension with identities and binders
+    pub fn new(identities: Vec<Vec<u8>>, binders: Vec<Vec<u8>>) -> Self {
+        Self {
+            identities,
+            binders,
+        }
+    }
+
+    /// Create PSK extension for session resumption (typical case)
+    pub fn for_session_resumption(session_id: Vec<u8>, binder: Vec<u8>) -> Self {
+        Self {
+            identities: vec![session_id],
+            binders: vec![binder],
+        }
+    }
+}
+
+impl TLSExtension for PreSharedKeyExtension {
     fn len(&self) -> usize {
-        4 // extension_id (2) + length (2, will be set dynamically)
+        // Extension header (4) + identities list (2) + identities + binders list (2) + binders
+        let identities_len: usize = self.identities.iter().map(|id| id.len() + 4).sum();
+        let binders_len: usize = self.binders.iter().map(|b| b.len() + 1).sum();
+        4 + 2 + identities_len + 2 + binders_len
     }
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
-        if buf.len() < self.len() {
+        let len = self.len();
+        if buf.len() < len {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidInput,
                 "buffer too short",
@@ -1076,7 +1104,146 @@ impl TLSExtension for UtlsPreSharedKeyExtension {
         buf[0] = (EXT_TYPE_PRE_SHARED_KEY >> 8) as u8;
         buf[1] = (EXT_TYPE_PRE_SHARED_KEY & 0xff) as u8;
 
-        // Extension length (simplified, actual implementation would be more complex)
+        // Total length
+        let ext_len = len - 4;
+        buf[2] = (ext_len >> 8) as u8;
+        buf[3] = (ext_len & 0xff) as u8;
+
+        let mut pos = 4;
+
+        // Identities list
+        let identities_len: usize = self.identities.iter().map(|id| id.len() + 4).sum();
+        buf[pos] = (identities_len >> 8) as u8;
+        buf[pos + 1] = (identities_len & 0xff) as u8;
+        pos += 2;
+
+        for identity in &self.identities {
+            // Identity length (4 bytes: 2 for length + 2 for obfuscated_ticket_age)
+            buf[pos] = (identity.len() >> 8) as u8;
+            buf[pos + 1] = (identity.len() & 0xff) as u8;
+            pos += 2;
+            buf[pos..pos + identity.len()].copy_from_slice(identity);
+            pos += identity.len();
+            // Obfuscated ticket age (2 bytes, typically 0 for new connections)
+            buf[pos] = 0;
+            buf[pos + 1] = 0;
+            pos += 2;
+        }
+
+        // Binders list
+        let binders_len: usize = self.binders.iter().map(|b| b.len() + 1).sum();
+        buf[pos] = (binders_len >> 8) as u8;
+        buf[pos + 1] = (binders_len & 0xff) as u8;
+        pos += 2;
+
+        for binder in &self.binders {
+            buf[pos] = binder.len() as u8;
+            pos += 1;
+            if !binder.is_empty() {
+                buf[pos..pos + binder.len()].copy_from_slice(binder);
+                pos += binder.len();
+            }
+        }
+
+        Ok(len)
+    }
+
+    fn extension_id(&self) -> ExtensionID {
+        EXT_TYPE_PRE_SHARED_KEY
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl TLSExtensionWriter for PreSharedKeyExtension {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        Ok(buf.len())
+    }
+}
+
+/// Early Data Extension (RFC 8446 Section 4.2.10)
+/// Supports TLS 1.3 0-RTT (Zero Round Trip Time)
+#[derive(Debug, Clone)]
+pub struct EarlyDataExtension {
+    /// Max early data size in bytes
+    pub max_size: u32,
+}
+
+impl EarlyDataExtension {
+    /// Create Early Data extension with max size
+    pub fn new(max_size: u32) -> Self {
+        Self { max_size }
+    }
+
+    /// Create for typical clients (16KB early data)
+    pub fn standard() -> Self {
+        Self {
+            max_size: 16 * 1024, // 16KB typical
+        }
+    }
+}
+
+impl TLSExtension for EarlyDataExtension {
+    fn len(&self) -> usize {
+        4 // extension_id (2) + length (2, will be 0 in ClientHello)
+    }
+
+    fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
+        if buf.len() < self.len() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
+        }
+
+        // Extension ID (0x002a)
+        buf[0] = 0x00;
+        buf[1] = 0x2a;
+
+        // Extension length (0 for ClientHello, 4 for NewSessionTicket)
+        buf[2] = 0;
+        buf[3] = 0;
+
+        Ok(self.len())
+    }
+
+    fn extension_id(&self) -> ExtensionID {
+        0x002a // Early Data extension ID
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+impl TLSExtensionWriter for EarlyDataExtension {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        Ok(buf.len())
+    }
+}
+
+/// GREASE Pre-Shared Key Extension (backward compatibility)
+/// Corresponds to Go version's &tls.UtlsPreSharedKeyExtension{}
+#[derive(Debug, Clone)]
+pub struct UtlsPreSharedKeyExtension;
+
+impl TLSExtension for UtlsPreSharedKeyExtension {
+    fn len(&self) -> usize {
+        4
+    }
+
+    fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
+        if buf.len() < self.len() {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
+        }
+
+        buf[0] = (EXT_TYPE_PRE_SHARED_KEY >> 8) as u8;
+        buf[1] = (EXT_TYPE_PRE_SHARED_KEY & 0xff) as u8;
         buf[2] = 0;
         buf[3] = 0;
 
@@ -1098,8 +1265,66 @@ impl TLSExtensionWriter for UtlsPreSharedKeyExtension {
     }
 }
 
-/// GREASE ECH extension
-/// Corresponds to Go version's tls.BoringGREASEECH()
+/// Encrypted Client Hello (RFC 9180) Extension
+/// Implements ECH for privacy enhancement in TLS 1.3 handshake
+#[derive(Debug, Clone)]
+pub struct EncryptedClientHelloExtension {
+    /// ECH config list (HpkeDemScheme || size || config)
+    pub config_list: Vec<u8>,
+}
+
+impl EncryptedClientHelloExtension {
+    /// Create ECH extension with config bytes
+    pub fn new(config_list: Vec<u8>) -> Self {
+        Self { config_list }
+    }
+
+    /// Create ECH for outer ClientHello (empty config)
+    pub fn outer() -> Self {
+        Self {
+            config_list: vec![],
+        }
+    }
+}
+
+impl TLSExtension for EncryptedClientHelloExtension {
+    fn len(&self) -> usize {
+        4 + self.config_list.len()
+    }
+
+    fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
+        let len = self.len();
+        if buf.len() < len {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "buffer too short",
+            ));
+        }
+
+        buf[0] = 0x00;
+        buf[1] = 0x42;
+
+        let data_len = self.config_list.len() as u16;
+        buf[2] = (data_len >> 8) as u8;
+        buf[3] = (data_len & 0xff) as u8;
+
+        if !self.config_list.is_empty() {
+            buf[4..4 + self.config_list.len()].copy_from_slice(&self.config_list);
+        }
+
+        Ok(len)
+    }
+
+    fn extension_id(&self) -> ExtensionID {
+        0x0042
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
+}
+
+/// GREASE ECH Extension (backward compat + draft support)
 #[derive(Debug, Clone)]
 pub struct GREASEEncryptedClientHelloExtension {
     pub value: u16,
@@ -1107,15 +1332,13 @@ pub struct GREASEEncryptedClientHelloExtension {
 
 impl GREASEEncryptedClientHelloExtension {
     pub fn new() -> Self {
-        Self {
-            value: 0xfe0d, // ECH extension ID
-        }
+        Self { value: 0xfe0d }
     }
 }
 
 impl TLSExtension for GREASEEncryptedClientHelloExtension {
     fn len(&self) -> usize {
-        4 // extension_id (2) + length (2)
+        4
     }
 
     fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
@@ -1126,11 +1349,8 @@ impl TLSExtension for GREASEEncryptedClientHelloExtension {
             ));
         }
 
-        // Extension ID
         buf[0] = (self.value >> 8) as u8;
         buf[1] = (self.value & 0xff) as u8;
-
-        // Extension length (0)
         buf[2] = 0;
         buf[3] = 0;
 

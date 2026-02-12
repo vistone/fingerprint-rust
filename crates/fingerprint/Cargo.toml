@@ -21,7 +21,7 @@ fingerprint-dns = { path = "../fingerprint-dns", optional = true }
 fingerprint-defense = { path = "../fingerprint-defense", optional = true }
 fingerprint-api-noise = { path = "../fingerprint-api-noise", optional = true }
 
-# 配置导出功能（可选）
+# 配置导出功能(可选)
 serde = { workspace = true, optional = true, features = ["derive"] }
 serde_json = { workspace = true, optional = true }
 hex = { workspace = true, optional = true }
@@ -49,3 +49,6 @@ api-noise = ["fingerprint-api-noise"]
 [dev-dependencies]
 netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.4" }
 libc = "0.2"
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+chrono = { workspace = true }

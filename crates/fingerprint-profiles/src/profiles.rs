@@ -267,6 +267,75 @@ pub fn chrome_133() -> ClientProfile {
     )
 }
 
+/// Chrome 133 with PSK (Pre-Shared Key) - Session Resumption
+pub fn chrome_133_psk() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "133_PSK",
+            fingerprint_tls::tls_config::chrome_133_psk_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 133 with 0-RTT (Early Data)
+pub fn chrome_133_0rtt() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "133_0RTT",
+            fingerprint_tls::tls_config::chrome_133_0rtt_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 133 with PSK + 0-RTT (Combined Session Resumption + Early Data)
+pub fn chrome_133_psk_0rtt() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let default_tcp_profile = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "133_PSK_0RTT",
+            fingerprint_tls::tls_config::chrome_133_psk_0rtt_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        default_tcp_profile,
+        chrome_header_order(),
+    )
+}
+
 /// Firefox 133 fingerprintconfiguration
 pub fn firefox_133() -> ClientProfile {
     let (settings, settings_order) = firefox_http2_settings();
@@ -1712,8 +1781,8 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("chrome_110".to_string(), chrome_133());
     map.insert("chrome_111".to_string(), chrome_133());
     map.insert("chrome_112".to_string(), chrome_133());
-    map.insert("chrome_116_PSK".to_string(), chrome_133());
-    map.insert("chrome_116_PSK_PQ".to_string(), chrome_133());
+    map.insert("chrome_116_PSK".to_string(), chrome_133_psk()); // Modern PSK
+    map.insert("chrome_116_PSK_PQ".to_string(), chrome_133_psk()); // PSK with PQ
     map.insert("chrome_117".to_string(), chrome_133());
     // NEW: versions 120-132
     map.insert("chrome_120".to_string(), chrome_120());
@@ -1727,13 +1796,15 @@ fn init_mapped_tls_clients() -> HashMap<String, ClientProfile> {
     map.insert("chrome_128".to_string(), chrome_128());
     map.insert("chrome_129".to_string(), chrome_129());
     map.insert("chrome_130".to_string(), chrome_130());
-    map.insert("chrome_130_PSK".to_string(), chrome_130());
+    map.insert("chrome_130_PSK".to_string(), chrome_130()); // TODO: Create chrome_130_psk()
     map.insert("chrome_131".to_string(), chrome_131());
-    map.insert("chrome_131_PSK".to_string(), chrome_131());
+    map.insert("chrome_131_PSK".to_string(), chrome_131()); // TODO: Create chrome_131_psk()
     map.insert("chrome_132".to_string(), chrome_132());
     // Core versions
     map.insert("chrome_133".to_string(), chrome_133());
-    map.insert("chrome_133_PSK".to_string(), chrome_133());
+    map.insert("chrome_133_PSK".to_string(), chrome_133_psk()); // Real PSK implementation
+    map.insert("chrome_133_0RTT".to_string(), chrome_133_0rtt()); // Early Data (0-RTT)
+    map.insert("chrome_133_PSK_0RTT".to_string(), chrome_133_psk_0rtt()); // Combined
     map.insert("chrome_134".to_string(), chrome_134());
     map.insert("chrome_135".to_string(), chrome_135());
     map.insert("chrome_136".to_string(), chrome_136());

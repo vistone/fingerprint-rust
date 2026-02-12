@@ -3,9 +3,9 @@
 //! Parses TLS ClientHello messages from TCP payloads for browser fingerprinting.
 //! Extracts cipher suites, extensions, curves, and other fingerprint features.
 
+use crate::dicttls::supported_groups::CurveID;
 use crate::signature::ClientHelloSignature;
 use crate::version::TlsVersion;
-use crate::dicttls::supported_groups::CurveID;
 use std::fmt;
 
 /// TLS Parse Error
@@ -139,14 +139,14 @@ pub fn find_client_hello(data: &[u8]) -> Option<ClientHelloSignature> {
                 let record_end = offset + 5 + header.length as usize;
                 if record_end <= data.len() {
                     let handshake_data = &data[offset + 5..record_end];
-                    
+
                     // Try to parse ClientHello
                     if let Ok(client_hello) = parse_client_hello(handshake_data) {
                         return Some(client_hello);
                     }
                 }
             }
-            
+
             // Move to next record
             offset += 5 + header.length as usize;
         } else {
@@ -172,13 +172,13 @@ fn parse_client_hello(data: &[u8]) -> Result<ClientHelloSignature, TlsParseError
 
     // Handshake length (3 bytes)
     let length = u32::from_be_bytes([0, data[1], data[2], data[3]]) as usize;
-    
+
     if data.len() < 4 + length {
         return Err(TlsParseError::TooShort);
     }
 
     let body = &data[4..4 + length];
-    
+
     // Parse ClientHello body
     parse_client_hello_body(body)
 }
@@ -225,7 +225,7 @@ fn parse_client_hello_body(data: &[u8]) -> Result<ClientHelloSignature, TlsParse
     if cipher_end > data.len() {
         return Err(TlsParseError::TooShort);
     }
-    
+
     for i in (offset..cipher_end).step_by(2) {
         if i + 1 < data.len() {
             let cipher = u16::from_be_bytes([data[i], data[i + 1]]);
@@ -398,8 +398,7 @@ fn parse_sni(data: &[u8]) -> Result<String, TlsParseError> {
 
     // Server name
     let name_bytes = &data[5..5 + name_len];
-    String::from_utf8(name_bytes.to_vec())
-        .map_err(|_| TlsParseError::MalformedExtension)
+    String::from_utf8(name_bytes.to_vec()).map_err(|_| TlsParseError::MalformedExtension)
 }
 
 /// Parse ALPN extension
@@ -421,8 +420,7 @@ fn parse_alpn(data: &[u8]) -> Result<String, TlsParseError> {
 
     // Protocol name
     let proto_bytes = &data[3..3 + proto_len];
-    String::from_utf8(proto_bytes.to_vec())
-        .map_err(|_| TlsParseError::MalformedExtension)
+    String::from_utf8(proto_bytes.to_vec()).map_err(|_| TlsParseError::MalformedExtension)
 }
 
 #[cfg(test)]

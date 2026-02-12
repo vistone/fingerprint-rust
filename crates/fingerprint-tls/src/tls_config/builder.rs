@@ -7,9 +7,11 @@ use crate::tls_config::spec::{
     RENEGOTIATE_ONCE_AS_CLIENT, VERSION_TLS12, VERSION_TLS13,
 };
 use crate::tls_extensions::{
-    ALPNExtension, ApplicationSettingsExtensionNew, ExtendedMasterSecretExtension, KeyShare,
-    KeyShareExtension, PSKKeyExchangeModesExtension, RenegotiationInfoExtension, SCTExtension,
-    SNIExtension, SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
+    ALPNExtension, ApplicationSettingsExtensionNew, EarlyDataExtension,
+    EncryptedClientHelloExtension, ExtendedMasterSecretExtension,
+    GREASEEncryptedClientHelloExtension, KeyShare, KeyShareExtension, PSKKeyExchangeModesExtension,
+    PreSharedKeyExtension, RenegotiationInfoExtension, SCTExtension, SNIExtension,
+    SignatureAlgorithmsExtension, StatusRequestExtension, SupportedCurvesExtension,
     SupportedPointsExtension, SupportedVersionsExtension, TLSExtension, UtlsCompressCertExtension,
     UtlsGREASEExtension, UtlsPaddingExtension,
 };
@@ -236,7 +238,8 @@ impl ClientHelloSpecBuilder {
                 CERT_COMPRESSION_BROTLI,
             ])),
             Box::new(ApplicationSettingsExtensionNew::new(vec!["h2".to_string()])),
-            Box::new(crate::tls_extensions::GREASEEncryptedClientHelloExtension::new()),
+            Box::new(EncryptedClientHelloExtension::outer()), // Real ECH (RFC 9180)
+            Box::new(GREASEEncryptedClientHelloExtension::new()), // GREASE variant
             Box::new(UtlsGREASEExtension::new()),
             Box::new(UtlsPaddingExtension::new()),
         ];
@@ -335,6 +338,78 @@ impl ClientHelloSpecBuilder {
             Box::new(UtlsGREASEExtension::new()),
             Box::new(UtlsPaddingExtension::new()),
         ];
+
+        (extensions, metadata)
+    }
+
+    /// Build Chrome PSK (Pre-Shared Key) Session Resumption extensions
+    /// For TLS 1.3 session resumption with PSK
+    pub fn chrome_psk_extensions() -> (
+        Vec<Box<dyn TLSExtension>>,
+        crate::tls_config::metadata::SpecMetadata,
+    ) {
+        let (mut extensions, metadata) = Self::chrome_133_extensions();
+
+        // Insert PSK and PSK Key Exchange Modes before the last GREASE extension
+        // Find the insertion point (before the last UtlsGREASEExtension)
+        let psk_ext = Box::new(PreSharedKeyExtension::for_session_resumption(
+            vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            vec![0x20; 32], // 32-byte binder (SHA-256)
+        ));
+
+        // Add PSK extension before padding
+        if !extensions.is_empty() {
+            extensions.insert(extensions.len() - 1, psk_ext);
+        } else {
+            extensions.push(psk_ext);
+        }
+
+        (extensions, metadata)
+    }
+
+    /// Build Chrome 0-RTT (Early Data) extensions
+    /// For TLS 1.3 zero-roundtrip connections
+    pub fn chrome_0rtt_extensions() -> (
+        Vec<Box<dyn TLSExtension>>,
+        crate::tls_config::metadata::SpecMetadata,
+    ) {
+        let (mut extensions, metadata) = Self::chrome_133_extensions();
+
+        // Insert Early Data extension
+        let early_data = Box::new(EarlyDataExtension::standard());
+
+        // Add Early Data before PSK if PSK is present, otherwise before padding
+        if !extensions.is_empty() {
+            extensions.insert(extensions.len() - 1, early_data);
+        } else {
+            extensions.push(early_data);
+        }
+
+        (extensions, metadata)
+    }
+
+    /// Build Chrome PSK + 0-RTT combined extensions
+    /// For simultaneous session resumption with early data
+    pub fn chrome_psk_0rtt_extensions() -> (
+        Vec<Box<dyn TLSExtension>>,
+        crate::tls_config::metadata::SpecMetadata,
+    ) {
+        let (mut extensions, metadata) = Self::chrome_133_extensions();
+
+        // Insert both Early Data and PSK
+        let early_data = Box::new(EarlyDataExtension::standard());
+        let psk_ext = Box::new(PreSharedKeyExtension::for_session_resumption(
+            vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+            vec![0x20; 32],
+        ));
+
+        // Add both before padding (last 1-2 extensions)
+        if !extensions.is_empty() {
+            extensions.insert(extensions.len() - 1, psk_ext);
+        }
+        if !extensions.is_empty() {
+            extensions.insert(extensions.len() - 1, early_data);
+        }
 
         (extensions, metadata)
     }

@@ -22,7 +22,7 @@ pub mod extension_types {
     pub const EXT_TYPE_RENEGOTIATION_INFO: u16 = 65281;
     pub const EXT_TYPE_PRE_SHARED_KEY: u16 = 41;
     pub const EXT_TYPE_COMPRESS_CERTIFICATE: u16 = 27;
-    pub const EXT_TYPE_ECH: u16 = 0xfe0d;
+    pub const EXT_TYPE_ECH: u16 = 0x0042; // Encrypted Client Hello (RFC 9180)
 
     // non IANA allocate's extensions
     pub const EXT_TYPE_APPLICATION_SETTINGS: u16 = 17513;

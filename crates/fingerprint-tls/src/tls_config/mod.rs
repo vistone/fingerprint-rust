@@ -46,10 +46,11 @@ pub use metadata::{ExtensionMetadata, SpecMetadata};
 pub use observable::TlsClientObserved;
 pub use signature::ClientHelloSignature;
 pub use spec::{
-    chrome_103_spec, chrome_133_spec, chrome_136_spec, firefox_133_spec, safari_16_0_spec,
-    CipherSuiteID, ClientHelloSpec, CERT_COMPRESSION_BROTLI, COMPRESSION_NONE,
-    POINT_FORMAT_UNCOMPRESSED, PSK_MODE_DHE, RENEGOTIATE_ONCE_AS_CLIENT, VERSION_TLS10,
-    VERSION_TLS11, VERSION_TLS12, VERSION_TLS13,
+    chrome_103_spec, chrome_133_0rtt_spec, chrome_133_psk_0rtt_spec, chrome_133_psk_spec,
+    chrome_133_spec, chrome_136_spec, firefox_133_spec, safari_16_0_spec, CipherSuiteID,
+    ClientHelloSpec, CERT_COMPRESSION_BROTLI, COMPRESSION_NONE, POINT_FORMAT_UNCOMPRESSED,
+    PSK_MODE_DHE, RENEGOTIATE_ONCE_AS_CLIENT, VERSION_TLS10, VERSION_TLS11, VERSION_TLS12,
+    VERSION_TLS13,
 };
 pub use stats::FingerprintStats;
 pub use version::TlsVersion;

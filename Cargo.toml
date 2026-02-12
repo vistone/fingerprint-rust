@@ -87,6 +87,9 @@ serde_yaml = "0.9"
 # Stream processing
 futures = "0.3"
 
+# Benchmarking
+criterion = { version = "0.5", features = ["html_reports"] }
+
 # [workspace.dev-dependencies]
 # Note: Workspace-level dev-dependencies are not supported in Cargo
 # Each crate needs to define dev-dependencies in its own Cargo.toml
@@ -107,4 +110,5 @@ debug = true
 
 [profile.test]
 opt-level = 1
+
 

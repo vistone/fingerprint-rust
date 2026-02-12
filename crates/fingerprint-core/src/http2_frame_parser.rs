@@ -198,11 +198,7 @@ pub fn is_http2_connection(data: &[u8]) -> bool {
 /// Automatically skips the connection preface if present.
 pub fn find_settings_frame(data: &[u8]) -> Option<Http2SettingsFrame> {
     // Skip HTTP/2 Preface if present (24 bytes)
-    let offset = if is_http2_connection(data) {
-        24
-    } else {
-        0
-    };
+    let offset = if is_http2_connection(data) { 24 } else { 0 };
 
     let mut pos = offset;
 
@@ -336,7 +332,11 @@ impl Http2SettingsMatcher {
     }
 
     /// Calculate similarity between two SETTINGS maps (0.0 - 1.0)
-    fn calculate_similarity(&self, actual: &HashMap<u16, u32>, expected: &HashMap<u16, u32>) -> f64 {
+    fn calculate_similarity(
+        &self,
+        actual: &HashMap<u16, u32>,
+        expected: &HashMap<u16, u32>,
+    ) -> f64 {
         if actual.is_empty() || expected.is_empty() {
             return 0.0;
         }
@@ -453,10 +453,10 @@ mod tests {
     #[test]
     fn test_match_chrome() {
         let matcher = Http2SettingsMatcher::new();
-        
+
         let mut settings = HashMap::new();
         settings.insert(4, 6291456); // Chrome INITIAL_WINDOW_SIZE
-        
+
         let (browser, confidence) = matcher.match_browser(&settings);
         assert_eq!(browser, BrowserType::Chrome);
         assert!(confidence >= 0.90);
@@ -465,10 +465,10 @@ mod tests {
     #[test]
     fn test_match_firefox() {
         let matcher = Http2SettingsMatcher::new();
-        
+
         let mut settings = HashMap::new();
         settings.insert(4, 131072); // Firefox INITIAL_WINDOW_SIZE
-        
+
         let (browser, confidence) = matcher.match_browser(&settings);
         assert_eq!(browser, BrowserType::Firefox);
         assert!(confidence >= 0.90);
@@ -477,10 +477,10 @@ mod tests {
     #[test]
     fn test_match_safari() {
         let matcher = Http2SettingsMatcher::new();
-        
+
         let mut settings = HashMap::new();
         settings.insert(4, 2097152); // Safari INITIAL_WINDOW_SIZE
-        
+
         let (browser, confidence) = matcher.match_browser(&settings);
         assert_eq!(browser, BrowserType::Safari);
         assert!(confidence >= 0.90);
@@ -489,10 +489,10 @@ mod tests {
     #[test]
     fn test_match_unknown() {
         let matcher = Http2SettingsMatcher::new();
-        
+
         let mut settings = HashMap::new();
         settings.insert(4, 999999); // Unknown INITIAL_WINDOW_SIZE
-        
+
         let (browser, _) = matcher.match_browser(&settings);
         assert_eq!(browser, BrowserType::Unknown);
     }

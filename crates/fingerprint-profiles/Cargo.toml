@@ -15,3 +15,6 @@ description = "浏览器指纹配置模块"
 fingerprint-core = { path = "../fingerprint-core" }
 fingerprint-tls = { path = "../fingerprint-tls" }
 fingerprint-headers = { path = "../fingerprint-headers" }
+regex = "1.10"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
