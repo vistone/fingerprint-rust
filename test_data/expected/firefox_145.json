@@ -1,0 +1,28 @@
+{
+  "browser": "Firefox",
+  "version": "145",
+  "version_major": 145,
+  "os": "Linux",
+  "confidence_min": 0.90,
+  "layers": {
+    "tcp": {
+      "detected": true,
+      "confidence_min": 0.75
+    },
+    "tls": {
+      "detected": true,
+      "confidence_min": 0.85
+    },
+    "http2": {
+      "detected": true,
+      "confidence_min": 0.90
+    }
+  },
+  "captured_at": "2026-02-12T10:15:00Z",
+  "test_sites": [
+    "https://google.com",
+    "https://github.com",
+    "https://example.com"
+  ],
+  "notes": "Real Firefox 145 traffic captured on Linux"
+}

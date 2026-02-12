@@ -222,11 +222,24 @@ fn calculate_confidence(packet_count: usize, tcp_packets: &[TcpHeader], ttl: Opt
         }
     }
 
-    // TTL value reasonableness
+    // TTL value reasonableness (enhanced logic for real-world scenarios)
     if let Some(ttl_val) = ttl {
         if ttl_val >= 32 && ttl_val <= 128 {
+            // Normal TTL range - full score
             confidence += 0.25;
+        } else if ttl_val >= 8 && ttl_val < 32 {
+            // Low TTL (likely multi-hop network, VPN, proxy) - partial score
+            // Still indicates real network traffic, just heavily routed
+            confidence += 0.20;
+        } else if ttl_val >= 1 && ttl_val < 8 {
+            // Very low TTL (extreme multi-hop) - minimal score
+            // Unusual but not impossible in real networks
+            confidence += 0.10;
+        } else if ttl_val > 128 {
+            // High TTL (possibly Windows with TTL=128+) - partial score
+            confidence += 0.15;
         }
+        // TTL = 0 gets no score (invalid)
     }
 
     confidence.min(1.0)
