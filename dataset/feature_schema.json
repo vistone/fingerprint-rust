@@ -1,0 +1,11 @@
+{
+  "total_features": 53,
+  "feature_categories": {
+    "tls_basic": 12,
+    "cipher_suite": 8,
+    "extensions": 10,
+    "curves_signatures": 8,
+    "version_id": 8,
+    "http": 6
+  }
+}

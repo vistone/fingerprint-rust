@@ -1,0 +1,23 @@
+{
+  "version": "1.0.0",
+  "created_date": "2026-02-13",
+  "total_samples": 990,
+  "feature_columns": 53,
+  "families": 8,
+  "train_samples": 792,
+  "val_samples": 99,
+  "test_samples": 99,
+  "family_names": {
+    "0": "chrome",
+    "1": "firefox",
+    "2": "safari",
+    "3": "okhttp4",
+    "4": "opera",
+    "5": "cloudflare",
+    "6": "confirmed",
+    "7": "mesh",
+    "8": "mms",
+    "9": "nike",
+    "10": "zalando"
+  }
+}
