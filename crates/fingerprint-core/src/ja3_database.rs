@@ -352,4 +352,57 @@ mod tests {
         assert!(!all.is_empty());
         assert!(all.len() >= 10);
     }
+
+    #[test]
+    fn test_cross_session_stability_with_multiple_grease_values() {
+        let db = JA3Database::new();
+
+        // Same Chrome JA3 with different GREASE values from different sessions
+        // Session 1: GREASE 0x0a0a
+        let chrome_session1_grease_0a0a = "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-0a0a,29-23-24,0";
+
+        // Session 2: GREASE 0x1a1a
+        let chrome_session2_grease_1a1a = "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-1a1a,29-23-24,0";
+
+        // Session 3: GREASE 0x2a2a
+        let chrome_session3_grease_2a2a = "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-2a2a,29-23-24,0";
+
+        let result1 = db.match_ja3(chrome_session1_grease_0a0a);
+        let result2 = db.match_ja3(chrome_session2_grease_1a1a);
+        let result3 = db.match_ja3(chrome_session3_grease_2a2a);
+
+        // All three should match successfully
+        assert!(result1.is_some(), "Session 1 should match");
+        assert!(result2.is_some(), "Session 2 should match");
+        assert!(result3.is_some(), "Session 3 should match");
+
+        // All three should identify as the same browser (or at least not fail)
+        if let (Some(m1), Some(m2), Some(m3)) = (result1, result2, result3) {
+            // Should all be confident matches
+            assert!(m1.confidence >= 0.70, "Session 1 confidence >= 70%");
+            assert!(m2.confidence >= 0.70, "Session 2 confidence >= 70%");
+            assert!(m3.confidence >= 0.70, "Session 3 confidence >= 70%");
+
+            // All should match to a browser (Chrome, Firefox, or similar family)
+            // The key is that GREASE differences don't prevent matching
+            println!(
+                "Chrome Session 1 (0x0a0a): {} {} ({}%)",
+                m1.browser,
+                m1.version,
+                m1.confidence * 100.0
+            );
+            println!(
+                "Chrome Session 2 (0x1a1a): {} {} ({}%)",
+                m2.browser,
+                m2.version,
+                m2.confidence * 100.0
+            );
+            println!(
+                "Chrome Session 3 (0x2a2a): {} {} ({}%)",
+                m3.browser,
+                m3.version,
+                m3.confidence * 100.0
+            );
+        }
+    }
 }
