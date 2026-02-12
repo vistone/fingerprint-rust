@@ -1,6 +1,6 @@
 /// Performance Benchmarks for Fingerprinting Framework
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use fingerprint_core::{packet_capture::*, pcap_generator::*, grease, ja3_database::JA3Database};
+use fingerprint_core::{grease, ja3_database::JA3Database, packet_capture::*, pcap_generator::*};
 
 // ========== Packet Parsing Benchmarks ==========
 
@@ -186,12 +186,12 @@ fn bench_grease_normalization(c: &mut Criterion) {
     // Sample JA3 strings with and without GREASE
     let ja3_with_grease = black_box(
         "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,\
-         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-1a1a,29-23-24,0"
+         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-1a1a,29-23-24,0",
     );
 
     let ja3_without_grease = black_box(
         "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,\
-         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0"
+         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0",
     );
 
     // Benchmark GREASE value detection
@@ -207,9 +207,7 @@ fn bench_grease_normalization(c: &mut Criterion) {
 
     // Benchmark GREASE-aware equality check
     group.bench_function("ja3_equal_ignore_grease", |b| {
-        b.iter(|| {
-            grease::ja3_equal_ignore_grease(ja3_with_grease, ja3_without_grease)
-        });
+        b.iter(|| grease::ja3_equal_ignore_grease(ja3_with_grease, ja3_without_grease));
     });
 
     // Benchmark JA3 similarity calculation
@@ -248,21 +246,17 @@ fn bench_ja3_database(c: &mut Criterion) {
 
     // Benchmark exact match (hash lookup)
     group.bench_function("exact_match_chrome", |b| {
-        b.iter(|| {
-            db.match_ja3(black_box("b19a89106f50d406d38e8bd92241af60"))
-        });
+        b.iter(|| db.match_ja3(black_box("b19a89106f50d406d38e8bd92241af60")));
     });
 
     group.bench_function("exact_match_firefox", |b| {
-        b.iter(|| {
-            db.match_ja3(black_box("d76a5a80b4bb0c75ac45782b0b53da91"))
-        });
+        b.iter(|| db.match_ja3(black_box("d76a5a80b4bb0c75ac45782b0b53da91")));
     });
 
     // Benchmark fuzzy match (JA3 string)
     let chrome_ja3_string = black_box(
         "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,\
-         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0"
+         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0",
     );
 
     group.bench_function("fuzzy_match_chrome_ja3", |b| {
@@ -272,7 +266,7 @@ fn bench_ja3_database(c: &mut Criterion) {
     // Benchmark fuzzy match with GREASE variation
     let chrome_with_grease = black_box(
         "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,\
-         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-1a1a,29-23-24,0"
+         0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-1a1a,29-23-24,0",
     );
 
     group.bench_function("fuzzy_match_chrome_with_grease", |b| {
