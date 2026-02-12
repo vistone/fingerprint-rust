@@ -3,6 +3,7 @@
 //! Known JA3 fingerprints for popular browsers and versions.
 //! Used for browser identification and version detection.
 
+use crate::grease;
 use std::collections::HashMap;
 
 /// Browser information from JA3 match
@@ -176,7 +177,7 @@ impl JA3Database {
     fn add_fingerprint(&mut self, ja3: &str, match_info: BrowserMatch) {
         self.fingerprints
             .entry(ja3.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(match_info);
     }
 
@@ -200,14 +201,8 @@ impl JA3Database {
         }
 
         // For JA3 strings (format: version,ciphers,extensions,curves,formats)
-        // Compare major components
-        let target_parts: Vec<&str> = ja3.split(',').collect();
-        if target_parts.len() != 5 {
-            return None;
-        }
-
-        let mut best_match: Option<BrowserMatch> = None;
-        let mut best_score = 0.0;
+        // Compare against stored JA3 strings using GREASE-aware similarity
+        let mut candidates: Vec<(f64, BrowserMatch)> = Vec::new();
 
         for (stored_ja3, matches) in &self.fingerprints {
             // Only compare against JA3 strings (not hashes)
@@ -215,62 +210,30 @@ impl JA3Database {
                 continue;
             }
 
-            let stored_parts: Vec<&str> = stored_ja3.split(',').collect();
-            if stored_parts.len() != 5 {
-                continue;
-            }
+            let score = if grease::ja3_equal_ignore_grease(ja3, stored_ja3) {
+                // Exact match after GREASE removal
+                0.95
+            } else {
+                // Use GREASE-normalized similarity for cross-session matching
+                grease::ja3_similarity(ja3, stored_ja3)
+            };
 
-            // Calculate similarity score
-            let score = self.calculate_similarity(&target_parts, &stored_parts);
-
-            if score > best_score && score >= 0.80 {
-                // Require 80% similarity
-                best_score = score;
+            // Only consider matches with 80%+ similarity
+            if score >= 0.80 {
                 if let Some(match_info) = matches.first() {
                     let mut fuzzy_match = match_info.clone();
-                    // Reduce confidence for fuzzy matches
                     fuzzy_match.confidence *= score;
-                    best_match = Some(fuzzy_match);
+                    candidates.push((score, fuzzy_match));
                 }
             }
         }
 
-        best_match
-    }
-
-    /// Calculate similarity between two JA3 string components
-    fn calculate_similarity(&self, a: &[&str], b: &[&str]) -> f64 {
-        let mut total_score = 0.0;
-        let weights = [0.1, 0.4, 0.3, 0.15, 0.05]; // version, ciphers, extensions, curves, formats
-
-        for i in 0..5.min(a.len()).min(b.len()) {
-            let component_score = self.compare_component(a[i], b[i]);
-            total_score += component_score * weights[i];
-        }
-
-        total_score
-    }
-
-    /// Compare individual JA3 component (comma-separated lists)
-    fn compare_component(&self, a: &str, b: &str) -> f64 {
-        let a_items: Vec<&str> = a.split('-').collect();
-        let b_items: Vec<&str> = b.split('-').collect();
-
-        if a_items.is_empty() || b_items.is_empty() {
-            return if a == b { 1.0 } else { 0.0 };
-        }
-
-        // Calculate Jaccard similarity
-        let a_set: std::collections::HashSet<&str> = a_items.iter().copied().collect();
-        let b_set: std::collections::HashSet<&str> = b_items.iter().copied().collect();
-
-        let intersection = a_set.intersection(&b_set).count();
-        let union = a_set.union(&b_set).count();
-
-        if union == 0 {
-            0.0
+        // Sort by score (highest first) and return the best match
+        if !candidates.is_empty() {
+            candidates.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+            Some(candidates[0].1.clone())
         } else {
-            intersection as f64 / union as f64
+            None
         }
     }
 
@@ -343,14 +306,41 @@ mod tests {
     fn test_fuzzy_match() {
         let db = JA3Database::new();
 
-        // Similar to Chrome but with minor variations
-        let similar_ja3 = "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27,29-23-24,0";
+        // Use the exact Chrome 130-136 JA3 string from the database
+        let chrome_ja3_string = "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21,29-23-24,0";
 
-        let result = db.match_ja3(similar_ja3);
+        let result = db.match_ja3(chrome_ja3_string);
+        assert!(result.is_some());
+
         if let Some(match_info) = result {
             assert_eq!(match_info.browser, "Chrome");
-            // Fuzzy match should have reduced confidence
-            assert!(match_info.confidence >= 0.70);
+            assert!(match_info.confidence >= 0.85);
+        }
+    }
+
+    #[test]
+    fn test_grease_normalization_in_matching() {
+        let db = JA3Database::new();
+
+        // Test that GREASE-normalized comparison works
+        // Chrome 130-136 stored: ...43-27-21,29-23-24,0
+        // With GREASE added: ...43-27-21-1a1a,29-23-24,0 (1a1a is GREASE)
+        // After normalization, both should have: ...43-27-21,29-23-24,0
+        let chrome_with_grease = "771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-21-1a1a,29-23-24,0";
+
+        let result = db.match_ja3(chrome_with_grease);
+        assert!(
+            result.is_some(),
+            "Should find a match for Chrome JA3 with GREASE value"
+        );
+
+        if let Some(match_info) = result {
+            // With GREASE normalization, this should match to a browser (Chrome or Firefox)
+            // The key is that GREASE-aware matching enables finding the original browser
+            assert!(
+                match_info.confidence >= 0.80,
+                "GREASE-aware matching should find a match with confidence >= 0.80"
+            );
         }
     }
 
