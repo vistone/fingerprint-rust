@@ -40,14 +40,19 @@ pub mod dicttls;
 pub mod fingerprint;
 pub mod grease;
 pub mod hassh;
+pub mod hpack;
 pub mod http;
+pub mod http2_frame_parser;
 pub mod ja3;
 pub mod ja4;
 pub mod jarm;
 pub mod metadata;
+pub mod packet_capture;
+pub mod pcap_generator;
 pub mod signature;
 pub mod system;
 pub mod tcp;
+pub mod tcp_handshake;
 pub mod types;
 pub mod utils;
 pub mod version; // Performance benchmarking utilities
@@ -73,10 +78,27 @@ pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
 
 // HTTP related
+pub use hpack::{
+    static_table, DynamicTableEntry, DynamicTableSnapshot, EncodedHeaderField, HpackAnalyzer,
+    HpackFingerprint, HpackHeaderList, HuffmanEncoding, IndexType, StaticTableEntry,
+};
 pub use http::{Http2Settings, HttpFingerprint};
+pub use http2_frame_parser::{
+    find_settings_frame, is_http2_connection, Http2FrameHeader, Http2FrameType,
+    Http2ParseError, Http2SettingsFrame, Http2SettingsMatcher, HTTP2_PREFACE,
+};
+pub use packet_capture::{
+    EthernetHeader, Ipv4Header, Ipv6Header, NetworkProtocol, PacketFlowAnalyzer, PacketParser,
+    ParsedPacket, PcapGlobalHeader, PcapPacketHeader, TcpFlow, TcpHeader, TransportProtocol,
+    UdpHeader,
+};
 
 // TCP related
 pub use tcp::{TcpFingerprint, TcpProfile};
+pub use tcp_handshake::{
+    signatures, AckCharacteristics, IpCharacteristics, SynAckCharacteristics, SynCharacteristics,
+    TcpFlags, TcpHandshakeAnalyzer, TcpHandshakeFingerprint, TcpOption, TcpOptionType,
+};
 
 // type system
 pub use types::{
