@@ -1,6 +1,8 @@
 /// PCAP Traffic Analyzer
 /// Analyzes captured browser traffic and generates fingerprint reports
 use fingerprint_core::packet_capture::*;
+use fingerprint_core::signature::ClientHelloSignature;
+use fingerprint_core::tls_parser::find_client_hello;
 use fingerprint_core::{find_settings_frame, Http2SettingsMatcher};
 use std::collections::HashMap;
 use std::fs;
@@ -16,6 +18,10 @@ struct BrowserFingerprint {
     http2_settings: Option<HashMap<u16, u32>>,
     http2_browser: Option<String>,
     http2_confidence: Option<f64>,
+    // TLS fields
+    tls_signature: Option<ClientHelloSignature>,
+    ja3_fingerprint: Option<String>,
+    tls_confidence: Option<f64>,
 }
 
 fn main() {
@@ -131,6 +137,11 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
     let mut http2_browser: Option<String> = None;
     let mut http2_confidence: Option<f64> = None;
     let matcher = Http2SettingsMatcher::new();
+    
+    // TLS tracking
+    let mut tls_signature: Option<ClientHelloSignature> = None;
+    let mut ja3_fingerprint: Option<String> = None;
+    let mut tls_confidence: Option<f64> = None;
 
     while offset + 16 <= pcap_data.len() {
         // Parse packet header
@@ -167,6 +178,34 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
                             http2_settings = Some(settings);
                             http2_browser = Some(browser.to_string());
                             http2_confidence = Some(conf);
+                        }
+                    }
+                    
+                    // Try to find TLS ClientHello (only if not found yet)
+                    if tls_signature.is_none() && !tcp_payload.is_empty() {
+                        if let Some(client_hello) = find_client_hello(tcp_payload) {
+                            // Calculate JA3 fingerprint
+                            let ja3 = fingerprint_core::ja3::JA3::from_client_hello(&client_hello);
+                            let ja3_string = ja3.to_string();
+                            
+                            // Estimate confidence based on signature completeness
+                            let mut tls_conf: f64 = 0.70; // Base confidence
+                            if !client_hello.cipher_suites.is_empty() {
+                                tls_conf += 0.10;
+                            }
+                            if !client_hello.extensions.is_empty() {
+                                tls_conf += 0.10;
+                            }
+                            if client_hello.alpn.is_some() {
+                                tls_conf += 0.05;
+                            }
+                            if client_hello.sni.is_some() {
+                                tls_conf += 0.05;
+                            }
+                            
+                            tls_signature = Some(client_hello);
+                            ja3_fingerprint = Some(ja3_string);
+                            tls_confidence = Some(tls_conf.min(1.0));
                         }
                     }
                 }
@@ -209,6 +248,18 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
         }
         confidence = confidence.min(1.0);
     }
+    
+    // Enhance confidence with TLS fingerprint if detected
+    if let Some(tls_conf) = tls_confidence {
+        if tls_conf >= 0.90 {
+            confidence += 0.15; // High confidence TLS match
+        } else if tls_conf >= 0.80 {
+            confidence += 0.12; // Good confidence TLS match
+        } else if tls_conf >= 0.70 {
+            confidence += 0.10; // Medium confidence TLS match
+        }
+        confidence = confidence.min(1.0);
+    }
 
     Ok(BrowserFingerprint {
         window_size: avg_window_size,
@@ -218,6 +269,9 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
         http2_settings,
         http2_browser,
         http2_confidence,
+        tls_signature,
+        ja3_fingerprint,
+        tls_confidence,
     })
 }
 
@@ -319,6 +373,32 @@ fn print_fingerprint_report(filename: &str, fp: &BrowserFingerprint) {
         }
         if let (Some(browser), Some(conf)) = (&fp.http2_browser, fp.http2_confidence) {
             println!("    HTTP/2 Match: {} ({:.1}% confidence)", browser, conf * 100.0);
+        }
+    }
+    
+    // TLS ClientHello (if detected)
+    if let Some(signature) = &fp.tls_signature {
+        println!("\n  TLS ClientHello:");
+        println!("    Version: {:?}", signature.version);
+        println!("    Ciphers: {} suites", signature.cipher_suites.len());
+        println!("    Extensions: {} detected", signature.extensions.len());
+        
+        if let Some(alpn) = &signature.alpn {
+            println!("    ALPN: {}", alpn);
+        }
+        if let Some(sni) = &signature.sni {
+            println!("    SNI: {}", sni);
+        }
+        if let Some(ja3) = &fp.ja3_fingerprint {
+            let short_ja3 = if ja3.len() > 50 {
+                format!("{}...", &ja3[..50])
+            } else {
+                ja3.clone()
+            };
+            println!("    JA3: {}", short_ja3);
+        }
+        if let Some(conf) = fp.tls_confidence {
+            println!("    TLS Match: {:.1}% confidence", conf * 100.0);
         }
     }
 

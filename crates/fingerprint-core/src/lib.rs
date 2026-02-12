@@ -48,6 +48,7 @@ pub mod ja4;
 pub mod jarm;
 pub mod metadata;
 pub mod packet_capture;
+pub mod tls_parser;
 pub mod pcap_generator;
 pub mod signature;
 pub mod system;
