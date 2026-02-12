@@ -1,6 +1,7 @@
 /// PCAP Traffic Analyzer
 /// Analyzes captured browser traffic and generates fingerprint reports
 use fingerprint_core::packet_capture::*;
+use fingerprint_core::{find_settings_frame, Http2SettingsMatcher};
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
@@ -11,6 +12,10 @@ struct BrowserFingerprint {
     ttl: Option<u8>,
     packet_count: usize,
     confidence: f64,
+    // HTTP/2 fields
+    http2_settings: Option<HashMap<u16, u32>>,
+    http2_browser: Option<String>,
+    http2_confidence: Option<f64>,
 }
 
 fn main() {
@@ -122,6 +127,10 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
     let mut tcp_packets = Vec::new();
     let mut window_sizes = Vec::new();
     let mut ttls = Vec::new();
+    let mut http2_settings: Option<HashMap<u16, u32>> = None;
+    let mut http2_browser: Option<String> = None;
+    let mut http2_confidence: Option<f64> = None;
+    let matcher = Http2SettingsMatcher::new();
 
     while offset + 16 <= pcap_data.len() {
         // Parse packet header
@@ -145,10 +154,21 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
             if let Some((ipv4, rest)) = PacketParser::parse_ipv4(rest) {
                 ttls.push(ipv4.ttl);
 
-                if let Some((tcp, _)) = PacketParser::parse_tcp(rest) {
+                if let Some((tcp, tcp_payload)) = PacketParser::parse_tcp(rest) {
                     window_sizes.push(tcp.window_size);
                     tcp_packets.push(tcp);
                     packet_count += 1;
+
+                    // Try to find HTTP/2 SETTINGS frame (only if not found yet)
+                    if http2_settings.is_none() && !tcp_payload.is_empty() {
+                        if let Some(settings_frame) = find_settings_frame(tcp_payload) {
+                            let settings = settings_frame.to_map();
+                            let (browser, conf) = matcher.match_browser(&settings);
+                            http2_settings = Some(settings);
+                            http2_browser = Some(browser.to_string());
+                            http2_confidence = Some(conf);
+                        }
+                    }
                 }
             }
         }
@@ -176,13 +196,28 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
     };
 
     // Calculate confidence based on data quality
-    let confidence = calculate_confidence(packet_count, &tcp_packets, avg_ttl);
+    let mut confidence = calculate_confidence(packet_count, &tcp_packets, avg_ttl);
+
+    // Enhance confidence with HTTP/2 fingerprint if detected
+    if let Some(http2_conf) = http2_confidence {
+        if http2_conf >= 0.90 {
+            confidence += 0.15; // High confidence HTTP/2 match
+        } else if http2_conf >= 0.75 {
+            confidence += 0.10; // Medium confidence HTTP/2 match
+        } else if http2_conf >= 0.60 {
+            confidence += 0.05; // Low confidence HTTP/2 match
+        }
+        confidence = confidence.min(1.0);
+    }
 
     Ok(BrowserFingerprint {
         window_size: avg_window_size,
         ttl: avg_ttl,
         packet_count,
         confidence,
+        http2_settings,
+        http2_browser,
+        http2_confidence,
     })
 }
 
@@ -269,7 +304,25 @@ fn print_fingerprint_report(filename: &str, fp: &BrowserFingerprint) {
         println!("  OS (guess): {}", os_guess);
     }
 
-    println!("  Confidence: {:.1}%", fp.confidence * 100.0);
+    // HTTP/2 SETTINGS (if detected)
+    if let Some(settings) = &fp.http2_settings {
+        println!("\n  HTTP/2 SETTINGS:");
+        if let Some(&window_size) = settings.get(&4) {
+            println!("    Window Size: {} bytes ({} KB)", window_size, window_size / 1024);
+        }
+        if let Some(&max_conc) = settings.get(&3) {
+            println!("    Max Streams: {}", max_conc);
+        }
+        if let Some(&enable_push) = settings.get(&2) {
+            let push_status = if enable_push == 1 { "Enabled" } else { "Disabled" };
+            println!("    Server Push: {}", push_status);
+        }
+        if let (Some(browser), Some(conf)) = (&fp.http2_browser, fp.http2_confidence) {
+            println!("    HTTP/2 Match: {} ({:.1}% confidence)", browser, conf * 100.0);
+        }
+    }
+
+    println!("\n  Overall Confidence: {:.1}%", fp.confidence * 100.0);
 
     let status = if fp.confidence >= 0.90 {
         "✓ EXCELLENT"
