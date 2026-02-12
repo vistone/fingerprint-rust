@@ -44,16 +44,17 @@ pub mod hpack;
 pub mod http;
 pub mod http2_frame_parser;
 pub mod ja3;
+pub mod ja3_database;
 pub mod ja4;
 pub mod jarm;
 pub mod metadata;
 pub mod packet_capture;
-pub mod tls_parser;
 pub mod pcap_generator;
 pub mod signature;
 pub mod system;
 pub mod tcp;
 pub mod tcp_handshake;
+pub mod tls_parser;
 pub mod types;
 pub mod utils;
 pub mod version; // Performance benchmarking utilities
@@ -85,8 +86,8 @@ pub use hpack::{
 };
 pub use http::{Http2Settings, HttpFingerprint};
 pub use http2_frame_parser::{
-    find_settings_frame, is_http2_connection, Http2FrameHeader, Http2FrameType,
-    Http2ParseError, Http2SettingsFrame, Http2SettingsMatcher, HTTP2_PREFACE,
+    find_settings_frame, is_http2_connection, Http2FrameHeader, Http2FrameType, Http2ParseError,
+    Http2SettingsFrame, Http2SettingsMatcher, HTTP2_PREFACE,
 };
 pub use packet_capture::{
     EthernetHeader, Ipv4Header, Ipv6Header, NetworkProtocol, PacketFlowAnalyzer, PacketParser,

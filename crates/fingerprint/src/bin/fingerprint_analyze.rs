@@ -1,5 +1,6 @@
 /// PCAP Traffic Analyzer
 /// Analyzes captured browser traffic and generates fingerprint reports
+use fingerprint_core::ja3_database::{BrowserMatch, JA3Database};
 use fingerprint_core::packet_capture::*;
 use fingerprint_core::signature::ClientHelloSignature;
 use fingerprint_core::tls_parser::find_client_hello;
@@ -22,6 +23,8 @@ struct BrowserFingerprint {
     tls_signature: Option<ClientHelloSignature>,
     ja3_fingerprint: Option<String>,
     tls_confidence: Option<f64>,
+    // JA3 database match
+    ja3_match: Option<BrowserMatch>,
 }
 
 fn main() {
@@ -137,11 +140,15 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
     let mut http2_browser: Option<String> = None;
     let mut http2_confidence: Option<f64> = None;
     let matcher = Http2SettingsMatcher::new();
-    
+
     // TLS tracking
     let mut tls_signature: Option<ClientHelloSignature> = None;
     let mut ja3_fingerprint: Option<String> = None;
     let mut tls_confidence: Option<f64> = None;
+    let mut ja3_match: Option<BrowserMatch> = None;
+    
+    // Initialize JA3 database
+    let ja3_db = JA3Database::new();
 
     while offset + 16 <= pcap_data.len() {
         // Parse packet header
@@ -180,14 +187,17 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
                             http2_confidence = Some(conf);
                         }
                     }
-                    
+
                     // Try to find TLS ClientHello (only if not found yet)
                     if tls_signature.is_none() && !tcp_payload.is_empty() {
                         if let Some(client_hello) = find_client_hello(tcp_payload) {
                             // Calculate JA3 fingerprint
                             let ja3 = fingerprint_core::ja3::JA3::from_client_hello(&client_hello);
                             let ja3_string = ja3.to_string();
-                            
+
+                            // Match against JA3 database
+                            let db_match = ja3_db.match_ja3(&ja3_string);
+
                             // Estimate confidence based on signature completeness
                             let mut tls_conf: f64 = 0.70; // Base confidence
                             if !client_hello.cipher_suites.is_empty() {
@@ -202,10 +212,11 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
                             if client_hello.sni.is_some() {
                                 tls_conf += 0.05;
                             }
-                            
+
                             tls_signature = Some(client_hello);
                             ja3_fingerprint = Some(ja3_string);
                             tls_confidence = Some(tls_conf.min(1.0));
+                            ja3_match = db_match;
                         }
                     }
                 }
@@ -248,7 +259,7 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
         }
         confidence = confidence.min(1.0);
     }
-    
+
     // Enhance confidence with TLS fingerprint if detected
     if let Some(tls_conf) = tls_confidence {
         if tls_conf >= 0.90 {
@@ -258,6 +269,13 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
         } else if tls_conf >= 0.70 {
             confidence += 0.10; // Medium confidence TLS match
         }
+        confidence = confidence.min(1.0);
+    }
+    
+    // Additional boost from JA3 database match
+    if let Some(ref match_info) = ja3_match {
+        let ja3_boost = match_info.confidence * 0.10; // Up to 10% boost
+        confidence += ja3_boost;
         confidence = confidence.min(1.0);
     }
 
@@ -272,6 +290,7 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
         tls_signature,
         ja3_fingerprint,
         tls_confidence,
+        ja3_match,
     })
 }
 
@@ -362,27 +381,39 @@ fn print_fingerprint_report(filename: &str, fp: &BrowserFingerprint) {
     if let Some(settings) = &fp.http2_settings {
         println!("\n  HTTP/2 SETTINGS:");
         if let Some(&window_size) = settings.get(&4) {
-            println!("    Window Size: {} bytes ({} KB)", window_size, window_size / 1024);
+            println!(
+                "    Window Size: {} bytes ({} KB)",
+                window_size,
+                window_size / 1024
+            );
         }
         if let Some(&max_conc) = settings.get(&3) {
             println!("    Max Streams: {}", max_conc);
         }
         if let Some(&enable_push) = settings.get(&2) {
-            let push_status = if enable_push == 1 { "Enabled" } else { "Disabled" };
+            let push_status = if enable_push == 1 {
+                "Enabled"
+            } else {
+                "Disabled"
+            };
             println!("    Server Push: {}", push_status);
         }
         if let (Some(browser), Some(conf)) = (&fp.http2_browser, fp.http2_confidence) {
-            println!("    HTTP/2 Match: {} ({:.1}% confidence)", browser, conf * 100.0);
+            println!(
+                "    HTTP/2 Match: {} ({:.1}% confidence)",
+                browser,
+                conf * 100.0
+            );
         }
     }
-    
+
     // TLS ClientHello (if detected)
     if let Some(signature) = &fp.tls_signature {
         println!("\n  TLS ClientHello:");
         println!("    Version: {:?}", signature.version);
         println!("    Ciphers: {} suites", signature.cipher_suites.len());
         println!("    Extensions: {} detected", signature.extensions.len());
-        
+
         if let Some(alpn) = &signature.alpn {
             println!("    ALPN: {}", alpn);
         }
@@ -399,6 +430,16 @@ fn print_fingerprint_report(filename: &str, fp: &BrowserFingerprint) {
         }
         if let Some(conf) = fp.tls_confidence {
             println!("    TLS Match: {:.1}% confidence", conf * 100.0);
+        }
+        
+        // JA3 database match
+        if let Some(ref match_info) = fp.ja3_match {
+            println!("\n  Browser Identification:");
+            println!("    Detected: {} {}", match_info.browser, match_info.version);
+            println!("    Match Confidence: {:.1}%", match_info.confidence * 100.0);
+            if let Some(ref notes) = match_info.notes {
+                println!("    Notes: {}", notes);
+            }
         }
     }
 
