@@ -1,0 +1,10 @@
+fastapi>=0.120.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.6.0
+numpy>=2.0.0
+pandas>=2.2.0
+scikit-learn>=1.4.0
+python-multipart>=0.0.6
+pytest>=7.4.3
+pytest-asyncio>=0.23.0
+httpx>=0.25.1

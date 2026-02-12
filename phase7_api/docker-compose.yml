@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  fingerprint-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    
+    ports:
+      - "8000:8000"
+    
+    environment:
+      - PYTHONUNBUFFERED=1
+      - LOG_LEVEL=info
+    
+    volumes:
+      - ./models:/app/models:ro
+      - ./dataset:/app/dataset:ro
+      - ./models_cache:/app/models_cache
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    restart: unless-stopped
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+    
+    # Logging
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    
+    networks:
+      - fingerprint-net
+
+networks:
+  fingerprint-net:
+    driver: bridge
