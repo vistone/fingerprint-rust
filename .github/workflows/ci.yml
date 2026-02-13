@@ -26,7 +26,7 @@ jobs:
           - "rustls-tls,compression,http2,http3,connection-pool,dns"
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     
     - name: Install Rust toolchain
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     - name: Install Rust toolchain
       uses: dtolnay/rust-toolchain@stable
@@ -108,7 +108,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     
     - name: Install Rust toolchain
@@ -146,7 +146,7 @@ jobs:
           - "rustls-tls,compression,http2,http3"
     
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
     
     
     - name: Install Rust toolchain
