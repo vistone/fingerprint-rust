@@ -1,0 +1,185 @@
+---
+# Kong Plugins Configuration - Rate Limiting, Authentication, CORS
+# These resources configure Kong plugins via the Admin API
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-plugins-config
+  namespace: api-gateway
+data:
+  # Rate Limiting Plugin Configuration
+  rate-limiting-config.yaml: |
+    name: rate-limiting
+    config:
+      minute: null              # per minute (optional)
+      hour: 3600               # per hour rate limit
+      day: null                # per day (optional)
+      month: null              # per month (optional)
+      year: null               # per year (optional)
+      limit_by: consumer       # rate limit by consumer/user
+      policy: redis            # use redis for distributed limiting
+      redis_host: redis-cluster.caching.svc.cluster.local
+      redis_port: 6379
+      redis_password: ""
+      hide_client_headers: false
+
+  # Key Authentication Plugin Configuration  
+  key-auth-config.yaml: |
+    name: key-auth
+    config:
+      key_names:
+        - apikey
+        - x-api-key
+      hide_credentials: true
+      anonymous: null
+
+  # JWT Plugin Configuration
+  jwt-config.yaml: |
+    name: jwt
+    config:
+      secret_is_base64: false
+      claims_to_verify:
+        - exp
+      algorithms:
+        - HS256
+        - HS384
+        - HS512
+
+  # CORS Plugin Configuration
+  cors-config.yaml: |
+    name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Content-Type
+        - Authorization
+        - X-API-Key
+        - X-Requested-With
+      exposed_headers:
+        - X-API-Key
+        - X-RateLimit-Limit
+        - X-RateLimit-Remaining
+        - X-RateLimit-Reset
+      max_age: 86400
+      credentials: true
+      preflight_continue: false
+
+  # Request Transformer Plugin - Add rate limit headers
+  request-transformer-config.yaml: |
+    name: request-transformer
+    config:
+      add:
+        headers:
+          - X-Forwarded-Proto:https
+          - X-Request-ID:$(uuid)
+      rename:
+        headers: []
+      remove:
+        headers:
+          - X-Rewrite-URI
+
+---
+# Kong Route Configuration
+# Defines how requests are routed to fingerprint-api backend
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-routes-config
+  namespace: api-gateway
+data:
+  routes.json: |
+    {
+      "routes": [
+        {
+          "name": "fingerprint-api",
+          "protocols": ["http", "https"],
+          "hosts": ["api.fingerprint.local", "fingerprint-api.example.com"],
+          "paths": ["/fingerprint", "/v1"],
+          "methods": ["GET", "POST", "PUT", "DELETE", "PATCH"],
+          "service": {
+            "name": "fingerprint-api-backend"
+          },
+          "enabled": true,
+          "plugins": [
+            "rate-limiting",
+            "key-auth",
+            "cors",
+            "request-transformer"
+          ]
+        },
+        {
+          "name": "health-check",
+          "protocols": ["http", "https"],
+          "paths": ["/health", "/status"],
+          "methods": ["GET"],
+          "service": {
+            "name": "fingerprint-api-backend"
+          },
+          "enabled": true,
+          "plugins": []
+        }
+      ],
+      "services": [
+        {
+          "name": "fingerprint-api-backend",
+          "protocol": "http",
+          "host": "fingerprint-api.fingerprint-api.svc.cluster.local",
+          "port": 3000,
+          "path": "/",
+          "read_timeout": 30000,
+          "write_timeout": 30000,
+          "connect_timeout": 5000,
+          "retries": 3
+        }
+      ],
+      "upstreams": [
+        {
+          "name": "fingerprint-api-upstream",
+          "algorithm": "round_robin",
+          "healthchecks": {
+            "active": {
+              "http_path": "/health",
+              "interval": 10,
+              "timeout": 5,
+              "healthy_http_statuses": ["200", "201", "202", "203", "204"],
+              "unhealthy_http_statuses": ["429", "500", "501", "502", "503"]
+            }
+          }
+        }
+      ]
+    }
+
+---
+# Kong Admin API Credentials for automated configuration
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kong-admin-credentials
+  namespace: api-gateway
+type: Opaque
+stringData:
+  admin-api-url: http://kong-admin.api-gateway.svc.cluster.local:8001
+  admin-token: kong-admin-token-12345
+
+---
+# ConfigMap for Kong Ingress Controller annotations
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-ingress-annotations
+  namespace: api-gateway
+data:
+  rate-limit-minute: "100"
+  rate-limit-hour: "3600"
+  cors-origins: "*"
+  request-size-limit: "104857600"  # 100MB

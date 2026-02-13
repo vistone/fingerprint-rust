@@ -1,0 +1,223 @@
+---
+# Rate Limiting Configuration - User Quotas and Limits
+# Maps users to their rate limit tiers and quotas
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rate-limiting-config
+  namespace: api-gateway
+data:
+  quotas.yaml: |
+    # User Tier Configuration
+    # Defines quota limits for different subscription tiers
+    
+    quotas:
+      free:
+        name: Free Tier
+        description: Basic fingerprinting up to 100 req/min
+        requests_per_minute: 100
+        requests_per_hour: 3000
+        requests_per_month: 50000
+        max_concurrent: 10
+        features:
+          - basic_fingerprinting
+          - api_access
+          - email_support
+        price_usd: 0
+        
+      pro:
+        name: Professional Tier
+        description: Advanced features up to 1,000 req/min
+        requests_per_minute: 1000
+        requests_per_hour: 30000
+        requests_per_month: 1000000
+        max_concurrent: 100
+        features:
+          - basic_fingerprinting
+          - advanced_fingerprinting
+          - api_access
+          - webhook_support
+          - priority_support
+        price_usd: 99
+        
+      enterprise:
+        name: Enterprise Tier
+        description: Unlimited access with SLA
+        requests_per_minute: 10000
+        requests_per_hour: null
+        requests_per_month: null
+        max_concurrent: 1000
+        features:
+          - basic_fingerprinting
+          - advanced_fingerprinting
+          - ml_classification
+          - custom_models
+          - api_access
+          - webhook_support
+          - 24_7_support
+          - sla_guarantee
+          - onsite_support
+        price_usd: custom
+        
+      partner:
+        name: Partner Program
+        description: Unlimited access for development partners
+        requests_per_minute: null
+        requests_per_hour: null
+        requests_per_month: null
+        max_concurrent: null
+        features:
+          - all_features
+          - revenue_sharing
+          - api_access
+          - custom_integration
+        price_usd: 0
+
+  # IP-based Rate Limiting (fallback for unauthenticated requests)
+  ip-limits.yaml: |
+    ip_rate_limits:
+      default:
+        requests_per_minute: 30
+        requests_per_hour: 300
+        description: Default for unknown IPs (non-authenticated)
+        
+      whitelist:
+        - ip: 10.0.0.0/8
+          requests_per_minute: 1000
+          description: Internal network
+          
+        - ip: 192.168.0.0/16
+          requests_per_minute: 500
+          description: Partner networks
+          
+      blacklist:
+        - ip: 0.0.0.0/0  # Example, add as needed
+          description: Manually blocked IPs
+          created_at: "2026-01-01"
+          reason: "Abuse detected"
+
+  # Per-Endpoint Rate Limiting
+  endpoint-limits.yaml: |
+    endpoint_limits:
+      /fingerprint/identify:
+        name: Fingerprint Identification
+        description: Main identification endpoint
+        base_cost: 1  # 1 request = 1 token
+        rate_limit_multiplier: 1.0
+        
+      /fingerprint/compare:
+        name: Fingerprint Comparison
+        description: Compare two fingerprints
+        base_cost: 2  # Costs 2 tokens per request
+        rate_limit_multiplier: 0.5
+        
+      /fingerprint/batch:
+        name: Batch Fingerprinting
+        description: Process multiple fingerprints
+        base_cost: 1  # Per fingerprint in batch
+        rate_limit_multiplier: 0.3
+        max_batch_size: 100
+        
+      /v1/users/me:
+        name: User Profile
+        description: Get current user info
+        base_cost: 0  # No throttling
+        rate_limit_multiplier: 0
+        
+      /health:
+        name: Health Check
+        description: Service health endpoint
+        base_cost: 0  # Always allowed
+        rate_limit_multiplier: 0
+
+  # Burst Allowance Configuration
+  burst-config.yaml: |
+    burst_handling:
+      # Token bucket algorithm with burst allowance
+      
+      algorithm: token_bucket
+      refill_interval: 1  # seconds
+      
+      # Burst multiplier: allows 1.5x normal rate for short periods
+      burst_multiplier: 1.5
+      
+      # Burst duration: time window for burst allowance
+      burst_duration: 10  # seconds
+      
+      # Example for Pro tier (1000 req/min):
+      # - Normal: ~16.67 requests/sec
+      # - Burst: ~25 requests/sec for 10 seconds
+      # - Tokens per refill: 0.2777... (16.67 / 60)
+
+  # Rate Limit Response Headers
+  response-headers.yaml: |
+    headers:
+      # Standard rate limit headers (RFC 6585)
+      
+      x-ratelimit-limit: "Requests allowed per time window"
+      x-ratelimit-remaining: "Requests remaining in current window"
+      x-ratelimit-reset: "Unix timestamp when quota resets"
+      
+      # Custom headers
+      
+      x-quota-tier: "User tier (free/pro/enterprise)"
+      x-request-cost: "Tokens consumed by this request"
+      x-daily-remaining: "Requests remaining today"
+      x-monthly-remaining: "Requests remaining this month"
+      
+      # Retry info (when rate limited)
+      
+      retry-after: "Seconds to wait before retrying"
+      
+  # Graceful Degradation Policy
+  degradation.yaml: |
+    degradation_policy:
+      # How the system handles extreme overload
+      
+      enabled: true
+      threshold_percent: 80  # Degrade when 80% capacity reached
+      
+      actions:
+        - level: warning (70%)
+          action: increase_response_latency
+          details: Add 100ms delay to non-critical endpoints
+          
+        - level: critical (85%)
+          action: enforce_strict_limits
+          details: Reduce free tier by 50%, enforce Pro tier limits
+          
+        - level: emergency (95%)
+          action: circuit_breaker
+          details: Only allow essential endpoints, reject others with 503
+          
+      recovery:
+        - when: capacity drops below 50%
+          action: restore_normal
+          details: Restore full service capability
+
+---
+# Secret for Redis rate limiting store
+apiVersion: v1
+kind: Secret
+metadata:
+  name: rate-limit-redis-secret
+  namespace: api-gateway
+type: Opaque
+stringData:
+  redis-url: redis://redis-cluster.caching.svc.cluster.local:6379
+  redis-password: ""
+
+---
+# Service for rate limiting service (companion service)
+apiVersion: v1
+kind: Service
+metadata:
+  name: rate-limiter
+  namespace: api-gateway
+spec:
+  ports:
+  - port: 5000
+    targetPort: 5000
+    protocol: TCP
+  type: ClusterIP

@@ -50,6 +50,9 @@ pub mod jarm;
 pub mod metadata;
 pub mod packet_capture;
 pub mod pcap_generator;
+pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
+pub mod rate_limiting_metrics; // Prometheus metrics for rate limiting
+pub mod rate_limiting_redis; // Redis integration for rate limiting
 pub mod signature;
 pub mod system;
 pub mod tcp;
@@ -115,6 +118,18 @@ pub use utils::{
 
 // benchmarking (optional, for performance testing)
 pub use benchmark::{Benchmark, HttpMetrics, Timer};
+
+// rate limiting service (Phase 9.4)
+pub use rate_limiting::{
+    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitError,
+    RateLimitResponse, RateLimiter, UserQuota,
+};
+
+// rate limiting Redis backend
+pub use rate_limiting_redis::{RedisConfig, RedisQuotaEntry, RedisRateLimitBackend};
+
+// rate limiting Prometheus metrics
+pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // system-level abstractions
 pub use system::{

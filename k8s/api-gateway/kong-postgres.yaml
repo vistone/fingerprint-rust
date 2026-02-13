@@ -1,0 +1,190 @@
+---
+# Kong PostgreSQL Database - Stateful store for Kong configuration
+# Stores: Kong users, services, routes, plugins, and credentials
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: api-gateway
+  labels:
+    name: api-gateway
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kong-postgres-pvc
+  namespace: api-gateway
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-postgres-init
+  namespace: api-gateway
+data:
+  init.sql: |
+    -- Kong database initialization
+    -- Creates necessary extensions and schemas for Kong
+    CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+    CREATE EXTENSION IF NOT EXISTS "pg_trgm";
+    
+    -- Kong will create its own tables on startup
+    -- This script just ensures required extensions exist
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-postgres
+  namespace: api-gateway
+  labels:
+    app: kong-postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+      protocol: TCP
+  selector:
+    app: kong-postgres
+  type: ClusterIP
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong-postgres
+  namespace: api-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong-postgres
+  template:
+    metadata:
+      labels:
+        app: kong-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:15-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_DB
+          value: kong
+        - name: POSTGRES_USER
+          value: kong
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kong-postgres-secret
+              key: password
+        - name: PGDATA
+          value: /var/lib/postgresql/data/pgdata
+        livenessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - pg_isready -U kong -d kong
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+              - /bin/sh
+              - -c
+              - pg_isready -U kong -d kong
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: 500m
+            memory: 1Gi
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        - name: init-scripts
+          mountPath: /docker-entrypoint-initdb.d
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: kong-postgres-pvc
+      - name: init-scripts
+        configMap:
+          name: kong-postgres-init
+
+---
+# Kong PostgreSQL Secret - Database credentials
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kong-postgres-secret
+  namespace: api-gateway
+type: Opaque
+stringData:
+  password: kong-secure-password-change-in-production
+
+---
+# Kong Database Initialization Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: kong-migrations
+  namespace: api-gateway
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: kong-migrations
+    spec:
+      restartPolicy: OnFailure
+      containers:
+      - name: kong-migrations
+        image: kong:3.4-alpine
+        imagePullPolicy: IfNotPresent
+        command:
+          - kong
+          - migrations
+          - bootstrap
+        env:
+        - name: KONG_DATABASE
+          value: postgres
+        - name: KONG_PG_HOST
+          value: kong-postgres.api-gateway.svc.cluster.local
+        - name: KONG_PG_PORT
+          value: "5432"
+        - name: KONG_PG_USER
+          value: kong
+        - name: KONG_PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kong-postgres-secret
+              key: password
+        - name: KONG_PG_DATABASE
+          value: kong
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+      serviceAccountName: kong-sa

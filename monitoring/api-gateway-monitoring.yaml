@@ -1,0 +1,312 @@
+---
+# Kong API Gateway Monitoring - Prometheus Configuration
+# Collects metrics from Kong status endpoint and rate limiter
+
+apiVersion: v1
+kind: ServiceMonitor
+metadata:
+  name: kong-metrics
+  namespace: api-gateway
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: kong
+  endpoints:
+  - port: status
+    interval: 30s
+    path: /metrics
+    scheme: http
+    relabelings:
+    - sourceLabels: [__address__]
+      targetLabel: instance
+
+---
+# Prometheus Alert Rules for API Gateway
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: kong-api-gateway
+  namespace: api-gateway
+spec:
+  groups:
+  - name: kong.rules
+    interval: 30s
+    rules:
+    # Kong Availability
+    - alert: KongDown
+      expr: up{job="kong-metrics"} == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Kong API Gateway is down (instance {{ $labels.instance }})"
+        description: "Kong has been unavailable for more than 2 minutes."
+
+    # High Error Rate
+    - alert: KongHighErrorRate
+      expr: |
+        (
+          rate(kong_upstream_target_requests_total{state="failed"}[5m]) /
+          rate(kong_upstream_target_requests_total[5m])
+        ) > 0.05
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Kong error rate is high (> 5%)"
+        description: "Error rate: {{ $value | humanizePercentage }}"
+
+    # High Rate Limit Rejections
+    - alert: HighRateLimitRejections
+      expr: |
+        rate(kong_plugins_rate_limiting_requests_rejected[5m]) > 100
+      for: 3m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High number of rate limit rejections ({{ $value }}/sec)"
+        description: "Rate limiting is rejecting {{ $value | humanize }} requests per second"
+
+    # Upstream Service Unavailable
+    - alert: KongUpstreamUnavailable
+      expr: |
+        kong_upstream_target_health == 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Kong upstream target is unavailable"
+        description: "Upstream {{ $labels.upstream }} is not responding"
+
+    # Database Connection Issues
+    - alert: KongDatabaseDown
+      expr: |
+        kong_db_reachable == 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Kong cannot reach database"
+        description: "Kong database connectivity has failed"
+
+    # Redis Connection Issues (for rate limiting)
+    - alert: RateLimitingRedisDown
+      expr: |
+        rate_limiter_redis_connected == 0
+      for: 2m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Rate limiter cannot connect to Redis"
+        description: "Rate limiting may become unavailable if Redis does not recover"
+
+    # Admin API Performance
+    - alert: KongAdminLatencyHigh
+      expr: |
+        histogram_quantile(0.95, kong_admin_requests_duration_seconds) > 1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Kong Admin API latency is high (P95: {{ $value }}s)"
+        description: "Admin API response times exceed 1 second"
+
+    # Proxy Performance
+    - alert: KongProxyLatencyHigh
+      expr: |
+        histogram_quantile(0.95, kong_proxy_requests_duration_seconds) > 0.5
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Kong proxy latency is high (P95: {{ $value }}s)"
+        description: "API gateway response times exceed 500ms"
+
+---
+# Kong Metrics Grafana Dashboard
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-dashboard
+  namespace: monitoring
+data:
+  kong-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Kong API Gateway Health & Performance",
+        "panels": [
+          {
+            "title": "Requests Per Second",
+            "targets": [
+              {
+                "expr": "rate(kong_proxy_requests_total[1m])"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Rate Limit Rejections",
+            "targets": [
+              {
+                "expr": "rate(kong_plugins_rate_limiting_requests_rejected[5m])"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Error Rate (%)",
+            "targets": [
+              {
+                "expr": "rate(kong_upstream_target_requests_total{state='failed'}[5m]) / rate(kong_upstream_target_requests_total[5m]) * 100"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Proxy Latency (P95)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, kong_proxy_requests_duration_seconds)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Upstream Health Status",
+            "targets": [
+              {
+                "expr": "kong_upstream_target_health"
+              }
+            ],
+            "type": "stat"
+          },
+          {
+            "title": "Database Connection Status",
+            "targets": [
+              {
+                "expr": "kong_db_reachable"
+              }
+            ],
+            "type": "stat"
+          }
+        ]
+      }
+    }
+
+---
+# Rate Limiter Service Monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: rate-limiter-metrics
+  namespace: api-gateway
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: rate-limiter
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# Rate Limiter Alert Rules
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: rate-limiter-rules
+  namespace: api-gateway
+spec:
+  groups:
+  - name: rate_limiter.rules
+    interval: 30s
+    rules:
+    # Low Cache Hit Rate
+    - alert: RateLimiterCacheLowHitRate
+      expr: |
+        rate_limiter_cache_hit_ratio < 0.7
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Rate limiter cache hit rate is low ({{ $value | humanizePercentage }})"
+        description: "Cache efficiency below 70% - may indicate stale configuration"
+
+    # Quota Storage Issues
+    - alert: RateLimiterQuotaStorageError
+      expr: |
+        rate_limiter_quota_storage_errors_total > 0
+      for: 2m
+      labels:
+        severity: critical
+      annotations:
+        summary: "Rate limiter quota storage errors detected"
+        description: "Cannot persist quota data - rate limiting may be inaccurate"
+
+    # High Lock Contention
+    - alert: RateLimiterHighContention
+      expr: |
+        rate_limiter_lock_contention_ratio > 0.1
+      for: 5m
+      labels:
+        severity: warning
+      annotations:
+        summary: "Rate limiter experiencing high lock contention"
+        description: "Lock wait time exceeds 10% of request latency"
+
+---
+# Dashboard for Rate Limiting Metrics
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rate-limiter-dashboard
+  namespace: monitoring
+data:
+  rate-limiter-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Rate Limiter & Quota Management",
+        "panels": [
+          {
+            "title": "Requests by Tier",
+            "targets": [
+              {
+                "expr": "sum by (tier) (rate_limiter_requests_total)"
+              }
+            ],
+            "type": "piechart"
+          },
+          {
+            "title": "Quota Usage (%)",
+            "targets": [
+              {
+                "expr": "sum by (user_id) (rate_limiter_quota_usage_percent)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Cache Hit Ratio",
+            "targets": [
+              {
+                "expr": "rate_limiter_cache_hit_ratio"
+              }
+            ],
+            "type": "gauge"
+          },
+          {
+            "title": "Rejections by Reason",
+            "targets": [
+              {
+                "expr": "sum by (reason) (rate(rate_limiter_requests_rejected_total[5m]))"
+              }
+            ],
+            "type": "graph"
+          }
+        ]
+      }
+    }

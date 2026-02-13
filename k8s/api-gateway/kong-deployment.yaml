@@ -1,0 +1,257 @@
+---
+# Kong API Gateway Deployment
+# Main Kong container with rate limiting and authentication plugins enabled
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kong-sa
+  namespace: api-gateway
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kong-role
+rules:
+- apiGroups: [""]
+  resources: ["endpoints", "nodes", "pods", "secrets"]
+  verbs: ["list", "watch"]
+- apiGroups: [""]
+  resources: ["services", "ingresses"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["batch"]
+  resources: ["jobs"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kong-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kong-role
+subjects:
+- kind: ServiceAccount
+  name: kong-sa
+  namespace: api-gateway
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+  namespace: api-gateway
+data:
+  kong.conf: |
+    # Kong Configuration
+    # Main gateway serving on :8000 (HTTP) and :8443 (HTTPS)
+    
+    database = postgres
+    pg_host = kong-postgres.api-gateway.svc.cluster.local
+    pg_port = 5432
+    pg_user = kong
+    pg_password = kong-secure-password-change-in-production
+    pg_database = kong
+    
+    # Gateway ports
+    proxy_listen = 0.0.0.0:8000, 0.0.0.0:8443 ssl
+    admin_listen = 0.0.0.0:8001
+    status_listen = 0.0.0.0:8100
+    
+    # Plugins
+    plugins = bundled,rate-limiting,key-auth,jwt,cors,request-transformer
+    
+    # Logging
+    log_level = info
+    
+    # Performance tuning
+    worker_processes = auto
+    worker_connections = 4096
+    upstream_keepalive = 60
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-gateway
+  namespace: api-gateway
+  labels:
+    app: kong
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8000
+    protocol: TCP
+  - name: https
+    port: 443
+    targetPort: 8443
+    protocol: TCP
+  selector:
+    app: kong
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+  namespace: api-gateway
+  labels:
+    app: kong
+spec:
+  type: ClusterIP
+  ports:
+  - name: admin
+    port: 8001
+    targetPort: 8001
+    protocol: TCP
+  selector:
+    app: kong
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-status
+  namespace: api-gateway
+  labels:
+    app: kong
+spec:
+  type: ClusterIP
+  ports:
+  - name: status
+    port: 8100
+    targetPort: 8100
+    protocol: TCP
+  selector:
+    app: kong
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong
+  namespace: api-gateway
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8100"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: kong-sa
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - kong
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: kong
+        image: kong:3.4-alpine
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: https
+          containerPort: 8443
+          protocol: TCP
+        - name: admin
+          containerPort: 8001
+          protocol: TCP
+        - name: status
+          containerPort: 8100
+          protocol: TCP
+        env:
+        - name: KONG_DATABASE
+          value: postgres
+        - name: KONG_PG_HOST
+          value: kong-postgres.api-gateway.svc.cluster.local
+        - name: KONG_PG_PORT
+          value: "5432"
+        - name: KONG_PG_USER
+          value: kong
+        - name: KONG_PG_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: kong-postgres-secret
+              key: password
+        - name: KONG_PG_DATABASE
+          value: kong
+        - name: KONG_PROXY_LISTEN
+          value: "0.0.0.0:8000, 0.0.0.0:8443 ssl"
+        - name: KONG_ADMIN_LISTEN
+          value: "0.0.0.0:8001"
+        - name: KONG_STATUS_LISTEN
+          value: "0.0.0.0:8100"
+        - name: KONG_PLUGINS
+          value: "bundled,rate-limiting,key-auth,jwt,cors,request-transformer"
+        - name: KONG_LOG_LEVEL
+          value: "info"
+        - name: KONG_WORKER_PROCESSES
+          value: "2"
+        - name: KONG_UPSTREAM_KEEPALIVE
+          value: "60"
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8100
+            scheme: HTTP
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8100
+            scheme: HTTP
+          initialDelaySeconds: 15
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 2
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+
+---
+# Pod Disruption Budget - Ensure minimum availability
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: kong-pdb
+  namespace: api-gateway
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: kong
