@@ -1,0 +1,12 @@
+{
+  "fingerprint_a": {
+    "ja4": "t13d1517h2_8daaf6152771_e5627efa2ab1",
+    "tls_version": "TLS 1.3",
+    "cipher_suites": 17
+  },
+  "fingerprint_b": {
+    "ja4": "t13d1517h2_8daaf6152771_e5627efa2ab1",
+    "tls_version": "TLS 1.3",
+    "cipher_suites": 17
+  }
+}
