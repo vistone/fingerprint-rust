@@ -1,0 +1,161 @@
+---
+# Grafana Dashboard for Service Mesh (ConfigMap)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-mesh-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  service-mesh-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Service Mesh Advanced Features",
+        "tags": ["istio", "canary", "tracing", "rate-limiting"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Canary Traffic Split",
+            "targets": [
+              {
+                "expr": "sum(rate(istio_requests_total{destination_workload=~\"fingerprint-api\"}[5m])) by (destination_workload_version)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Canary Error Rate vs Stable",
+            "targets": [
+              {
+                "expr": "sum(rate(istio_requests_total{destination_workload=~\"fingerprint-api\",response_code=~\"5..\"}[5m])) by (destination_workload_version) / sum(rate(istio_requests_total{destination_workload=~\"fingerprint-api\"}[5m])) by (destination_workload_version)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Request Latency P95 (Canary vs Stable)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(istio_request_duration_milliseconds_bucket{destination_workload=~\"fingerprint-api\"}[5m])) by (destination_workload_version)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Rate Limit Enforcement Count",
+            "targets": [
+              {
+                "expr": "increase(envoy_http_local_rate_limit_http_filter_ratelimit_enforced[5m])"
+              }
+            ],
+            "type": "stat"
+          },
+          {
+            "title": "Circuit Breaker Status",
+            "targets": [
+              {
+                "expr": "envoy_cluster_circuit_breakers_default_cx_open"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Jaeger Trace Throughput",
+            "targets": [
+              {
+                "expr": "rate(jaeger_traces_received_total[1m])"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Kiali Service Mesh Summary",
+            "targets": [
+              {
+                "expr": "count(kiali_services) by (namespace)"
+              }
+            ],
+            "type": "stat"
+          },
+          {
+            "title": "Multi-Region Request Distribution",
+            "targets": [
+              {
+                "expr": "sum(rate(istio_requests_total[5m])) by (source_cluster)"
+              }
+            ],
+            "type": "piechart"
+          }
+        ],
+        "refresh": "30s",
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "version": 1
+      }
+    }
+
+---
+# Grafana Dashboard for Distributed Tracing (ConfigMap)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: distributed-tracing-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  distributed-tracing-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Distributed Tracing (Jaeger)",
+        "tags": ["jaeger", "tracing", "observability"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Trace Sampling Rate",
+            "targets": [
+              {
+                "expr": "rate(jaeger_traces_received_total[1m])"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Trace Storage Latency",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(jaeger_storage_write_duration_seconds_bucket[5m]))"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Collector Batch Size Distribution",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.99, rate(jaeger_collector_spans_received_total_bucket[5m]))"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Jaeger Agent Throughput by Region",
+            "targets": [
+              {
+                "expr": "sum(rate(jaeger_agent_spans_received_total[5m])) by (pod)"
+              }
+            ],
+            "type": "graph"
+          }
+        ],
+        "refresh": "15s",
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "version": 1
+      }
+    }

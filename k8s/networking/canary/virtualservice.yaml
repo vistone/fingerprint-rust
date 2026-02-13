@@ -1,0 +1,79 @@
+---
+# Canary deployment VirtualService
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: fingerprint-api-canary
+  namespace: fingerprint-api
+spec:
+  hosts:
+  - fingerprint-api.fingerprint-api.svc.cluster.local
+  http:
+  # Route canary users to canary deployment
+  - name: canary-route
+    match:
+    - headers:
+        x-canary:
+          exact: "true"
+    route:
+    - destination:
+        host: fingerprint-api.fingerprint-api.svc.cluster.local
+        subset: canary
+      weight: 100
+    timeout: 3s
+    retries:
+      attempts: 3
+      perTryTimeout: 1s
+
+  # Default route for stable traffic
+  - name: stable-route
+    route:
+    - destination:
+        host: fingerprint-api.fingerprint-api.svc.cluster.local
+        subset: stable
+      weight: 100
+    timeout: 3s
+    retries:
+      attempts: 3
+      perTryTimeout: 1s
+
+---
+# DestinationRule with canary and stable subsets
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: fingerprint-api-canary
+  namespace: fingerprint-api
+spec:
+  host: fingerprint-api.fingerprint-api.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 200
+      http:
+        http1MaxPendingRequests: 150
+        http2MaxRequests: 150
+        maxRequestsPerConnection: 2
+    loadBalancer:
+      consistentHash:
+        httpHeaderName: x-user-id
+    outlierDetection:
+      consecutive5xxErrors: 3
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+      minRequestVolume: 50
+      splitExternalLocalOriginErrors: true
+  subsets:
+  - name: stable
+    labels:
+      version: stable
+    trafficPolicy:
+      loadBalancer:
+        simple: ROUND_ROBIN
+  - name: canary
+    labels:
+      version: canary
+    trafficPolicy:
+      loadBalancer:
+        simple: ROUND_ROBIN

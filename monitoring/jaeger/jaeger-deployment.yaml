@@ -1,0 +1,207 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tracing
+  labels:
+    istio-injection: enabled
+
+---
+# Jaeger Deployment (All-in-One for dev/staging)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jaeger
+  namespace: tracing
+  labels:
+    app: jaeger
+    version: v1.57
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: jaeger
+  template:
+    metadata:
+      labels:
+        app: jaeger
+        version: v1.57
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - jaeger
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: jaeger
+        image: jaegertracing/all-in-one:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: COLLECTOR_ZIPKIN_HOST_PORT
+          value: ":9411"
+        - name: MEMORY_MAX_TRACES
+          value: "10000"
+        - name: BADGER_EPHEMERAL
+          value: "false"
+        - name: BADGER_CONSISTENCY
+          value: "true"
+        - name: GOGC
+          value: "80"
+        ports:
+        - containerPort: 5775
+          protocol: UDP
+          name: zipkin-compact
+        - containerPort: 6831
+          protocol: UDP
+          name: jaeger-compact
+        - containerPort: 6832
+          protocol: UDP
+          name: jaeger-binary
+        - containerPort: 5778
+          protocol: TCP
+          name: serve-configs
+        - containerPort: 16686
+          protocol: TCP
+          name: jaeger-ui
+        - containerPort: 14268
+          protocol: TCP
+          name: jaeger-collector
+        - containerPort: 14250
+          protocol: TCP
+          name: jaeger-grpc
+        - containerPort: 9411
+          protocol: TCP
+          name: zipkin-collector
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 16686
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 16686
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 500m
+            memory: 512Mi
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: false
+
+---
+# Jaeger Collector Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-collector
+  namespace: tracing
+  labels:
+    app: jaeger
+    component: collector
+spec:
+  selector:
+    app: jaeger
+  ports:
+  - name: jaeger-collector-zipkin-thrift
+    port: 14268
+    protocol: TCP
+    targetPort: 14268
+  - name: jaeger-collector-grpc
+    port: 14250
+    protocol: TCP
+    targetPort: 14250
+  - name: jaeger-collector-http
+    port: 14269
+    protocol: TCP
+    targetPort: 14269
+  type: ClusterIP
+
+---
+# Jaeger UI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-ui
+  namespace: tracing
+  labels:
+    app: jaeger
+    component: ui
+spec:
+  selector:
+    app: jaeger
+  ports:
+  - name: jaeger-ui
+    port: 16686
+    protocol: TCP
+    targetPort: 16686
+  type: ClusterIP
+
+---
+# Jaeger Query Service (for external access)
+apiVersion: v1
+kind: Service
+metadata:
+  name: jaeger-query
+  namespace: tracing
+  labels:
+    app: jaeger
+    component: query
+spec:
+  selector:
+    app: jaeger
+  ports:
+  - name: jaeger-query
+    port: 16686
+    protocol: TCP
+    targetPort: 16686
+    nodePort: 30686
+  type: NodePort
+
+---
+# Ingress for Jaeger UI
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jaeger-ui
+  namespace: tracing
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - jaeger.example.com
+    secretName: jaeger-tls
+  rules:
+  - host: jaeger.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: jaeger-ui
+            port:
+              number: 16686

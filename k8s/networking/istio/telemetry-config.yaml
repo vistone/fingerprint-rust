@@ -1,0 +1,84 @@
+---
+# Telemetry for distributed tracing across fingerprint-api
+apiVersion: telemetry.istio.io/v1alpha1
+kind: Telemetry
+metadata:
+  name: fingerprint-api-tracing
+  namespace: fingerprint-api
+spec:
+  tracing:
+  - providers:
+    - name: jaeger
+    randomSamplingPercentage: 100.0
+    useRequestIdForTraceSampling: true
+    # Customize which headers to include in traces
+    customTags:
+      headers:
+        x-user-id: {}
+        x-request-id: {}
+      literals:
+        service: fingerprint-api
+
+---
+# AuthorizationPolicy for service mesh
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: fingerprint-api-authz
+  namespace: fingerprint-api
+spec:
+  selector:
+    matchLabels:
+      app: fingerprint-api
+  action: ALLOW
+  rules:
+  # Allow intra-mesh traffic from fingerprint-api
+  - from:
+    - source:
+        principals:
+        - cluster.local/ns/fingerprint-api/sa/fingerprint-api
+    - source:
+        namespaces:
+        - fingerprint-api
+    to:
+    - operation:
+        methods:
+        - GET
+        - POST
+        - OPTIONS
+        - HEAD
+  # Allow from monitoring namespace (Prometheus, etc)
+  - from:
+    - source:
+        namespaces:
+        - monitoring
+    to:
+    - operation:
+        methods:
+        - GET
+        - POST
+
+---
+# PeerAuthentication for mTLS enforcement
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: fingerprint-api-mtls
+  namespace: fingerprint-api
+spec:
+  mtls:
+    mode: STRICT
+
+---
+# RequestAuthentication (for JWT validation, optional)
+apiVersion: security.istio.io/v1beta1
+kind: RequestAuthentication
+metadata:
+  name: jwt-auth
+  namespace: fingerprint-api
+spec:
+  jwtRules:
+  - issuer: https://auth.example.com
+    jwksUri: https://auth.example.com/.well-known/jwks.json
+    audiences:
+    - fingerprint-api

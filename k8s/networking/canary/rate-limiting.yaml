@@ -1,0 +1,121 @@
+---
+# EnvoyFilter for local rate limiting
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: rate-limiting-local
+  namespace: fingerprint-api
+spec:
+  workloadSelector:
+    labels:
+      app: fingerprint-api
+  configPatches:
+  - applyTo: HTTP_FILTER
+    match:
+      context: SIDECAR_INBOUND
+      listener:
+        filterChain:
+          filter:
+            name: "envoy.filters.network.http_connection_manager"
+      filter:
+        name: "envoy.filters.http.router"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: envoy.filters.http.local_ratelimit
+        typedConfig:
+          "@type": type.googleapis.com/udpa.type.v1.TypedStruct
+          type_url: type.googleapis.com/envoy.extensions.filters.http.local_ratelimit.v3.LocalRateLimit
+          value:
+            stat_prefix: http_local_rate_limiter
+            token_bucket:
+              max_tokens: 1000
+              tokens_per_fill: 1000
+              fill_interval: 1s
+            filter_enabled:
+              runtime_key: local_rate_limit_enabled
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+            filter_enforced:
+              runtime_key: local_rate_limit_enforced
+              default_value:
+                numerator: 100
+                denominator: HUNDRED
+            response_headers_to_add:
+            - append_action: OVERWRITE_IF_EXISTS_OR_ADD
+              header:
+                key: x-local-rate-limit
+                value: "true"
+            - append_action: APPEND_IF_EXISTS_OR_ADD
+              header:
+                key: x-ratelimit-limit
+                value: "1000"
+            - append_action: APPEND_IF_EXISTS_OR_ADD
+              header:
+                key: x-ratelimit-remaining
+                value: "%remaining_tokens%"
+            - append_action: APPEND_IF_EXISTS_OR_ADD
+              header:
+                key: x-ratelimit-reset
+                value: "%reset_after%"
+
+---
+# RequestRate VirtualService (per-endpoint rate limiting)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: fingerprint-api-ratelimit
+  namespace: fingerprint-api
+spec:
+  hosts:
+  - fingerprint-api.fingerprint-api.svc.cluster.local
+  http:
+  # Status endpoint - higher limits (no business logic)
+  - name: status-endpoint
+    match:
+    - uri:
+        prefix: /status
+    route:
+    - destination:
+        host: fingerprint-api
+        port:
+          number: 8000
+      weight: 100
+    timeout: 1s
+
+  # Identify endpoint - standard limits
+  - name: identify-endpoint
+    match:
+    - uri:
+        prefix: /identify
+    route:
+    - destination:
+        host: fingerprint-api
+        port:
+          number: 8000
+      weight: 100
+    timeout: 3s
+
+  # Features endpoint - moderate limits
+  - name: features-endpoint
+    match:
+    - uri:
+        prefix: /features
+    route:
+    - destination:
+        host: fingerprint-api
+        port:
+          number: 8000
+      weight: 100
+    timeout: 2s
+
+  # Default route
+  - name: default-route
+    route:
+    - destination:
+        host: fingerprint-api
+        port:
+          number: 8000
+      weight: 100
+    timeout: 3s

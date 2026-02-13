@@ -1,0 +1,135 @@
+---
+# PrometheusRule for service mesh advanced features
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: service-mesh-advanced
+  namespace: monitoring
+spec:
+  groups:
+  - name: canary-deployment.rules
+    interval: 30s
+    rules:
+    # Canary error rate alert
+    - alert: CanaryErrorRateHigh
+      expr: |
+        (increase(istio_requests_total{destination_workload="fingerprint-api-canary",response_code=~"5.."}[5m]) /
+         increase(istio_requests_total{destination_workload="fingerprint-api-canary"}[5m])) > 0.05
+      for: 2m
+      annotations:
+        summary: "Canary deployment has high error rate"
+        description: "Canary error rate is > 5%: {{ $value | humanizePercentage }}"
+
+    # Canary latency alert
+    - alert: CanaryLatencyHigh
+      expr: |
+        histogram_quantile(0.95, 
+          rate(istio_request_duration_milliseconds_bucket{destination_workload="fingerprint-api-canary"}[5m])
+        ) > 500
+      for: 3m
+      annotations:
+        summary: "Canary deployment has high latency"
+        description: "Canary P95 latency: {{ $value }}ms (threshold: 500ms)"
+
+    # Canary 4xx client error rate
+    - alert: CanaryClientErrorRateHigh
+      expr: |
+        (increase(istio_requests_total{destination_workload="fingerprint-api-canary",response_code=~"4.."}[5m]) /
+         increase(istio_requests_total{destination_workload="fingerprint-api-canary"}[5m])) > 0.1
+      for: 2m
+      annotations:
+        summary: "Canary deployment has high client error rate"
+        description: "Canary 4xx error rate: {{ $value | humanizePercentage }}"
+
+  - name: rate-limiting.rules
+    interval: 30s
+    rules:
+    # Rate limit enforcement alert
+    - alert: RateLimitExceeded
+      expr: |
+        increase(envoy_http_local_rate_limit_http_filter_ratelimit_enforced[5m]) > 100
+      for: 2m
+      annotations:
+        summary: "Rate limiting is being enforced"
+        description: "Local rate limit enforced {{ $value }} times in 5 minutes"
+
+    # Rate limit reset frequency
+    - alert: FrequentRateLimitResets
+      expr: |
+        rate(envoy_http_local_rate_limit_http_filter_ratelimit_enforced[1m]) > 1
+      for: 5m
+      annotations:
+        summary: "Frequent rate limit resets"
+        description: "Rate limit reset rate: {{ $value }} per second"
+
+  - name: service-mesh-availability.rules
+    interval: 60s
+    rules:
+    # Circuit breaker triggered
+    - alert: CircuitBreakerTriggered
+      expr: |
+        increase(envoy_cluster_circuit_breakers_default_cx_open[5m]) > 0
+      for: 1m
+      annotations:
+        summary: "Circuit breaker was triggered"
+        description: "Circuit breaker events: {{ $value }}"
+
+    # Outlier detection activated
+    - alert: OutlierDetectionActive
+      expr: |
+        increase(envoy_cluster_outlier_detection_ejections[5m]) > 0
+      for: 2m
+      annotations:
+        summary: "Outlier detection ejected endpoints"
+        description: "Outlier detection ejections: {{ $value }}"
+
+    # Service mesh error rate
+    - alert: ServiceMeshErrorRateHigh
+      expr: |
+        (increase(istio_requests_total{response_code=~"5.."}[5m]) /
+         increase(istio_requests_total[5m])) > 0.01
+      for: 5m
+      annotations:
+        summary: "Service mesh global error rate is high"
+        description: "Error rate: {{ $value | humanizePercentage }}"
+
+  - name: distributed-tracing.rules
+    interval: 30s
+    rules:
+    # Jaeger collector connection health
+    - alert: JaegerCollectorDown
+      expr: up{job="jaeger-collector"} == 0
+      for: 1m
+      annotations:
+        summary: "Jaeger collector is down"
+        description: "Jaeger collector unreachable for 1+ minute"
+
+    # Jaeger storage backend health
+    - alert: JaegerStorageHealth
+      expr: |
+        increase(jaeger_badger_errors_total[5m]) > 10
+      for: 2m
+      annotations:
+        summary: "Jaeger storage errors detected"
+        description: "Jaeger storage errors: {{ $value }}"
+
+  - name: mesh-observability.rules
+    interval: 60s
+    rules:
+    # Kiali API errors
+    - alert: KialiAPIErrorRate
+      expr: |
+        rate(kiali_errors[5m]) > 0.05
+      for: 3m
+      annotations:
+        summary: "Kiali API has high error rate"
+        description: "Kiali error rate: {{ $value | humanizePercentage }}"
+
+    # Service dependency discovery issues
+    - alert: ServiceDependencyDiscoveryIssues
+      expr: |
+        increase(kiali_service_discovery_errors_total[5m]) > 5
+      for: 2m
+      annotations:
+        summary: "Service dependency discovery has issues"
+        description: "Discovery errors: {{ $value }}"

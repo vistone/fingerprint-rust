@@ -1,0 +1,69 @@
+---
+# ServiceMonitor for Istio mesh metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: istio-mesh
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: fingerprint-api
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# ServiceMonitor for Jaeger metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jaeger
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+    - tracing
+  selector:
+    matchLabels:
+      app: jaeger
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# ServiceMonitor for Kiali metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: kiali
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+    - kiali
+  selector:
+    matchLabels:
+      app: kiali
+  endpoints:
+  - port: metrics-port
+    interval: 30s
+    path: /metrics
+
+---
+# ServiceMonitor for Envoy metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: envoy-proxy
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: fingerprint-api
+  endpoints:
+  - port: envoy-metrics
+    interval: 15s
+    path: /stats/prometheus

@@ -1,0 +1,299 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kiali
+  labels:
+    istio-injection: disabled
+
+---
+# Kiali ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kiali
+  namespace: kiali
+  labels:
+    version: v1.57
+    app: kiali
+data:
+  kiali.yaml: |
+    auth:
+      strategy: anonymous
+    deployment:
+      accessible_namespaces:
+      - '**'
+      instance_name: kiali
+    external_services:
+      custom_dashboards:
+        enabled: true
+      prometheus:
+        url: http://prometheus.monitoring:9090
+        retention: 15d
+      tracing:
+        enabled: true
+        integration_enabled: true
+        namespace_selector: true
+        url: http://jaeger-collector.tracing:16686
+      grafana:
+        enabled: true
+        url: http://grafana.monitoring:3000
+    identity:
+      cert_file: /kiali-secrets/tls.crt
+      private_key_file: /kiali-secrets/tls.key
+    service:
+      node_port: 30030
+
+---
+# Kiali ServiceAccount
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kiali
+  namespace: kiali
+
+---
+# Kiali ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kiali
+rules:
+# Core API group
+- apiGroups: [""]
+  resources:
+  - configmaps
+  - endpoints
+  - events
+  - namespaces
+  - nodes
+  - pods
+  - services
+  - services/proxy
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups: [""]
+  resources:
+  - pods/portforward
+  verbs:
+  - create
+  - post
+# Apps group
+- apiGroups: ["apps"]
+  resources:
+  - deployments
+  - replicasets
+  - statefulsets
+  verbs:
+  - get
+  - list
+  - watch
+# Batch group
+- apiGroups: ["batch"]
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+  - watch
+# Networking group
+- apiGroups: ["networking.k8s.io"]
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+# Istio Networking
+- apiGroups: ["networking.istio.io"]
+  resources:
+  - destinationrules
+  - gateways
+  - serviceentries
+  - virtualservices
+  - workloadentries
+  verbs:
+  - get
+  - list
+  - watch
+# Istio Security
+- apiGroups: ["security.istio.io"]
+  resources:
+  - authorizationpolicies
+  - peerauthentications
+  - requestauthentications
+  verbs:
+  - get
+  - list
+  - watch
+# Istio Extensions
+- apiGroups: ["extensions.istio.io"]
+  resources:
+  - wasmplugins
+  verbs:
+  - get
+  - list
+  - watch
+# Telemetry
+- apiGroups: ["telemetry.istio.io"]
+  resources:
+  - telemetries
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+# Kiali ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kiali
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kiali
+subjects:
+- kind: ServiceAccount
+  name: kiali
+  namespace: kiali
+
+---
+# Kiali Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kiali
+  namespace: kiali
+  labels:
+    app: kiali
+    version: v1.57
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: kiali
+  template:
+    metadata:
+      labels:
+        app: kiali
+        version: v1.57
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - kiali
+              topologyKey: kubernetes.io/hostname
+      serviceAccountName: kiali
+      containers:
+      - name: kiali
+        image: quay.io/kiali/kiali:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 20001
+          name: api-port
+        - containerPort: 7777
+          name: metrics-port
+        env:
+        - name: ACTIVE_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: LOG_LEVEL
+          value: info
+        - name: LOG_FORMAT
+          value: json
+        volumeMounts:
+        - name: kiali-configuration
+          mountPath: /etc/kiali
+          readOnly: true
+        livenessProbe:
+          httpGet:
+            path: /kiali/healthz
+            port: 20001
+          initialDelaySeconds: 10
+          periodSeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /kiali/healthz
+            port: 20001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 5
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+      volumes:
+      - name: kiali-configuration
+        configMap:
+          name: kiali
+
+---
+# Kiali Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: kiali
+  namespace: kiali
+  labels:
+    app: kiali
+spec:
+  selector:
+    app: kiali
+  ports:
+  - port: 20001
+    protocol: TCP
+    targetPort: 20001
+    nodePort: 30030
+  type: NodePort
+
+---
+# Ingress for Kiali UI
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kiali
+  namespace: kiali
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - kiali.example.com
+    secretName: kiali-tls
+  rules:
+  - host: kiali.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kiali
+            port:
+              number: 20001

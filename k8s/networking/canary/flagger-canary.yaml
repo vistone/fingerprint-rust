@@ -1,0 +1,116 @@
+---
+# Flagger Canary CRD for automated canary deployment
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: fingerprint-api
+  namespace: fingerprint-api
+spec:
+  # Target deployment (replicated for stable/canary)
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fingerprint-api
+  
+  # Track progress via Prometheus metrics
+  service:
+    port: 8000
+    targetPort: 8000
+  
+  # Traffic shifting strategy
+  analysis:
+    # Initial canary traffic weight
+    interval: 30s
+    # Max time for canary to run
+    maxWeight: 50
+    stepWeight: 5  # Increase canary traffic by 5% every 30s
+    # Metrics-based promotion
+    metrics:
+    - name: request-success-rate
+      interval: 30s
+      # Accept 95% of requests (fail if <95%)
+      thresholdRange:
+        min: 95
+    - name: request-duration
+      interval: 30s
+      # P95 latency < 500ms
+      thresholdRange:
+        max: 500
+    - name: error-rate
+      interval: 30s
+      # Fail if error rate > 5%
+      thresholdRange:
+        max: 5
+  
+  # Skip canary if tests pass and directly switch
+  skipAnalysis: false
+  
+  # Progressive traffic shifting via VirtualService
+  skipAnalysis: false
+  service:
+    port: 8000
+    portName: http
+  
+  # Custom weights for traffic split
+  skipAnalysis: false
+
+---
+# Alternative: Progressive Traffic Shifting using manual Webhook
+apiVersion: flagger.app/v1beta1
+kind: Canary
+metadata:
+  name: fingerprint-api-progressive
+  namespace: fingerprint-api
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: fingerprint-api
+  progressDeadlineSeconds: 300
+  service:
+    port: 8000
+  analysis:
+    interval: 30s
+    threshold: 5
+    maxWeight: 50
+    stepWeight: 5
+    metrics:
+    - name: request-success-rate
+      interval: 1m
+      thresholdRange:
+        min: 99
+    - name: error-rate
+      interval: 1m
+      thresholdRange:
+        max: 1
+    # Validate with load testing webhook
+    webhooks:
+    - name: acceptance
+      url: http://flagger-loadtester.fingerprint-api/endpoint/check-basic
+      timeout: 30s
+      metadata:
+        type: bash
+        cmd: "curl -s http://fingerprint-api-canary:8000/status"
+    - name: load-test
+      url: http://flagger-loadtester.fingerprint-api/
+      timeout: 5s
+      metadata:
+        type: bash
+        cmd: "ab -n 100 -c 10 http://fingerprint-api-canary:8000/identify"
+        logCmd: "ab -n 10 -c 1 -v 2 http://fingerprint-api-canary:8000/identify"
+
+---
+# ServiceMonitor for Prometheus to scrape Canary metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: canary-metrics
+  namespace: fingerprint-api
+spec:
+  selector:
+    matchLabels:
+      app: fingerprint-api
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
