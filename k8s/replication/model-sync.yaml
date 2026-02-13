@@ -1,0 +1,178 @@
+---
+# CronJob to sync ML models between regions
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: model-sync-eu-west
+  namespace: fingerprint-api
+spec:
+  # Run every 15 minutes
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: model-sync
+            target-region: eu-west-1
+        spec:
+          serviceAccountName: model-sync
+          restartPolicy: OnFailure
+          containers:
+          - name: model-sync
+            image: fingerprint-api:latest
+            imagePullPolicy: IfNotPresent
+            command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Starting model sync from US-EAST to EU-WEST..."
+                # Sync from primary region bucket to secondary
+                gsutil -m rsync -r -d \
+                  gs://fingerprint-models-us-east-1/models/ \
+                  gs://fingerprint-models-eu-west-1/models/
+                
+                # Verify sync
+                if [ $? -eq 0 ]; then
+                  echo "Model sync completed successfully"
+                  echo "Last sync: $(date)" > /shared/model-sync-status.txt
+                  exit 0
+                else
+                  echo "Model sync failed"
+                  exit 1
+                fi
+            env:
+            - name: SOURCE_BUCKET
+              value: fingerprint-models-us-east-1
+            - name: DEST_BUCKET
+              value: fingerprint-models-eu-west-1
+            - name: TARGET_REGION
+              value: eu-west-1
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "200m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            volumeMounts:
+            - name: gcp-credentials
+              mountPath: /var/secrets/google
+              readOnly: true
+          volumes:
+          - name: gcp-credentials
+            secret:
+              secretName: gcp-service-account-key
+
+---
+# CronJob to sync ML models to AP-SOUTHEAST
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: model-sync-ap-southeast
+  namespace: fingerprint-api
+spec:
+  # Run every 15 minutes
+  schedule: "*/15 * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 3
+      template:
+        metadata:
+          labels:
+            app: model-sync
+            target-region: ap-southeast-1
+        spec:
+          serviceAccountName: model-sync
+          restartPolicy: OnFailure
+          containers:
+          - name: model-sync
+            image: fingerprint-api:latest
+            imagePullPolicy: IfNotPresent
+            command:
+              - /bin/sh
+              - -c
+              - |
+                echo "Starting model sync from US-EAST to AP-SOUTHEAST..."
+                # Sync from primary region bucket to tertiary
+                gsutil -m rsync -r -d \
+                  gs://fingerprint-models-us-east-1/models/ \
+                  gs://fingerprint-models-ap-southeast-1/models/
+                
+                # Verify sync
+                if [ $? -eq 0 ]; then
+                  echo "Model sync completed successfully"
+                  echo "Last sync: $(date)" > /shared/model-sync-status.txt
+                  exit 0
+                else
+                  echo "Model sync failed"
+                  exit 1
+                fi
+            env:
+            - name: SOURCE_BUCKET
+              value: fingerprint-models-us-east-1
+            - name: DEST_BUCKET
+              value: fingerprint-models-ap-southeast-1
+            - name: TARGET_REGION
+              value: ap-southeast-1
+            resources:
+              requests:
+                memory: "256Mi"
+                cpu: "200m"
+              limits:
+                memory: "512Mi"
+                cpu: "500m"
+            volumeMounts:
+            - name: gcp-credentials
+              mountPath: /var/secrets/google
+              readOnly: true
+          volumes:
+          - name: gcp-credentials
+            secret:
+              secretName: gcp-service-account-key
+
+---
+# ServiceAccount for model sync
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: model-sync
+  namespace: fingerprint-api
+
+---
+# Role for model sync
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: model-sync
+  namespace: fingerprint-api
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+  resourceNames: ["gcp-service-account-key"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "create", "update"]
+  resourceNames: ["model-sync-status"]
+
+---
+# RoleBinding for model sync
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: model-sync
+  namespace: fingerprint-api
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: model-sync
+subjects:
+- kind: ServiceAccount
+  name: model-sync
+  namespace: fingerprint-api

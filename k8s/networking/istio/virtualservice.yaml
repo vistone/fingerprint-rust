@@ -1,0 +1,99 @@
+---
+# VirtualService for US-EAST (Primary Region)
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: fingerprint-api
+  namespace: fingerprint-api
+spec:
+  hosts:
+  - fingerprint-api
+  - fingerprint-api.fingerprint-api.svc.cluster.local
+  http:
+  # Primary route to local region
+  - name: primary-route
+    match:
+    - uri:
+        prefix: /
+    route:
+    - destination:
+        host: fingerprint-api.fingerprint-api.svc.cluster.local
+        subset: local
+      weight: 95
+    # Fallback to EU-WEST for failover
+    - destination:
+        host: fingerprint-api-eu.fingerprint-api.svc.cluster.local
+        subset: secondary
+      weight: 5
+    timeout: 2s
+    retries:
+      attempts: 3
+      perTryTimeout: 1s
+    corsPolicy:
+      allowOrigins:
+      - exact: "*"
+      allowMethods:
+      - POST
+      - GET
+      allowHeaders:
+      - authorization
+      - content-type
+      maxAge: "86400"
+
+---
+# DestinationRule for traffic policies
+apiVersion: networking.istio.io/v1beta1
+kind: DestinationRule
+metadata:
+  name: fingerprint-api
+  namespace: fingerprint-api
+spec:
+  host: fingerprint-api.fingerprint-api.svc.cluster.local
+  trafficPolicy:
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+    loadBalancer:
+      simple: ROUND_ROBIN
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 30s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 100
+      minRequestVolume: 50
+      splitExternalLocalOriginErrors: true
+    connectionPool:
+      tcp:
+        maxConnections: 100
+      http:
+        http1MaxPendingRequests: 100
+        http2MaxRequests: 100
+        maxRequestsPerConnection: 2
+  subsets:
+  - name: local
+    labels:
+      region: us-east-1
+  - name: secondary
+    labels:
+      region: eu-west-1
+  - name: tertiary
+    labels:
+      region: ap-southeast-1
+
+---
+# PeerAuthentication for mutual TLS within mesh
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: fingerprint-api
+  namespace: fingerprint-api
+spec:
+  mtls:
+    mode: STRICT
+  selector:
+    matchLabels:
+      app: fingerprint-api

@@ -1,0 +1,66 @@
+---
+# Multi-region aggregation rules
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-multi-region-rules
+  namespace: monitoring
+data:
+  multi-region-rules.yml: |
+    groups:
+      - name: multi-region-aggregation
+        interval: 30s
+        rules:
+          # Global request rate (across all regions)
+          - record: fingerprint_api:requests:rate1m
+            expr: sum(rate(http_requests_total[1m])) by (job)
+
+          # Per-region request rate
+          - record: fingerprint_api:requests_per_region:rate1m
+            expr: sum(rate(http_requests_total[1m])) by (job, region)
+
+          # Global error rate
+          - record: fingerprint_api:error_rate:global
+            expr: |
+              sum(rate(http_requests_total{status=~"5.."}[1m])) /
+              sum(rate(http_requests_total[1m])) * 100
+
+          # Per-region error rate
+          - record: fingerprint_api:error_rate_per_region
+            expr: |
+              sum(rate(http_requests_total{status=~"5.."}[1m])) by (region) /
+              sum(rate(http_requests_total[1m])) by (region) * 100
+
+          # Global P99 latency
+          - record: fingerprint_api:latency_p99:ms
+            expr: |
+              histogram_quantile(0.99,
+                sum(rate(http_request_duration_seconds_bucket[5m])) by (le, job))
+              * 1000
+
+          # Per-region P99 latency
+          - record: fingerprint_api:latency_p99_per_region:ms
+            expr: |
+              histogram_quantile(0.99,
+                sum(rate(http_request_duration_seconds_bucket[5m])) by (le, region))
+              * 1000
+
+          # Global cache hit rate
+          - record: fingerprint_api:cache_hit_rate:global
+            expr: |
+              sum(rate(cache_hits_total[1m])) /
+              (sum(rate(cache_hits_total[1m])) + sum(rate(cache_misses_total[1m])))
+              * 100
+
+          # Regional availability (based on up metric)
+          - record: fingerprint_api:availability_per_region
+            expr: |
+              count(up{job="fingerprint-api"} == 1) by (region) /
+              count(up{job="fingerprint-api"}) by (region) * 100
+
+          # Global model latency
+          - record: fingerprint_api:model_latency_p95:ms
+            expr: |
+              histogram_quantile(0.95,
+                sum(rate(model_inference_duration_seconds_bucket[5m])) by (le))
+              * 1000

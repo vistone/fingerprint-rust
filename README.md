@@ -32,6 +32,21 @@ A **production-grade** Rust browser fingerprinting library supporting complete T
 | **HTTP/2** | ✅ Fully Supported | 48.0ms | Multiplexing, HPACK, Server Push |
 | **HTTP/3** | ✅ Fully Supported | 40.3ms 🥇 | QUIC, 0-RTT, Connection Migration |
 
+### ✅ Passive Identification & Active Defense (New!)
+
+- **JA4+ Full Stack Fingerprinting**: Integrated JA4 (TLS), JA4H (HTTP), JA4T (TCP) generation and identification
+- **Cross-Layer Consistency Audit**: Detect inconsistencies between User-Agent and underlying TCP stack, TLS version
+- **Fingerprint Self-Learning**: Automatically identify and record unknown stable fingerprint features to combat 0-day bots
+- **Persistent Analysis**: SQLite-based traffic and threat analysis database
+- **Real-time Capture**: Support real-time network traffic audit via Pcap
+
+### ✅ Enhanced Security Features
+
+- **Advanced Consistency Checking**: Multi-layer protocol stack consistency validation for detecting spoofing behaviors
+- **Stable Fingerprint Detection**: Intelligent identification of stable but unknown fingerprint patterns
+- **Automated Threat Hunting**: Automatic discovery of new bot and attack patterns
+- **Zero-Day Protection**: Combat unknown threats through self-learning mechanisms
+
 ### ✅ Production-Grade Quality
 
 - **100% Test Pass Rate**: All browsers × All protocols (15/15 combinations)
@@ -292,6 +307,13 @@ See [examples/](examples/) directory for complete examples:
 - **[custom_tls_fingerprint.rs](examples/custom_tls_fingerprint.rs)** - Custom TLS ClientHello
 - **[export_config.rs](examples/export_config.rs)** - Export configuration to JSON
 
+### Advanced Security Examples
+
+- **[passive_analysis.rs](examples/passive_analysis.rs)** - Passive fingerprint identification
+- **[consistency_audit.rs](examples/consistency_audit.rs)** - Cross-layer consistency checking
+- **[self_learning_fingerprint.rs](examples/self_learning_fingerprint.rs)** - Fingerprint self-learning implementation
+- **[realtime_capture.rs](examples/realtime_capture.rs)** - Real-time network traffic capture and analysis
+
 ### HTTP Protocol Examples
 
 - **[connection_pool.rs](examples/connection_pool.rs)** - Connection pool usage
@@ -322,6 +344,9 @@ cargo test --lib --features "rustls-tls,http2"
 
 # All browser fingerprint tests
 cargo test --test all_browser_fingerprints_test --features "rustls-tls,http2,http3" -- --nocapture --ignored
+
+# Security feature tests
+cargo test --test security_features_test --features "fingerprint-defense" -- --nocapture --ignored
 
 # Performance benchmarks
 cargo test --test performance_benchmark --features "rustls-tls,http2,http3" -- --nocapture --ignored
@@ -360,6 +385,13 @@ cargo test --test performance_benchmark benchmark_http3 --features "rustls-tls,h
 - **[API.md](docs/API.en.md)** - Complete API reference
 - **[ARCHITECTURE.md](docs/ARCHITECTURE.en.md)** - System architecture design (includes Workspace architecture)
 - **[CHANGELOG.md](docs/CHANGELOG.en.md)** - Changelog
+
+### Security & Defense Documentation
+
+- **[SECURITY_DETECTION.md](docs/guides/SECURITY_DETECTION.en.md)** - Passive identification and threat detection guide
+- **[CONSISTENCY_AUDIT.md](docs/guides/CONSISTENCY_AUDIT.en.md)** - Cross-layer consistency audit methodology
+- **[SELF_LEARNING.md](docs/guides/Self_LEARNING.en.md)** - Fingerprint self-learning system implementation
+- **[REALTIME_ANALYSIS.md](docs/guides/REALTIME_ANALYSIS.en.md)** - Real-time traffic analysis with Pcap
 
 ### Usage Guides
 

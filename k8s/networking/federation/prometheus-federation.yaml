@@ -1,0 +1,81 @@
+---
+# Prometheus Federation scrape config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-federation-config
+  namespace: monitoring
+data:
+  prometheus-federation.yml: |
+    # Each region's Prometheus scrapes federation endpoints from other regions
+    global:
+      scrape_interval: 30s
+      evaluation_interval: 30s
+      external_labels:
+        cluster: fingerprint-api
+
+    # Regional federation scrape configs
+    scrape_configs:
+      # Local region metrics (from local Prometheus scrape)
+      - job_name: 'fingerprint-api-local'
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - fingerprint-api
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            action: keep
+            regex: fingerprint-api
+          - source_labels: [__meta_kubernetes_pod_label_region]
+            target_label: region
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+
+      # Remote federation: EU-WEST
+      - job_name: 'fingerprint-api-federation-eu'
+        honor_labels: true
+        params:
+          'match[]':
+            - '{job="fingerprint-api-local"}'
+        static_configs:
+          - targets:
+              - 'prometheus-eu.fingerprint-api.svc.cluster.local:9090/federate'
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - target_label: __address__
+            replacement: 'prometheus-eu.fingerprint-api.svc.cluster.local:9090'
+          - target_label: region
+            replacement: 'eu-west-1'
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: '(up|request_total|request_duration|cache_hit_rate|model_.*)'
+            action: keep
+
+      # Remote federation: AP-SOUTHEAST
+      - job_name: 'fingerprint-api-federation-ap'
+        honor_labels: true
+        params:
+          'match[]':
+            - '{job="fingerprint-api-local"}'
+        static_configs:
+          - targets:
+              - 'prometheus-ap.fingerprint-api.svc.cluster.local:9090/federate'
+        relabel_configs:
+          - source_labels: [__address__]
+            target_label: __param_target
+          - target_label: __address__
+            replacement: 'prometheus-ap.fingerprint-api.svc.cluster.local:9090'
+          - target_label: region
+            replacement: 'ap-southeast-1'
+        metric_relabel_configs:
+          - source_labels: [__name__]
+            regex: '(up|request_total|request_duration|cache_hit_rate|model_.*)'
+            action: keep
+
+      # Alert manager
+      - job_name: 'alertmanager'
+        static_configs:
+          - targets:
+              - 'alertmanager.monitoring:9093'

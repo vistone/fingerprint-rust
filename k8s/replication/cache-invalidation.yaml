@@ -1,0 +1,160 @@
+---
+# Cache invalidation via ConfigMap watch
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cache-invalidation-config
+  namespace: fingerprint-api
+data:
+  cache-invalidation-policy.yaml: |
+    # Cache invalidation strategies for multi-region deployment
+    invalidation_rules:
+      fingerprint_cache:
+        ttl: 3600  # 1 hour
+        trigger_events:
+          - NEW_MODEL_DEPLOYED
+          - MANUAL_INVALIDATION
+        sync_strategy: eventual-consistency
+        replication_lag_tolerance: 300  # 5 minutes
+
+      feature_cache:
+        ttl: 1800  # 30 minutes
+        trigger_events:
+          - CONFIG_CHANGED
+          - NEW_FEATURE_VERSION
+        sync_strategy: write-through
+        replication_lag_tolerance: 60  # 1 minute
+
+      ml_model_cache:
+        ttl: 86400  # 24 hours
+        trigger_events:
+          - NEW_MODEL_DEPLOYED
+          - MODEL_RETRAINED
+        sync_strategy: lazy-invalidation
+        replication_lag_tolerance: 3600  # 1 hour
+
+      # Global settings
+    global:
+      max_cache_size_gb: 10
+      eviction_policy: LRU
+      compression: enabled
+      enable_metrics: true
+
+---
+# Cache invalidation event watcher
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cache-invalidation-watcher
+  template:
+    metadata:
+      labels:
+        app: cache-invalidation-watcher
+    spec:
+      serviceAccountName: cache-invalidation-watcher
+      containers:
+      - name: watcher
+        image: fingerprint-api:latest
+        command:
+          - cache-invalidation-watcher
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: REDIS_CLUSTER_ENDPOINT
+          value: redis-cluster.fingerprint-api:6379
+        - name: CACHE_SYNC_INTERVAL_SECONDS
+          value: "60"
+        - name: MAX_CLOCK_SKEW_SECONDS
+          value: "30"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "200m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8001
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8001
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+# ServiceAccount for cache invalidation watcher
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+
+---
+# Role for cache invalidation watcher
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+rules:
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "watch", "list"]
+  resourceNames: ["cache-invalidation-config"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "patch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list"]
+
+---
+# RoleBinding for cache invalidation watcher
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cache-invalidation-watcher
+subjects:
+- kind: ServiceAccount
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+
+---
+# Service for cache invalidation watcher
+apiVersion: v1
+kind: Service
+metadata:
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+  labels:
+    app: cache-invalidation-watcher
+spec:
+  selector:
+    app: cache-invalidation-watcher
+  ports:
+  - name: http
+    port: 8001
+    targetPort: 8001
+  type: ClusterIP

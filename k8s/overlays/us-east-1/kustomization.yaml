@@ -1,0 +1,39 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fingerprint-api
+
+bases:
+  - ../../base
+
+namePrefix: us-east-1-
+nameSuffix: ""
+
+commonLabels:
+  region: us-east-1
+  environment: production
+  tier: primary
+
+commonAnnotations:
+  deployment.fingerprint/region: "us-east-1"
+  deployment.fingerprint/primary: "true"
+
+patchesStrategicMerge:
+  - deployment.yaml
+
+configMapGenerator:
+  - name: region-config
+    literals:
+      - REGION=us-east-1
+      - PRIMARY_REGION=true
+      - TIMEZONE=America/New_York
+      - CLUSTER_SIZE=large
+      - MAX_REPLICAS=20
+
+replicas:
+  - name: fingerprint-api
+    count: 5
+
+images:
+  - name: fingerprint-api
+    newTag: "latest"

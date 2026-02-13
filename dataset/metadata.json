@@ -3,7 +3,7 @@
   "created_date": "2026-02-13",
   "total_samples": 990,
   "feature_columns": 53,
-  "families": 8,
+  "families": 11,
   "train_samples": 792,
   "val_samples": 99,
   "test_samples": 99,

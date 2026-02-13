@@ -1,0 +1,89 @@
+---
+# Gateway for external traffic
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: fingerprint-api-gateway
+  namespace: fingerprint-api
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port:
+      number: 443
+      name: https
+      protocol: HTTPS
+    tls:
+      mode: SIMPLE
+      credentialName: fingerprint-api-cert
+    hosts:
+    - "api.fingerprint.example.com"
+    - "*.fingerprint.example.com"
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "api.fingerprint.example.com"
+    - "*.fingerprint.example.com"
+
+---
+# Global VirtualService for external traffic
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: fingerprint-api-global
+  namespace: fingerprint-api
+spec:
+  hosts:
+  - api.fingerprint.example.com
+  gateways:
+  - fingerprint-api-gateway
+  http:
+  - name: api-routes
+    match:
+    - uri:
+        prefix: /identify
+    - uri:
+        prefix: /status
+    - uri:
+        prefix: /features
+    - uri:
+        prefix: /validate
+    - uri:
+        prefix: /health
+    route:
+    # Primary: US-EAST (50% traffic)
+    - destination:
+        host: fingerprint-api-us-east.fingerprint-api.svc.cluster.local
+        port:
+          number: 8000
+      weight: 50
+    # Secondary: EU-WEST (30% traffic)
+    - destination:
+        host: fingerprint-api-eu-west.fingerprint-api.svc.cluster.local
+        port:
+          number: 8000
+      weight: 30
+    # Tertiary: AP-SOUTHEAST (20% traffic)
+    - destination:
+        host: fingerprint-api-ap-southeast.fingerprint-api.svc.cluster.local
+        port:
+          number: 8000
+      weight: 20
+    timeout: 3s
+    retries:
+      attempts: 3
+      perTryTimeout: 1s
+    corsPolicy:
+      allowOrigins:
+      - exact: "*"
+      allowMethods:
+      - POST
+      - GET
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      - x-request-id
+      maxAge: "86400"

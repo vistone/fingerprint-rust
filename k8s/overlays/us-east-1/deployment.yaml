@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fingerprint-api
+  namespace: fingerprint-api
+spec:
+  template:
+    metadata:
+      labels:
+        region: us-east-1
+        replica-type: primary
+      annotations:
+        deployment.fingerprint/region: "us-east-1"
+    spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - fingerprint-api
+                topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 50
+              preference:
+                matchExpressions:
+                  - key: cloud.google.com/gke-nodepool
+                    operator: In
+                    values:
+                      - fingerprint-api-us-east
+      containers:
+        - name: fingerprint-api
+          env:
+            - name: REGION
+              value: us-east-1
+            - name: PRIMARY_REGION
+              value: "true"
+            - name: LOG_LEVEL
+              value: info
+            - name: CACHE_REGION
+              value: us-east-1
+            - name: REPLICA_COUNT
+              value: "5"
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://jaeger-collector.monitoring:4317
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
