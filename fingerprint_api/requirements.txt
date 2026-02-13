@@ -1,0 +1,40 @@
+# FastAPI Rate Limiting Middleware Requirements
+# Phase 9.4: API Gateway & Rate Limiting
+
+# Web Framework
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+
+# Async Support
+aioredis==2.0.1
+redis==5.0.1
+
+# Data Validation
+pydantic==2.5.0
+pydantic-settings==2.1.0
+
+# Caching
+cachetools==5.3.2
+
+# Monitoring
+prometheus-client==0.19.0
+
+# Testing
+pytest==7.4.3
+pytest-asyncio==0.21.1
+httpx==0.25.2
+
+# Type Hints
+typing-extensions==4.9.0
+
+# Environment Variables
+python-dotenv==1.0.0
+
+# JSON Encoding/Decoding
+orjson==3.9.10
+
+# Async HTTP Client
+aiohttp==3.9.1
+
+# Time Utilities
+python-dateutil==2.8.2
