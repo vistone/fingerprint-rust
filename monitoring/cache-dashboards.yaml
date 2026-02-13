@@ -1,0 +1,216 @@
+---
+# Grafana Dashboard for Cache Performance Monitoring
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cache-performance-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  cache-performance-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Cache Performance Analytics",
+        "tags": ["cache", "redis", "performance"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Multi-Layer Cache Hit Rate Trends",
+            "targets": [
+              {
+                "expr": "rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m]))",
+                "legendFormat": "Overall Hit Rate"
+              },
+              {
+                "expr": "rate(cache_l1_hits_total[5m]) / (rate(cache_l1_hits_total[5m]) + rate(cache_l1_misses_total[5m]))",
+                "legendFormat": "L1 Hit Rate"
+              },
+              {
+                "expr": "rate(cache_l2_hits_total[5m]) / (rate(cache_l2_hits_total[5m]) + rate(cache_l2_misses_total[5m]))",
+                "legendFormat": "L2 Hit Rate"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Cache Query Latency Distribution",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.50, rate(cache_query_duration_ms_bucket[5m]))",
+                "legendFormat": "P50"
+              },
+              {
+                "expr": "histogram_quantile(0.95, rate(cache_query_duration_ms_bucket[5m]))",
+                "legendFormat": "P95"
+              },
+              {
+                "expr": "histogram_quantile(0.99, rate(cache_query_duration_ms_bucket[5m]))",
+                "legendFormat": "P99"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Redis Memory Usage",
+            "targets": [
+              {
+                "expr": "redis_memory_used_bytes / (1024*1024*1024)",
+                "legendFormat": "Used (GB)"
+              },
+              {
+                "expr": "redis_memory_max_bytes / (1024*1024*1024)",
+                "legendFormat": "Max (GB)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Cache Size by Namespace",
+            "targets": [
+              {
+                "expr": "cache_size_bytes by (namespace)"
+              }
+            ],
+            "type": "piechart"
+          },
+          {
+            "title": "LRU Eviction Events",
+            "targets": [
+              {
+                "expr": "rate(cache_evictions_total[5m])"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Redis Connected Clients",
+            "targets": [
+              {
+                "expr": "redis_connected_clients"
+              }
+            ],
+            "type": "stat"
+          },
+          {
+            "title": "Cache Operation Throughput",
+            "targets": [
+              {
+                "expr": "rate(cache_operations_total[1m])",
+                "legendFormat": "Ops/sec"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Cache Invalidation Rate",
+            "targets": [
+              {
+                "expr": "rate(cache_invalidations_total[5m])",
+                "legendFormat": "Invalidations/sec"
+              }
+            ],
+            "type": "graph"
+          }
+        ],
+        "refresh": "30s",
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "version": 1
+      }
+    }
+
+---
+# Grafana Dashboard for Redis Cluster Health
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-health-dashboard
+  namespace: monitoring
+  labels:
+    grafana_dashboard: "1"
+data:
+  redis-health-dashboard.json: |
+    {
+      "dashboard": {
+        "title": "Redis Cluster Health & Replication",
+        "tags": ["redis", "cluster", "health"],
+        "timezone": "browser",
+        "panels": [
+          {
+            "title": "Redis Master/Slave Status",
+            "targets": [
+              {
+                "expr": "redis_replication_role"
+              }
+            ],
+            "type": "stat"
+          },
+          {
+            "title": "Replication Connected Slaves",
+            "targets": [
+              {
+                "expr": "redis_connected_slaves"
+              }
+            ],
+            "type": "stat"
+          },
+          {
+            "title": "Keyspace Statistics",
+            "targets": [
+              {
+                "expr": "redis_db_keys by (db)",
+                "legendFormat": "DB {{ $labels.db }}"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Command Latency (P95)",
+            "targets": [
+              {
+                "expr": "histogram_quantile(0.95, rate(redis_command_duration_usec_bucket[5m])) / 1000",
+                "legendFormat": "{{ $labels.cmd }}"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Network I/O",
+            "targets": [
+              {
+                "expr": "rate(redis_net_input_bytes_total[1m]) / (1024*1024)",
+                "legendFormat": "Receive (MB/s)"
+              },
+              {
+                "expr": "rate(redis_net_output_bytes_total[1m]) / (1024*1024)",
+                "legendFormat": "Send (MB/s)"
+              }
+            ],
+            "type": "graph"
+          },
+          {
+            "title": "Cache Hits vs Misses",
+            "targets": [
+              {
+                "expr": "rate(redis_keyspace_hits_total[5m])",
+                "legendFormat": "Hits"
+              },
+              {
+                "expr": "rate(redis_keyspace_misses_total[5m])",
+                "legendFormat": "Misses"
+              }
+            ],
+            "type": "graph"
+          }
+        ],
+        "refresh": "30s",
+        "time": {
+          "from": "now-1h",
+          "to": "now"
+        },
+        "version": 1
+      }
+    }

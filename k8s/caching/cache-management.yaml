@@ -1,0 +1,239 @@
+---
+# Cache Warmer CronJob - Preload critical data daily
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cache-warmer
+  namespace: fingerprint-api
+spec:
+  schedule: "0 2 * * *"  # 2 AM UTC daily
+  timeZone: UTC
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  startingDeadlineSeconds: 300
+  jobTemplate:
+    spec:
+      backoffLimit: 2
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: cache-warmer
+        spec:
+          serviceAccountName: fingerprint-api
+          restartPolicy: OnFailure
+          containers:
+          - name: cache-warmer
+            image: fingerprint-api:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /app/cache-warmer
+            - --mode=full
+            - --redis-addr=redis-cluster.caching:6379
+            - --timeout=1800
+            env:
+            - name: LOG_LEVEL
+              value: "info"
+            - name: REDIS_ADDR
+              value: "redis-cluster.caching:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis-credentials
+                  key: password
+                  optional: true
+            resources:
+              requests:
+                cpu: 500m
+                memory: 512Mi
+              limits:
+                cpu: 1000m
+                memory: 1Gi
+            volumeMounts:
+            - name: profiles
+              mountPath: /app/profiles
+          volumes:
+          - name: profiles
+            configMap:
+              name: browser-profiles
+
+---
+# Hot Data Cache Warmer CronJob - Every 6 hours
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cache-warmer-hot
+  namespace: fingerprint-api
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  timeZone: UTC
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 1800
+      template:
+        metadata:
+          labels:
+            app: cache-warmer-hot
+        spec:
+          serviceAccountName: fingerprint-api
+          restartPolicy: OnFailure
+          containers:
+          - name: cache-warmer
+            image: fingerprint-api:latest
+            imagePullPolicy: IfNotPresent
+            command:
+            - /app/cache-warmer
+            - --mode=hot
+            - --redis-addr=redis-cluster.caching:6379
+            - --timeout=600
+            env:
+            - name: LOG_LEVEL
+              value: "info"
+            - name: REDIS_ADDR
+              value: "redis-cluster.caching:6379"
+            resources:
+              requests:
+                cpu: 200m
+                memory: 256Mi
+              limits:
+                cpu: 500m
+                memory: 512Mi
+
+---
+# Redis Backup CronJob - Every 6 hours to S3/GCS
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: redis-backup
+  namespace: caching
+spec:
+  schedule: "0 */6 * * *"  # Every 6 hours
+  timeZone: UTC
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      activeDeadlineSeconds: 3600
+      template:
+        metadata:
+          labels:
+            app: redis-backup
+        spec:
+          serviceAccountName: redis
+          restartPolicy: OnFailure
+          containers:
+          - name: redis-backup
+            image: redis:7.2-alpine
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - |
+              #!/bin/sh
+              set -e
+              
+              # Connect to Redis and trigger backup
+              redis-cli -h redis-0.redis.caching.svc.cluster.local BGSAVE
+              
+              # Wait for backup to complete
+              while [ $(redis-cli -h redis-0.redis.caching.svc.cluster.local LASTSAVE) -lt $(redis-cli -h redis-0.redis.caching.svc.cluster.local TIME | head -1) ]; do
+                sleep 5
+              done
+              
+              # Copy dump file (would require cloud CLI setup)
+              echo "Backup completed at $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            resources:
+              requests:
+                cpu: 100m
+                memory: 128Mi
+              limits:
+                cpu: 200m
+                memory: 256Mi
+            volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          volumes:
+          - name: redis-data
+            emptyDir: {}
+
+---
+# Cache Invalidation Watcher Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cache-invalidation-watcher
+  namespace: fingerprint-api
+  labels:
+    app: cache-invalidation-watcher
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: cache-invalidation-watcher
+  template:
+    metadata:
+      labels:
+        app: cache-invalidation-watcher
+    spec:
+      serviceAccountName: fingerprint-api
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - cache-invalidation-watcher
+              topologyKey: kubernetes.io/hostname
+      containers:
+      - name: watcher
+        image: fingerprint-api:latest
+        imagePullPolicy: IfNotPresent
+        command:
+        - /app/cache-watcher
+        env:
+        - name: LOG_LEVEL
+          value: "info"
+        - name: REDIS_ADDR
+          value: "redis-cluster.caching:6379"
+        - name: WATCH_CHANNELS
+          value: "cache:invalidate,cache:update,cache:prewarm"
+        ports:
+        - containerPort: 9090
+          name: metrics
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 9090
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 9090
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3

@@ -1300,6 +1300,666 @@ pub fn safari_18_3() -> ClientProfile {
     )
 }
 
+/// Chrome 104 fingerprint configuration
+pub fn chrome_104() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "104",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 105 fingerprint configuration
+pub fn chrome_105() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "105",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 106 fingerprint configuration
+pub fn chrome_106() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "106",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 107 fingerprint configuration
+pub fn chrome_107() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "107",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 108 fingerprint configuration
+pub fn chrome_108() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "108",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 109 fingerprint configuration
+pub fn chrome_109() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "109",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 110 fingerprint configuration
+pub fn chrome_110() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "110",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 111 fingerprint configuration
+pub fn chrome_111() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "111",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 112 fingerprint configuration
+pub fn chrome_112() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "112",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 116 PSK fingerprint configuration
+pub fn chrome_116_psk() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "116_PSK",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 116 PSK PQ fingerprint configuration
+pub fn chrome_116_psk_pq() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "116_PSK_PQ",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Chrome 117 fingerprint configuration
+pub fn chrome_117() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Chrome",
+            "117",
+            fingerprint_tls::tls_config::chrome_103_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Firefox 102 fingerprint configuration
+pub fn firefox_102() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "102",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 104 fingerprint configuration
+pub fn firefox_104() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "104",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 105 fingerprint configuration
+pub fn firefox_105() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "105",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 106 fingerprint configuration
+pub fn firefox_106() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "106",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 108 fingerprint configuration
+pub fn firefox_108() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "108",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 110 fingerprint configuration
+pub fn firefox_110() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "110",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 117 fingerprint configuration
+pub fn firefox_117() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "117",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 120 fingerprint configuration
+pub fn firefox_120() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "120",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Firefox 123 fingerprint configuration
+pub fn firefox_123() -> ClientProfile {
+    let (settings, settings_order) = firefox_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Firefox",
+            "123",
+            fingerprint_tls::tls_config::firefox_133_spec,
+        ),
+        settings,
+        settings_order,
+        firefox_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        firefox_header_order(),
+    )
+}
+
+/// Safari 15.6.1 fingerprint configuration
+pub fn safari_15_6_1() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari",
+            "15.6.1",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        None,
+        safari_header_order(),
+    )
+}
+
+/// Safari iOS 15.5 fingerprint configuration
+pub fn safari_ios_15_5() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::MacOS13,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari iOS",
+            "15.5",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        safari_header_order(),
+    )
+}
+
+/// Safari iOS 15.6 fingerprint configuration
+pub fn safari_ios_15_6() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::MacOS13,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari iOS",
+            "15.6",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        safari_header_order(),
+    )
+}
+
+/// Safari iOS 18.5 fingerprint configuration
+pub fn safari_ios_18_5() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::MacOS14,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari iOS",
+            "18.5",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        safari_header_order(),
+    )
+}
+
+/// Safari iPad 15.6 fingerprint configuration
+pub fn safari_ipad_15_6() -> ClientProfile {
+    let (settings, settings_order) = safari_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::MacOS13,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari iPad",
+            "15.6",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        safari_header_order(),
+    )
+}
+
+/// Opera 89 fingerprint configuration
+pub fn opera_89() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Opera",
+            "89",
+            fingerprint_tls::tls_config::chrome_133_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+/// Opera 90 fingerprint configuration
+pub fn opera_90() -> ClientProfile {
+    let (settings, settings_order) = chrome_http2_settings();
+    let tcp = Some(TcpProfile::for_os(
+        fingerprint_core::types::OperatingSystem::Windows10,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Opera",
+            "90",
+            fingerprint_tls::tls_config::chrome_133_spec,
+        ),
+        settings,
+        settings_order,
+        chrome_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        Some(chrome_header_priority()),
+        tcp,
+        chrome_header_order(),
+    )
+}
+
+        fingerprint_core::types::OperatingSystem::MacOS14,
+    ));
+    ClientProfile::new(
+        ClientHelloID::new(
+            "Safari",
+            "18.3",
+            fingerprint_tls::tls_config::safari_16_0_spec,
+        ),
+        settings,
+        settings_order,
+        safari_pseudo_header_order(),
+        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
+        Vec::new(),
+        None,
+        tcp,
+        safari_header_order(),
+    )
+}
+
 /// Edge 125 fingerprint configuration
 pub fn edge_125() -> ClientProfile {
     let (settings, settings_order) = chrome_http2_settings();

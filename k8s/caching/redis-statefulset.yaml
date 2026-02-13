@@ -1,0 +1,257 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: caching
+  labels:
+    name: caching
+
+---
+# Redis StatefulSet - Master + 2 Replicas with Sentinel
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: caching
+  labels:
+    app: redis
+    component: cache
+spec:
+  serviceName: redis
+  replicas: 3
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: cache
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - redis
+            topologyKey: kubernetes.io/hostname
+      containers:
+      - name: redis
+        image: redis:7.2-alpine
+        imagePullPolicy: IfNotPresent
+        command:
+        - redis-server
+        - /etc/redis/redis.conf
+        ports:
+        - containerPort: 6379
+          name: redis
+          protocol: TCP
+        - containerPort: 26379
+          name: sentinel
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: redis-config
+          mountPath: /etc/redis
+        - name: redis-data
+          mountPath: /data
+        - name: redis-sentinel-config
+          mountPath: /etc/sentinel
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 999
+      
+      - name: sentinel
+        image: redis:7.2-alpine
+        imagePullPolicy: IfNotPresent
+        command:
+        - redis-sentinel
+        - /etc/sentinel/sentinel.conf
+        ports:
+        - containerPort: 26379
+          name: sentinel
+          protocol: TCP
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 512Mi
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - -p
+            - "26379"
+            - ping
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        volumeMounts:
+        - name: redis-sentinel-config
+          mountPath: /etc/sentinel
+        - name: sentinel-data
+          mountPath: /data
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
+          runAsUser: 999
+      
+      volumes:
+      - name: redis-config
+        configMap:
+          name: redis-config
+      - name: redis-sentinel-config
+        configMap:
+          name: redis-sentinel-config
+  
+  volumeClaimTemplates:
+  - metadata:
+      name: redis-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 10Gi
+  - metadata:
+      name: sentinel-data
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+
+---
+# Redis Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: caching
+data:
+  redis.conf: |
+    # Redis Configuration for fingerprint-api clustering
+    
+    # Server
+    port 6379
+    timeout 300
+    tcp-backlog 511
+    tcp-keepalive 300
+    daemonize no
+    supervised no
+    pidfile /var/run/redis.pid
+    loglevel notice
+    logfile ""
+    databases 16
+    
+    # Snapshotting (RDB)
+    save 900 1           # Save after 900 sec if at least 1 key changed
+    save 300 10          # Save after 300 sec if at least 10 keys changed
+    save 60 10000        # Save after 60 sec if at least 10000 keys changed
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dbfilename dump.rdb
+    dir /data
+    
+    # Replication
+    replica-serve-stale-data yes
+    replica-read-only yes
+    repl-diskless-sync no
+    repl-diskless-sync-delay 5
+    replica-disable-tcp-nodelay no
+    replica-priority 100
+    
+    # Security
+    requirepass ""  # Use external secret for password
+    
+    # Limits
+    maxclients 10000
+    maxmemory 1800mb
+    maxmemory-policy allkeys-lru  # LRU eviction for best performance
+    
+    # Lazy freeing
+    lazyfree-lazy-eviction yes
+    lazyfree-lazy-expire yes
+    lazyfree-lazy-server-del yes
+    lazyfree-user-del yes
+    
+    # Append Only File (AOF)
+    appendonly yes
+    appendfilename "appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 100
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    aof-use-rdb-preamble yes
+    
+    # Pub/Sub
+    pubsub-hardening-enabled yes
+
+---
+# Sentinel Configuration ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-sentinel-config
+  namespace: caching
+data:
+  sentinel.conf: |
+    # Redis Sentinel Configuration
+    
+    port 26379
+    daemonize no
+    logfile ""
+    dir /data
+    
+    # Monitor Redis master
+    sentinel monitor mymaster redis-0.redis.caching.svc.cluster.local 6379 2
+    
+    # Time in milliseconds for a slave to consider the master as down
+    sentinel down-after-milliseconds mymaster 30000
+    
+    # Failover timeout
+    sentinel failover-timeout mymaster 180000
+    
+    # Number of replicas to be reconfigured in parallel during failover
+    sentinel parallel-syncs mymaster 1
+    
+    # Logging
+    sentinel loglevel notice
+    
+    # Notification scripts
+    # sentinel notification-script mymaster /path/to/notification.sh
+    # sentinel client-reconfig-script mymaster /path/to/reconfig.sh

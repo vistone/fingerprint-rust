@@ -1,0 +1,130 @@
+---
+# ServiceMonitor for Redis metrics scraping
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: redis
+  namespace: caching
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  endpoints:
+  - port: redis
+    interval: 30s
+    scrapeTimeout: 10s
+    relabelings:
+    - sourceLabels: [__address__]
+      targetLabel: instance
+    metricRelabelings:
+    - sourceLabels: [__name__]
+      regex: 'redis_(.*)'
+      action: keep
+
+---
+# PrometheusRule for Redis alerting
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: redis-caching
+  namespace: monitoring
+spec:
+  groups:
+  - name: redis-health.rules
+    interval: 30s
+    rules:
+    # Redis down alert
+    - alert: RedisDown
+      expr: up{job="redis"} == 0
+      for: 2m
+      annotations:
+        summary: "Redis is down"
+        description: "Redis instance {{ $labels.instance }} is unreachable"
+
+    # Redis memory usage alert
+    - alert: RedisHighMemoryUsage
+      expr: |
+        (redis_memory_used_bytes / redis_memory_max_bytes) > 0.8
+      for: 5m
+      annotations:
+        summary: "Redis memory usage is high"
+        description: "Memory usage: {{ $value | humanizePercentage }}"
+
+    # Redis replication lag alert
+    - alert: RedisReplicationLag
+      expr: |
+        redis_replication_backlog_size > 10485760  # 10MB
+      for: 2m
+      annotations:
+        summary: "Redis replication lag detected"
+        description: "Backlog size: {{ $value | humanize }} bytes"
+
+  - name: cache-performance.rules
+    interval: 30s
+    rules:
+    # Cache hit rate too low
+    - alert: CacheHitRateLow
+      expr: |
+        (rate(cache_hits_total[5m]) / (rate(cache_hits_total[5m]) + rate(cache_misses_total[5m]))) < 0.7
+      for: 5m
+      annotations:
+        summary: "Cache hit rate is below 70%"
+        description: "Current hit rate: {{ $value | humanizePercentage }}"
+
+    # Redis connection limit warning
+    - alert: RedisConnectionLimit
+      expr: |
+        redis_connected_clients > 8000
+      for: 2m
+      annotations:
+        summary: "Redis connections approaching limit"
+        description: "Connected clients: {{ $value }}/10000"
+
+    # Redis eviction happening
+    - alert: RedisEvictionActive
+      expr: |
+        rate(redis_evicted_keys_total[5m]) > 10
+      for: 2m
+      annotations:
+        summary: "Redis is actively evicting keys"
+        description: "Eviction rate: {{ $value }} keys/sec"
+
+  - name: cache-consistency.rules
+    interval: 30s
+    rules:
+    # Cache invalidation spike
+    - alert: CacheInvalidationSpike
+      expr: |
+        rate(cache_invalidations_total[1m]) > 50
+      for: 3m
+      annotations:
+        summary: "Cache invalidation spike detected"
+        description: "Invalidation rate: {{ $value }} ops/sec"
+
+    # Distributed lock contention
+    - alert: LockContentionHigh
+      expr: |
+        rate(distributed_lock_failures_total[5m]) > 0.1
+      for: 5m
+      annotations:
+        summary: "High distributed lock contention"
+        description: "Failure rate: {{ $value }} failures/sec"
+
+---
+# ServiceMonitor for Cache application metrics
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cache-metrics
+  namespace: monitoring
+spec:
+  namespaceSelector:
+    matchNames:
+    - fingerprint-api
+  selector:
+    matchLabels:
+      app: fingerprint-api
+  endpoints:
+  - port: metrics
+    interval: 30s
+    scrapeTimeout: 10s

@@ -1,0 +1,165 @@
+---
+# Headless Service for Redis StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: caching
+  labels:
+    app: redis
+spec:
+  clusterIP: None
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+    protocol: TCP
+  - port: 26379
+    targetPort: 26379
+    name: sentinel
+    protocol: TCP
+  publishNotReadyAddresses: true
+
+---
+# Redis ClusterIP Service (for client connections)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-cluster
+  namespace: caching
+  labels:
+    app: redis
+    component: cache
+spec:
+  selector:
+    app: redis
+  type: ClusterIP
+  ports:
+  - port: 6379
+    targetPort: 6379
+    name: redis
+    protocol: TCP
+
+---
+# Redis NodePort Service (for debugging/monitoring)
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-monitor
+  namespace: caching
+  labels:
+    app: redis
+    component: monitor
+spec:
+  selector:
+    app: redis
+  type: NodePort
+  ports:
+  - port: 6379
+    targetPort: 6379
+    nodePort: 30379
+    name: redis
+    protocol: TCP
+
+---
+# PodDisruptionBudget for Redis HA
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: redis-pdb
+  namespace: caching
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: redis
+
+---
+# ServiceAccount for Redis
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: redis
+  namespace: caching
+
+---
+# RBAC Role for Redis
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: redis
+  namespace: caching
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["endpoints"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for Redis
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: redis
+  namespace: caching
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: redis
+subjects:
+- kind: ServiceAccount
+  name: redis
+  namespace: caching
+
+---
+# Network Policy for Redis
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: redis-network-policy
+  namespace: caching
+spec:
+  podSelector:
+    matchLabels:
+      app: redis
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: fingerprint-api
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 6379
+  egress:
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 6379
+    - protocol: TCP
+      port: 26379
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: TCP
+      port: 53
+      protocol: UDP

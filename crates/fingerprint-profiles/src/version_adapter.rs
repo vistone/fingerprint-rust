@@ -65,6 +65,19 @@ impl VersionAdapter {
 
         match profile_fn {
             // Chrome versions
+            "chrome_103" => chrome_103(),
+            "chrome_104" => chrome_104(),
+            "chrome_105" => chrome_105(),
+            "chrome_106" => chrome_106(),
+            "chrome_107" => chrome_107(),
+            "chrome_108" => chrome_108(),
+            "chrome_109" => chrome_109(),
+            "chrome_110" => chrome_110(),
+            "chrome_111" => chrome_111(),
+            "chrome_112" => chrome_112(),
+            "chrome_116_psk" => chrome_116_psk(),
+            "chrome_116_psk_pq" => chrome_116_psk_pq(),
+            "chrome_117" => chrome_117(),
             "chrome_120" => chrome_120(),
             "chrome_121" => chrome_121(),
             "chrome_122" => chrome_122(),
@@ -89,6 +102,15 @@ impl VersionAdapter {
             "chrome_138" => chrome_138(),
 
             // Firefox versions
+            "firefox_102" => firefox_102(),
+            "firefox_104" => firefox_104(),
+            "firefox_105" => firefox_105(),
+            "firefox_106" => firefox_106(),
+            "firefox_108" => firefox_108(),
+            "firefox_110" => firefox_110(),
+            "firefox_117" => firefox_117(),
+            "firefox_120" => firefox_120(),
+            "firefox_123" => firefox_123(),
             "firefox_130" => firefox_130(),
             "firefox_131" => firefox_131(),
             "firefox_132" => firefox_132(),
@@ -100,10 +122,30 @@ impl VersionAdapter {
             "firefox_138" => firefox_138(),
 
             // Safari versions
+            "safari_15_0" => safari_15_0(),
+            "safari_15_6_1" => safari_15_6_1(),
             "safari_15_7" => safari_15_7(),
             "safari_16_0" => safari_16_0(),
             "safari_17_0" => safari_17_0(),
+            "safari_17_5" => safari_17_5(),
             "safari_18_0" => safari_18_0(),
+            "safari_18_1" => safari_18_1(),
+            "safari_18_2" => safari_18_2(),
+            "safari_18_3" => safari_18_3(),
+
+            // Safari iOS versions
+            "safari_ios_15_5" => safari_ios_15_5(),
+            "safari_ios_15_6" => safari_ios_15_6(),
+            "safari_ios_16_0" => safari_ios_16_0(),
+            "safari_ios_17_0" => safari_ios_17_0(),
+            "safari_ios_18_0" => safari_ios_18_0(),
+            "safari_ios_18_1" => safari_ios_18_1(),
+            "safari_ios_18_2" => safari_ios_18_2(),
+            "safari_ios_18_3" => safari_ios_18_3(),
+            "safari_ios_18_5" => safari_ios_18_5(),
+
+            // Safari iPad versions
+            "safari_ipad_15_6" => safari_ipad_15_6(),
 
             // Edge versions
             "edge_120" => edge_120(),
@@ -119,6 +161,8 @@ impl VersionAdapter {
             "edge_137" => edge_137(),
 
             // Opera versions
+            "opera_89" => opera_89(),
+            "opera_90" => opera_90(),
             "opera_91" => opera_91(),
             "opera_92" => opera_92(),
             "opera_93" => opera_93(),
@@ -133,11 +177,6 @@ impl VersionAdapter {
             "firefox_mobile_120" => firefox_mobile_120(),
             "firefox_mobile_130" => firefox_mobile_130(),
             "firefox_mobile_135" => firefox_mobile_135(),
-            "safari_ios_16_0" => safari_ios_16_0(),
-            "safari_ios_17_0" => safari_ios_17_0(),
-            "safari_ios_18_0" => safari_ios_18_0(),
-            "safari_ios_18_1" => safari_ios_18_1(),
-            "safari_ios_18_3" => safari_ios_18_3(),
 
             // Default fallback
             _ => chrome_133(),
