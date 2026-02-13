@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fingerprint-api
+
+spec:
+  replicas: 5
+  template:
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - fingerprint-api
+              topologyKey: kubernetes.io/hostname
+      
+      containers:
+        - name: fingerprint-api
+          resources:
+            requests:
+              cpu: 750m
+              memory: 768Mi
+            limits:
+              cpu: 2000m
+              memory: 2Gi

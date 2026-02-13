@@ -1,0 +1,129 @@
+groups:
+  - name: fingerprint-api
+    interval: 30s
+    rules:
+      # API Availability Alert
+      - alert: FingerPrintAPIDown
+        expr: |
+          up{job="fingerprint-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: fingerprint-api
+        annotations:
+          summary: "Fingerprint API is down"
+          description: "The Fingerprint API service has been unreachable for more than 2 minutes."
+          runbook_url: "https://wiki.example.com/fingerprint-api/alerts/down"
+
+      # High Error Rate Alert
+      - alert: HighErrorRate
+        expr: |
+          (sum(rate(http_requests_total{job="fingerprint-api", status=~"5.."}[5m])) /
+           sum(rate(http_requests_total{job="fingerprint-api"}[5m]))) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: fingerprint-api
+        annotations:
+          summary: "High error rate detected in Fingerprint API"
+          description: "Error rate is above 5% (current: {{ $value | humanizePercentage }})"
+          runbook_url: "https://wiki.example.com/fingerprint-api/alerts/high-error-rate"
+
+      # High Response Latency Alert
+      - alert: HighLatency
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="fingerprint-api", endpoint="/api/v1/fingerprint/identify"}[5m])) by (le)) > 1.0
+        for: 5m
+        labels:
+          severity: warning
+          service: fingerprint-api
+        annotations:
+          summary: "High request latency detected"
+          description: "P99 latency is above 1 second (current: {{ $value | humanizeDuration }})"
+          endpoint: "{{ $labels.endpoint }}"
+          runbook_url: "https://wiki.example.com/fingerprint-api/alerts/high-latency"
+
+      # Pod Crash Loop
+      - alert: PodCrashLooping
+        expr: |
+          rate(kube_pod_container_status_restarts_total{pod=~"fingerprint-api.*"}[30m]) > 5/3600
+        for: 5m
+        labels:
+          severity: warning
+          service: fingerprint-api
+        annotations:
+          summary: "Pod is crash looping"
+          description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} has restarted {{ $value | humanize }} times in 30 minutes"
+
+      # High CPU Usage
+      - alert: HighCPUUsage
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{pod=~"fingerprint-api.*"}[5m])) by (pod) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          service: fingerprint-api
+        annotations:
+          summary: "High CPU usage on fingerprint-api pod"
+          description: "Pod {{ $labels.pod }} CPU usage is above 80% (current: {{ $value | humanizePercentage }})"
+
+      # High Memory Usage
+      - alert: HighMemoryUsage
+        expr: |
+          sum(container_memory_usage_bytes{pod=~"fingerprint-api.*"}) by (pod) / 
+          sum(container_spec_memory_limit_bytes{pod=~"fingerprint-api.*"}) by (pod) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: fingerprint-api
+        annotations:
+          summary: "High memory usage on fingerprint-api pod"
+          description: "Pod {{ $labels.pod }} memory usage is above 85% of limit"
+
+      # Model Loading Failure
+      - alert: ModelLoadingFailure
+        expr: |
+          fingerprint_api_models_loaded{job="fingerprint-api"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: fingerprint-api
+        annotations:
+          summary: "Failed to load fingerprint models"
+          description: "The API cannot load required ML models. Inference will fail."
+
+      # High Queue Latency
+      - alert: HighQueueLatency
+        expr: |
+          fingerprint_api_queue_latency_seconds{quantile="0.99", job="fingerprint-api"} > 5
+        for: 3m
+        labels:
+          severity: warning
+          service: fingerprint-api
+        annotations:
+          summary: "High queue latency detected"
+          description: "P99 queue latency exceeds 5 seconds (current: {{ $value | humanizeDuration }})"
+
+  # System-level alerts
+  - name: system-alerts
+    interval: 30s
+    rules:
+      - alert: ContainerMemoryUsage
+        expr: |
+          (sum(container_memory_usage_bytes{pod=~"fingerprint-api.*"}) by (pod) / 1024 / 1024) > 1024
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Container memory usage is high"
+          description: "Pod {{ $labels.pod }} is using {{ $value | humanize }}MB of memory"
+
+      - alert: PersistentVolumeUsage
+        expr: |
+          (kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes) > 0.85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Persistent volume usage is high"
+          description: "PV {{ $labels.persistentvolumeclaim }} is {{ $value | humanizePercentage }} full"

@@ -1,0 +1,160 @@
+{
+  "dashboard": {
+    "title": "Fingerprint API Overview",
+    "description": "Real-time monitoring of the Fingerprint API service",
+    "tags": ["fingerprint", "api", "production"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "Requests Per Second",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{job=\"fingerprint-api\"}[1m]))",
+            "legendFormat": "Total RPS"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Requests/sec"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "title": "Error Rate",
+        "type": "graph",
+        "gridPos": {
+          "x": 12,
+          "y": 0,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "(sum(rate(http_requests_total{job=\"fingerprint-api\", status=~\"5..\"}[1m])) / sum(rate(http_requests_total{job=\"fingerprint-api\"}[1m]))) * 100",
+            "legendFormat": "Error Rate %"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Error %"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "title": "Response Latency (P99)",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 8,
+          "w": 12,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job=\"fingerprint-api\", endpoint=\"/api/v1/fingerprint/identify\"}[5m])) by (le))",
+            "legendFormat": "P99 Latency"
+          }
+        ],
+        "yaxes": [
+          {
+            "label": "Seconds"
+          }
+        ]
+      },
+      {
+        "id": 4,
+        "title": "Active Pods",
+        "type": "stat",
+        "gridPos": {
+          "x": 12,
+          "y": 8,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "count(kube_pod_status_phase{namespace=\"fingerprint\", pod=~\"fingerprint-api.*\", phase=\"Running\"})"
+          }
+        ]
+      },
+      {
+        "id": 5,
+        "title": "CPU Usage",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 8,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(container_cpu_usage_seconds_total{pod=~\"fingerprint-api.*\"}[5m])) * 100"
+          }
+        ]
+      },
+      {
+        "id": 6,
+        "title": "Memory Usage",
+        "type": "stat",
+        "gridPos": {
+          "x": 12,
+          "y": 12,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "sum(container_memory_usage_bytes{pod=~\"fingerprint-api.*\"}) / 1024 / 1024"
+          }
+        ]
+      },
+      {
+        "id": 7,
+        "title": "Model Accuracy",
+        "type": "stat",
+        "gridPos": {
+          "x": 18,
+          "y": 12,
+          "w": 6,
+          "h": 4
+        },
+        "targets": [
+          {
+            "expr": "fingerprint_api_model_accuracy{level=\"family\", job=\"fingerprint-api\"} * 100"
+          }
+        ]
+      },
+      {
+        "id": 8,
+        "title": "Request Rate by Endpoint",
+        "type": "graph",
+        "gridPos": {
+          "x": 0,
+          "y": 16,
+          "w": 24,
+          "h": 8
+        },
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total{job=\"fingerprint-api\"}[5m])) by (endpoint)",
+            "legendFormat": "{{ endpoint }}"
+          }
+        ]
+      }
+    ],
+    "refresh": "30s",
+    "schemaVersion": 16
+  },
+  "overwrite": true
+}

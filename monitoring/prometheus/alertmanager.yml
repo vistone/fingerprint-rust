@@ -1,0 +1,141 @@
+global:
+  resolve_timeout: 5m
+  slack_api_url: '' # Set your Slack webhook URL here
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+
+# Placeholder for Slack configuration template. Uncomment to enable Slack notifications.
+# templates:
+#   - '/etc/alertmanager/config/*.tmpl'
+
+route:
+  # The labels by which incoming alerts are grouped together.
+  group_by: ['alertname', 'cluster', 'service', 'severity']
+  
+  # How long to initially wait to send a notification for a group of alerts.
+  group_wait: 30s
+  
+  # How long to wait before sending a notification about new alerts added
+  # to a group of alerts for which an initial notification has already been sent.
+  group_interval: 5m
+  
+  # How long to wait before sending a notification again if it has already
+  # been sent successfully for an alert. (Usually ~resolved)
+  repeat_interval: 4h
+  
+  # A default receiver to fall back to if an alert does not match any of the following routes.
+  receiver: 'default-receiver'
+  
+  # All the above attributes are inherited by all child routes and can
+  # optionally be overwritten at any time.
+  routes:
+    # Critical alerts route
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 0s
+      repeat_interval: 1h
+      continue: true
+
+    # Warning alerts route
+    - match:
+        severity: warning
+      receiver: 'warning-receiver'
+      group_wait: 1m
+      repeat_interval: 12h
+
+    # Info alerts route
+    - match:
+        severity: info
+      receiver: 'info-receiver'
+      group_wait: 10m
+      repeat_interval: 24h
+
+# Inhibition rules to prevent certain alerts from being sent out based on other alerts
+inhibit_rules:
+  # Inhibit warning and info alerts if a critical alert is firing for the same service
+  - source_match:
+      severity: critical
+    target_match_re:
+      severity: warning|info
+    equal: ['service', 'alertname']
+  
+  # Inhibit info alerts if a warning alert is firing for the same service
+  - source_match:
+      severity: warning
+    target_match:
+      severity: info
+    equal: ['service', 'alertname']
+
+receivers:
+  # Default receiver (email)
+  - name: 'default-receiver'
+    email_configs:
+      - to: 'devops@example.com'
+        from: 'alert@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: 'alert@example.com'
+        auth_password: '' # Use environment variable or secret
+        headers:
+          Subject: 'Alert: {{ .GroupLabels.alertname }}'
+
+  # Critical receiver (PagerDuty + Slack + Email)
+  - name: 'critical-receiver'
+    # Email notifications for critical alerts
+    email_configs:
+      - to: 'oncall@example.com,devops@example.com'
+        from: 'alert@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: 'alert@example.com'
+        auth_password: '' # Use environment variable or secret
+        headers:
+          Subject: '[CRITICAL] {{ .GroupLabels.alertname }}'
+    
+    # PagerDuty configuration for incident creation
+    pagerduty_configs:
+      - service_key: '' # Set your PagerDuty service key
+        routing_key: '' # Set your PagerDuty routing key
+        description: 'Alert: {{ .GroupLabels.alertname }}'
+        details:
+          firing: '{{ template "pagerduty.default.instances" .Alerts.Firing }}'
+    
+    # Slack notification for critical alerts
+    slack_configs:
+      - api_url: '' # Set your Slack webhook URL
+        channel: '#critical-alerts'
+        title: '[CRITICAL] {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'danger'
+        actions:
+          - type: button
+            text: 'View Alert'
+            url: '{{ .ExternalURL }}'
+
+  # Warning receiver (Email + Slack)
+  - name: 'warning-receiver'
+    email_configs:
+      - to: 'devops@example.com'
+        from: 'alert@example.com'
+        smarthost: 'smtp.example.com:587'
+        auth_username: 'alert@example.com'
+        auth_password: '' # Use environment variable or secret
+        headers:
+          Subject: '[WARNING] {{ .GroupLabels.alertname }}'
+    
+    slack_configs:
+      - api_url: '' # Set your Slack webhook URL
+        channel: '#warnings'
+        title: '[WARNING] {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'warning'
+
+  # Info receiver (Slack only)
+  - name: 'info-receiver'
+    slack_configs:
+      - api_url: '' # Set your Slack webhook URL
+        channel: '#notifications'
+        title: '[INFO] {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+        send_resolved: true
+        color: 'good'

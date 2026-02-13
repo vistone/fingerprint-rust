@@ -1,0 +1,92 @@
+groups:
+  - name: fingerprint-api-recording
+    interval: 30s
+    rules:
+      # Request rate metrics
+      - record: fingerprint:http_requests:rate5m
+        expr: |
+          sum(rate(http_requests_total{job="fingerprint-api"}[5m])) by (job, status, endpoint)
+
+      # Request latency percentiles
+      - record: fingerprint:http_request_latency:p50
+        expr: |
+          histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job="fingerprint-api"}[5m])) by (le, endpoint))
+
+      - record: fingerprint:http_request_latency:p95
+        expr: |
+          histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="fingerprint-api"}[5m])) by (le, endpoint))
+
+      - record: fingerprint:http_request_latency:p99
+        expr: |
+          histogram_quantile(0.99, sum(rate(http_request_duration_seconds_bucket{job="fingerprint-api"}[5m])) by (le, endpoint))
+
+      # Error rate by endpoint
+      - record: fingerprint:http_errors:rate5m
+        expr: |
+          sum(rate(http_requests_total{job="fingerprint-api", status=~"5.."}[5m])) by (endpoint)
+
+      # Success rate by endpoint
+      - record: fingerprint:http_success_rate:5m
+        expr: |
+          (1 - (sum(rate(http_requests_total{job="fingerprint-api", status=~"5.."}[5m])) by (endpoint) /
+           sum(rate(http_requests_total{job="fingerprint-api"}[5m])) by (endpoint))) * 100
+
+      # Model inference latency
+      - record: fingerprint:inference_latency:p50
+        expr: |
+          histogram_quantile(0.50, sum(rate(fingerprint_api_inference_duration_seconds_bucket[5m])) by (le, level))
+
+      - record: fingerprint:inference_latency:p95
+        expr: |
+          histogram_quantile(0.95, sum(rate(fingerprint_api_inference_duration_seconds_bucket[5m])) by (le, level))
+
+      - record: fingerprint:inference_latency:p99
+        expr: |
+          histogram_quantile(0.99, sum(rate(fingerprint_api_inference_duration_seconds_bucket[5m])) by (le, level))
+
+      # Feature extraction latency
+      - record: fingerprint:feature_extraction_latency:p95
+        expr: |
+          histogram_quantile(0.95, sum(rate(fingerprint_api_feature_extraction_duration_seconds_bucket[5m])) by (le))
+
+      # Throughput metrics (requests per second)
+      - record: fingerprint:throughput:rps
+        expr: |
+          sum(rate(http_requests_total{job="fingerprint-api"}[1m])) by (job)
+
+      # Average request size
+      - record: fingerprint:request_size:avg
+        expr: |
+          sum(rate(http_request_size_bytes_sum{job="fingerprint-api"}[5m])) by (endpoint) /
+          sum(rate(http_request_size_bytes_count{job="fingerprint-api"}[5m])) by (endpoint)
+
+      # Pod resource utilization
+      - record: fingerprint:pod_cpu_utilization:avg
+        expr: |
+          sum(rate(container_cpu_usage_seconds_total{pod=~"fingerprint-api.*"}[5m])) by (pod) / 0.5
+
+      - record: fingerprint:pod_memory_utilization:avg
+        expr: |
+          sum(container_memory_usage_bytes{pod=~"fingerprint-api.*"}) by (pod) / 
+          sum(container_spec_memory_limit_bytes{pod=~"fingerprint-api.*"}) by (pod) * 100
+
+      # Uptime
+      - record: fingerprint:uptime:minutes
+        expr: |
+          (time() - process_start_time_seconds{job="fingerprint-api"}) / 60
+
+      # Model accuracy metrics (if exposed by API)
+      - record: fingerprint:model_accuracy:family
+        expr: |
+          fingerprint_api_model_accuracy{level="family", job="fingerprint-api"}
+
+      - record: fingerprint:model_accuracy:version
+        expr: |
+          fingerprint_api_model_accuracy{level="version", job="fingerprint-api"}
+
+      # Cache hit rate
+      - record: fingerprint:cache_hit_rate:5m
+        expr: |
+          (sum(rate(fingerprint_api_cache_hits_total[5m])) by (cache_type) /
+           (sum(rate(fingerprint_api_cache_hits_total[5m])) by (cache_type) +
+            sum(rate(fingerprint_api_cache_misses_total[5m])) by (cache_type))) * 100

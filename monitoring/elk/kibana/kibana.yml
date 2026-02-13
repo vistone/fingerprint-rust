@@ -1,0 +1,51 @@
+# Kibana configuration for Fingerprint API monitoring
+
+# Elasticsearch configuration
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.requestTimeout: 30000
+elasticsearch.preserveHost: true
+
+# Kibana server configuration
+server.name: kibana
+server.host: "0.0.0.0"
+server.port: 5601
+server.basePath: ""
+server.rewriteBasePath: false
+server.publicBaseUrl: "http://kibana.example.com"
+
+# Logging configuration
+logging:
+  appenders:
+    default:
+      type: console
+      layout:
+        type: pattern
+        pattern: "[%d{ISO8601}][%l][%c{1}] %m"
+  root:
+    level: info
+
+# Browser session timeout (in milliseconds)
+xpack.security.sessionTimeout: 3600000
+
+# Saved Objects
+savedObjects:
+  maxImportPayloadBytes: 26214400
+  maxImportExportSize: 10000
+
+# Telemetry
+telemetry.enabled: false
+
+# Monitoring
+monitoring:
+  ui.enabled: true
+  cluster_alerts.email_notifications.enabled: true
+
+# Machine learning
+xpack.ml.enabled: true
+
+# Index patterns
+xpack.security.enabled: false
+
+# Development mode
+dev:
+  disableNanoOptimizations: true

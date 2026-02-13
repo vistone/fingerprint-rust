@@ -1,0 +1,52 @@
+cluster.name: fingerprint-elk
+node.name: ${HOSTNAME}
+node.roles: [master, data, ingest]
+
+# Network
+network.host: 0.0.0.0
+http.port: 9200
+transport.port: 9300
+
+# Discovery settings for production
+discovery.type: single-node
+# For multi-node cluster, use:
+# discovery.seed_hosts: ["elasticsearch-0.elasticsearch.logging.svc.cluster.local", "elasticsearch-1.elasticsearch.logging.svc.cluster.local"]
+# cluster.initial_master_nodes: ["elasticsearch-0", "elasticsearch-1"]
+
+# Heap memory (set to 50% of available memory, max 32GB)
+# These are set via environment variables in Kubernetes
+
+# Index settings
+action.auto_create_index: "+.watches,-*"
+
+# Ingest pipeline settings
+ingest.geoip.cache_size: 1000
+
+# Security settings (if X-Pack is enabled)
+xpack.security.enabled: false
+# xpack.security.enrollment.enabled: true
+# xpack.security.authc.token.enabled: true
+# xpack.security.transport.ssl.enabled: true
+# xpack.security.transport.ssl.verification_mode: certificate
+# xpack.security.http.ssl.enabled: true
+
+# Monitoring
+xpack.monitoring.collection.enabled: true
+
+# ML settings
+xpack.ml.enabled: true
+
+# Index lifecycle management
+xpack.ilm.enabled: true
+
+# Snapshot settings
+repositories:
+  backup:
+    type: fs
+    settings:
+      location: /mnt/elasticsearch/snapshots
+
+# Performance tuning
+indices.memory.index_buffer_size: 40%
+thread_pool.write.queue_size: 1000
+thread_pool.search.queue_size: 1000

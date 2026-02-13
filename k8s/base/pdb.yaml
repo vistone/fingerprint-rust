@@ -1,0 +1,11 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: fingerprint-api-pdb
+  namespace: fingerprint
+
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: fingerprint-api

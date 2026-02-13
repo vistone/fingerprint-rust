@@ -1,0 +1,73 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fingerprint-api
+  namespace: fingerprint
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: fingerprint-api-role
+  namespace: fingerprint
+
+rules:
+  # Read ConfigMap and Secrets
+  - apiGroups: [""]
+    resources: ["configmaps", "secrets"]
+    verbs: ["get", "list", "watch"]
+  
+  # Read and list pods (for leader election, if needed)
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+  
+  # Create events for debugging
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: fingerprint-api-rolebinding
+  namespace: fingerprint
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: fingerprint-api-role
+
+subjects:
+  - kind: ServiceAccount
+    name: fingerprint-api
+    namespace: fingerprint
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fingerprint-api-metrics
+
+rules:
+  # Allow reading metrics for HPA
+  - apiGroups: ["metrics.k8s.io"]
+    resources: ["pods", "nodes"]
+    verbs: ["get", "list"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: fingerprint-api-metrics
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fingerprint-api-metrics
+
+subjects:
+  - kind: ServiceAccount
+    name: fingerprint-api
+    namespace: fingerprint

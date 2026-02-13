@@ -1,0 +1,29 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fingerprint
+
+bases:
+  - ../base
+
+replicas:
+  - name: fingerprint-api
+    count: 5
+
+patchesStrategicMerge:
+  - deployment.yaml
+  - hpa.yaml
+
+configMapGenerator:
+  - name: fingerprint-config
+    behavior: merge
+    literals:
+      - log_level=warn
+      - workers=8
+      - enable_metrics=true
+      - batch_inference_enabled=true
+
+commonAnnotations:
+  environment: production
+  cluster: production-cluster
+  criticality: "high"
