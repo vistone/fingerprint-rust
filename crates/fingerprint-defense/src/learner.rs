@@ -7,10 +7,23 @@ use crate::database::FingerprintDatabase;
 use crate::passive::PassiveAnalysisResult;
 use dashmap::DashMap;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use fingerprint_core::fingerprint::Fingerprint;
 use serde::{Deserialize, Serialize};
+
+/// 获取当前 Unix 时间戳（秒）
+fn current_unix_timestamp() -> u64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or(Duration::ZERO)
+        .as_secs()
+}
+
+/// 计算时间戳差（秒）
+fn timestamp_duration(from: u64, to: u64) -> Duration {
+    Duration::from_secs(to.saturating_sub(from))
+}
 
 /// 未知指纹观察记录
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -19,10 +32,10 @@ pub struct UnknownFingerprintObservation {
     pub fingerprint_id: String,
     /// 指纹类型 (tls/http/tcp)
     pub fingerprint_type: String,
-    /// 首次观察时间
-    pub first_seen: Instant,
-    /// 最后观察时间
-    pub last_seen: Instant,
+    /// 首次观察时间（Unix 时间戳，秒）
+    pub first_seen: u64,
+    /// 最后观察时间（Unix 时间戳，秒）
+    pub last_seen: u64,
     /// 观察次数
     pub observation_count: u64,
     /// 稳定性得分 (0.0-1.0)
@@ -62,44 +75,63 @@ impl SelfLearningAnalyzer {
         // 分别处理各层指纹
         if let Some(tls) = &result.tls {
             // TLS直接使用观察ID (JA4)
-            self.observe_unknown_fingerprint(tls.id(), "tls", &serde_json::json!({
-                "cipher_suites": tls.metadata().cipher_suites,
-                "extensions": tls.metadata().extensions,
-                "curves": tls.metadata().curves,
-                "sig_algs": tls.metadata().signature_algorithms
-            }));
+            self.observe_unknown_fingerprint(
+                tls.id(),
+                "tls",
+                &serde_json::json!({
+                    "cipher_suites_count": tls.cipher_suites_count,
+                    "extensions_count": tls.extensions_count,
+                    "version": tls.version,
+                    "ja4": tls.ja4.clone(),
+                }),
+            );
         }
 
         if let Some(http) = &result.http {
             if http.signature.is_none() {
-                self.observe_unknown_fingerprint(http.id(), "http", &serde_json::json!({
-                    "user_agent": http.user_agent,
-                    "headers": http.metadata().headers,
-                    "h2_settings": http.h2_settings
-                }));
+                self.observe_unknown_fingerprint(
+                    http.id(),
+                    "http",
+                    &serde_json::json!({
+                        "user_agent": http.user_agent,
+                        "browser": http.browser,
+                        "h2_settings": http.h2_settings,
+                    }),
+                );
             }
         }
 
         if let Some(tcp) = &result.tcp {
             if tcp.signature.is_none() {
-                self.observe_unknown_fingerprint(tcp.id(), "tcp", &serde_json::json!({
-                    "ttl": tcp.features.ttl,
-                    "window_size": tcp.features.window_size,
-                    "options": tcp.features.options,
-                    "option_order": tcp.features.option_order
-                }));
+                self.observe_unknown_fingerprint(
+                    tcp.id(),
+                    "tcp",
+                    &serde_json::json!({
+                        "ttl": tcp.features.ttl,
+                        "window": tcp.features.window,
+                        "mss": tcp.features.mss,
+                        "window_scale": tcp.features.window_scale,
+                        "options_str": tcp.features.options_str,
+                        "ip_flags": tcp.features.ip_flags,
+                    }),
+                );
             }
         }
     }
 
     /// 观察未知指纹并计算稳定性
-    fn observe_unknown_fingerprint(&self, fp_id: String, fp_type: &str, features: &serde_json::Value) {
+    fn observe_unknown_fingerprint(
+        &self,
+        fp_id: String,
+        fp_type: &str,
+        features: &serde_json::Value,
+    ) {
         if fp_id == "unknown" || fp_id.is_empty() {
             return;
         }
 
         let key = format!("{}:{}", fp_type, fp_id);
-        let now = Instant::now();
+        let now = current_unix_timestamp();
 
         // 保护点：限制观察列表大小，防止内存爆增 (DoS防护)
         const MAX_OBSERVATIONS: usize = 10000;
@@ -109,27 +141,28 @@ impl SelfLearningAnalyzer {
         }
 
         // 更新或创建观察记录
-        let mut entry = self.observations.entry(key.clone()).or_insert_with(|| {
-            UnknownFingerprintObservation {
-                fingerprint_id: fp_id.clone(),
-                fingerprint_type: fp_type.to_string(),
-                first_seen: now,
-                last_seen: now,
-                observation_count: 0,
-                stability_score: 0.0,
-                features: features.clone(),
-            }
-        });
+        let mut entry =
+            self.observations
+                .entry(key.clone())
+                .or_insert_with(|| UnknownFingerprintObservation {
+                    fingerprint_id: fp_id.clone(),
+                    fingerprint_type: fp_type.to_string(),
+                    first_seen: now,
+                    last_seen: now,
+                    observation_count: 0,
+                    stability_score: 0.0,
+                    features: features.clone(),
+                });
 
         // 更新观察记录
         entry.observation_count += 1;
         entry.last_seen = now;
 
         // 计算稳定性得分
-        let time_span = entry.last_seen.duration_since(entry.first_seen);
-        let expected_frequency = entry.observation_count as f64 / 
-            (time_span.as_secs_f64() / 3600.0).max(1.0); // 每小时观察频率
-        
+        let time_span = timestamp_duration(entry.first_seen, entry.last_seen);
+        let expected_frequency =
+            entry.observation_count as f64 / (time_span.as_secs_f64() / 3600.0).max(1.0); // 每小时观察频率
+
         // 稳定性得分基于观察频率的一致性
         let stability_bonus = if expected_frequency > 1.0 && expected_frequency < 100.0 {
             0.3 // 正常频率加分
@@ -139,13 +172,14 @@ impl SelfLearningAnalyzer {
             0.0 // 频率太低
         };
 
-        entry.stability_score = (entry.observation_count as f64 / self.learning_threshold as f64)
-            .min(1.0) * 0.7 + stability_bonus;
+        entry.stability_score =
+            (entry.observation_count as f64 / self.learning_threshold as f64).min(1.0) * 0.7
+                + stability_bonus;
 
         // 检查是否达到学习条件
-        if entry.observation_count >= self.learning_threshold && 
-           entry.stability_score >= self.min_stability_score {
-            
+        if entry.observation_count >= self.learning_threshold
+            && entry.stability_score >= self.min_stability_score
+        {
             // 达到阈值，可以进入数据库建立初步条目
             self.learn_new_fingerprint(&entry);
         }
@@ -153,13 +187,14 @@ impl SelfLearningAnalyzer {
 
     /// 学习新的稳定指纹
     fn learn_new_fingerprint(&self, observation: &UnknownFingerprintObservation) {
-        println!("[Learner] 🎯 Detected stable unknown fingerprint: {}:{} (count: {}, stability: {:.2})",
-            observation.fingerprint_type, 
+        println!(
+            "[Learner] 🎯 Detected stable unknown fingerprint: {}:{} (count: {}, stability: {:.2})",
+            observation.fingerprint_type,
             observation.fingerprint_id,
             observation.observation_count,
             observation.stability_score
         );
-        
+
         // TODO: 将稳定指纹存入数据库作为待审核候选签名
         // 这里应该调用数据库接口存储潜在的新指纹模式
         // 例如：self.db.store_candidate_fingerprint(observation)
@@ -183,11 +218,12 @@ impl SelfLearningAnalyzer {
     /// 获取当前观察统计
     pub fn get_observation_stats(&self) -> ObservationStats {
         let total_observations = self.observations.len() as u64;
-        let stable_candidates = self.observations
+        let stable_candidates = self
+            .observations
             .iter()
             .filter(|entry| {
-                entry.observation_count >= self.learning_threshold && 
-                entry.stability_score >= self.min_stability_score
+                entry.value().observation_count >= self.learning_threshold
+                    && entry.value().stability_score >= self.min_stability_score
             })
             .count() as u64;
 
@@ -201,11 +237,12 @@ impl SelfLearningAnalyzer {
 
     /// 清理过期观察记录
     pub fn cleanup_expired_observations(&self) {
-        let now = Instant::now();
-        let expired_keys: Vec<String> = self.observations
+        let now = current_unix_timestamp();
+        let expired_keys: Vec<String> = self
+            .observations
             .iter()
             .filter(|entry| {
-                now.duration_since(entry.first_seen) > self.stability_window
+                timestamp_duration(entry.value().first_seen, now) > self.stability_window
             })
             .map(|entry| entry.key().clone())
             .collect();

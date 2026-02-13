@@ -1902,11 +1902,7 @@ pub fn opera_89() -> ClientProfile {
         fingerprint_core::types::OperatingSystem::Windows10,
     ));
     ClientProfile::new(
-        ClientHelloID::new(
-            "Opera",
-            "89",
-            fingerprint_tls::tls_config::chrome_133_spec,
-        ),
+        ClientHelloID::new("Opera", "89", fingerprint_tls::tls_config::chrome_133_spec),
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -1925,11 +1921,7 @@ pub fn opera_90() -> ClientProfile {
         fingerprint_core::types::OperatingSystem::Windows10,
     ));
     ClientProfile::new(
-        ClientHelloID::new(
-            "Opera",
-            "90",
-            fingerprint_tls::tls_config::chrome_133_spec,
-        ),
+        ClientHelloID::new("Opera", "90", fingerprint_tls::tls_config::chrome_133_spec),
         settings,
         settings_order,
         chrome_pseudo_header_order(),
@@ -1938,25 +1930,6 @@ pub fn opera_90() -> ClientProfile {
         Some(chrome_header_priority()),
         tcp,
         chrome_header_order(),
-    )
-}
-
-        fingerprint_core::types::OperatingSystem::MacOS14,
-    ));
-    ClientProfile::new(
-        ClientHelloID::new(
-            "Safari",
-            "18.3",
-            fingerprint_tls::tls_config::safari_16_0_spec,
-        ),
-        settings,
-        settings_order,
-        safari_pseudo_header_order(),
-        fingerprint_headers::http2_config::CHROME_CONNECTION_FLOW,
-        Vec::new(),
-        None,
-        tcp,
-        safari_header_order(),
     )
 }
 

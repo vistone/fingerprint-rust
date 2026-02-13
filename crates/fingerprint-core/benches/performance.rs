@@ -21,16 +21,19 @@ fn benchmark_http_protocols(c: &mut Criterion) {
                 prefer_http2: false,
                 ..Default::default()
             };
-            
+
             let client = HttpClient::new(config).expect("Failed to create HTTP client");
             let start = Instant::now();
             let result = black_box(client.get(test_url));
             let duration = start.elapsed();
-            
+
             // 验证响应时间和成功率
             assert!(result.is_ok(), "HTTP/1.1 request should succeed");
-            assert!(duration.as_millis() < 1000, "HTTP/1.1 response should be under 1 second");
-            
+            assert!(
+                duration.as_millis() < 1000,
+                "HTTP/1.1 response should be under 1 second"
+            );
+
             duration
         })
     });
@@ -44,15 +47,18 @@ fn benchmark_http_protocols(c: &mut Criterion) {
                 prefer_http2: true,
                 ..Default::default()
             };
-            
+
             let client = HttpClient::new(config).expect("Failed to create HTTP/2 client");
             let start = Instant::now();
             let result = black_box(client.get(test_url));
             let duration = start.elapsed();
-            
+
             assert!(result.is_ok(), "HTTP/2 request should succeed");
-            assert!(duration.as_millis() < 1000, "HTTP/2 response should be under 1 second");
-            
+            assert!(
+                duration.as_millis() < 1000,
+                "HTTP/2 response should be under 1 second"
+            );
+
             duration
         })
     });
@@ -66,17 +72,20 @@ fn benchmark_http_protocols(c: &mut Criterion) {
                 prefer_http2: true,
                 ..Default::default()
             };
-            
+
             let client = HttpClient::new(config).expect("Failed to create HTTP/3 client");
             let start = Instant::now();
             let result = black_box(client.get(test_url));
             let duration = start.elapsed();
-            
+
             // HTTP/3可能不可用，但不应该失败
             if let Ok(response) = result {
-                assert!(duration.as_millis() < 1000, "HTTP/3 response should be under 1 second");
+                assert!(
+                    duration.as_millis() < 1000,
+                    "HTTP/3 response should be under 1 second"
+                );
             }
-            
+
             duration
         })
     });
@@ -86,15 +95,18 @@ fn benchmark_http_protocols(c: &mut Criterion) {
 
 fn benchmark_fingerprint_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("fingerprint_generation");
-    
+
     // 测试随机指纹生成性能
     group.bench_function("random_fingerprint_generation", |b| {
         b.iter(|| {
             let start = Instant::now();
             let result = black_box(fingerprint::get_random_fingerprint());
             let duration = start.elapsed();
-            
-            assert!(result.is_ok(), "Random fingerprint generation should succeed");
+
+            assert!(
+                result.is_ok(),
+                "Random fingerprint generation should succeed"
+            );
             duration
         })
     });
@@ -105,8 +117,11 @@ fn benchmark_fingerprint_generation(c: &mut Criterion) {
             let start = Instant::now();
             let profile = black_box(fingerprint::chrome_133());
             let duration = start.elapsed();
-            
-            assert!(!profile.get_client_hello_str().is_empty(), "Profile should be valid");
+
+            assert!(
+                !profile.get_client_hello_str().is_empty(),
+                "Profile should be valid"
+            );
             duration
         })
     });
@@ -116,20 +131,23 @@ fn benchmark_fingerprint_generation(c: &mut Criterion) {
 
 fn benchmark_ja4_generation(c: &mut Criterion) {
     let mut group = c.benchmark_group("ja4_generation");
-    
+
     // 测试JA4指纹生成性能
     group.bench_function("ja4_fingerprint_generation", |b| {
         b.iter(|| {
             use fingerprint_core::ja4::JA4;
-            
+
             let start = Instant::now();
             // 创建简单的TLS数据进行测试
             let tls_data = vec![0x16, 0x03, 0x03, 0x00, 0x4a]; // 简化的ClientHello头部
             let ja4 = black_box(JA4::from_client_hello(&tls_data));
             let duration = start.elapsed();
-            
+
             // JA4生成应该快速完成
-            assert!(duration.as_micros() < 1000, "JA4 generation should be under 1ms");
+            assert!(
+                duration.as_micros() < 1000,
+                "JA4 generation should be under 1ms"
+            );
             duration
         })
     });
