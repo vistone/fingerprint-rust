@@ -36,6 +36,7 @@
 
 pub mod benchmark;
 pub mod cache; // Multi-tier caching (L1/L2/L3)
+pub mod cache_redis; // Redis-backed cache implementation
 pub mod database;
 pub mod dicttls;
 pub mod fingerprint;
@@ -118,7 +119,7 @@ pub use utils::{
 };
 
 // benchmarking (optional, for performance testing)
-pub use benchmark::{Benchmark, HttpMetrics, Timer};
+pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics, Timer};
 
 // rate limiting service (Phase 9.4)
 pub use rate_limiting::{
@@ -136,8 +137,20 @@ pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // cache (Phase 9.3)
 pub use cache::{
-    Cache, CacheError, CacheResult, CacheStats, CacheTier, CacheTTL, DistributedLock, LockGuard,
+    Cache, CacheError, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard,
 };
+
+// Redis cache (optional, requires redis-cache feature)
+pub use cache_redis::RedisCacheConfig;
+
+#[cfg(feature = "redis-cache")]
+pub use cache_redis::RedisCache;
+
+#[cfg(feature = "redis-cache")]
+pub use cache_redis::RedisClusterCache;
+
+#[cfg(feature = "redis-cache")]
+pub use cache_redis::RedisClusterConfig;
 
 // system-level abstractions
 pub use system::{

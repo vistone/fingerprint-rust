@@ -1293,6 +1293,7 @@ impl VersionRegistry {
     }
 
     /// Add Chrome version entry
+    #[allow(clippy::too_many_arguments)]
     fn add_chrome_version(
         &mut self,
         version: u32,
@@ -1328,6 +1329,7 @@ impl VersionRegistry {
     }
 
     /// Add Firefox version entry
+    #[allow(clippy::too_many_arguments)]
     fn add_firefox_version(
         &mut self,
         version: u32,
@@ -1363,6 +1365,7 @@ impl VersionRegistry {
     }
 
     /// Add Safari version entry
+    #[allow(clippy::too_many_arguments)]
     fn add_safari_version(
         &mut self,
         version: u32,
@@ -1398,6 +1401,7 @@ impl VersionRegistry {
     }
 
     /// Add Edge version entry
+    #[allow(clippy::too_many_arguments)]
     fn add_edge_version(
         &mut self,
         version: u32,
@@ -1433,6 +1437,7 @@ impl VersionRegistry {
     }
 
     /// Add Opera version entry
+    #[allow(clippy::too_many_arguments)]
     fn add_opera_version(
         &mut self,
         version: u32,
@@ -1515,7 +1520,7 @@ impl VersionRegistry {
             BrowserType::Opera => &self.opera,
         };
 
-        versions.iter().rev().next().map(|(_, entry)| entry)
+        versions.iter().next_back().map(|(_, entry)| entry)
     }
 
     /// Get all supported versions for a browser

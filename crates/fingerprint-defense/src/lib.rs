@@ -23,6 +23,7 @@
 pub mod capture;
 pub mod database;
 pub mod learner;
+pub mod middleware; // API gateway middleware integration
 pub mod passive;
 
 pub use capture::CaptureEngine;
@@ -33,4 +34,10 @@ pub use learner::SelfLearningAnalyzer;
 pub use passive::{
     ConsistencyAnalyzer, HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult,
     PassiveAnalyzer, PassiveError, TcpFingerprint, TlsFingerprint,
+};
+
+// Re-export middleware
+pub use middleware::{
+    rate_limiting_integration::{SecurityCheckResult, SecurityMiddleware},
+    ConsistencyCheckConfig, ConsistencyCheckMiddleware, ConsistencyCheckResult,
 };

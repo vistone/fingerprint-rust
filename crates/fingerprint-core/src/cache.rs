@@ -1,10 +1,10 @@
 // Cache layer module for fingerprint-api
 // Implements multi-tier caching: L1 (in-memory) + L2 (Redis) + L3 (Database)
 
-use std::sync::Arc;
-use std::time::Duration;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
+use std::time::Duration;
 
 /// Cache tier configuration
 #[derive(Debug, Clone, Copy)]
@@ -125,7 +125,7 @@ impl Cache {
     pub fn new_l1_only(l1_capacity: usize) -> CacheResult<Self> {
         let capacity = std::num::NonZeroUsize::new(l1_capacity)
             .ok_or_else(|| CacheError::ConfigError("L1 capacity must be > 0".to_string()))?;
-        
+
         Ok(Cache {
             l1: Arc::new(RwLock::new(lru::LruCache::new(capacity))),
             l2_addr: String::new(),
@@ -208,6 +208,7 @@ impl Cache {
 }
 
 /// Distributed lock to prevent cache stampede
+#[allow(dead_code)]
 pub struct DistributedLock {
     key: String,
     timeout: Duration,
@@ -232,6 +233,7 @@ impl DistributedLock {
 }
 
 /// Lock guard that releases the lock when dropped
+#[allow(dead_code)]
 pub struct LockGuard {
     key: String,
 }
@@ -264,25 +266,24 @@ mod tests {
 
     // Note: async tests require tokio runtime which is not available in tests
     // These tests are run using a simple executor in the test module
-    
+
     fn run_async<F>(f: F) -> F::Output
     where
         F: std::future::Future,
     {
         // Simple block_on implementation for tests
-        use std::task::{Context, Poll, Wake};
         use std::sync::Arc;
-        use std::pin::Pin;
-        
+        use std::task::{Context, Poll, Wake};
+
         struct DummyWaker;
         impl Wake for DummyWaker {
             fn wake(self: Arc<Self>) {}
         }
-        
+
         let waker = Arc::new(DummyWaker).into();
         let mut context = Context::from_waker(&waker);
         let mut future = std::pin::pin!(f);
-        
+
         loop {
             match future.as_mut().poll(&mut context) {
                 Poll::Ready(val) => return val,
@@ -298,18 +299,21 @@ mod tests {
     #[test]
     fn test_cache_l1_only() {
         let cache = Cache::new_l1_only(100).expect("Failed to create cache");
-        
+
         let key = "test:key";
         let value = b"test:value".to_vec();
-        
+
         run_async(async {
-            cache.set(key, value.clone(), CacheTTL::Short).await.expect("Set failed");
-            
+            cache
+                .set(key, value.clone(), CacheTTL::Short)
+                .await
+                .expect("Set failed");
+
             let retrieved = cache.get(key).await;
             assert!(retrieved.is_some(), "Should retrieve value from L1");
             assert_eq!(retrieved.unwrap(), value, "Retrieved value should match");
         });
-        
+
         // Check stats
         let stats = cache.stats();
         assert_eq!(stats.hits_l1, 1, "Should have 1 L1 hit");
@@ -318,17 +322,20 @@ mod tests {
     #[test]
     fn test_cache_invalidation() {
         let cache = Cache::new_l1_only(100).expect("Failed to create cache");
-        
+
         run_async(async {
             cache.set("key1", vec![1], CacheTTL::Short).await.unwrap();
             cache.set("key2", vec![2], CacheTTL::Short).await.unwrap();
-            cache.set("prefix:key3", vec![3], CacheTTL::Short).await.unwrap();
-            
+            cache
+                .set("prefix:key3", vec![3], CacheTTL::Short)
+                .await
+                .unwrap();
+
             // Invalidate single key
             cache.invalidate("key1").await.unwrap();
             assert!(cache.get("key1").await.is_none());
             assert!(cache.get("key2").await.is_some());
-            
+
             // Invalidate pattern
             cache.invalidate("prefix:*").await.unwrap();
             assert!(cache.get("prefix:key3").await.is_none());

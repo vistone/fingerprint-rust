@@ -89,37 +89,41 @@ impl RedisRateLimitBackend {
     }
 
     /// Get Redis key prefix for quota entries
+    #[allow(dead_code)]
     fn quota_key(&self, user_id: &str) -> String {
         format!("rl:quota:{}", user_id)
     }
 
     /// Get Redis key for request counters
+    #[allow(dead_code)]
     fn counter_key(&self, user_id: &str, month: u32) -> String {
         format!("rl:counter:{}:{}", user_id, month)
     }
 
     /// Get Redis key for metrics
+    #[allow(dead_code)]
     fn metric_key(&self, metric_name: &str) -> String {
         format!("rl:metric:{}", metric_name)
     }
 
     /// Serialize quota entry to JSON
+    #[allow(dead_code)]
     fn serialize_quota(&self, entry: &RedisQuotaEntry) -> RedisResult<String> {
         serde_json::to_string(entry)
             .map_err(|e| RedisBackendError::SerializationError(e.to_string()))
     }
 
     /// Deserialize quota entry from JSON
+    #[allow(dead_code)]
     fn deserialize_quota(&self, json: &str) -> RedisResult<RedisQuotaEntry> {
-        serde_json::from_str(json)
-            .map_err(|e| RedisBackendError::SerializationError(e.to_string()))
+        serde_json::from_str(json).map_err(|e| RedisBackendError::SerializationError(e.to_string()))
     }
 
     /// Check if user quota is in Redis (distributed cache)
-    /// 
+    ///
     /// # Arguments
     /// * `user_id` - User identifier
-    /// 
+    ///
     /// # Returns
     /// * `Ok(Some(quota))` - Quota found
     /// * `Ok(None)` - Quota not found
@@ -133,17 +137,17 @@ impl RedisRateLimitBackend {
         //     .query_async(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        // 
+        //
         // match result {
         //     Some(json) => Ok(Some(self.deserialize_quota(&json)?)),
         //     None => Ok(None),
         // }
-        
+
         Ok(None)
     }
 
     /// Store user quota in Redis (distributed cache)
-    /// 
+    ///
     /// # Arguments
     /// * `user_id` - User identifier
     /// * `entry` - Quota entry to store
@@ -165,17 +169,17 @@ impl RedisRateLimitBackend {
         //     .query_async::<_, ()>(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        
+
         Ok(())
     }
 
     /// Increment request counter for user
-    /// 
+    ///
     /// # Arguments
     /// * `user_id` - User identifier
     /// * `month` - Current month (for key scoping)
     /// * `ttl_seconds` - TTL for the counter key
-    /// 
+    ///
     /// # Returns
     /// * New counter value
     pub async fn increment_request_count(
@@ -193,7 +197,7 @@ impl RedisRateLimitBackend {
         //     .query_async(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        // 
+        //
         // // Set expiration on first increment
         // if count == 1 {
         //     let _: () = redis::cmd("EXPIRE")
@@ -203,12 +207,12 @@ impl RedisRateLimitBackend {
         //         .await
         //         .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
         // }
-        
+
         Ok(0)
     }
 
     /// Store rate limit metrics in Redis
-    /// 
+    ///
     /// # Arguments
     /// * `metric_name` - Name of the metric
     /// * `value` - Metric value
@@ -225,14 +229,14 @@ impl RedisRateLimitBackend {
         // let key = self.metric_key(metric_name);
         // let timestamp = chrono::Utc::now().timestamp() as f64;
         // let entry = format!("{}:{}", timestamp, value);
-        // 
+        //
         // redis::cmd("LPUSH")
         //     .arg(&key)
         //     .arg(entry)
         //     .query_async::<_, ()>(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        // 
+        //
         // // Trim list to max_entries
         // redis::cmd("LTRIM")
         //     .arg(&key)
@@ -241,12 +245,12 @@ impl RedisRateLimitBackend {
         //     .query_async::<_, ()>(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        
+
         Ok(())
     }
 
     /// Health check - verify Redis connectivity
-    /// 
+    ///
     /// # Returns
     /// * `Ok(true)` - Redis is healthy
     /// * `Ok(false)` - Redis is not responding
@@ -260,12 +264,12 @@ impl RedisRateLimitBackend {
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
         // Ok(response == "PONG")
-        
+
         Ok(true)
     }
 
     /// Clear quota cache for user
-    /// 
+    ///
     /// # Arguments
     /// * `user_id` - User identifier
     pub async fn clear_user_quota(&self, _user_id: &str) -> RedisResult<()> {
@@ -277,7 +281,7 @@ impl RedisRateLimitBackend {
         //     .query_async::<_, ()>(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        
+
         Ok(())
     }
 
@@ -291,7 +295,7 @@ impl RedisRateLimitBackend {
         //     .query_async(&mut conn)
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
-        // 
+        //
         // if !keys.is_empty() {
         //     redis::cmd("DEL")
         //         .arg(&keys)
@@ -299,12 +303,12 @@ impl RedisRateLimitBackend {
         //         .await
         //         .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
         // }
-        
+
         Ok(())
     }
 
     /// Get current request count for user
-    /// 
+    ///
     /// # Arguments
     /// * `user_id` - User identifier
     /// * `month` - Current month
@@ -318,7 +322,7 @@ impl RedisRateLimitBackend {
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
         // Ok(count.unwrap_or(0))
-        
+
         Ok(0)
     }
 }

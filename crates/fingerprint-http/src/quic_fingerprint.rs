@@ -252,7 +252,7 @@ impl QuicInitialPacket {
             scid,
             token,
             spin_bit,
-            reserved_bits: reserved_bits as u8,
+            reserved_bits,
             packet_number_length,
             first_byte,
             packet_length: Some(packet_length),

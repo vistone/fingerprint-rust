@@ -165,8 +165,11 @@ pub struct RateLimiter {
     endpoints: Arc<RwLock<Vec<EndpointConfig>>>,
     /// Metrics
     metrics: Arc<RateLimiterMetrics>,
-    /// Redis client for distributed state
+    /// Redis URL for distributed state
+    #[allow(dead_code)]
     redis_url: String,
+    /// Redis backend for distributed quota management
+    redis_backend: Option<super::rate_limiting_redis::RedisRateLimitBackend>,
 }
 
 /// Metrics for rate limiter
@@ -183,7 +186,7 @@ pub struct RateLimiterMetrics {
 }
 
 impl RateLimiter {
-    /// Create new rate limiter
+    /// Create new rate limiter (without Redis backend)
     pub fn new(redis_url: String) -> Self {
         Self {
             user_quotas: DashMap::new(),
@@ -191,7 +194,33 @@ impl RateLimiter {
             endpoints: Arc::new(RwLock::new(Vec::new())),
             metrics: Arc::new(RateLimiterMetrics::default()),
             redis_url,
+            redis_backend: None,
         }
+    }
+
+    /// Create new rate limiter with Redis backend
+    pub fn with_redis(
+        redis_url: String,
+        backend: super::rate_limiting_redis::RedisRateLimitBackend,
+    ) -> Self {
+        Self {
+            user_quotas: DashMap::new(),
+            ip_quotas: DashMap::new(),
+            endpoints: Arc::new(RwLock::new(Vec::new())),
+            metrics: Arc::new(RateLimiterMetrics::default()),
+            redis_url,
+            redis_backend: Some(backend),
+        }
+    }
+
+    /// Check if Redis backend is enabled
+    pub fn is_redis_enabled(&self) -> bool {
+        self.redis_backend.is_some()
+    }
+
+    /// Get Redis backend reference
+    pub fn redis_backend(&self) -> Option<&super::rate_limiting_redis::RedisRateLimitBackend> {
+        self.redis_backend.as_ref()
     }
 
     /// Register endpoint configuration
@@ -392,6 +421,58 @@ impl RateLimiter {
         // Remove stale IP quotas
         self.ip_quotas
             .retain(|_, quota| quota.last_request > threshold);
+    }
+
+    /// Sync quota to Redis backend (async)
+    ///
+    /// This should be called after a quota change to ensure
+    /// distributed consistency across multiple instances.
+    pub async fn sync_quota_to_redis(&self, user_id: &str) -> Result<(), String> {
+        if let Some(ref backend) = self.redis_backend {
+            if let Some(quota) = self.user_quotas.get(user_id) {
+                let entry = super::rate_limiting_redis::RedisQuotaEntry::from_user_quota(
+                    user_id.to_string(),
+                    &quota,
+                );
+                // Store with 1 hour TTL
+                backend
+                    .set_user_quota(user_id, &entry, 3600)
+                    .await
+                    .map_err(|e| e.to_string())?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Load quota from Redis backend (async)
+    ///
+    /// This should be called when a user is not found in local cache
+    /// to check if they have existing quota state in Redis.
+    pub async fn load_quota_from_redis(&self, user_id: &str) -> Option<UserQuota> {
+        if let Some(ref backend) = self.redis_backend {
+            if let Ok(Some(entry)) = backend.get_user_quota(user_id).await {
+                // Convert RedisQuotaEntry back to UserQuota
+                // Note: This is a simplified conversion
+                let tier = match entry.tier.as_str() {
+                    "Pro" => QuotaTier::Pro,
+                    "Enterprise" => QuotaTier::Enterprise,
+                    "Partner" => QuotaTier::Partner,
+                    _ => QuotaTier::Free,
+                };
+
+                let mut quota = UserQuota::new(entry.user_id.clone(), tier);
+                quota.available_tokens = entry.available_tokens;
+                quota.last_refill = entry.last_refill;
+                quota.month_requests = entry.month_requests;
+                quota.month_start = entry.month_start;
+
+                // Update local cache
+                self.user_quotas.insert(user_id.to_string(), quota.clone());
+
+                return Some(quota);
+            }
+        }
+        None
     }
 }
 

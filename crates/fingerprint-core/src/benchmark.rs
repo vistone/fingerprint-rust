@@ -191,6 +191,183 @@ impl Timer {
     }
 }
 
+/// Cache performance benchmark
+///
+/// Provides benchmarking for cache operations
+pub struct CacheBenchmark {
+    name: String,
+    iterations: usize,
+    operation_times: Vec<Duration>,
+}
+
+impl CacheBenchmark {
+    /// Create new cache benchmark
+    pub fn new(name: impl Into<String>, iterations: usize) -> Self {
+        Self {
+            name: name.into(),
+            iterations,
+            operation_times: Vec::with_capacity(iterations),
+        }
+    }
+
+    /// Benchmark cache get operation
+    pub async fn benchmark_get<F, Fut>(&mut self, mut f: F)
+    where
+        F: FnMut() -> Fut,
+        Fut: std::future::Future<Output = Option<Vec<u8>>>,
+    {
+        for i in 0..self.iterations {
+            let start = Instant::now();
+            let _ = f().await;
+            let elapsed = start.elapsed();
+            self.operation_times.push(elapsed);
+
+            if (i + 1) % 1000 == 0 {
+                println!(
+                    "[{}] Completed {}/{} iterations",
+                    self.name,
+                    i + 1,
+                    self.iterations
+                );
+            }
+        }
+    }
+
+    /// Benchmark cache set operation
+    pub async fn benchmark_set<F, Fut>(&mut self, mut f: F)
+    where
+        F: FnMut() -> Fut,
+        Fut: std::future::Future<Output = Result<(), crate::cache::CacheError>>,
+    {
+        for i in 0..self.iterations {
+            let start = Instant::now();
+            let _ = f().await;
+            let elapsed = start.elapsed();
+            self.operation_times.push(elapsed);
+
+            if (i + 1) % 1000 == 0 {
+                println!(
+                    "[{}] Completed {}/{} iterations",
+                    self.name,
+                    i + 1,
+                    self.iterations
+                );
+            }
+        }
+    }
+
+    /// Generate report
+    pub fn report(&self) {
+        if self.operation_times.is_empty() {
+            println!("[{}] No metrics collected", self.name);
+            return;
+        }
+
+        let times_micros: Vec<f64> = self
+            .operation_times
+            .iter()
+            .map(|d| d.as_micros() as f64)
+            .collect();
+
+        let avg = times_micros.iter().sum::<f64>() / times_micros.len() as f64;
+        let min = times_micros.iter().fold(f64::INFINITY, |a, &b| a.min(b));
+        let max = times_micros
+            .iter()
+            .fold(f64::NEG_INFINITY, |a, &b| a.max(b));
+
+        // Calculate percentiles
+        let mut sorted = times_micros.clone();
+        sorted.sort_by(|a, b| a.total_cmp(b));
+        let p50 = sorted[sorted.len() / 2];
+        let p95 = sorted[sorted.len() * 95 / 100];
+        let p99 = sorted[sorted.len() * 99 / 100];
+
+        // Calculate throughput
+        let total_time_secs: f64 = self.operation_times.iter().map(|d| d.as_secs_f64()).sum();
+        let ops_per_sec = if total_time_secs > 0.0 {
+            self.iterations as f64 / total_time_secs
+        } else {
+            0.0
+        };
+
+        println!("\n========== Cache Benchmark: {} ==========", self.name);
+        println!("Iterations: {}", self.iterations);
+        println!("\nLatency (microseconds):");
+        println!("  Average:  {:.2}", avg);
+        println!("  Min:      {:.2}", min);
+        println!("  Max:      {:.2}", max);
+        println!("  p50:      {:.2}", p50);
+        println!("  p95:      {:.2}", p95);
+        println!("  p99:      {:.2}", p99);
+        println!("\nThroughput:");
+        println!("  Ops/sec:  {:.2}", ops_per_sec);
+        println!("==========================================\n");
+    }
+
+    /// Get average latency
+    pub fn average_latency(&self) -> Duration {
+        if self.operation_times.is_empty() {
+            return Duration::from_secs(0);
+        }
+        let total: Duration = self.operation_times.iter().sum();
+        total / self.operation_times.len() as u32
+    }
+
+    /// Get operations per second
+    pub fn ops_per_second(&self) -> f64 {
+        let total_time_secs: f64 = self.operation_times.iter().map(|d| d.as_secs_f64()).sum();
+        if total_time_secs > 0.0 {
+            self.iterations as f64 / total_time_secs
+        } else {
+            0.0
+        }
+    }
+}
+
+/// Benchmark suite for comparing different cache implementations
+pub struct CacheBenchmarkSuite {
+    benchmarks: Vec<CacheBenchmark>,
+}
+
+impl CacheBenchmarkSuite {
+    /// Create new benchmark suite
+    pub fn new() -> Self {
+        Self {
+            benchmarks: Vec::new(),
+        }
+    }
+
+    /// Add benchmark
+    pub fn add_benchmark(&mut self, benchmark: CacheBenchmark) {
+        self.benchmarks.push(benchmark);
+    }
+
+    /// Compare all benchmarks
+    pub fn compare(&self) {
+        println!("\n========== Cache Performance Comparison ==========");
+
+        for benchmark in &self.benchmarks {
+            let avg_latency = benchmark.average_latency();
+            let ops_sec = benchmark.ops_per_second();
+
+            println!(
+                "{:<30} | Avg: {:>8.2} µs | Ops/sec: {:>10.2}",
+                benchmark.name,
+                avg_latency.as_micros() as f64,
+                ops_sec
+            );
+        }
+
+        println!("==================================================\n");
+    }
+}
+
+impl Default for CacheBenchmarkSuite {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
