@@ -35,6 +35,7 @@
 //! - **utility functions**: GREASE process, randomly select etc.utility functions
 
 pub mod benchmark;
+pub mod cache; // Multi-tier caching (L1/L2/L3)
 pub mod database;
 pub mod dicttls;
 pub mod fingerprint;
@@ -126,10 +127,17 @@ pub use rate_limiting::{
 };
 
 // rate limiting Redis backend
-pub use rate_limiting_redis::{RedisConfig, RedisQuotaEntry, RedisRateLimitBackend};
+pub use rate_limiting_redis::{
+    RedisBackendError, RedisConfig, RedisQuotaEntry, RedisRateLimitBackend, RedisResult,
+};
 
 // rate limiting Prometheus metrics
 pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
+
+// cache (Phase 9.3)
+pub use cache::{
+    Cache, CacheError, CacheResult, CacheStats, CacheTier, CacheTTL, DistributedLock, LockGuard,
+};
 
 // system-level abstractions
 pub use system::{

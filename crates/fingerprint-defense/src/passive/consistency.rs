@@ -203,17 +203,206 @@ impl ConsistencyAnalyzer {
     }
 
     /// 检查JA4+全栈一致性
-    fn check_ja4_plus_consistency(&self, _flow: &NetworkFlow, _report: &mut ConsistencyReport) {
-        // TODO: 实现JA4、JA4H、JA4T的交叉验证
-        // 这里应该检查TLS JA4与HTTP JA4H的一致性
-        // 以及TCP JA4T与整体指纹的一致性
+    fn check_ja4_plus_consistency(&self, flow: &NetworkFlow, report: &mut ConsistencyReport) {
+        // 获取所有JA4指纹
+        let ja4_fingerprints: Vec<_> = flow.fingerprints().iter()
+            .filter(|fp| fp.fingerprint_type() == FingerprintType::Tls)
+            .collect();
+        
+        let ja4h_fingerprints: Vec<_> = flow.fingerprints().iter()
+            .filter(|fp| fp.fingerprint_type() == FingerprintType::Http)
+            .collect();
+        
+        // 检查TLS JA4与HTTP JA4H的一致性
+        if !ja4_fingerprints.is_empty() && !ja4h_fingerprints.is_empty() {
+            // 从JA4指纹提取客户端特征
+            let ja4_id = ja4_fingerprints[0].id();
+            let ja4h_id = ja4h_fingerprints[0].id();
+            
+            // 检查指纹一致性
+            if let Some(tls_client) = self.extract_client_from_ja4(&ja4_id) {
+                if let Some(http_client) = self.extract_client_from_ja4h(&ja4h_id) {
+                    if !self.is_client_fingerprint_consistent(&tls_client, &http_client) {
+                        report.add_discrepancy(
+                            format!(
+                                "JA4指纹({})与JA4H指纹({})指示的客户端特征不一致，可能是指纹伪造",
+                                ja4_id, ja4h_id
+                            ),
+                            80, // 高风险
+                        );
+                    }
+                }
+            }
+        }
+        
+        // 检查TCP JA4T（如果有）
+        let tcp_fingerprints: Vec<_> = flow.fingerprints().iter()
+            .filter(|fp| fp.fingerprint_type() == FingerprintType::Tcp)
+            .collect();
+        
+        if !tcp_fingerprints.is_empty() && !ja4_fingerprints.is_empty() {
+            let tcp_fp_id = tcp_fingerprints[0].id();
+            let ja4_id = ja4_fingerprints[0].id();
+            
+            // 从TCP指纹推断操作系统
+            if let Some(tcp_os) = self.extract_os_from_tcp_fingerprint(&tcp_fp_id) {
+                if let Some(ja4_client) = self.extract_client_from_ja4(&ja4_id) {
+                    if !self.is_os_client_consistent(&tcp_os, &ja4_client) {
+                        report.add_discrepancy(
+                            format!(
+                                "TCP指纹指示的操作系统({})与JA4指纹指示的客户端({})不一致",
+                                tcp_os, ja4_client.name
+                            ),
+                            75, // 中高风险
+                        );
+                    }
+                }
+            }
+        }
+    }
+    
+    /// 从JA4指纹提取客户端信息
+    fn extract_client_from_ja4(&self, ja4: &str) -> Option<BrowserInfo> {
+        // JA4格式: t13d1516h2_8daaf6152771_000a
+        let parts: Vec<&str> = ja4.split('_').collect();
+        if parts.is_empty() {
+            return None;
+        }
+        
+        let version_part = parts[0];
+        if version_part.len() < 3 {
+            return None;
+        }
+        
+        // 提取TLS版本
+        let tls_version = &version_part[1..3];
+        
+        // 根据指纹特征推断浏览器类型
+        // 这是一个简化的推断，实际应该使用更复杂的规则
+        let browser = if version_part.contains("d") {
+            // d = domain (SNI present), 通常是现代浏览器
+            BrowserInfo {
+                name: "Modern Browser".to_string(),
+                version: format!("TLS {}", tls_version),
+            }
+        } else {
+            BrowserInfo {
+                name: "Unknown".to_string(),
+                version: tls_version.to_string(),
+            }
+        };
+        
+        Some(browser)
+    }
+    
+    /// 从JA4H指纹提取客户端信息
+    fn extract_client_from_ja4h(&self, ja4h: &str) -> Option<BrowserInfo> {
+        // JA4H格式类似JA4，但包含HTTP特征
+        // 这里简化处理，实际应该解析JA4H的特定字段
+        let parts: Vec<&str> = ja4h.split('_').collect();
+        if parts.is_empty() {
+            return None;
+        }
+        
+        // 从JA4H推断浏览器
+        let first_part = parts[0];
+        let browser = if first_part.contains("ge") || first_part.contains("ch") {
+            BrowserInfo {
+                name: "Chrome".to_string(),
+                version: "unknown".to_string(),
+            }
+        } else if first_part.contains("ff") || first_part.contains("fx") {
+            BrowserInfo {
+                name: "Firefox".to_string(),
+                version: "unknown".to_string(),
+            }
+        } else {
+            BrowserInfo {
+                name: "Unknown".to_string(),
+                version: "unknown".to_string(),
+            }
+        };
+        
+        Some(browser)
+    }
+    
+    /// 检查客户端指纹是否一致
+    fn is_client_fingerprint_consistent(&self, tls_client: &BrowserInfo, http_client: &BrowserInfo) -> bool {
+        // 如果两者都能识别且名称不同，则不一致
+        if tls_client.name != "Unknown" && http_client.name != "Unknown" {
+            if tls_client.name != http_client.name {
+                return false;
+            }
+        }
+        true
+    }
+    
+    /// 从TCP指纹推断操作系统
+    fn extract_os_from_tcp_fingerprint(&self, tcp_fp: &str) -> Option<String> {
+        // TCP指纹通常包含TTL、窗口大小等信息
+        // 简化的推断逻辑
+        if tcp_fp.contains("ttl=64") {
+            Some("Linux/macOS".to_string())
+        } else if tcp_fp.contains("ttl=128") {
+            Some("Windows".to_string())
+        } else if tcp_fp.contains("ttl=255") {
+            Some("BSD/Unix".to_string())
+        } else {
+            None
+        }
+    }
+    
+    /// 检查操作系统和客户端是否一致
+    fn is_os_client_consistent(&self, os: &str, client: &BrowserInfo) -> bool {
+        // 检查操作系统和浏览器的合理性
+        // 例如：Windows上的Safari是不合理的
+        let os_lower = os.to_lowercase();
+        let client_lower = client.name.to_lowercase();
+        
+        if client_lower.contains("safari") && !os_lower.contains("mac") && !os_lower.contains("ios") {
+            // Safari主要在macOS和iOS上
+            return false;
+        }
+        
+        if client_lower.contains("edge") && os_lower.contains("mac") {
+            // Edge在macOS上较少见（虽然有可能）
+            return false;
+        }
+        
+        true
     }
 
     /// 检查时间戳一致性
-    fn check_timestamp_consistency(&self, _flow: &NetworkFlow, _report: &mut ConsistencyReport) {
-        // TODO: 实现时间戳异常检测
-        // 检查是否存在不合理的时间戳跳跃
-        // 可能指示重放攻击或时间同步问题
+    fn check_timestamp_consistency(&self, flow: &NetworkFlow, report: &mut ConsistencyReport) {
+        use chrono::Utc;
+        
+        // 获取当前时间（Unix时间戳）
+        let now = Utc::now().timestamp() as u64;
+        let flow_timestamp = flow.context.timestamp.timestamp() as u64;
+        
+        // 检查流量时间戳是否在未来（异常）
+        if flow_timestamp > now + 60 {
+            report.add_discrepancy(
+                format!(
+                    "流量时间戳({})比当前时间晚{}秒，可能存在时间同步问题或重放攻击",
+                    flow_timestamp,
+                    flow_timestamp - now
+                ),
+                90, // 高风险
+            );
+        }
+        
+        // 检查流量时间戳是否过于陈旧（超过1小时）
+        if flow_timestamp < now.saturating_sub(3600) {
+            report.add_discrepancy(
+                format!(
+                    "流量时间戳({})比当前时间早{}秒，可能是延迟处理的流量或重放攻击",
+                    flow_timestamp,
+                    now - flow_timestamp
+                ),
+                60, // 中等风险
+            );
+        }
     }
 
     /// 检查操作系统一致性
