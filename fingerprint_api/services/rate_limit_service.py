@@ -224,7 +224,7 @@ class RateLimitService:
                 "allowed": True,
                 "remaining": max(0, int(30 - cost)),
                 "reset_at": int(time.time()) + 60,
-                "tier": QuotaTierEnum.Free,
+                "tier": QuotaTierEnum.FREE,
                 "monthly_remaining": 0,
             }
 
