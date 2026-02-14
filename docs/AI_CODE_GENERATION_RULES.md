@@ -73,6 +73,26 @@ const max_retries = 3;
 ❌ 提交没有文档的公开 API
 ```
 
+### 5. 报告和文档生成
+
+**❌ 禁止以下行为：**
+
+| 禁止行为 | 原因 | 正确做法 |
+|---------|------|--------|
+| 乱生成报告（没有实际需求） | 污染仓库、增加无用文件 | 仅在明确需要时才生成报告 |
+| 在根目录生成报告 | 破坏项目结构 | 所有报告放在 `docs/reports/` 目录 |
+| 报告没有分类管理 | 难以维护 | 按报告类型使用子目录分类 |
+| 生成无日期的报告 | 难以追踪版本 | 报告名称包含日期或版本号 |
+| 生成不符合格式的报告 | 不专业 | 参考 [报告格式标准](#报告格式标准) |
+
+```
+❌ 禁止在根目录创建报告（如 FINAL_REPORT.md）
+❌ 禁止生成未分类的报告
+❌ 禁止生成"测试报告""临时报告"等无实际需求的报告
+❌ 禁止混合不同类型的报告在同一文件中
+❌ 禁止报告没有清晰的标题和日期
+```
+
 ---
 
 ## ✅ 必须做到
@@ -185,6 +205,29 @@ mod tests {
 ✅ 然后才能 git push
 ```
 
+### 6. 报告和文档管理
+
+**所有报告必须：**
+
+```
+✅ 仅在有明确需求时才生成
+✅ 放在 docs/reports/ 目录中
+✅ 按类型使用子目录分类（如 docs/reports/performance/、docs/reports/analysis/ 等）
+✅ 文件名包含日期或版本号标识
+✅ 使用 UPPERCASE_WITH_UNDERSCORES 命名规范
+✅ 包含清晰的标题、日期和作者信息
+✅ 不进行重复报告生成（检查历史是否已有类似报告）
+
+报告分类目录示例：
+docs/reports/
+├── performance/           # 性能相关报告
+├── security/              # 安全分析报告
+├── analysis/              # 代码分析报告
+├── architecture/          # 架构设计报告
+├── completion/            # 完成度报告
+└── evaluation/            # 评估报告
+```
+
 ---
 
 ## 📋 提交前检查清单
@@ -233,6 +276,15 @@ mod tests {
 - [ ] 提交消息遵循约定式提交：`type: subject`
 - [ ] 提交消息清晰描述改动
 - [ ] 没有包含无关的文件（`target/`, `output/` 等）
+
+### 报告检查（如有新增报告）
+- [ ] 报告确实有明确的需求（不是乱生成）
+- [ ] 报告文件放在 `docs/reports/<category>/` 子目录中
+- [ ] 报告文件名使用 UPPERCASE_WITH_UNDERSCORES 规范
+- [ ] 报告文件名包含日期或版本号（如 `REPORT_20260214.md`）
+- [ ] 报告包含标题、日期和作者信息
+- [ ] 报告不是重复的（检查历史是否已有同类型报告）
+- [ ] 报告在正确的分类目录中（不在 `docs/` 根目录）
 
 ---
 
@@ -477,6 +529,40 @@ pub fn process(input: String) -> Result<String, Error> {
 }
 ```
 
+### 违规 5: 乱生成报告
+
+```
+❌ 错误：
+  项目根目录
+  ├── FINAL_REPORT.md              // ❌ 报告在根目录！
+  ├── PERFORMANCE_ANALYSIS.md      // ❌ 报告在根目录！
+  ├── TEMPORARY_FINDINGS.md        // ❌ 没有日期标识！
+  ├── RANDOM_TEST_REPORT.md        // ❌ 乱生成的报告！
+  └── ...
+
+✅ 正确：
+  项目根目录
+  └── docs/
+      └── reports/
+          ├── performance/
+          │   └── PERFORMANCE_ANALYSIS_20260214.md    // ✓ 分类+日期
+          ├── analysis/
+          │   └── CODE_QUALITY_REPORT_20260214.md     // ✓ 有明确需求
+          ├── completion/
+          │   └── PHASE_7_COMPLETION_20260214.md      // ✓ 有实际信息
+          ├── architecture/
+          │   └── ARCHITECTURE_REVIEW_20260214.md     // ✓ 分类+日期
+          └── security/
+              └── SECURITY_AUDIT_20260214.md          // ✓ 分类+日期
+
+原则：
+✓ 仅在有明确需求时才生成
+✓ 严格放入 docs/reports/<category>/ 子目录
+✓ 文件名包含日期或版本号
+✓ 按报告类型分类管理
+✓ 不重复生成同类型报告
+```
+
 ---
 
 ## 📞 问题排查
@@ -554,12 +640,70 @@ git push
 - [ ] 阅读本文件（AI_CODE_GENERATION_RULES.md）
 - [ ] 查看 [CONTRIBUTING.md](docs/CONTRIBUTING.md)
 
-### 3. 有疑问时
+### 3. 报告生成指南
+
+**生成报告前，必须回答以下问题：**
+
+1. **这个报告有明确的需求吗？**
+   - ✅ 需要：有人明确要求这个报告
+   - ❌ 不需要：只是"顺便生成"一个报告
+
+2. **这类型的报告已经存在吗？**
+   - ✅ 检查 `docs/reports/` 目录中的现有报告
+   - ❌ 不要生成重复的报告
+
+3. **报告能放在正确的位置吗？**
+   - ✅ 所有报告必须在 `docs/reports/<category>/` 目录
+   - ❌ 不能在根目录或其他地方
+
+4. **报告的命名和结构是否规范？**
+   ```
+   ✅ 正确：docs/reports/performance/PERFORMANCE_REPORT_20260214.md
+   ✅ 正确：docs/reports/analysis/CODE_QUALITY_20260214.md
+   ✅ 正确：docs/reports/completion/PHASE_7_STATUS_20260214.md
+   ❌ 错误：docs/FINAL_REPORT.md
+   ❌ 错误：docs/TEMP_REPORT.md
+   ```
+
+**报告模板头部（必须）：**
+
+```markdown
+# 报告标题
+
+> **报告类型：** [performance/analysis/completion/security/architecture/evaluation]  
+> **生成日期：** 2026-02-14  
+> **版本：** 1.0  
+> **作者：** [作者名称或 AI 系统名称]
+
+## 报告摘要
+
+[简明扼要的 2-3 句摘要，说明报告目的和主要发现]
+
+---
+
+## 目录
+
+[自动生成或手动列出主要章节]
+
+---
+
+## 正文
+
+[报告内容]
+
+---
+
+**最后更新：** [日期]
+```
+
+### 4. 有疑问时
 
 - ✅ 查看现有代码作为参考
 - ✅ 遵循项目中的现有模式
 - ✅ 检查类似功能的实现方式
+- ✅ 查看 `docs/reports/` 中的现有报告格式
 - ❌ 不要"自己决定"文件位置或命名
+- ❌ 不要乱生成不需要的报告
 
 ---
 
