@@ -1,6 +1,6 @@
 # 架构设计文档
 
-**版本**: v2.1.0（包含主动/被动防护的工作空间）  
+**版本**: v2.1.0（具有主动/被动防御的工作区）  
 **最后更新**: 2026-02-13
 
 ---
@@ -8,14 +8,14 @@
 ## 📋 目录
 
 1. [项目概述](#项目概述)
-2. [工作空间架构](#工作空间架构)
-3. [Crate职责划分](#crate职责划分)
+2. [工作区架构](#工作区架构)
+3. [Crate 职责](#crate-职责)
 4. [依赖关系](#依赖关系)
 5. [设计原则](#设计原则)
 6. [文件组织](#文件组织)
 7. [测试策略](#测试策略)
 8. [性能考虑](#性能考虑)
-9. [扩展性](#扩展性)
+9. [可扩展性](#可扩展性)
 
 ---
 
@@ -23,45 +23,45 @@
 
 ### 1.1 项目定位
 
-`fingerprint-rust` 是一个**生产级**的浏览器指纹库，采用 Cargo 工作空间架构，提供：
+`fingerprint-rust` 是一个**生产就绪**的浏览器指纹库，使用 Cargo 工作区架构，提供：
 
-- **97+ 浏览器指纹配置**：Chrome、Firefox、Safari、Opera、Edge 等主流浏览器及移动端变体
-- **完整 TLS 指纹生成**：ClientHello 规范、密码套件、扩展等
-- **高性能 HTTP 客户端**：支持 HTTP/1.1、HTTP/2、HTTP/3 (QUIC)
-- **真实环境验证**：Google Earth API 端到端测试，100% 通过率
-- **机器学习分类**：三层分层分类器架构，95%+ 准确率
-- **被动识别防护**：JA4+ 全栈指纹识别与威胁检测
+- **97+ 浏览器指纹配置文件**: Chrome、Firefox、Safari、Opera、Edge 以及主流浏览器及其移动变体
+- **完整的 TLS 指纹生成**: ClientHello 规范、密码套件、扩展等
+- **高性能 HTTP 客户端**: 支持 HTTP/1.1、HTTP/2、HTTP/3（QUIC）
+- **真实环境验证**: Google Earth API 端到端测试，100% 通过率
+- **机器学习分类**: 三层分层分类器架构，准确率 95% 以上
+- **被动识别防御**: JA4+ 全栈指纹识别和威胁检测
 
 ### 1.2 技术栈
 
 - **语言**: Rust 1.92.0+
-- **架构**: Cargo 工作空间（20 个独立 crate）
-- **TLS 实现**: rustls 0.23（可选），自研 TLS 握手构建器
+- **架构**: Cargo 工作区（20 个独立 crate）
+- **TLS实现**: rustls 0.23（可选）、自研 TLS Handshake Builder
 - **HTTP/2**: h2 0.4
 - **HTTP/3**: quinn 0.11 + h3 0.0.8
 - **异步运行时**: tokio 1.40
-- **密码学库**: ring 0.17.14（真实密钥生成）
-- **连接池支持**: netconnpool-rust（自定义）
+- **密码库**: ring 0.17.14（真实密钥生成）
+- **连接池**: netconnpool-rust（自定义）
 - **DNS 解析**: hickory-resolver 0.24（可选）
 - **机器学习**: candle-core 0.8（Rust ML 框架）
 
 ---
 
-## 2. 工作空间架构
+## 2. 工作区架构
 
 ### 2.1 目录结构
 
 ```
 fingerprint-rust/
-├── Cargo.toml                    # 工作空间根配置
+├── Cargo.toml                    # 工作区根配置
 ├── crates/                        # 所有 crate 代码
 │   ├── fingerprint-core/          # 系统级保护核心抽象层
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
 │   │       ├── types.rs           # 核心类型定义
-│   │       ├── utils.rs           # 工具函数
-│   │       └── traits.rs          # 核心trait定义
+│   │       ├── utils.rs           # 实用函数
+│   │       └── traits.rs          # 核心特质定义
 │   │
 │   ├── fingerprint-tls/          # TLS 配置、扩展和握手
 │   │   ├── Cargo.toml
@@ -75,14 +75,14 @@ fingerprint-rust/
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       └── profiles.rs        # 97+ 个浏览器指纹配置函数
+│   │       └── profiles.rs        # 97+ 浏览器指纹配置函数
 │   │
-│   ├── fingerprint-headers/      # HTTP 请求头和 User-Agent 生成
+│   ├── fingerprint-headers/      # HTTP 头部和用户代理生成
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
 │   │       ├── headers.rs         # HTTP 请求头生成
-│   │       ├── useragent.rs       # User-Agent 生成
+│   │       ├── useragent.rs       # 用户代理生成
 │   │       └── http2_config.rs    # HTTP/2 配置
 │   │
 │   ├── fingerprint-http/         # HTTP 客户端实现
@@ -101,83 +101,27 @@ fingerprint-rust/
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── passive/           # 被动分析器 (TCP/HTTP/TLS/JA4+)
+│   │       ├── passive/           # 被动分析器（TCP/HTTP/TLS/JA4+）
 │   │       ├── consistency/       # 跨层一致性审计
-│   │       ├── database/          # 指纹数据库 (SQLite)
+│   │       ├── database/          # 指纹数据库（SQLite）
 │   │       ├── learner/           # 自学习机制
 │   │       └── capture/           # 数据包捕获
 │   │
 │   ├── fingerprint-anomaly/      # 异常检测模块
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── detector.rs        # ML 异常检测实现
+│   │   └── src/ - ML 异常检测实现
 │   │
 │   ├── fingerprint-canvas/       # Canvas 指纹识别
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── canvas.rs          # Canvas 指纹分析
-│   │
 │   ├── fingerprint-webgl/        # WebGL 指纹识别
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── webgl.rs           # WebGL 指纹分析
-│   │
-│   ├── fingerprint-audio/        # Audio Context 指纹
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── audio.rs           # 音频指纹分析
-│   │
+│   ├── fingerprint-audio/        # 音频上下文指纹
 │   ├── fingerprint-fonts/        # 字体枚举检测
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── fonts.rs           # 字体指纹分析
-│   │
-│   ├── fingerprint-webrtc/       # WebRTC IP 泄漏检测
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── webrtc.rs          # WebRTC 指纹分析
-│   │
+│   ├── fingerprint-webrtc/       # WebRTC IP 泄露检测
 │   ├── fingerprint-hardware/     # 硬件能力检测
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── hardware.rs        # 硬件指纹分析
-│   │
-│   ├── fingerprint-timing/       # 时序攻击防护
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── timing.rs          # 时序指纹防护
-│   │
+│   ├── fingerprint-timing/       # 时序攻击保护
 │   ├── fingerprint-storage/      # 存储指纹识别
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── storage.rs         # 存储指纹分析
-│   │
 │   ├── fingerprint-ml/           # 机器学习指纹匹配
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── classifier.rs      # 三层分层分类器
-│   │
 │   ├── fingerprint-api-noise/    # API 噪声注入
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── noise.rs           # API 噪声实现
 │   │
 │   ├── fingerprint-gateway/      # 高性能 API 网关
-│   │   ├── Cargo.toml
-│   │   └── src/
-│   │       ├── lib.rs
-│   │       └── gateway.rs         # API 网关实现
 │   │
 │   └── fingerprint/              # 独立浏览器 TLS 指纹库
 │       ├── Cargo.toml
@@ -192,9 +136,9 @@ fingerprint-rust/
 └── output/                        # 输出文件
 ```
 
-### 2.2 工作空间配置
+### 2.2 工作区配置
 
-根目录 `Cargo.toml` 配置：
+根 `Cargo.toml` 配置：
 
 ```toml
 [workspace]
@@ -206,355 +150,113 @@ members = [
     "crates/fingerprint-http",
     "crates/fingerprint-dns",
     "crates/fingerprint-defense",
-  "crates/fingerprint-api-noise",
-  "crates/fingerprint-gateway",
+    "crates/fingerprint-api-noise",
+    "crates/fingerprint-gateway",
     "crates/fingerprint",
-  "crates/fingerprint-canvas",
-  "crates/fingerprint-webgl",
-  "crates/fingerprint-audio",
-  "crates/fingerprint-fonts",
-  "crates/fingerprint-storage",
-  "crates/fingerprint-webrtc",
-  "crates/fingerprint-hardware",
-  "crates/fingerprint-timing",
-  "crates/fingerprint-ml",
-  "crates/fingerprint-anomaly",
+    "crates/fingerprint-canvas",
+    "crates/fingerprint-webgl",
+    "crates/fingerprint-audio",
+    "crates/fingerprint-fonts",
+    "crates/fingerprint-storage",
+    "crates/fingerprint-webrtc",
+    "crates/fingerprint-hardware",
+    "crates/fingerprint-timing",
+    "crates/fingerprint-ml",
+    "crates/fingerprint-anomaly",
 ]
 resolver = "2"
 
 [workspace.package]
 version = "1.0.0"
 edition = "2021"
-# ... 其他公共配置
+# ... 其他常见配置
 
 [workspace.dependencies]
-# 所有依赖定义在这里，子 crate 通过 workspace = true 引用
+# 所有依赖在此定义，子 crate 通过 workspace = true 引用
 rand = "0.8"
 # ...
 ```
 
 ### 2.3 为什么使用 `crates/` 目录？
 
-使用 `crates/` 目录是 Rust 工作空间项目的**标准实践**：
+在 Rust 工作区项目中使用 `crates/` 目录是**标准做法**：
 
-- ✅ **社区约定**：tokio、serde、hyper 等知名项目都使用 `crates/`
-- ✅ **语义清晰**：直接表示"多个 crate 的集合"
-- ✅ **结构清晰**：与根目录文件区分明显
-- ✅ **易于扩展**：添加新 crate 不会让根目录变乱
-
-详细说明请查看 [WHY_CRATES_DIRECTORY.md](WHY_CRATES_DIRECTORY.md)
+- ✅ **社区约定**: 流行项目如 tokio、serde、hyper 都使用 `crates/`
+- ✅ **语义明确**: 直接表示"多个 crate 的集合"
+- ✅ **结构清晰**: 从视觉上区分根目录文件
+- ✅ **易于扩展**: 添加新 crate 不会混乱根目录
 
 ---
 
-## 3. Crate 职责划分
+## 3. Crate 职责
 
 ### 3.1 fingerprint-core
 
-**职责**: 核心类型和工具函数
-
-**代码位置**: `crates/fingerprint-core/src/`
-
-**包含模块**:
-- `types.rs`: 浏览器类型、操作系统类型等核心类型
-  - `BrowserType`: 浏览器类型枚举
-  - `OperatingSystem`: 操作系统类型枚举
-  - `UserAgentTemplate`: User-Agent 模板结构
-- `utils.rs`: 工具函数
-  - `random_choice`: 线程安全的随机选择
-  - `extract_chrome_version`: 从 User-Agent 提取 Chrome 版本
-  - `extract_platform`: 从 User-Agent 提取平台信息
-  - `infer_browser_from_profile_name`: 从 profile 名称推断浏览器类型
-  - `is_mobile_profile`: 判断是否为移动端 profile
-- `dicttls/`: TLS 字典模块
-  - `cipher_suites.rs`: 密码套件常量
-  - `extensions.rs`: 扩展类型常量
-  - `signature_schemes.rs`: 签名算法常量
-  - `supported_groups.rs`: 椭圆曲线常量
-
-**依赖**:
-- `rand`: 随机数生成
-- `once_cell`: 延迟初始化
-
-**公共 API**:
-```rust
-pub use types::{BrowserType, OperatingSystem, OperatingSystems, UserAgentTemplate};
-pub use utils::{random_choice, extract_chrome_version, extract_platform, ...};
-pub use dicttls::*;
-```
+**职责**: 核心类型和实用函数  
+**代码位置**: `crates/fingerprint-core/src/`  
+**包含模块**: types、utils、dicttls
 
 ### 3.2 fingerprint-tls
 
-**职责**: TLS 配置、扩展和握手
-
-**代码位置**: `crates/fingerprint-tls/src/`
-
-**包含模块**:
-- `tls_config/`: TLS ClientHello 规范生成、比较、分析
-  - `spec.rs`: ClientHelloSpec 定义
-  - `builder.rs`: 构建器模式构建器
-  - `ja4.rs`: JA4 指纹生成
-  - `comparison.rs`: 指纹比较
-  - `extract.rs`: 签名提取
-  - `grease.rs`: GREASE 值处理
-  - `signature.rs`: 签名结构
-  - `stats.rs`: 统计信息
-  - `observable.rs`: 可观察性
-  - `metadata.rs`: 元数据
-  - `version.rs`: TLS 版本
-- `tls_extensions.rs`: TLS 扩展实现
-  - `SNIExtension`: SNI 扩展
-  - `KeyShareExtension`: KeyShare 扩展
-  - `SupportedVersionsExtension`: 支持的 TLS 版本
-  - 等等...
-- `tls_handshake/`: TLS 握手消息构建
-  - `builder.rs`: TLS 握手构建器
-  - `messages.rs`: ClientHello 消息结构
-  - `handshake.rs`: 握手消息
-  - `record.rs`: TLS 记录层
-
-**依赖**:
-- `fingerprint-core`: 核心类型和字典
-- `sha2`: 哈希函数（JA4 指纹）
-- `thiserror`: 错误处理
-- `ring` (可选): 真实密钥生成
-- `rand` (可选): 随机数生成（用于握手）
-
-**公共 API**:
-```rust
-pub use tls_config::*;
-pub use tls_extensions::*;
-pub use tls_handshake::TLSHandshakeBuilder;
-```
+**职责**: TLS 配置、扩展和握手  
+**代码位置**: `crates/fingerprint-tls/src/`  
+**包含模块**: tls_config、tls_extensions、tls_handshake
 
 ### 3.3 fingerprint-profiles
 
-**职责**: 浏览器指纹配置管理
-
-**代码位置**: `crates/fingerprint-profiles/src/`
-
-**包含模块**:
-- `profiles.rs`: 69+ 个浏览器指纹配置
-  - `ClientProfile`: TLS 指纹配置结构
-  - `ClientHelloID`: 浏览器标识
-  - `mapped_tls_clients()`: 全局指纹配置映射表
-  - 各种浏览器的指纹配置函数（chrome_103, chrome_133, firefox_133, 等）
-
-**依赖**:
-- `fingerprint-core`: 核心类型
-- `fingerprint-tls`: TLS 配置
-- `fingerprint-headers`: HTTP/2 配置
-
-**公共 API**:
-```rust
-pub use profiles::{
-    chrome_103, chrome_133, firefox_133, safari_16_0, opera_91,
-    edge_120, edge_124, edge_133, ClientHelloID, ClientProfile,
-    mapped_tls_clients, default_client_profile,
-};
-```
+**职责**: 浏览器指纹配置管理  
+**代码位置**: `crates/fingerprint-profiles/src/`  
+**包含模块**: profiles.rs，包含 69+ 浏览器指纹配置
 
 ### 3.4 fingerprint-headers
 
-**职责**: HTTP 请求头和 User-Agent 生成
-
-**代码位置**: `crates/fingerprint-headers/src/`
-
-**包含模块**:
-- `headers.rs`: HTTP 请求头生成
-  - `HTTPHeaders`: HTTP 请求头结构
-  - `generate_headers`: 根据浏览器类型生成标准请求头
-  - `random_language`: 随机选择语言（30+ 种语言）
-- `useragent.rs`: User-Agent 生成
-  - `UserAgentGenerator`: User-Agent 生成器
-  - `get_user_agent_by_profile_name`: 根据 profile 名称获取 User-Agent
-  - `random_os`: 随机选择操作系统
-- `http2_config.rs`: HTTP/2 配置
-  - `HTTP2Settings`: HTTP/2 设置
-  - `chrome_http2_settings`: Chrome HTTP/2 配置
-  - `firefox_http2_settings`: Firefox HTTP/2 配置
-  - `safari_http2_settings`: Safari HTTP/2 配置
-  - `chrome_pseudo_header_order`: Chrome 伪头部顺序
-  - `chrome_header_priority`: Chrome 头部优先级
-
-**依赖**:
-- `fingerprint-core`: 核心类型和工具
-- `rand`: 随机数生成
-- `once_cell`: 延迟初始化
-
-**公共 API**:
-```rust
-pub use headers::{generate_headers, random_language, HTTPHeaders};
-pub use useragent::{get_user_agent_by_profile_name, random_os, UserAgentGenerator};
-pub use http2_config::{chrome_http2_settings, HTTP2Settings, ...};
-```
+**职责**: HTTP 头部和用户代理生成  
+**代码位置**: `crates/fingerprint-headers/src/`  
+**包含模块**: headers、useragent、http2_config
 
 ### 3.5 fingerprint-http
 
-**职责**: HTTP 客户端实现（HTTP/1.1、HTTP/2、HTTP/3）
-
-**代码位置**: `crates/fingerprint-http/src/http_client/`
-
-**包含模块**:
-- `mod.rs`: HTTP 客户端主类
-  - `HttpClient`: HTTP 客户端主类
-  - `HttpClientConfig`: 客户端配置
-  - `HttpClientError`: 错误类型
-- `http1.rs`: HTTP/1.1 实现
-  - TCP 连接管理
-  - TLS 支持（rustls）
-  - 分块编码处理
-  - Gzip/Deflate/Brotli 解压
-  - HTTP 重定向
-  - Keep-Alive
-- `http2.rs`: HTTP/2 实现
-  - ALPN 协议协商
-  - 多路复用
-  - HPACK 压缩
-  - 服务器推送
-  - 浏览器特定的设置和优先级
-- `http3.rs`: HTTP/3 实现
-  - QUIC 协议
-  - UDP 传输
-  - TLS 1.3
-  - 0-RTT 连接
-  - 连接迁移
-- `http1_pool.rs`, `http2_pool.rs`, `http3_pool.rs`: 连接池实现
-- `pool.rs`: 连接池管理（与 netconnpool 集成）
-- `response.rs`: HTTP 响应解析
-- `request.rs`: HTTP 请求构建器
-- `cookie.rs`: Cookie 管理
-- `proxy.rs`: 代理支持
-- `rustls_client_hello_customizer.rs`: 通过 ClientHelloCustomizer 应用浏览器指纹
-- `rustls_utils.rs`: rustls 工具函数
-- `tls.rs`: TLS 连接器
-- `io.rs`: IO 工具
-- `reporter.rs`: 报告生成
-
-**依赖**:
-- `fingerprint-core`: 核心类型
-- `fingerprint-tls`: TLS 配置
-- `fingerprint-profiles`: 指纹配置
-- `fingerprint-headers`: HTTP 请求头
-- `rustls`, `h2`, `quinn`, `h3` (可选): HTTP 协议实现
-- `netconnpool` (可选): 连接池支持
-
-**公共 API**:
-```rust
-pub use http_client::{
-    HttpClient, HttpClientConfig, HttpClientError,
-    HttpMethod, HttpRequest, HttpResponse,
-    Cookie, CookieStore, ProxyConfig, TlsConnector,
-    ValidationReport, ReportFormat, ReportSection,
-};
-```
+**职责**: HTTP 客户端实现（HTTP/1.1、HTTP/2、HTTP/3）  
+**代码位置**: `crates/fingerprint-http/src/http_client/`  
+**包含模块**: http1、http2、http3、连接池管理、响应解析
 
 ### 3.6 fingerprint-dns
 
-**职责**: DNS 预解析服务（可选功能）
-
-**代码位置**: `crates/fingerprint-dns/src/dns/`
-
-**包含模块**:
-- `service.rs`: DNS 服务主接口
-  - `Service`: DNS 服务（启动/停止）
-- `resolver.rs`: DNS 解析器
-  - `DNSResolver`: 高并发 DNS 查询
-- `serverpool.rs`: DNS 服务器池管理
-  - `ServerPool`: DNS 服务器池
-- `collector.rs`: DNS 服务器收集器
-  - `ServerCollector`: 自动收集 DNS 服务器
-- `ipinfo.rs`: IP 地理信息客户端
-  - `IPInfoClient`: IPInfo.io 客户端
-- `storage.rs`: 数据存储
-  - 多格式支持（JSON/YAML/TOML）
-  - 原子性写入
-- `config.rs`: 配置加载
-- `types.rs`: 类型定义
-
-**依赖**:
-- `fingerprint-core`: 核心类型
-- `fingerprint-http`: HTTP 客户端（用于 IPInfo API）
-- `hickory-resolver`: DNS 解析
-- `serde`, `toml`, `serde_yaml`: 配置解析
-- `tokio`, `futures`: 异步运行时
-
-**公共 API**:
-```rust
-pub use dns::{
-    Service as DNSService, DNSResolver, ServerCollector,
-    ServerPool, IPInfoClient, DNSConfig, DNSResult,
-    DomainIPs, IPInfo, DNSError,
-};
-```
+**职责**: DNS 预解析服务（可选功能）  
+**代码位置**: `crates/fingerprint-dns/src/dns/`  
+**包含模块**: service、resolver、服务器池、收集器、IP 信息
 
 ### 3.7 fingerprint-defense
 
-**职责**: 全栈被动指纹识别与主动一致性审计
-
-**代码位置**: `crates/fingerprint-defense/src/`
-
+**职责**: 全栈被动指纹识别和主动一致性审计  
+**代码位置**: `crates/fingerprint-defense/src/`  
 **包含模块**:
-- `passive/`: 协议层被动分析
-  - `tcp.rs`: JA4T (TCP) 指纹识别，底层操作系统特征审计
-  - `tls.rs`: JA4 (TLS) 静态特征解析
-  - `http.rs`: JA4H (HTTP) 特征提取与 HTTP/2 二进制帧支持
-  - `consistency.rs`: 跨层一致性校验引擎
-  - `p0f.rs`: 集成 p0f 签名库进行操作系统识别
-- `database.rs`: 基于 SQLite 的流量与威胁持久化
-- `learner.rs`: 未知指纹自学习机制
-- `capture/`: 物理网卡实时捕获引擎
+- `passive/`: TCP、TLS、HTTP 分析
+- `database.rs`: 基于 SQLite 的流量持久化
+- `learner.rs`: 自学习机制
+- `capture/`: 数据包捕获引擎
 
-**依赖**:
-- `fingerprint-core`: 核心类型与 JA4+ 定义
-- `rusqlite`: 数据库支持
-- `pcap`: 报文捕获
+### 3.8 其他扩展 Crate
 
-### 3.8 其他扩展 crate
-
-**职责**: 补充前端与特征维度的指纹能力与服务能力。
-
-**包含模块**:
-- `fingerprint-api-noise`: API 噪声生成与对抗
-- `fingerprint-gateway`: Rust API 网关（速率限制、监控）
-- `fingerprint-canvas`: Canvas 指纹
-- `fingerprint-webgl`: WebGL 指纹
-- `fingerprint-audio`: Audio 指纹
-- `fingerprint-fonts`: 字体指纹
-- `fingerprint-storage`: 存储指纹
-- `fingerprint-webrtc`: WebRTC 指纹
-- `fingerprint-hardware`: 硬件指纹
-- `fingerprint-timing`: 时序指纹
+补充前端和特征维度指纹识别能力：
+- `fingerprint-api-noise`: API 噪声生成
+- `fingerprint-gateway`: Rust API 网关
+- `fingerprint-canvas`: Canvas 指纹识别
+- `fingerprint-webgl`: WebGL 指纹识别
+- `fingerprint-audio`: 音频指纹识别
+- `fingerprint-fonts`: 字体指纹识别
+- `fingerprint-storage`: 存储指纹识别
+- `fingerprint-webrtc`: WebRTC 指纹识别
+- `fingerprint-hardware`: 硬件指纹识别
+- `fingerprint-timing`: 时序指纹识别
 - `fingerprint-ml`: ML 指纹分析
 - `fingerprint-anomaly`: 异常检测
 
 ### 3.9 fingerprint
 
-**职责**: 主库，重新导出所有功能
-
-**代码位置**: `crates/fingerprint/src/`
-
-**包含模块**:
-- `lib.rs`: 重新导出所有公共 API
-- `random.rs`: 随机指纹生成
-  - `get_random_fingerprint`: 随机获取指纹
-  - `get_random_fingerprint_by_browser`: 根据浏览器类型获取指纹
-  - `FingerprintResult`: 指纹结果结构
-- `export.rs`: 配置导出功能
-  - `export_config_json`: 导出配置为 JSON
-
-**依赖**:
-- 所有其他 crate
-
-**公共 API**:
-```rust
-// 重新导出所有功能，保持向后兼容
-pub use fingerprint_core::*;
-pub use fingerprint_tls::*;
-pub use fingerprint_profiles::*;
-pub use fingerprint_headers::*;
-pub use fingerprint_http::*;
-pub use random::*;
-```
+**职责**: 主库，重新导出所有功能  
+**代码位置**: `crates/fingerprint/src/`  
+**函数**: 随机指纹生成、配置导出
 
 ---
 
@@ -563,101 +265,41 @@ pub use random::*;
 ### 4.1 依赖图
 
 ```
-fingerprint (主库)
-├── fingerprint-core (核心)
-│   ├── rand
-│   └── once_cell
-│
+fingerprint（主库）
+├── fingerprint-core
 ├── fingerprint-tls
-│   ├── fingerprint-core
-│   ├── sha2
-│   ├── thiserror
-│   └── ring (可选)
-│
 ├── fingerprint-profiles
-│   ├── fingerprint-core
-│   ├── fingerprint-tls
-│   └── fingerprint-headers
-│
 ├── fingerprint-headers
-│   ├── fingerprint-core
-│   ├── rand
-│   └── once_cell
-│
 ├── fingerprint-http
-│   ├── fingerprint-core
-│   ├── fingerprint-tls
-│   ├── fingerprint-profiles
-│   ├── fingerprint-headers
-│   ├── rustls (可选)
-│   ├── h2 (可选)
-│   ├── quinn (可选)
-│   └── netconnpool (可选)
-│
-└── fingerprint-dns (可选)
-    ├── fingerprint-core
-    ├── fingerprint-http
-    ├── hickory-resolver
-    └── serde, toml, serde_yaml
-
-└── fingerprint-defense (可选)
-    ├── fingerprint-core
-    ├── rusqlite
-    ├── pcap
-    └── serde_json
+└── fingerprint-dns（可选）
+└── fingerprint-defense（可选）
 ```
 
 ### 4.2 依赖管理
 
-**工作空间依赖**:
-- 所有依赖定义在根 `Cargo.toml` 的 `[workspace.dependencies]` 中
+- 所有依赖在根 `Cargo.toml` 的 `[workspace.dependencies]` 下定义
 - 子 crate 通过 `dependency.workspace = true` 引用
-
-**示例**:
-```toml
-# 根 Cargo.toml
-[workspace.dependencies]
-rand = "0.8"
-
-# 子 crate Cargo.toml
-[dependencies]
-rand.workspace = true
-```
 
 ---
 
 ## 5. 设计原则
 
-### 5.1 职责单一
+### 5.1 单一职责
+每个 crate 仅负责一个清晰的功能域
 
-- 每个 crate 只负责一个明确的功能领域
-- Crate 之间保持相互独立
-- 仅在业务整合层（fingerprint crate）进行组合
+### 5.2 清晰的输入和输出
+每个函数都有清晰的输入参数和返回值
 
-### 5.2 输入输出清晰
-
-- 每个函数都有明确的输入参数和返回值
-- 使用 Rust 的类型系统确保类型安全
-- 错误处理使用 `Result` 类型
-
-### 5.3 避免不必要的嵌套与耦合
-
-- Crate 之间通过公共接口交互
-- 使用 trait 和枚举实现多态
-- 避免深层嵌套结构
+### 5.3 避免不必要的嵌套和耦合
+Crate 通过使用特质和枚举的公共接口进行交互
 
 ### 5.4 线程安全
-
-- 使用 `OnceLock` 实现线程安全的单例
-- 随机数生成使用线程本地随机数生成器
-- 所有公共 API 都是线程安全的
+所有公共 API 都使用适当的同步原语实现线程安全
 
 ### 5.5 性能优化
-
-- 使用 `HashMap` 进行快速查找
+- 使用 HashMap 进行快速查找
 - 避免不必要的克隆
-- 使用引用传递减少内存分配
-- 支持并行编译（工作空间架构）
+- 支持并行编译
 
 ---
 
@@ -668,48 +310,21 @@ rand.workspace = true
 ```
 crates/
 ├── fingerprint-core/src/
-│   ├── lib.rs
-│   ├── types.rs
-│   ├── utils.rs
-│   └── dicttls/
-│
 ├── fingerprint-tls/src/
-│   ├── lib.rs
-│   ├── tls_config/
-│   ├── tls_extensions.rs
-│   └── tls_handshake/
-│
 ├── fingerprint-profiles/src/
-│   ├── lib.rs
-│   └── profiles.rs
-│
 ├── fingerprint-headers/src/
-│   ├── lib.rs
-│   ├── headers.rs
-│   ├── useragent.rs
-│   └── http2_config.rs
-│
 ├── fingerprint-http/src/
-│   ├── lib.rs
-│   └── http_client/
-│
 ├── fingerprint-dns/src/
-│   ├── lib.rs
-│   └── dns/
-│
 └── fingerprint/src/
-    ├── lib.rs
-    ├── random.rs
-    └── export.rs
 ```
 
 ### 6.2 测试组织
 
 ```
 tests/
-├── integration_test.rs          # 集成测试
-├── http_client_test.rs          # HTTP 客户端测试
-├── dns_service_test.rs          # DNS 服务测试
+├── integration_test.rs
+├── http_client_test.rs
+├── dns_service_test.rs
 └── ...
 ```
 
@@ -717,12 +332,11 @@ tests/
 
 ```
 examples/
-├── basic.rs                     # 基础使用示例
-├── custom_tls_fingerprint.rs    # 自定义 TLS 指纹
-├── http2_with_pool.rs           # HTTP/2 + 连接池支持
-├── http3_with_pool.rs           # HTTP/3 + 连接池支持
-├── dns_service.rs               # DNS 服务示例
-└── ...
+├── basic.rs
+├── custom_tls_fingerprint.rs
+├── http2_with_pool.rs
+├── http3_with_pool.rs
+└── dns_service.rs
 ```
 
 ---
@@ -730,36 +344,27 @@ examples/
 ## 7. 测试策略
 
 ### 7.1 单元测试
-
-- 每个 crate 都包含单元测试
-- 测试覆盖核心功能
-- 使用 `#[cfg(test)]` 标记测试代码
+每个 crate 都包括覆盖核心功能的单元测试
 
 ### 7.2 集成测试
-
-- `tests/` 目录包含全面的集成测试
-- 测试所有公共 API
-- 测试并发安全性
-- 测试边界情况
+在 `tests/` 目录中进行全面测试，覆盖所有公共 API
 
 ### 7.3 测试覆盖
-
-- ✅ 随机指纹获取
-- ✅ 指定浏览器类型获取指纹
-- ✅ User-Agent 生成
-- ✅ HTTP 请求头生成和管理
-- ✅ TLS 指纹生成和比较
+- ✅ 随机指纹检索
+- ✅ 按浏览器类型检索指纹
+- ✅ 用户代理生成
+- ✅ HTTP 头部生成
+- ✅ TLS 指纹生成
 - ✅ HTTP/1.1、HTTP/2、HTTP/3 客户端
 - ✅ 连接池功能
-- ✅ DNS 预解析服务
-- ✅ 并发访问安全性
+- ✅ DNS 服务
+- ✅ 并发访问安全
 - ✅ 错误处理
 
 ### 7.4 测试结果
-
-- **总测试数**: 74 个
-- **通过**: 74 个
-- **失败**: 0 个
+- **总测试数**: 74
+- **通过**: 74
+- **失败**: 0
 - **成功率**: 100%
 
 ---
@@ -767,56 +372,43 @@ examples/
 ## 8. 性能考虑
 
 ### 8.1 编译性能
-
-- **并行编译**: 工作空间支持并行编译多个 crate
-- **增量编译**: 只重新编译修改的 crate
-- **预计提升**: 30-50% 编译速度提升
+- **并行编译**: 工作区支持多个 crate 的并行编译
+- **增量编译**: 仅重新编译修改的 crate
+- **预期改进**: 编译速度提升 30-50%
 
 ### 8.2 运行时性能
-
 - **零分配操作**: 关键路径避免不必要的内存分配
 - **快速查找**: 使用 HashMap 进行 O(1) 查找
-- **线程安全**: 使用线程本地随机数生成器，避免锁竞争
-- **延迟初始化**: 使用 `OnceLock` 实现延迟初始化
+- **线程安全**: 使用线程本地随机数生成器
+- **延迟初始化**: 使用 `OnceLock` 进行延迟初始化
 
 ### 8.3 HTTP 客户端性能
 
-| 协议 | 平均响应时间 | 最小 | 最大 | 成功率 |
-|------|--------------|------|------|--------|
+| 协议 | 平均响应时间 | 最小值 | 最大值 | 成功率 |
+|----------|----------------------|-----|-----|--------------|
 | **HTTP/3** | 40.3ms | 35ms | 48ms | 100% 🥇 |
 | **HTTP/1.1** | 44.4ms | 37ms | 79ms | 100% 🥈 |
 | **HTTP/2** | 48.0ms | 43ms | 60ms | 100% 🥉 |
 
 ---
 
-## 9. 扩展性
+## 9. 可扩展性
 
 项目设计支持以下扩展：
 
 ### 9.1 添加新浏览器指纹
+在 `crates/fingerprint-profiles/src/profiles.rs` 中添加函数
 
-在 `crates/fingerprint-profiles/src/profiles.rs` 中添加新的配置函数：
-
-```rust
-pub fn chrome_134() -> ClientProfile {
-    // ...
-}
-```
-
-### 9.2 添加新 User-Agent 模板
-
-在 `crates/fingerprint-headers/src/useragent.rs` 的 `init_templates` 中添加。
+### 9.2 添加新用户代理模板
+更新 `crates/fingerprint-headers/src/useragent.rs`
 
 ### 9.3 添加新语言
-
-在 `crates/fingerprint-headers/src/headers.rs` 的 `LANGUAGES` 数组中添加。
+添加到 `crates/fingerprint-headers/src/headers.rs` 中的 `LANGUAGES` 数组
 
 ### 9.4 添加新操作系统
-
-在 `crates/fingerprint-core/src/types.rs` 的 `OperatingSystem` 枚举中添加。
+添加到 `crates/fingerprint-core/src/types.rs` 中的 `OperatingSystem` 枚举
 
 ### 9.5 添加新 Crate
-
 1. 在 `crates/` 目录下创建新 crate
 2. 在根 `Cargo.toml` 的 `[workspace]` 中添加成员
 3. 配置依赖关系
@@ -825,10 +417,10 @@ pub fn chrome_134() -> ClientProfile {
 
 ## 10. 构建和测试
 
-### 10.1 构建所有 crate
+### 10.1 构建所有 Crate
 
 ```bash
-# 构建整个工作空间
+# 构建整个工作区
 cargo build --workspace
 
 # 构建特定 crate
@@ -839,25 +431,21 @@ cargo build -p fingerprint-http --features "rustls-tls,http2"
 ### 10.2 运行测试
 
 ```bash
-# 测试整个工作空间
+# 测试整个工作区
 cargo test --workspace
 
 # 测试特定 crate
 cargo test -p fingerprint-core
-cargo test -p fingerprint-http --features "rustls-tls,http2"
 ```
 
 ### 10.3 检查编译
 
 ```bash
-# 检查整个工作空间
+# 检查整个工作区
 cargo check --workspace
-
-# 检查特定 crate
-cargo check -p fingerprint-tls
 ```
 
 ---
 
-**文档版本**: v2.0.0  
-**最后更新**: 2025-12-14
+**文档版本**: v2.1.0  
+**最后更新**: 2026-02-13
