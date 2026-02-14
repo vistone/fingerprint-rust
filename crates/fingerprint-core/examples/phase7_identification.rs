@@ -114,6 +114,7 @@ impl IdentificationResults {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn add_result(
         &mut self,
         config_name: &str,
@@ -203,7 +204,7 @@ fn load_profiles(dir: &str) -> Vec<Profile> {
 
                     // 解析浏览器名称和版本
                     let parts: Vec<&str> = file_name.split('_').collect();
-                    let family = parts.get(0).unwrap_or(&"unknown").to_string();
+                    let family = parts.first().unwrap_or(&"unknown").to_string();
                     let version = if parts.len() > 1 {
                         parts[1..].join("_")
                     } else {
@@ -328,7 +329,7 @@ fn save_report(results: &IdentificationResults, profiles: &[Profile]) -> std::io
     for profile in profiles {
         family_info
             .entry(profile.family.clone())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(profile.version.clone());
     }
 

@@ -278,7 +278,7 @@ mod tests {
     #[test]
     fn test_adapter_creation() {
         let adapter = VersionAdapter::new();
-        assert!(adapter.registry.chrome.len() > 0);
+        assert!(!adapter.registry.chrome.is_empty());
     }
 
     #[test]
