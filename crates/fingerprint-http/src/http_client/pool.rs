@@ -191,8 +191,8 @@ impl ConnectionPoolManager {
 
                 let mut last_err: Option<std::io::Error> = None;
                 for addr in v4.into_iter().chain(v6.into_iter()) {
-                    // Note: 这里暂时usestandardconnect方式
-                    // TODO: 在后续version中完善TCP Profile在connect池中ofapply
+                    // Note: Currently using standard connect method
+                    // Future enhancement: Apply TCP profile configuration in connection pool
                     match TcpStream::connect_timeout(&addr, connect_timeout) {
                         Ok(s) => return Ok(ConnectionType::Tcp(s)),
                         Err(e) => last_err = Some(e),
