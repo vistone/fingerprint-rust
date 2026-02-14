@@ -1,294 +1,294 @@
-# Security Policy
+# 安全政策
 
-## Supported Versions
+## 支持的版本
 
-We take security seriously and provide security updates for the following versions:
+我们重视安全，为以下版本提供安全更新：
 
-| 版本 (Version) | Supported          | Notes                        |
-| ------- | ------------------ | ---------------------------- |
-| 2.1.x   | :white_check_mark: | Current stable release       |
-| 2.0.x   | :white_check_mark: | LTS, security fixes only     |
-| < 2.0   | :x:                | End of life, upgrade advised |
+| 版本 | 支持状态       | 备注                        |
+| ------- | --------------- | ---------------------------- |
+| 2.1.x   | ✅ 支持         | 当前稳定版本                 |
+| 2.0.x   | ✅ 支持         | LTS 版本，仅提供安全补丁      |
+| < 2.0   | ❌ 不支持       | 生命周期已结束，建议升级     |
 
-## Reporting a Vulnerability
+## 报告安全漏洞
 
-**Please do not report security vulnerabilities through public GitHub issues.**
+**请不要通过公开的 GitHub Issues 报告安全漏洞。**
 
-Instead, please report them privately via one of the following methods:
+请通过以下方式之一私密报告：
 
-### 1. GitHub Security Advisories (Preferred)
+### 1. GitHub 安全公告（推荐）
 
-1. Go to https://github.com/vistone/fingerprint-rust/security/advisories
-2. Click "New draft security advisory"
-3. Provide detailed information about the vulnerability
-4. Submit the advisory
+1. 访问 https://github.com/vistone/fingerprint-rust/security/advisories
+2. 点击"New draft security advisory"（新建安全公告草稿）
+3. 提供关于漏洞的详细信息
+4. 提交公告
 
-### 2. Email
+### 2. 电子邮件
 
-Send details to the project maintainers (contact information in repository)
+将详细信息发送给项目维护者（联系方式见仓库）
 
-### What to Include
+### 报告内容要求
 
-When reporting a vulnerability, please include:
+报告安全漏洞时，请包含以下内容：
 
-- **Description**: Clear description of the vulnerability
-- **Impact**: What can an attacker achieve?
-- **Reproduction**: Step-by-step instructions to reproduce
-- **Affected versions**: Which versions are vulnerable?
-- **Suggested fix**: If you have one (optional)
-- **Proof of concept**: Code, packet captures, etc. (if applicable)
+- **漏洞描述**：清晰、详细的漏洞说明
+- **影响范围**：攻击者可能造成什么伤害？
+- **复现步骤**：分步骤说明如何复现漏洞
+- **受影响版本**：哪些版本容易受到影响？
+- **建议修复方案**：如果有建议（可选）
+- **概念验证**：代码、数据包捕获等（如果适用）
 
-### Example Report
+### 报告示例
 
 ```markdown
-**Summary**: Buffer overflow in packet parsing
+**摘要**: IPv4 数据包解析中的缓冲区溢出
 
-**Impact**: Remote code execution possible with crafted IPv4 packet
+**影响**: 使用精心构造的 IPv4 数据包可能导致远程代码执行
 
-**Reproduction**:
-1. Create malformed IPv4 packet with IHL < 5
-2. Send to application
-3. Application crashes with segfault
+**复现步骤**:
+1. 创建格式错误的 IPv4 数据包，IHL < 5
+2. 发送给应用程序
+3. 应用程序因分段错误而崩溃
 
-**Affected Versions**: 2.0.0 - 2.1.0
+**受影响的版本**: 2.0.0 - 2.1.0
 
-**Suggested Fix**: Add validation: if ihl < 5 || ihl > 15 { return error }
+**建议修复**: 添加验证：if ihl < 5 || ihl > 15 { return error }
 
-**POC**: [attached pcap file]
+**概念验证**: [附加 pcap 文件]
 ```
 
-## Response Timeline
+## 响应时间表
 
-- **Initial Response**: Within 48 hours
-- **Assessment**: Within 7 days
-- **Fix Development**: Depends on severity
-  - Critical: 1-7 days
-  - High: 7-14 days
-  - Medium: 14-30 days
-  - Low: 30-90 days
-- **Public Disclosure**: After fix is available
+- **初始响应**：48 小时内
+- **评估**：7 天内
+- **修复开发**：取决于严重程度
+  - 严重漏洞：1-7 天
+  - 高风险：7-14 天
+  - 中等风险：14-30 天
+  - 低风险：30-90 天
+- **公开披露**：修复发布后
 
-## Severity Classification
+## 严重程度分类
 
-We use CVSS v3.1 for severity assessment:
+我们使用 CVSS v3.1 进行严重程度评估：
 
-| Severity | CVSS Score | Response Time |
-|----------|------------|---------------|
-| Critical | 9.0-10.0   | 1-7 days      |
-| High     | 7.0-8.9    | 7-14 days     |
-| Medium   | 4.0-6.9    | 14-30 days    |
-| Low      | 0.1-3.9    | 30-90 days    |
+| 严重程度 | CVSS 评分 | 响应时间   |
+|----------|---------|----------|
+| 严重     | 9.0-10.0 | 1-7 天   |
+| 高       | 7.0-8.9  | 7-14 天  |
+| 中等     | 4.0-6.9  | 14-30 天 |
+| 低       | 0.1-3.9  | 30-90 天 |
 
-## Security Update Process
+## 安全更新流程
 
-1. **Develop Fix**: Create patch in private branch
-2. **Internal Review**: Security team reviews fix
-3. **测试**: Comprehensive 测试 including regression tests
-4. **Prepare Release**: Create new 版本 (Version) with fix
-5. **Coordinate Disclosure**: 
-   - Notify reporter
-   - Prepare security advisory
-   - Update CHANGELOG
-6. **Release**: Publish fixed 版本 (Version)
-7. **Public Disclosure**: Publish security advisory
-8. **Notify Users**: Announce via GitHub, social media, etc.
+1. **开发修复**：在私有分支中创建补丁
+2. **内部审查**：安全团队审查修复方案
+3. **测试**：进行包括回归测试在内的全面测试
+4. **准备发布**：创建包含修复的新版本
+5. **协调披露**：
+   - 通知报告者
+   - 准备安全公告
+   - 更新 CHANGELOG
+6. **发布**：发布修复版本
+7. **公开披露**：发布安全公告
+8. **通知用户**：通过 GitHub、社交媒体等方式公告
 
-## What We Consider a Security Issue
+## 安全问题的定义
 
-### In Scope
+### 范围内
 
-- **Memory safety**: Buffer overflows, use-after-free, etc.
-- **Denial of Service**: Resource exhaustion, infinite loops
-- **Input validation**: Parsing vulnerabilities, injection attacks
-- **Information disclosure**: Unintended data leaks
-- **Cryptographic issues**: Weak algorithms, improper usage
-- **Authentication/Authorization**: Bypass vulnerabilities
-- **Code execution**: RCE, arbitrary code execution
+- **内存安全**：缓冲区溢出、使用已释放内存等
+- **拒绝服务**：资源耗尽、无限循环
+- **输入验证**：解析漏洞、注入攻击
+- **信息泄露**：意外数据泄露
+- **密码学问题**：薄弱算法、不当使用
+- **身份验证/授权**：绕过漏洞
+- **代码执行**：远程代码执行、任意代码执行
 
-### Out of Scope
+### 范围外
 
-- Issues in 依赖关系 (report to upstream)
-- Issues requiring physical access
-- Social engineering attacks
-- Denial of service requiring large resources
-- Issues only affecting outdated/unsupported versions
-- Theoretical vulnerabilities without practical impact
+- 依赖关系中的问题（报告给上游）
+- 需要物理访问的问题
+- 社交工程攻击
+- 需要大量资源的拒绝服务
+- 仅影响过时/不支持版本的问题
+- 没有实际影响的理论漏洞
 
-## Vulnerability Disclosure Policy
+## 漏洞披露政策
 
-We follow **Coordinated Vulnerability Disclosure**:
+我们遵循**协调漏洞披露**方式：
 
-1. **Private Reporting**: Report vulnerabilities privately
-2. **Acknowledgment**: We acknowledge receipt within 48 hours
-3. **Investigation**: We investigate and validate the report
-4. **Development**: We develop and test a fix
-5. **Coordination**: We coordinate disclosure timing with reporter
-6. **Public Disclosure**: We publicly disclose after fix is available
+1. **私密报告**：私密报告漏洞
+2. **确认收到**：我们在 48 小时内确认收到
+3. **调查验证**：我们调查并验证报告
+4. **开发修复**：我们开发并测试修复方案
+5. **协调披露**：我们与报告者协调披露时间
+6. **公开披露**：修复发布后公开披露
 
-### Disclosure Timeline
+### 披露时间表
 
-- **Standard**: 90 days after initial report
-- **Extended**: If fix requires more time, we may request extension
-- **Immediate**: If vulnerability is being actively exploited
+- **标准**：初始报告后 90 天
+- **延期**：如果修复需要更多时间，我们可能请求延期
+- **立即**：如果漏洞正在被积极利用
 
-## Security Best Practices for Users
+## 用户安全最佳实践
 
-### Installation
+### 安装
 
 ```toml
-# Always use specific versions
+# 始终使用具体版本
 [dependencies]
-fingerprint = "2.1.0"  # Not "2.1" or "2"
+fingerprint = "2.1.0"  # 不要使用 "2.1" 或 "2"
 ```
 
-### Updates
+### 更新
 
 ```bash
-# Regularly check for updates
+# 定期检查更新
 cargo update
 
-# Check for security advisories
+# 检查安全公告
 cargo audit
 ```
 
 ### 配置
 
 ```rust
-// Use secure defaults
+// 使用安全的默认设置
 let config = HttpClientConfig {
-    // Enable TLS verification
+    // 启用 TLS 验证
     verify_ssl: true,
     
-    // Set reasonable timeouts
+    // 设置合理的超时
     timeout: Duration::from_secs(30),
     
-    // Limit redirects
+    // 限制重定向数量
     max_redirects: 5,
     
     ..Default::default()
 };
 ```
 
-### Network Security
+### 网络安全
 
-- Use HTTPS for all connections
-- Validate SSL/TLS certificates
-- Set appropriate timeouts
-- Limit request/response sizes
-- Implement rate limiting
+- 对所有连接使用 HTTPS
+- 验证 SSL/TLS 证书
+- 设置适当的超时
+- 限制请求/响应大小
+- 实现速率限制
 
-### Input Validation
+### 输入验证
 
 ```rust
-// Always validate external input
+// 始终验证外部输入
 fn process_packet(data: &[u8]) -> Result<(), Error> {
-    // Check size
+    // 检查大小
     if data.len() < MIN_SIZE || data.len() > MAX_SIZE {
         return Err(Error::InvalidSize);
     }
     
-    // Validate format
+    // 验证格式
     if !is_valid_format(data) {
         return Err(Error::InvalidFormat);
     }
     
-    // Process...
+    // 处理...
     Ok(())
 }
 ```
 
-## Security Features
+## 安全功能
 
-### Current
+### 现有功能
 
-- ✅ Memory-safe Rust 实现
-- ✅ Input validation on all external data
-- ✅ Bounds checking on array accesses
-- ✅ Safe integer arithmetic
+- ✅ 使用 Rust 实现的内存安全
+- ✅ 对所有外部数据的输入验证
+- ✅ 数组访问的界限检查
+- ✅ 安全的整数运算
 - ✅ TLS 1.3 支持
-- ✅ Certificate validation
-- ✅ Timeout 保护
-- ✅ Size limits on packets/requests
-- ✅ DoS 保护 (rate limiting, resource limits)
+- ✅ 证书验证
+- ✅ 超时保护
+- ✅ 数据包/请求大小限制
+- ✅ 拒绝服务保护（速率限制、资源限制）
 
-### Planned
+### 计划中的功能
 
-- ⏳ Fuzzing integration (cargo-fuzz)
-- ⏳ Property-based 测试 (proptest)
-- ⏳ Memory profiling
-- ⏳ Static analysis integration (MIRI)
-- ⏳ Automated dependency scanning
+- ⏳ Fuzzing 集成（cargo-fuzz）
+- ⏳ 属性测试（proptest）
+- ⏳ 内存分析
+- ⏳ 静态分析集成（MIRI）
+- ⏳ 自动依赖扫描
 
-## Security Audits
+## 安全审计
 
-### Recent Audits
+### 最近的审计
 
-| Date       | Auditor        | Scope          | Status   |
-|------------|----------------|----------------|----------|
-| 2026-01-02 | GitHub Copilot | Full codebase  | Complete |
+| 日期       | 审计者         | 范围         | 状态   |
+|-----------|------------|-----------|------|
+| 2026-01-02 | GitHub Copilot | 完整代码库 | 完成 |
 
-### Audit Reports
+### 审计报告
 
-Available in:
-- `SECURITY_AUDIT.md` - Detailed audit report
-- `SECURITY_IMPROVEMENTS.md` - Improvement tracking
+可在以下位置获取：
+- `SECURITY_AUDIT.md` - 详细审计报告
+- `SECURITY_IMPROVEMENTS.md` - 改进跟踪
 
-## Bug Bounty Program
+## bug 赏金计划
 
-**Status**: Not currently available
+**状态**：目前不可用
 
-We appreciate security researchers but do not currently offer a formal bug bounty program. However, we will:
+我们感谢安全研究人员，但目前不提供正式的 bug 赏金计划。但是，我们会：
 
-- Acknowledge your contribution in release notes
-- Credit you in security advisories (if desired)
-- Respond promptly and professionally
+- 在发布说明中认可你的贡献
+- 在安全公告中承认你（如果需要）
+- 迅速、专业地回应
 
-## Security Champions
+## 安全冠军
 
-Security is everyone's responsibility. However, we have designated security champions:
+安全是每个人的责任。但是，我们指定了安全冠军：
 
-- **Primary Contact**: Project maintainers
-- **Security Review**: All code changes undergo security review
-- **Vulnerability Management**: Coordinated through GitHub Security
+- **主要联系人**：项目维护者
+- **安全审查**：所有代码变更都经过安全审查
+- **漏洞管理**：通过 GitHub Security 协调
 
-## Compliance
+## 合规性
 
-This project follows:
+本项目遵循：
 
-- **OWASP Top 10** web application security risks
-- **CWE Top 25** most dangerous software weaknesses
-- **Rust Security Guidelines**
-- **NIST Cybersecurity 框架** (where applicable)
+- **OWASP Top 10** 网络应用程序安全风险
+- **CWE Top 25** 最危险的软件弱点
+- **Rust 安全指南**
+- **NIST 网络安全框架**（如适用）
 
-## Resources
+## 资源
 
-### Learning
+### 学习资源
 
-- [Rust Security Book](https://anssi-fr.github.io/rust-guide/)
-- [OWASP Cheat Sheets](https://cheatsheetseries.owasp.org/)
+- [Rust 安全手册](https://anssi-fr.github.io/rust-guide/)
+- [OWASP 速查表](https://cheatsheetseries.owasp.org/)
 - [CWE Top 25](https://cwe.mitre.org/top25/)
 
-### Tools
+### 工具
 
-- `cargo audit` - Check for known vulnerabilities
-- `cargo deny` - Dependency policy enforcement
+- `cargo audit` - 检查已知漏洞
+- `cargo deny` - 依赖关系政策执行
 - `cargo fuzz` - Fuzzing 框架
-- `clippy` - Linting and best practices
+- `clippy` - Linting 和最佳实践
 
-### Community
+### 社区
 
-- GitHub Discussions - For security questions
-- GitHub Issues - For non-security bugs
-- GitHub Security Advisories - For vulnerability reports
+- GitHub Discussions - 安全问题讨论
+- GitHub Issues - 非安全类 bug 报告
+- GitHub Security Advisories - 漏洞报告
 
-## Changes to This Policy
+## 本政策的更改
 
-This security policy may be updated from time to time. Significant changes will be announced via:
+本安全政策可能会不时更新。重大更改将通过以下方式公告：
 
-- GitHub release notes
-- Security advisories
-- Project documentation
+- GitHub 发布说明
+- 安全公告
+- 项目文档
 
-**最后更新 (Last Updated)**: 2026-01-06  
-**版本 (Version)**: 1.0  
-**Next Review**: 2026-04-06
+**最后更新**: 2026-01-06  
+**版本**: 1.0  
+**下次审查**: 2026-04-06

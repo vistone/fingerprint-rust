@@ -1,178 +1,176 @@
-# Contributing to fingerprint-rust
+# fingerprint-rust 贡献指南
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
+感谢你对 fingerprint-rust 项目的贡献兴趣！本文档提供了为项目贡献的指南和最佳实践。
 
+## 目录
 
-Thank you for your interest in contributing to fingerprint-rust! This document provides guidelines and best practices for contributing to the project.
+- [行为准则](#行为准则)
+- [入门指南](#入门指南)
+- [开发工作流](#开发工作流)
+- [编码标准](#编码标准)
+- [测试指南](#测试指南)
+- [文档编写](#文档编写)
+- [拉取请求流程](#拉取请求流程)
+- [安全](#安全)
 
-## Table of Contents
+## 行为准则
 
-- [Code of Conduct](#code-of-conduct)
-- [Getting Started](#getting-started)
-- [Development Workflow](#development-workflow)
-- [Coding Standards](#coding-standards)
-- [测试 Guidelines](#测试-guidelines)
-- [Documentation](#documentation)
-- [Pull Request Process](#pull-request-process)
-- [Security](#security)
+### 我们的承诺
 
-## Code of Conduct
+我们致力于为所有贡献者提供一个热烈欢迎和包容的环境，不论其背景或经验水平如何。
 
-### Our Pledge
+### 预期行为
 
-We are committed to providing a welcoming and inclusive environment for all contributors, regardless of background or experience level.
+- 相互尊重和体贴
+- 欢迎新手，帮助他们快速上手
+- 虚心接受建设性批评
+- 关注对项目最有利的事情
+- 对其他贡献者表示同情
 
-### Expected Behavior
+### 不可接受的行为
 
-- Be respectful and considerate
-- Welcome newcomers and help them get started
-- Accept constructive criticism gracefully
-- Focus on what is best for the project
-- Show empathy towards other contributors
+- 骚扰、歧视或冒犯性评论
+- 网络暴力或侮辱性言论
+- 公开或私下骚扰
+- 发布他人的私人信息
+- 其他合理认为不当的行为
 
-### Unacceptable Behavior
+## 入门指南
 
-- Harassment, discrimination, or offensive comments
-- Trolling or insulting remarks
-- Public or private harassment
-- Publishing others' private information
-- Other conduct which could reasonably be considered inappropriate
+### 前置条件
 
-## Getting Started
+- **Rust**: 1.92.0 或更高版本。请使用 `rustup` 安装
+- **Git**: 用于版本控制
+- **Cargo**: 随 Rust 自动安装
 
-### Prerequisites
+### Fork 和克隆项目
 
-- **Rust**: 1.92.0 or later (use `rustup` for installation)
-- **Git**: For 版本 (Version) control
-- **Cargo**: Comes with Rust installation
-
-### Fork and Clone
-
-1. Fork the repository on GitHub
-2. Clone your fork:
+1. 在 GitHub 上 Fork 项目仓库
+2. 克隆你的 Fork：
    ```bash
    git clone https://github.com/YOUR_USERNAME/fingerprint-rust.git
    cd fingerprint-rust
    ```
 
-3. Add upstream remote:
+3. 添加上游深层：
    ```bash
    git remote add upstream https://github.com/vistone/fingerprint-rust.git
    ```
 
-### Build the Project
+### 构建项目
 
 ```bash
-# Build all workspace crates
+# 构建所有工作区 Crate
 cargo build --workspace
 
-# Build with all features
+# 启用所有特性进行构建
 cargo build --workspace --all-features
 
-# Build specific crate
+# 构建特定 Crate
 cargo build -p fingerprint-core
 ```
 
-### Run Tests
+### 运行测试
 
 ```bash
-# Run all tests
+# 运行所有测试
 cargo test --workspace --lib
 
-# Run tests with all features
+# 使用所有特性运行测试
 cargo test --workspace --all-features
 
-# Run specific test
+# 运行特定测试
 cargo test -p fingerprint-core test_name
 ```
 
-## Development Workflow
+## 开发工作流
 
-### 1. Create a Branch
+### 1. 创建分支
 
 ```bash
 git checkout -b feature/your-feature-name
-# or
+# 或
 git checkout -b fix/issue-number-description
 ```
 
-Branch naming conventions:
-- `feature/` - New features
-- `fix/` - Bug fixes
-- `docs/` - Documentation updates
-- `refactor/` - Code refactoring
-- `test/` - Test additions or improvements
-- `perf/` - Performance improvements
+分支命名约定：
+- `feature/` - 新功能
+- `fix/` - 错误修复
+- `docs/` - 文档更新
+- `refactor/` - 代码重构
+- `test/` - 测试添加或改进
+- `perf/` - 性能改进
 
-### 2. Make Changes
+### 2. 进行更改
 
-Follow the [Coding Standards](#coding-standards) section below.
+遵循下面[编码标准](#编码标准)部分的要求。
 
-### 3. Test Your Changes
+### 3. 测试你的更改
 
 ```bash
-# Run tests
+# 运行测试
 cargo test --workspace --lib
 
-# Run Clippy
+# 运行 Clippy
 cargo clippy --workspace --all-targets --all-features -- -D warnings
 
-# Format code
+# 格式化代码
 cargo fmt --all
 
-# Check documentation
+# 检查文档
 cargo doc --workspace --no-deps --all-features
 ```
 
-### 4. Commit Changes
+### 4. 提交更改
 
-Write clear, descriptive commit messages:
+编写清晰、具有描述性的提交消息：
 
 ```bash
-git commit -m "feat: Add new browser fingerprint for Chrome 135"
-git commit -m "fix: Resolve buffer overflow in packet parsing"
-git commit -m "docs: Update API documentation for HTTP client"
+git commit -m "feat: 为 Chrome 135 添加新的浏览器指纹"
+git commit -m "fix: 修复数据包解析中的缓冲区溢出"
+git commit -m "docs: 更新 HTTP 客户端 API 文档"
 ```
 
-Commit 消息 format:
-- `feat:` - New feature
-- `fix:` - Bug fix
-- `docs:` - Documentation changes
-- `style:` - Code style changes (formatting, etc.)
-- `refactor:` - Code refactoring
-- `test:` - Adding or updating tests
-- `perf:` - Performance improvements
-- `chore:` - Maintenance tasks
+提交消息格式：
+- `feat:` - 新功能
+- `fix:` - 错误修复
+- `docs:` - 文档更改
+- `style:` - 代码风格更改（格式等）
+- `refactor:` - 代码重构
+- `test:` - 添加或更新测试
+- `perf:` - 性能改进
+- `chore:` - 维护任务
 
-### 5. Push and Create Pull Request
+### 5. 推送和创建拉取请求
 
 ```bash
 git push origin feature/your-feature-name
 ```
 
-Then create a pull request on GitHub.
+然后在 GitHub 上创建拉取请求。
 
-## Coding Standards
+## 编码标准
 
-### General Principles
+### 基础原则
 
-1. **Safety First**: Avoid `unsafe` code unless absolutely necessary
-2. **Error Handling**: Use `Result` and `?` operator, avoid `unwrap()` in production code
-3. **Documentation**: Document all public APIs
-4. **测试**: Write tests for new functionality
-5. **Performance**: Consider performance implications of changes
+1. **安全第一**：避免 `unsafe` 代码，除非绝对必要
+2. **错误处理**：使用 `Result` 和 `?` 操作符，避免在生产代码中使用 `unwrap()`
+3. **文档**：记录所有公开 API
+4. **测试**：为新功能编写测试
+5. **性能**：考虑更改的性能影响
 
-### Rust Style Guide
+### Rust 编码风格指南
 
-Follow the [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/):
+遵循 [Rust API 指南](https://rust-lang.github.io/api-guidelines/)：
 
 ```rust
-// ✅ Good: Proper error handling
+// ✅ 正确：适当的错误处理
 pub fn parse_packet(data: &[u8]) -> Result<Packet, PacketError> {
     if data.len() < MIN_SIZE {
         return Err(PacketError::TooShort);
@@ -181,47 +179,47 @@ pub fn parse_packet(data: &[u8]) -> Result<Packet, PacketError> {
     Ok(packet)
 }
 
-// ❌ Bad: Using unwrap() in production
+// ❌ 错误：在生产代码中使用 unwrap()
 pub fn parse_packet(data: &[u8]) -> Packet {
-    let value = data.get(0).unwrap(); // Can panic!
+    let value = data.get(0).unwrap(); // 可能会 panic！
     // ...
 }
 ```
 
-### Error Handling
+### 错误处理
 
-Use `thiserror` for error types:
+使用 `thiserror` 定义错误类型：
 
 ```rust
 use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum MyError {
-    #[error("Invalid packet size: {0}")]
+    #[error("无效的数据包大小：{0}")]
     InvalidSize(usize),
     
-    #[error("IO error: {0}")]
+    #[error("IO 错误：{0}")]
     Io(#[from] std::io::Error),
 }
 ```
 
-### Documentation
+### 文档编写
 
-Document all public APIs:
+记录所有公开 API：
 
 ```rust
-/// Parses an IPv4 packet from raw bytes.
+/// 从原始字节解析 IPv4 数据包。
 ///
-/// # Arguments
+/// # 参数
 ///
-/// * `data` - Raw packet data
+/// * `data` - 原始数据包数据
 ///
-/// # Returns
+/// # 返回值
 ///
-/// * `Ok(Packet)` - Successfully parsed packet
-/// * `Err(PacketError)` - If packet is malformed
+/// * `Ok(Packet)` - 成功解析的数据包
+/// * `Err(PacketError)` - 如果数据包格式不正确
 ///
-/// # Examples
+/// # 示例
 ///
 /// ```
 /// use fingerprint::parse_packet;
@@ -230,48 +228,48 @@ Document all public APIs:
 /// let packet = parse_packet(&data)?;
 /// ```
 ///
-/// # Errors
+/// # 错误
 ///
-/// Returns `PacketError::TooShort` if packet is smaller than minimum size.
-/// Returns `PacketError::InvalidIhl` if IHL field is invalid.
+/// 如果数据包小于最小大小，返回 `PacketError::TooShort`。
+/// 如果 IHL 字段无效，返回 `PacketError::InvalidIhl`。
 pub fn parse_packet(data: &[u8]) -> Result<Packet, PacketError> {
     // ...
 }
 ```
 
-### Code Organization
+### 代码组织结构
 
 ```rust
-// 1. Module documentation at top
-//! # Module Name
+// 1. 模块文档在顶部
+//! # 模块名称
 //!
-//! Brief description of the module.
+//! 模块的简要描述。
 
-// 2. Imports
+// 2. 导入
 use std::io;
 use crate::types::*;
 
-// 3. Constants
+// 3. 常量
 const MAX_SIZE: usize = 1024;
 
-// 4. Type definitions
+// 4. 类型定义
 pub struct MyStruct {
-    // fields
+    // 字段
 }
 
-// 5. Trait implementations
+// 5. 特征实现
 impl MyTrait for MyStruct {
     // ...
 }
 
-// 6. Methods
+// 6. 方法
 impl MyStruct {
     pub fn new() -> Self {
         // ...
     }
 }
 
-// 7. Tests
+// 7. 测试
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -286,34 +284,34 @@ mod tests {
 ### 性能考虑
 
 ```rust
-// ✅ Good: Avoid unnecessary allocations
+// ✅ 正确：避免不必要的分配
 pub fn process_data(data: &[u8]) -> Result<(), Error> {
-    // Use references, not clones
+    // 使用引用，而不是克隆
 }
 
-// ❌ Bad: Unnecessary cloning
+// ❌ 错误：不必要的克隆
 pub fn process_data(data: Vec<u8>) -> Result<(), Error> {
-    let copied = data.clone(); // Avoid if possible
+    let copied = data.clone(); // 如果可能，应避免
 }
 
-// ✅ Good: Reuse allocations
+// ✅ 正确：重用分配
 let mut buffer = Vec::with_capacity(1024);
 for item in items {
     buffer.clear();
-    // Reuse buffer
+    // 重用缓冲区
 }
 
-// ❌ Bad: Allocate in loop
+// ❌ 错误：在循环中分配
 for item in items {
-    let buffer = Vec::new(); // Allocates every iteration
+    let buffer = Vec::new(); // 每次迭代都分配
 }
 ```
 
-## 测试 Guidelines
+## 测试指南
 
-### Unit Tests
+### 单元测试
 
-Write unit tests for all public functions:
+为所有公开函数编写单元测试：
 
 ```rust
 #[cfg(test)]
@@ -322,14 +320,14 @@ mod tests {
 
     #[test]
     fn test_parse_valid_packet() {
-        let data = vec![/* valid packet */];
+        let data = vec![/* 有效的数据包 */];
         let result = parse_packet(&data);
         assert!(result.is_ok());
     }
 
     #[test]
     fn test_parse_invalid_packet() {
-        let data = vec![/* invalid packet */];
+        let data = vec![/* 无效的数据包 */];
         let result = parse_packet(&data);
         assert!(result.is_err());
     }
@@ -337,20 +335,20 @@ mod tests {
     #[test]
     #[should_panic(expected = "buffer overflow")]
     fn test_panic_on_overflow() {
-        // Test that panic occurs as expected
+        // 测试 panic 是否如预期发生
     }
 
     #[test]
-    #[ignore] // Mark tests requiring network access
+    #[ignore] // 标记需要网络访问的测试
     fn test_network_operation() {
-        // Test requiring network
+        // 需要网络的测试
     }
 }
 ```
 
-### Integration Tests
+### 集成测试
 
-Place integration tests in `tests/` directory:
+在 `tests/` 目录中放置集成测试：
 
 ```rust
 // tests/integration_test.rs
@@ -358,13 +356,13 @@ use fingerprint::*;
 
 #[test]
 fn test_end_to_end() {
-    // Test complete workflow
+    // 测试完整工作流
 }
 ```
 
-### Property-Based Tests
+### 属性测试
 
-Consider using `proptest` for property-based 测试:
+考虑使用 `proptest` 进行属性测试：
 
 ```rust
 use proptest::prelude::*;
@@ -372,47 +370,47 @@ use proptest::prelude::*;
 proptest! {
     #[test]
     fn test_parse_never_panics(data in prop::collection::vec(any::<u8>(), 0..1024)) {
-        // Should never panic, even with random data
+        // 即使有随机数据也不应该 panic
         let _ = parse_packet(&data);
     }
 }
 ```
 
-## Documentation
+## 文档编写
 
-### Code Documentation
+### 代码文档
 
-- Document all public APIs with `///` comments
-- Include examples in documentation
-- Explain errors and edge cases
-- Use `//!` for 模块-level documentation
+- 使用 `///` 注释记录所有公开 API
+- 在文档中包含使用示例
+- 解释错误和边界情况
+- 为模块级文档使用 `//!`
 
-### User Documentation
+### 用户文档
 
-- Update README.md for user-facing changes
-- Add examples to `examples/` directory
-- Update relevant guides in `docs/` directory
-- Keep CHANGELOG.md up to date
+- 更新用户相关更改的 README.md
+- 向 `examples/` 目录添加示例
+- 更新 `docs/` 目录中的相关指南
+- 保持 CHANGELOG.md 最新
 
-### API Documentation
+### API 文档
 
-Generate and review documentation:
+生成并查看文档：
 
 ```bash
 cargo doc --workspace --no-deps --all-features --open
 ```
 
-## Pull Request Process
+## 拉取请求流程
 
-### Before Submitting
+### 提交之前
 
-1. **Update your branch**:
+1. **更新你的分支**：
    ```bash
    git fetch upstream
    git rebase upstream/main
    ```
 
-2. **Run all checks**:
+2. **运行所有检查**：
    ```bash
    cargo test --workspace --lib
    cargo clippy --workspace --all-targets --all-features -- -D warnings
@@ -420,112 +418,112 @@ cargo doc --workspace --no-deps --all-features --open
    cargo doc --workspace --no-deps --all-features
    ```
 
-3. **Update documentation** if needed
+3. **更新文档**（如需要）
 
-4. **Add tests** for new functionality
+4. **为新功能添加测试**
 
-### PR Description Template
+### 拉取请求描述模板
 
 ```markdown
-## Description
+## 描述
 
-Brief description of changes.
+更改的简要描述。
 
-## Type of Change
+## 更改类型
 
-- [ ] Bug fix (non-breaking change fixing an issue)
-- [ ] New feature (non-breaking change adding functionality)
-- [ ] Breaking change (fix or feature causing existing functionality to change)
-- [ ] Documentation update
+- [ ] 错误修复（非破坏性更改修复问题）
+- [ ] 新功能（非破坏性更改添加功能）
+- [ ] 破坏性更改（修复或功能导致现有功能改变）
+- [ ] 文档更新
 
-## Testing
+## 测试
 
-- [ ] Unit tests added/updated
-- [ ] Integration tests added/updated
-- [ ] All tests pass locally
+- [ ] 添加或更新了单元测试
+- [ ] 添加或更新了集成测试
+- [ ] 所有测试在本地通过
 
-## Checklist
+## 清单
 
-- [ ] Code follows project style guidelines
-- [ ] Self-review completed
-- [ ] Comments added for complex code
-- [ ] Documentation updated
-- [ ] No new warnings introduced
-- [ ] Tests added and passing
+- [ ] 代码遵循项目风格指南
+- [ ] 已完成自审查
+- [ ] 为复杂代码添加了注释
+- [ ] 更新了文档
+- [ ] 没有引入新的警告
+- [ ] 添加了测试且通过
 
-## Related Issues
+## 相关 Issue
 
-Closes #123
-Relates to #456
+关闭 #123
+关联 #456
 ```
 
-### Review Process
+### 审查流程
 
-1. Maintainers will review your PR
-2. Address feedback and make requested changes
-3. Once approved, your PR will be merged
+1. 维护者将审查你的拉取请求
+2. 处理反馈并进行所需的更改
+3. 一旦批准，你的拉取请求将被合并
 
-### After Merge
+### 合并后
 
-1. Delete your branch:
+1. 删除你的分支：
    ```bash
    git branch -d feature/your-feature-name
    git push origin --delete feature/your-feature-name
    ```
 
-2. Update your main branch:
+2. 更新你的主分支：
    ```bash
    git checkout main
    git pull upstream main
    ```
 
-## Security
+## 安全
 
-### Reporting Security Issues
+### 报告安全问题
 
-**DO NOT** report security vulnerabilities through public issues.
+**不要**通过公开 Issue 报告安全漏洞。
 
-Instead:
-1. Use GitHub Security Advisories (preferred)
-2. See [SECURITY.md](SECURITY.md) for details
+相反，请：
+1. 使用 GitHub 安全公告（首选）
+2. 查看 [SECURITY.md](SECURITY.md) 了解详情
 
-### Security Considerations
+### 安全考虑事项
 
-When contributing, consider:
-- Input validation
-- Buffer overflow prevention
-- Integer overflow handling
-- Denial of service prevention
-- Information disclosure risks
+贡献时，请考虑：
+- 输入验证
+- 缓冲区溢出防防
+- 整数溢出处理
+- 拒绝服务防护
+- 信息泄露风险
 
-### Code Review Checklist
+### 代码审查清单
 
-- [ ] No `unsafe` code without justification
-- [ ] Proper error handling (no `unwrap()` in production)
-- [ ] Input validation on external data
-- [ ] Bounds checking on array access
-- [ ] No integer overflow possibilities
-- [ ] Proper resource cleanup (RAII)
-- [ ] No information leaks in error messages
+- [ ] 没有 `unsafe` 代码（除非有正当理由）
+- [ ] 适当的错误处理（生产代码中没有 `unwrap()`）
+- [ ] 对外部数据的输入验证
+- [ ] 数组访问的界限检查
+- [ ] 没有整数溢出可能性
+- [ ] 适当的资源清理（RAII）
+- [ ] 错误消息中没有信息泄露
 
-## 识别
+## 致谢
 
-Contributors will be:
-- Listed in release notes
-- Acknowledged in README.md (for significant contributions)
-- Credited in commit history
+贡献者将被：
+- 列在发布说明中
+- 在 README.md 中被认可（对于重大贡献）
+- 在提交历史中被记录
 
-## Questions?
+## 有问题？
 
-- **GitHub Discussions**: For general questions
-- **GitHub Issues**: For bug reports and feature requests
-- **Pull Requests**: For code contributions
+- **GitHub Discussions**：提出一般问题
+- **GitHub Issues**：报告 Bug 和功能请求
+- **拉取请求**：进行代码贡献
 
-## Resources
+## 资源
 
-- [Rust Book](https://doc.rust-lang.org/book/)
-- [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)
-- [Cargo Book](https://doc.rust-lang.org/cargo/)
+- [Rust 编程书](https://doc.rust-lang.org/book/)
+- [Rust API 指南](https://rust-lang.github.io/api-guidelines/)
+- [Cargo 手册](https://doc.rust-lang.org/cargo/)
 - [Clippy Lints](https://rust-lang.github.io/rust-clippy/)
 
-Thank you for contributing to fingerprint-rust! 🦀
+感谢你对 fingerprint-rust 的贡献！🦀

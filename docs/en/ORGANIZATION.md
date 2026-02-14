@@ -1,35 +1,35 @@
-# 文档组织说明
+# Documentation Organization Guide
 
 **Version**: 2.0  
-**日期**: 2026-02-13  
-**状态**: 已完成
+**Date**: 2026-02-13  
+**Status**: Completed
 
-## 📋 概述
+## 📋 Overview
 
-本文档说明 `docs/` 目录的组织结构和文档分类规则，确保文档管理有序、易于查找。
+This documentation guide explains the organizational structure of the `docs/` directory and the documentation classification rules to ensure that documentation management is orderly and easy to locate.
 
 ## 🗂️ Directory Structure
 
 ```
 docs/
-├── README.md              # 文档中心首页
-├── INDEX.md               # 文档总索引（中文）
-├── INDEX.en.md            # 文档总索引（英文）
-├── ARCHITECTURE.md        # 架构概览（中文）
-├── ARCHITECTURE.en.md     # 架构概览（英文）
-├── API.md                 # API 概述
-├── CHANGELOG.md           # 变更日志
-├── CONTRIBUTING.md        # 贡献指南
-├── SECURITY.md            # 安全说明
+├── README.md              # Documentation Center Homepage
+├── INDEX.md               # Complete Documentation Index (Chinese)
+├── INDEX.en.md            # Complete Documentation Index (English)
+├── ARCHITECTURE.md        # Architecture Overview (Chinese)
+├── ARCHITECTURE.en.md     # Architecture Overview (English)
+├── API.md                 # API Overview
+├── CHANGELOG.md           # Change Log
+├── CONTRIBUTING.md        # Contributing Guide
+├── SECURITY.md            # Security Information
 │
-├── architecture/          # 架构与设计文档
+├── architecture/          # Architecture and Design Documentation
 │   ├── ARCHITECTURE_EVOLUTION.md
 │   ├── BINARY_FORMAT_DESIGN.md
 │   ├── HTTP2_SETTINGS_ANALYSIS_DESIGN.md
 │   ├── TLS_CLIENTHELLO_PARSING_DESIGN.md
 │   └── PHASE_7_3_CLASSIFIER_DESIGN.md
 │
-├── specifications/        # 技术规范文档
+├── specifications/        # Technical Specification Documentation
 │   ├── GREASE_NORMALIZATION.md
 │   ├── HPACK_FINGERPRINTING.md
 │   ├── TCP_HANDSHAKE_FINGERPRINTING.md
@@ -39,7 +39,7 @@ docs/
 │   ├── PACKET_CAPTURE_IMPLEMENTATION.md
 │   └── TTL_SCORING_OPTIMIZATION.md
 │
-├── guides/                # 操作指南
+├── guides/                # User Guides
 │   ├── CAPTURE_BROWSER_FINGERPRINTS.md
 │   ├── DNS_INTEGRATION_GUIDE.md
 │   ├── TCP_FINGERPRINT_APPLICATION.md
@@ -48,7 +48,7 @@ docs/
 │   ├── UNIFIED_FINGERPRINT_EXAMPLE.md
 │   └── USAGE_GUIDE.md
 │
-├── modules/               # 模块文档
+├── modules/               # Module Documentation
 │   ├── api-noise.md
 │   ├── core.md
 │   ├── defense.md
@@ -63,7 +63,7 @@ docs/
 │   ├── tls_handshake.md
 │   └── useragent.md
 │
-├── developer-guides/      # 开发者指南
+├── developer-guides/      # Developer Guides
 │   ├── architecture.md
 │   ├── contributing.md
 │   ├── FUZZING.md
@@ -72,34 +72,34 @@ docs/
 │   ├── TROUBLESHOOTING.md
 │   └── TUTORIALS.md
 │
-├── user-guides/           # 用户指南
+├── user-guides/           # User Guides
 │   ├── getting-started.md
 │   ├── fingerprint-guide.md
 │   └── api-usage.md
 │
-├── http-client/           # HTTP 客户端文档
+├── http-client/           # HTTP Client Documentation
 │   ├── REMOTE_UPDATE_SUMMARY.md
 │   ├── REMOTE_UPDATE_INDEX.md
 │   ├── REMOTE_UPDATE_QUICK_REFERENCE.md
 │   ├── REMOTE_UPDATE_CODE_GUIDE.md
 │   └── REMOTE_UPDATE_SOURCE_CODE_OVERVIEW.md
 │
-├── project-management/    # 项目管理文档
-│   ├── phases/           # 阶段文档
-│   │   ├── archived/     # 历史阶段（Phase 0-8）
+├── project-management/    # Project Management Documentation
+│   ├── phases/           # Phase Documentation
+│   │   ├── archived/     # Historical Phases (Phase 0-8)
 │   │   ├── PHASE_1_EXECUTION_REPORT.md
 │   │   ├── PHASE_7_4_COMPLETION_REPORT.md
 │   │   ├── PHASE_8_DEPLOYMENT_GUIDE.md
 │   │   ├── PHASE_8_EXECUTION_SUMMARY.md
 │   │   ├── PHASE_8_FINAL_COMPLETION_REPORT.md
-│   │   └── PHASE_9_*.md  # Phase 9 系列文档
-│   ├── reports/          # 执行报告
+│   │   └── PHASE_9_*.md  # Phase 9 Series Documentation
+│   ├── reports/          # Execution Reports
 │   │   ├── EXECUTION_SUMMARY.md
 │   │   ├── PROJECT_ANALYSIS_REPORT.md
 │   │   └── SESSION_3_*.md
 │   └── unified-phase-9-4.md
 │
-├── reports/              # 分析报告
+├── reports/              # Analysis Reports
 │   ├── CODE_ALIGNMENT_FINAL_REPORT.md
 │   ├── CODE_SYNC_COMPLETION_SUMMARY.md
 │   ├── COMPLETE_FILE_MANIFEST.md
@@ -109,273 +109,205 @@ docs/
 │   ├── TRANSLATION_STATUS.md
 │   └── ...
 │
-├── security/             # 安全文档
+├── security/             # Security Documentation
 │   ├── AUDIT_REPORT.md
 │   ├── SECURITY_AUDIT.md
 │   ├── SECURITY_AUDIT_DETAILED.md
 │   └── SECURITY_IMPROVEMENTS.md
 │
-├── archives/             # 历史归档
+├── archives/             # Historical Archives
 │   ├── analysis-reports/
 │   ├── completion-reports/
 │   ├── progress-reports/
 │   ├── project-docs/
 │   └── quality-reports/
 │
-├── archive/              # 旧版归档
+├── archive/              # Legacy Archives
 │   ├── fingerprint_api_deprecated/
 │   └── phase9.4/
 │
-└── reference/            # 参考文档
+└── reference/            # Reference Documentation
     ├── document-management-tools.md
     ├── guides/
     └── specifications/
 ```
 
-## 📊 分类规则
+## 📊 Classification Rules
 
-### 1. 核心文档（根目录）
-**存放位置**: `docs/`  
-**文档类型**:
-- 主索引文件（INDEX.md）
-- 总览文档（ARCHITECTURE.md, API.md）
-- 项目元信息（README.md, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md）
+### 1. Core Documentation (Root Directory)
+**Location**: `docs/`  
+**Documentation Types**:
+- Main index files (INDEX.md)
+- Overview documentation (ARCHITECTURE.md, API.md)
+- Project metadata (README.md, CHANGELOG.md, CONTRIBUTING.md, SECURITY.md)
 
-**命名规则**:
-- 使用大写字母和下划线
-- 支持多语言版本（.en.md, .zh.md）
+**Naming Conventions**:
+- Use uppercase letters and underscores
+- Support multiple language versions (.en.md, .zh.md)
 
-### 2. 架构文档
-**存放位置**: `docs/architecture/`  
-**文档类型**:
-- 系统架构设计
-- 数据结构设计
-- 架构演进记录
+### 2. Architecture Documentation
+**Location**: `docs/architecture/`  
+**Documentation Types**:
+- System architecture design
+- Data structure design
+- Architecture evolution records
 
-**命名规则**:
-- 描述性命名，如 `BINARY_FORMAT_DESIGN.md`
-- 使用 `_DESIGN` 后缀表示设计文档
+**Naming Conventions**:
+- Descriptive naming, e.g., `BINARY_FORMAT_DESIGN.md`
+- Use `_DESIGN` suffix to indicate design documentation
 
-### 3. 技术规范
-**存放位置**: `docs/specifications/`  
-**文档类型**:
-- 协议实现规范
-- 算法实现规范
-- 技术标准文档
+### 3. Technical Specifications
+**Location**: `docs/specifications/`  
+**Documentation Types**:
+- Protocol implementation specifications
+- Algorithm implementation specifications
+- Technical standard documentation
 
-**命名规则**:
-- 技术名称 + 功能描述
-- 如 `TCP_HANDSHAKE_FINGERPRINTING.md`
+**Naming Conventions**:
+- Technical name + feature description
+- e.g., `TCP_HANDSHAKE_FINGERPRINTING.md`
 
-### 4. 使用指南
-**存放位置**: `docs/guides/`  
-**文档类型**:
-- 操作指南
-- 集成指南
-- 最佳实践
+### 4. User Guides
+**Location**: `docs/guides/`  
+**Documentation Types**:
+- Operation guides
+- Integration guides
+- Best practices
 
-**命名规则**:
-- 使用 `_GUIDE` 后缀
-- 描述清晰的功能名称
+**Naming Conventions**:
+- Use `_GUIDE` suffix
+- Clear feature names in description
 
-### 5. 模块文档
-**存放位置**: `docs/modules/`  
-**文档类型**:
-- 各功能模块的详细文档
-- API 接口说明
-- 使用示例
+### 5. Module Documentation
+**Location**: `docs/modules/`  
+**Documentation Types**:
+- Detailed documentation for each feature module
+- API interface specifications
+- Usage examples
 
-**命名规则**:
-- 使用小写字母和连字符
-- 与模块名称保持一致（如 `fingerprint-ml` → `ml.md`）
+**Naming Conventions**:
+- Use lowercase letters and hyphens
+- Consistent with module names (e.g., `fingerprint-ml` → `ml.md`)
 
-### 6. 开发者文档
-**存放位置**: `docs/developer-guides/`  
-**文档类型**:
-- 开发指南
-- 测试文档
-- 调试文档
+### 6. Developer Documentation
+**Location**: `docs/developer-guides/`  
+**Documentation Types**:
+- Development guides
+- Testing documentation
+- Debugging documentation
 
-**命名规则**:
-- 功能描述性命名
-- 可使用大写（如 `FUZZING.md`）或小写（如 `contributing.md`）
+**Naming Conventions**:
+- Descriptive feature naming
+- May use uppercase (e.g., `FUZZING.md`) or lowercase (e.g., `contributing.md`)
 
-### 7. 用户文档
-**存放位置**: `docs/user-guides/`  
-**文档类型**:
-- 快速入门
-- 使用教程
-- API 使用说明
+### 7. User Documentation
+**Location**: `docs/user-guides/`  
+**Documentation Types**:
+- Getting started guides
+- Usage tutorials
+- API usage instructions
 
-**命名规则**:
-- 使用小写字母和连字符
-- 描述性命名，如 `getting-started.md`
+**Naming Conventions**:
+- Use lowercase letters and hyphens
+- Descriptive naming, e.g., `getting-started.md`
 
-### 8. 项目管理
-**存放位置**: `docs/project-management/`  
-**文档类型**:
-- 阶段规划和报告
-- 项目执行记录
-- 路线图
+### 8. Project Management
+**Location**: `docs/project-management/`  
+**Documentation Types**:
+- Phase planning and reports
+- Project execution records
+- Roadmaps
 
-**分类规则**:
-- `phases/` - 各阶段文档
-- `phases/archived/` - 历史阶段归档
-- `reports/` - 执行报告
+**Classification Rules**:
+- `phases/` - Phase documentation
+- `phases/archived/` - Historical phase archives
+- `reports/` - Execution reports
 
-### 9. 报告文档
-**存放位置**: `docs/reports/`  
-**文档类型**:
-- 分析报告
-- 完成报告
-- 状态总结
+### 9. Report Documentation
+**Location**: `docs/reports/`  
+**Documentation Types**:
+- Analysis reports
+- Completion reports
+- Status summaries
 
-**命名规则**:
-- 使用 `_REPORT` 或 `_SUMMARY` 后缀
-- 如 `CODE_ALIGNMENT_FINAL_REPORT.md`
+**Naming Conventions**:
+- Use `_REPORT` or `_SUMMARY` suffix
+- e.g., `CODE_ALIGNMENT_FINAL_REPORT.md`
 
-### 10. 安全文档
-**存放位置**: `docs/security/`  
-**文档类型**:
-- Security Audit
-- 安全改进
-- 漏洞报告
+### 10. Security Documentation
+**Location**: `docs/security/`  
+**Documentation Types**:
+- Security audits
+- Security improvements
+- Vulnerability reports
 
-**命名规则**:
-- 使用 `SECURITY_` 或 `AUDIT_` 前缀
+**Naming Conventions**:
+- Use `SECURITY_` or `AUDIT_` prefix
 
-### 11. 归档文档
-**存放位置**: `docs/archives/` 或 `docs/archive/`  
-**文档类型**:
-- 历史文档
-- 废弃功能文档
-- 已完成项目文档
+### 11. Archived Documentation
+**Location**: `docs/archives/` or `docs/archive/`  
+**Documentation Types**:
+- Historical documentation
+- Deprecated feature documentation
+- Completed project documentation
 
-**分类规则**:
-- 按文档类型分子目录
-- 保持原有文件名
+**Classification Rules**:
+- Organize into subdirectories by documentation type
+- Maintain original file names
 
-## 🔄 整理历史
+## 🔄 Organization History
 
-### 2026-02-13 - 全面整理
-**变更内容**:
-1. ✅ Creation `architecture/` 目录，移入架构设计文档
-2. ✅ Creation `specifications/` 目录，移入技术规范文档
-3. ✅ 整理 `guides/` 目录，统一操作指南文档
-4. ✅ 整理 `developer-guides/` 目录，移入开发测试文档
-5. ✅ 归档历史 Phase 报告到 `project-management/phases/archived/`
-6. ✅ 整理 `reports/` 目录，移入各类报告文档
-7. ✅ 更新 `README.md`，反映最新结构
+### 2026-02-13 - Comprehensive Organization
+**Changes Made**:
+1. ✅ Created `architecture/` directory, migrated architecture design documentation
+2. ✅ Created `specifications/` directory, migrated technical specification documentation
+3. ✅ Organized `guides/` directory, unified user guide documentation
+4. ✅ Organized `developer-guides/` directory, migrated development and testing documentation
+5. ✅ Archived historical phase reports to `project-management/phases/archived/`
+6. ✅ Organized `reports/` directory, migrated various report documentation
+7. ✅ Updated `README.md` to reflect the latest structure
 
-**移动文件清单**:
+## 📝 Maintenance Guide
 
-**架构文档** → `architecture/`:
-- ARCHITECTURE_EVOLUTION.md
-- BINARY_FORMAT_DESIGN.md
-- HTTP2_SETTINGS_ANALYSIS_DESIGN.md
-- TLS_CLIENTHELLO_PARSING_DESIGN.md
-- PHASE_7_3_CLASSIFIER_DESIGN.md
+### When Adding Documentation
+1. Determine documentation type and classification
+2. Select the appropriate directory
+3. Follow naming conventions
+4. Update README.md and INDEX.md
 
-**技术规范** → `specifications/`:
-- GREASE_NORMALIZATION.md
-- HPACK_FINGERPRINTING.md
-- TCP_HANDSHAKE_FINGERPRINTING.md
-- PSK_0RTT_IMPLEMENTATION.md
-- RUSTLS_FINGERPRINT_INTEGRATION.md
-- TLS_CLIENTHELLO_INTEGRATION_COMPLETE.md
-- PACKET_CAPTURE_IMPLEMENTATION.md
-- TTL_SCORING_OPTIMIZATION.md
+### When Deprecating Documentation
+1. Move to the corresponding subdirectory in `archives/`
+2. Add `[Archived]` marker at the top of the documentation
+3. Update index files
 
-**开发文档** → `developer-guides/`:
-- FUZZING.md
-- PROFILING.md
-- TEST_REPORT.md
-- TROUBLESHOOTING.md
-- TUTORIALS.md
+### Regular Reviews
+- Review documentation structure quarterly
+- Clean up outdated documentation
+- Update index and classification
 
-**Phase 归档** → `project-management/phases/archived/`:
-- P0_COMPLETION_REPORT.md
-- PHASE2_COMPLETE.md
-- PHASE2_INFRASTRUCTURE_SUMMARY.md
-- PHASE2_VALIDATION_COMPLETE_REPORT.md
-- PHASE_5B_COMPLETION_REPORT.md
-- PHASE_6_COMPLETION_REPORT.md
-- PHASE_6_PERFORMANCE_REPORT.md
-- PHASE_7_1_COMPLETION_REPORT.md
-- PHASE_7_2_EXECUTION_PLAN.md
-- PHASE_7_2_EXECUTION_REPORT.md
-- PHASE_7_3_COMPLETION_REPORT.md
-- PHASE_7_3_EXECUTION_REPORT.md
-- PHASE_7_4_DEVELOPMENT_PLAN.md
-- PHASE_7_EXECUTION_SUMMARY.md
-- PHASE_7_PLAN.md
-- PHASE_7_PROJECT_SUMMARY.md
-- PHASE_8_IMPLEMENTATION_REPORT.md
-- FIREFOX_VALIDATION_COMPLETE.md
-- HTTP2_INTEGRATION_COMPLETE.md
-- JA3_DATABASE_MATCHING_COMPLETE.md
+## 🎯 Best Practices
 
-**报告文档** → `reports/`:
-- BROWSER_VERSION_ADAPTATION_SUMMARY.md
-- BROWSER_VERSION_ADAPTATION.md
-- ENHANCEMENT_SUMMARY.md
-- NEXT_STEPS_SUMMARY.md
-- NEXT_STEP_PHASE_7_4_ACTION_PLAN.md
-- PRODUCTION_DEPLOYMENT_SUMMARY.md
-- SESSION_3_FINAL_SUMMARY.md
-- SLA_AND_MONITORING_PROTOCOL.md
-- LOGIC_REVIEW.md
+### ✅ Recommended Practices
+- Use clear documentation naming and accurate descriptions
+- Organize by feature and type
+- Keep directory hierarchy to no more than 3 levels
+- Regularly update index files
+- Archive historical documentation rather than deleting
 
-**保持在根目录**:
-- INDEX.md / INDEX.en.md
-- ARCHITECTURE.md / ARCHITECTURE.en.md
-- API.md
-- README.md
-- CHANGELOG.md
-- CONTRIBUTING.md
-- SECURITY.md
+### ❌ Practices to Avoid
+- Accumulate large amounts of documentation in the root directory
+- Use ambiguous file names
+- Create excessively deep directory hierarchies
+- Scatter documentation across multiple locations
+- Delete historical documentation
 
-## 📝 维护指南
+## 📞 Contact Information
 
-### 新增文档时
-1. 确定文档类型和所属分类
-2. 选择合适的目录
-3. 遵循命名规则
-4. 更新 README.md 和 INDEX.md
-
-### 文档废弃时
-1. 移动到 `archives/` 对应子目录
-2. 在文档顶部添加 `[已归档]` 标记
-3. 更新索引文件
-
-### 定期审查
-- 每季度审查文档结构
-- 清理过时文档
-- 更新索引和分类
-
-## 🎯 最佳实践
-
-### ✅ 推荐做法
-- 文档命名清晰、描述准确
-- 按功能和类型分类存放
-- 保持目录层级不超过 3 层
-- 及时更新索引文件
-- 归档历史文档而非删除
-
-### ❌ 避免做法
-- 在根目录堆积大量文档
-- 使用模糊的文件名
-- 创建过深的目录层级
-- 文档散落在多个位置
-- 删除历史文档
-
-## 📞 联系方式
-
-如有文档组织相关问题，请：
-- 查阅 [README.md](README.md)
-- 提交 GitHub Issue
-- 联系项目维护者
+For questions about documentation organization, please:
+- Refer to [README.md](README.md)
+- Submit a GitHub Issue
+- Contact the project maintainers
 
 ---
 **Last Updated**: 2026-02-13  
-**维护者**: fingerprint-rust 团队
+**Maintainers**: fingerprint-rust team
