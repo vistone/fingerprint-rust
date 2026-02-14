@@ -1,5 +1,18 @@
 //! Timing protection module
 
+// Timing anomaly detection thresholds
+/// Standard deviation threshold in milliseconds for detecting bot-like timing consistency
+const CONSISTENCY_THRESHOLD_MS: f64 = 5.0;
+
+/// Minimum interval in milliseconds for human interaction - faster intervals are suspicious
+const MIN_HUMAN_INTERVAL_MS: u64 = 50;
+
+/// Maximum number of identical timing intervals before considering it automated behavior
+const MAX_IDENTICAL_INTERVALS: usize = 3;
+
+/// Timestamp precision for hiding timing resolution (milliseconds)
+const TIMESTAMP_PRECISION_MS: u64 = 100;
+
 /// Timing protector for adding random delays and obfuscation
 pub struct TimingProtector {
     min_delay_ms: u64,
@@ -25,8 +38,7 @@ impl TimingProtector {
     /// Hide timing resolution
     pub fn hide_timing_resolution(&self, timestamp: u64) -> u64 {
         // Round timestamp to reduce precision
-        let precision = 100; // milliseconds
-        (timestamp / precision) * precision
+        (timestamp / TIMESTAMP_PRECISION_MS) * TIMESTAMP_PRECISION_MS
     }
 
     /// Detect timing anomalies
@@ -67,16 +79,14 @@ impl TimingProtector {
         let std_dev = variance.sqrt();
 
         // If standard deviation is very low, intervals are too consistent
-        const CONSISTENCY_THRESHOLD: f64 = 5.0; // milliseconds
-        if std_dev < CONSISTENCY_THRESHOLD && mean > 0.0 {
+        if std_dev < CONSISTENCY_THRESHOLD_MS && mean > 0.0 {
             return true;
         }
 
-        // Check 2: Detect intervals that are too fast (< 50ms is suspicious)
-        const MIN_HUMAN_INTERVAL: u64 = 50; // milliseconds
+        // Check 2: Detect intervals that are too fast (< MIN_HUMAN_INTERVAL_MS is suspicious)
         let fast_intervals = intervals
             .iter()
-            .filter(|&&interval| interval < MIN_HUMAN_INTERVAL && interval > 0)
+            .filter(|&&interval| interval < MIN_HUMAN_INTERVAL_MS && interval > 0)
             .count();
 
         if fast_intervals > intervals.len() / 2 {
@@ -98,8 +108,8 @@ impl TimingProtector {
             }
         }
 
-        // If more than 3 identical intervals, likely automated
-        if max_repetitions > 3 {
+        // If more than MAX_IDENTICAL_INTERVALS, likely automated
+        if max_repetitions > MAX_IDENTICAL_INTERVALS {
             return true;
         }
 

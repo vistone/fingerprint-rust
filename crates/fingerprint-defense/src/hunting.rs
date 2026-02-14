@@ -2,6 +2,14 @@
 
 use std::collections::HashSet;
 
+// Threat detection thresholds
+/// Minimum pattern uniqueness ratio to avoid false positives
+/// Patterns with less than 1/3 unique values are considered automated
+const MIN_PATTERN_UNIQUENESS_RATIO: usize = 3;
+
+/// Minimum number of sequential accesses to trigger scanning detection
+const MIN_SEQUENTIAL_ACCESSES_FOR_SCANNING: usize = 3;
+
 /// Threat hunter for identifying malicious fingerprinting attempts
 pub struct ThreatHunter {
     known_bad_patterns: HashSet<String>,
@@ -73,7 +81,7 @@ impl ThreatHunter {
         if patterns.len() > 10 {
             // Check if all patterns are very similar (automated)
             let unique_patterns: HashSet<_> = patterns.iter().collect();
-            if unique_patterns.len() < patterns.len() / 3 {
+            if unique_patterns.len() < patterns.len() / MIN_PATTERN_UNIQUENESS_RATIO {
                 threats.push("Rapid automated requests detected".to_string());
             }
         }
@@ -130,8 +138,8 @@ impl ThreatHunter {
             }
         }
 
-        // If more than 3 sequential accesses, likely scanning
-        sequential_count > 3
+        // If more than MIN_SEQUENTIAL_ACCESSES_FOR_SCANNING, likely scanning
+        sequential_count > MIN_SEQUENTIAL_ACCESSES_FOR_SCANNING
     }
 
     /// Check if pattern matches known tool signatures

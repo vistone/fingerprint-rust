@@ -2,6 +2,25 @@
 
 use std::collections::HashMap;
 
+// Entropy-based anomaly detection thresholds
+/// Minimum unique byte ratio for normal data (26/256 ≈ 10%)
+/// Data with fewer unique bytes is considered suspiciously uniform
+const MIN_UNIQUE_BYTES: usize = 26;
+
+/// Maximum entropy threshold in bits (Shannon entropy)
+/// Real fingerprint data typically has entropy between 4-7 bits
+/// Values above this indicate suspiciously random data
+const MAX_ENTROPY_BITS: f64 = 7.5;
+
+// Screen resolution thresholds for contradiction detection
+/// Maximum typical mobile screen width in pixels
+/// Resolutions above this are suspicious for mobile devices
+const MAX_TYPICAL_MOBILE_WIDTH: u32 = 1920;
+
+/// Minimum typical desktop screen width in pixels
+/// Resolutions below this are suspicious for desktop devices
+const MIN_TYPICAL_DESKTOP_WIDTH: u32 = 800;
+
 /// Anomaly detector for behavioral analysis
 pub struct AnomalyDetector;
 
@@ -57,8 +76,8 @@ impl AnomalyDetector {
         // Count unique bytes
         let unique_bytes = byte_counts.iter().filter(|&&count| count > 0).count();
 
-        // If less than 10% of possible byte values are used, it's suspicious
-        unique_bytes < 26 // Less than ~10% of 256 possible values
+        // If less than MIN_UNIQUE_BYTES (≈10% of 256 possible values), it's suspicious
+        unique_bytes < MIN_UNIQUE_BYTES
     }
 
     /// Check if data has suspiciously high entropy (too random)
@@ -83,9 +102,8 @@ impl AnomalyDetector {
             })
             .sum();
 
-        // If entropy is very close to maximum (8 bits), data is too random
-        // Real fingerprint data typically has entropy between 4-7 bits
-        entropy > 7.5
+        // If entropy exceeds MAX_ENTROPY_BITS, data is too random
+        entropy > MAX_ENTROPY_BITS
     }
 
     /// Check for known spoofing tool signatures
@@ -211,12 +229,12 @@ impl ContradictionDetector {
     fn has_mobile_screen_contradiction(&self, is_mobile: &str, screen_width: &str) -> bool {
         if let Ok(width) = screen_width.parse::<u32>() {
             // Mobile device with desktop resolution is suspicious
-            if is_mobile == "true" && width > 1920 {
+            if is_mobile == "true" && width > MAX_TYPICAL_MOBILE_WIDTH {
                 return true;
             }
 
             // Desktop device with tiny screen is suspicious
-            if is_mobile == "false" && width < 800 {
+            if is_mobile == "false" && width < MIN_TYPICAL_DESKTOP_WIDTH {
                 return true;
             }
         }
