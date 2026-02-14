@@ -1,26 +1,31 @@
 # 文档指南
 
-欢迎来到 fingerprint-rust 中文文档！本目录包含了该项目的所有中文版本文档。
+欢迎来到 fingerprint-rust 文档！此目录包含项目的所有文档。
 
 ## 📍 从这里开始
 
-- **[文档索引](INDEX.md)** ← 主要文档中心
+- **[文档索引](INDEX.md)** ← 主文档中心
 
 ## 📚 文档结构
 
 ```
-zh/
-├── INDEX.md                    # 中文文档导航中心
-├── ORGANIZATION.md             # 文档组织说明
-├── ARCHITECTURE.md             # 系统架构
-├── CHANGELOG.md                # 变更日志
+docs/
+├── INDEX.md                    # 主文档中心（从这里开始）
+├── ARCHITECTURE.md             # 系统架构和设计
+├── CONTRIBUTING.md             # 如何为项目做贡献
+├── SECURITY.md                 # 安全策略和指引
+├── ORGANIZATION.md             # 文档组织指南
+├── CHANGELOG.md                # 版本历史和发布说明
+├── API.md                      # API 概览
 │
 ├── user-guides/                # 用户指南和教程
-│   ├── getting-started.md       # 快速开始
-│   ├── api-usage.md             # API 使用指南
-│   └── fingerprint-guide.md     # 指纹指南
+│   ├── README.md
+│   ├── getting-started.md
+│   ├── api-usage.md
+│   └── fingerprint-guide.md
 │
-├── developer-guides/           # 开发文档
+├── developer-guides/           # 开发和故障排除
+│   ├── README.md
 │   ├── FUZZING.md
 │   ├── PROFILING.md
 │   ├── TROUBLESHOOTING_GUIDE.md
@@ -29,50 +34,97 @@ zh/
 │   ├── architecture.md
 │   └── TEST_REPORT.md
 │
-├── modules/                    # 模块文档
-│   └── [核心、TLS、HTTP 等模块]
-│
 ├── guides/                     # 实现指南
+│   ├── README.md
 │   ├── CAPTURE_BROWSER_FINGERPRINTS.md
 │   ├── DNS_INTEGRATION_GUIDE.md
 │   ├── HTTP2_INTEGRATION_GUIDE.md
 │   ├── OPERATIONS_RUNBOOK.md
 │   ├── TCP_FINGERPRINT.md
 │   ├── UNIFIED_FINGERPRINT.md
-│   ├── USAGE_GUIDE.md
-│   └── README.md
+│   └── USAGE_GUIDE.md
 │
 ├── reference/                  # 参考文档
 │   ├── README.md
 │   ├── document-management-tools.md
-│   └── technical/              # 技术规范
+│   ├── technical/              # 技术规范
+│   │   ├── GREASE_NORMALIZATION.md
+│   │   ├── HPACK_FINGERPRINTING.md
+│   │   ├── PACKET_CAPTURE_IMPLEMENTATION.md
+│   │   ├── PSK_0RTT_IMPLEMENTATION.md
+│   │   ├── RUSTLS_FINGERPRINT_INTEGRATION.md
+│   │   ├── TCP_HANDSHAKE_FINGERPRINTING.md
+│   │   ├── TLS_CLIENTHELLO_INTEGRATION_COMPLETE.md
+│   │   └── TTL_SCORING_OPTIMIZATION.md
 │
 ├── architecture/               # 架构文档
+├── modules/                    # 模块特定指南
 ├── http-client/                # HTTP 客户端文档
 ├── security/                   # 安全文档
-└── [其他目录]
+│
+└── archives/                   # 历史文档和报告
+    └── 各种存档文档
 ```
 
-## 📖 如何使用此文档
+## 🎯 快速导航
 
-1. **新用户**: 从 [快速开始指南](user-guides/) 开始基本设置
-2. **API 用户**: 查看 [参考文档](reference/) 了解接口文档
-3. **开发者**: 查看 [系统架构](ARCHITECTURE.md) 和 [开发指南](developer-guides/)
-4. **运维人员**: 查看 [安全](https://github.com/vistone/fingerprint-rust/blob/main/docs/SECURITY.md) 和 [组织](ORGANIZATION.md)
+### 针对不同用户类型
 
-## 🔍 查找所需内容
+**👤 项目用户**
+- 从 [快速开始](user-guides/getting-started.md) 开始
+- 查看 [API 使用](user-guides/api-usage.md) 进行集成
 
-- **寻找代码示例？** → 查看 [examples/](../../examples/) 目录
-- **想要性能建议？** → 查看开发指南
-- **想要贡献？** → 阅读 [贡献指南](https://github.com/vistone/fingerprint-rust/blob/main/docs/CONTRIBUTING.md)
-- **安全问题？** → 查看 [安全政策](https://github.com/vistone/fingerprint-rust/blob/main/docs/SECURITY.md)
+**👨‍💻 开发者**
+- 阅读 [架构](developer-guides/architecture.md)
+- 查看 [故障排除](developer-guides/TROUBLESHOOTING_GUIDE.md)
+- 参考 [贡献指南](CONTRIBUTING.md)
 
-## 🌐 其他语言版本
+**🏢 DevOps/运维**
+- 查阅 [运维工作手册](guides/OPERATIONS_RUNBOOK.md)
+- 查看 [安全](SECURITY.md)
+- 参考 [组织](ORGANIZATION.md)
 
-- **[English Documentation](../en/)** - 英文完整文档
+**🔬 贡献者**
+- 阅读 [CONTRIBUTING.md](CONTRIBUTING.md)
+- 查看 [ARCHITECTURE.md](ARCHITECTURE.md)
+- 审查 [故障排除指南](developer-guides/TROUBLESHOOTING_GUIDE.md)
+
+## ✨ 关键文档文件
+
+| 文档 | 用途 | 目标用户 |
+|------|------|---------|
+| INDEX.md | 文档中心 | 所有人 |
+| ARCHITECTURE.md | 系统设计 | 开发者、架构师 |
+| CONTRIBUTING.md | 贡献指南 | 贡献者 |
+| SECURITY.md | 安全策略 | 安全、运维 |
+| CHANGELOG.md | 发布说明 | 所有人 |
+| ORGANIZATION.md | 文档结构 | 维护人员 |
+
+## 📖 文档状态
+
+- ✅ **核心文档** - 维护良好且最新
+- ✅ **用户指南** - 完整且当前
+- ✅ **开发者指南** - 全面
+- ✅ **技术规范** - 详细准确
+- 📦 **存档** - 历史文档供参考
+
+## 🔄 为文档做贡献
+
+如需贡献或报告文档问题：
+
+1. 阅读 [CONTRIBUTING.md](CONTRIBUTING.md)
+2. 查看现有 [问题](https://github.com/vistone/fingerprint-rust/issues)
+3. 通过拉取请求提交改进
+
+## 📞 获取帮助
+
+- **常见问题** → 查看 [user-guides/](user-guides/) 目录
+- **技术问题** → 查看 [故障排除指南](developer-guides/TROUBLESHOOTING_GUIDE.md)
+- **API 问题** → 查看 [API 参考](reference/)
+- **缺陷/功能** → 打开 [问题](https://github.com/vistone/fingerprint-rust/issues)
 
 ---
 
-**版本 (Version)**: 2.0  
-**最后更新 (Last Updated)**: 2026-02-14  
-**状态**: 活跃维护中
+**最后更新**: 2026-02-14  
+**版本**: 2.1.0  
+**维护者**: fingerprint-rust 贡献者
