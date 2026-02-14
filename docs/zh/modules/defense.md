@@ -1,7 +1,7 @@
 # 🛡️ fingerprint-defense 模块
 
 **Crate**: `fingerprint-defense`  
-**版本 (Version)**: 2.1.0  
+**版本**: 2.1.0  
 **用途**: 被动网络分析和指纹识别
 
 ---
@@ -14,7 +14,7 @@
 
 - 🔍 **被动分析** - 无需修改网络流量即可分析
 - 📊 **多层识别** - 支持 HTTP、TLS、TCP 层分析
-- 🎯 **指纹识别** - 识别客户端的特征和身份
+- 🎯 **Fingerprinting** - 识别客户端的特征和身份
 
 ---
 
@@ -63,7 +63,7 @@ pub struct Packet {
 
 #### 4. 指纹类型
 
-**HttpFingerprint** - HTTP 指纹
+**HttpFingerprint** - HTTP Fingerprint
 ```rust
 pub struct HttpFingerprint {
     pub method: String,
@@ -73,7 +73,7 @@ pub struct HttpFingerprint {
 }
 ```
 
-**TlsFingerprint** - TLS 指纹
+**TlsFingerprint** - TLS Fingerprint
 ```rust
 pub struct TlsFingerprint {
     pub version: u16,
@@ -83,7 +83,7 @@ pub struct TlsFingerprint {
 }
 ```
 
-**TcpFingerprint** - TCP 指纹
+**TcpFingerprint** - TCP Fingerprint
 ```rust
 pub struct TcpFingerprint {
     pub ttl: u8,
@@ -183,7 +183,7 @@ pub enum PassiveError {
 }
 ```
 
-使用示例 (Usage Examples)：
+使用示例：
 ```rust
 match analyzer.analyze_http(data) {
     Ok(fingerprint) => println!("分析成功: {:?}", fingerprint),
@@ -264,7 +264,7 @@ async fn capture_and_analyze() {
                     Some(EtherTypes::Ipv4) => {
                         // 分析 IPv4 数据包
                         if let Ok(fingerprint) = analyzer.analyze_tcp(packet) {
-                            println!("发现 TCP 指纹: TTL={}, Window={}", 
+                            println!("发现 TCP Fingerprint: TTL={}, Window={}", 
                                 fingerprint.ttl, fingerprint.window_size);
                         }
                     }
@@ -370,7 +370,7 @@ impl AnomalyDetector {
         // 检查 TLS 异常
         if let Ok(tls) = analyzer.analyze_tls(data) {
             if !self.normal_tls_versions.contains(&tls.version) {
-                anomalies.push(format!("异常 TLS 版本 (Version): 0x{:04x}", tls.version));
+                anomalies.push(format!("异常 TLS 版本: 0x{:04x}", tls.version));
             }
         }
         
@@ -424,7 +424,7 @@ async fn capture_and_analyze() {
                     Some(EtherTypes::Ipv4) => {
                         // 分析 IPv4 数据包
                         if let Ok(fingerprint) = analyzer.analyze_tcp(packet) {
-                            println!("发现 TCP 指纹: TTL={}, Window={}", 
+                            println!("发现 TCP Fingerprint: TTL={}, Window={}", 
                                 fingerprint.ttl, fingerprint.window_size);
                         }
                     }
@@ -530,7 +530,7 @@ impl AnomalyDetector {
         // 检查 TLS 异常
         if let Ok(tls) = analyzer.analyze_tls(data) {
             if !self.normal_tls_versions.contains(&tls.version) {
-                anomalies.push(format!("异常 TLS 版本 (Version): 0x{:04x}", tls.version));
+                anomalies.push(format!("异常 TLS 版本: 0x{:04x}", tls.version));
             }
         }
         
@@ -556,4 +556,4 @@ impl AnomalyDetector {
 - [fingerprint-anomaly](anomaly.md) - 异常检测模块
 
 ---
-*最后更新 (Last Updated): 2026-02-13*
+*最后更新: 2026-02-13*

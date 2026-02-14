@@ -1,7 +1,7 @@
 # Profiles模块文档
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
 **模块**: fingerprint-profiles
 
 ---
@@ -111,7 +111,7 @@ pub struct BrowserFingerprint {
 
 pub struct TLSConfig {
     pub ja3: &'static str,          // JA3指纹
-    pub cipher_suites: Vec<&'static str>,  // 密码套件
+    pub cipher_suites: Vec<&'static str>,  // Cipher Suite
     pub extensions: Vec<&'static str>,     // 扩展字段
     pub signature_algorithms: Vec<&'static str>, // 签名算法
     pub supported_groups: Vec<&'static str>,     // 支持的群组
@@ -236,4 +236,4 @@ let results = processor.validate_batch(profiles_batch)?;
 - [fingerprint-ml](ml.md) - 机器学习分类
 
 ---
-*最后更新 (Last Updated): 2026-02-13*
+*最后更新: 2026-02-13*

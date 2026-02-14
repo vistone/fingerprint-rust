@@ -1,7 +1,7 @@
 # HTTP模块文档
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
 **模块**: fingerprint-http
 
 ---
@@ -121,7 +121,7 @@ let client = HttpClient::builder()
     .connection_pool_size(100)           // 连接池大小
     .idle_timeout(Duration::from_secs(300))  // 空闲超时
     .connection_timeout(Duration::from_secs(10)) // 连接超时
-    .max_redirects(5)                    // 最大重定向次数
+    .max_redirects(5)                    // Maximum redirect hops
     .build()?;
 ```
 
@@ -154,7 +154,7 @@ let request = HttpRequest::get("https://example.com")
     .build();
 ```
 
-## 🧪 使用示例 (Usage Examples)
+## 🧪 使用示例
 
 ### 基础GET请求
 ```rust
@@ -199,4 +199,4 @@ let (ws_stream, response) = client
 - [fingerprint-gateway](gateway.md) - API网关集成
 
 ---
-*最后更新 (Last Updated): 2026-02-13*
+*最后更新: 2026-02-13*

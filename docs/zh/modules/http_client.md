@@ -5,10 +5,10 @@
 **用户的正确指出**：
 > "我要测试的是netconnpool +fingerprint-rust 。我们调用reqwest 不可以，那我自己造一个http的库，补充我们的不足"
 
-**这是正确的思路！** 我们不应该依赖 reqwest（它使用固定的 TLS 指纹），而应该：
+**这是正确的思路！** 我们不应该依赖 reqwest（它使用固定的 TLS Fingerprint），而应该：
 1. ✅ 使用 netconnpool 管理连接
 2. ✅ 使用 fingerprint-rust 的配置
-3. ✅ 自己实现 HTTP 客户端 (HTTP Client)
+3. ✅ 自己实现 HTTP 客户端
 
 ## 🎯 已实现的功能
 
@@ -27,14 +27,14 @@ crates/fingerprint-http/src/http_client/
 ├── http1.rs        - HTTP/1.1 实现
 ├── http2.rs        - HTTP/2 实现 ✅
 ├── http3.rs        - HTTP/3 实现 ✅
-├── http1_pool.rs   - HTTP/1.1 连接池支持 (Connection Pool Support) ✅
-├── http2_pool.rs   - HTTP/2 连接池支持 (Connection Pool Support) ✅
-├── http3_pool.rs   - HTTP/3 连接池支持 (Connection Pool Support) ✅
+├── http1_pool.rs   - HTTP/1.1 连接池 ✅
+├── http2_pool.rs   - HTTP/2 连接池 ✅
+├── http3_pool.rs   - HTTP/3 连接池 ✅
 ├── pool.rs         - 连接池管理器 ✅
 └── tls.rs          - TLS 连接支持 ✅
 ```
 
-### 1. HTTP 客户端 (HTTP Client) (`src/http_client/mod.rs`)
+### 1. HTTP 客户端 (`src/http_client/mod.rs`)
 
 ```rust
 pub struct HttpClient {
@@ -49,10 +49,10 @@ impl HttpClient {
         user_agent: String
     ) -> Self;
 
-    /// 发送 GET 请求
+    /// Send GET request
     pub fn get(&self, url: &str) -> Result<HttpResponse>;
 
-    /// 发送 POST 请求
+    /// Send POST request
     pub fn post(&self, url: &str, body: &[u8]) -> Result<HttpResponse>;
 }
 ```
@@ -105,7 +105,7 @@ impl HttpResponse {
 
 **特点**：
 - ✅ 完整的 HTTP 响应解析
-- ✅ 状态码、headers、body 分离
+- ✅ Status Code、headers、body 分离
 - ✅ 支持二进制和文本 body
 - ✅ 支持 chunked encoding（`parse_chunked()`）
 - ✅ 支持 gzip/deflate/brotli 解压（需要 `compression` feature，使用 `flate2` 和 `brotli-decompressor`）
@@ -197,9 +197,9 @@ test test_google_earth_api ... ❌ (响应解析问题)
 1. **httpbin.org 503**: 服务暂时不可用（不是我们的问题）
 2. **Google Earth API 失败**: 响应解析需要改进（chunked encoding）
 
-## 🎯 使用示例 (Usage Examples)
+## 🎯 使用示例
 
-### 基础使用 (Basic Usage)
+### 基础使用
 
 ```rust
 use fingerprint::*;
@@ -207,7 +207,7 @@ use fingerprint::*;
 // 1. 获取浏览器指纹
 let fp_result = get_random_fingerprint_by_browser("chrome")?;
 
-// 2. 创建 HTTP 客户端 (HTTP Client)
+// 2. 创建 HTTP 客户端
 let client = HttpClient::with_profile(
     fp_result.profile.clone(),
     fp_result.headers.clone(),
@@ -217,7 +217,7 @@ let client = HttpClient::with_profile(
 // 3. 发送请求
 let response = client.get("https://api.example.com/data")?;
 
-println!("状态码: {}", response.status_code);
+println!("Status Code: {}", response.status_code);
 println!("响应: {}", response.body_as_string()?);
 ```
 
@@ -269,7 +269,7 @@ let spec = fp_result.profile.get_client_hello_spec()?;
                     ↓
 ┌────────────────────┬────────────────────────────────────┐
 │ HTTP/1.1 ✅        │ TLS (rustls) ⚠️                    │
-│ 直接 TcpStream     │ 固定的 TLS 指纹                     │
+│ 直接 TcpStream     │ 固定的 TLS Fingerprint                     │
 └────────────────────┴────────────────────────────────────┘
 ```
 
@@ -408,7 +408,7 @@ pub async fn send_http2_request_with_pool(
 
 - [hyper](https://github.com/hyperium/hyper) - HTTP 实现
 - [h2](https://github.com/hyperium/h2) - HTTP/2 实现
-- [reqwest](https://github.com/seanmonstar/reqwest) - HTTP 客户端 (HTTP Client)（但 TLS 固定）
+- [reqwest](https://github.com/seanmonstar/reqwest) - HTTP 客户端（但 TLS 固定）
 
 ### TLS 实现参考
 

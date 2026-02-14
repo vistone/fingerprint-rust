@@ -1,8 +1,8 @@
 # User-Agent 模块文档
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
@@ -57,7 +57,7 @@ pub enum OperatingSystem {
 - `random_os() -> OperatingSystem`
   - 随机选择操作系统
 
-## 使用示例 (Usage Examples)
+## 使用示例
 
 ```rust
 use fingerprint::{get_user_agent_by_profile_name, random_os, OperatingSystem};

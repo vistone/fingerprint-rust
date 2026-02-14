@@ -1,8 +1,8 @@
 # TCP 指纹应用指南
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
@@ -10,7 +10,7 @@
 
 ## 概述
 
-fingerprint-rust 现在支持在创建 TCP 连接时应用 TCP Profile，确保 TCP 指纹（TTL、Window Size、MSS、Window Scale）与浏览器指纹一致，避免被检测系统识别为异常。
+fingerprint-rust 现在支持在创建 TCP 连接时应用 TCP Profile，确保 TCP Fingerprint（TTL、Window Size、MSS、Window Scale）与浏览器指纹一致，避免被检测系统识别为异常。
 
 ## 功能说明
 
@@ -92,7 +92,7 @@ let stream = tcp_fingerprint::connect_tcp_with_profile(addr, Some(&tcp_profile))
 let stream = tcp_fingerprint::connect_tcp_with_profile_sync(addr, Some(&tcp_profile))?;
 ```
 
-## 验证 TCP 指纹
+## 验证 TCP Fingerprint
 
 ### 使用 fingerprint-defense 验证
 
@@ -135,7 +135,7 @@ wireshark capture.pcap
    - 某些网络环境可能会修改 TCP 参数（如 NAT、防火墙）
    - 实际发送的参数可能与设置的值不完全一致
 
-4. **连接池支持 (Connection Pool Support)**
+4. **连接池**
    - 连接池中的连接在创建时应用 TCP Profile
    - 复用的连接会保持原有的 TCP 参数
    - 建议在创建连接池之前就同步 TCP Profile
@@ -147,7 +147,7 @@ wireshark capture.pcap
    let profile = generate_unified_fingerprint(profile_name, user_agent)?;
    ```
 
-2. **验证 TCP 指纹**
+2. **验证 TCP Fingerprint**
    - 使用 `fingerprint-defense` 的 `PassiveAnalyzer` 验证
    - 或使用 tcpdump/wireshark 抓包分析
 
@@ -201,9 +201,9 @@ socket.set_send_buffer_size(tcp_profile.window_size as usize)?;
 
 ## 同步指南
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
@@ -251,13 +251,13 @@ profile = profile.with_synced_tcp_profile(&ua);
 
 ### 同步规则
 
-| User-Agent 包含 | 操作系统 | TCP TTL | TCP Window Size |
+| User-Agent 包含 | Operating System | TCP TTL | TCP Window Size |
 |----------------|---------|---------|----------------|
 | `Windows NT 10.0` / `Windows NT 11.0` | Windows | 128 | 64240 |
 | `Macintosh` / `Mac OS X` | macOS | 64 | 65535 |
 | `Linux` / `X11` | Linux | 64 | 65535 |
 
-## 使用示例 (Usage Examples)
+## 使用示例
 
 ### 示例 1: 随机选择（自动同步）
 
@@ -282,7 +282,7 @@ let config = HttpClientConfig {
 ### 示例 2: 按浏览器类型选择（自动同步）
 
 ```rust
-// 随机选择 Chrome 指纹
+// 随机选择 Chrome Fingerprint
 let result = get_random_fingerprint_by_browser("chrome")?;
 
 // ✅ TCP Profile 已自动同步
@@ -294,7 +294,7 @@ let result = get_random_fingerprint_by_browser("chrome")?;
 ```rust
 use fingerprint_core::types::OperatingSystem;
 
-// 指定 Linux 操作系统
+// 指定 Linux Operating System
 let result = get_random_fingerprint_with_os(Some(OperatingSystem::Linux))?;
 
 // ✅ TCP Profile 已自动同步为 Linux

@@ -2,7 +2,7 @@
 
 **项目**: fingerprint-rust  
 **文档版本**: 1.0  
-**最后更新 (Last Updated)**: 2025-01-27  
+**最后更新**: 2025-01-27  
 **演进阶段**: v2.0.1 → v2.0.2（全面多路复用架构）
 
 ---
@@ -54,7 +54,7 @@
    - 影响：所有 POST/PUT 请求失败
    - 修复：改为 `send_request(..., false)`，通过 `send_data` 结束流
 
-2. **HTTP/2 连接池支持 (Connection Pool Support)"伪复用"**
+2. **HTTP/2 连接池"伪复用"**
    - 问题：每次请求都重新进行 TLS + H2 握手
    - 影响：性能比 HTTP/1.1 还差
    - 修复：实现 `H2SessionPool`，池化 `SendRequest` 句柄
@@ -120,7 +120,7 @@
 
 这是整个架构演进的核心洞察：
 
-#### HTTP/1.1：L4 层池化（TCP 连接池支持 (Connection Pool Support)）
+#### HTTP/1.1：L4 层池化（TCP 连接池）
 
 ```
 ┌─────────────────────────────────────┐
@@ -219,7 +219,7 @@
                    │
 ┌──────────────────▼──────────────────────────┐
 │  连接层 (Connection Layer - L4)             │
-│  - netconnpool: 管理 TCP 连接池支持 (Connection Pool Support)              │
+│  - netconnpool: 管理 TCP 连接池              │
 │  - 仅在 HTTP/1.1 和创建新会话时使用          │
 └──────────────────┬──────────────────────────┘
                    │
@@ -424,7 +424,7 @@
 1. **http1_pool.rs**
    ```rust
    //! 架构说明：
-   //! - HTTP/1.1 采用 netconnpool 管理 TCP 连接池支持 (Connection Pool Support)
+   //! - HTTP/1.1 采用 netconnpool 管理 TCP 连接池
    //! - 池化对象：TcpStream（裸 TCP 连接）
    //! - 复用方式：串行复用（一个连接同一时间只能处理一个请求）
    ```
@@ -477,7 +477,7 @@
         │
 ┌───────▼───────────────────────────┐
 │      连接层 (Connection - L4)     │
-│  - netconnpool: TCP 连接池支持 (Connection Pool Support)         │
+│  - netconnpool: TCP 连接池         │
 │  - 仅在 HTTP/1.1 和创建新会话时使用│
 └───────┬───────────────────────────┘
         │
@@ -503,7 +503,7 @@
 
 ```rust
 pub struct ConnectionPoolManager {
-    /// L4 层：TCP 连接池支持 (Connection Pool Support)（用于 HTTP/1.1）
+    /// L4 层：TCP 连接池（用于 HTTP/1.1）
     pools: Arc<Mutex<HashMap<String, Arc<Pool>>>>,
     
     /// L7 层：HTTP/2 会话池
@@ -770,7 +770,7 @@ let new_builder = rustls::ClientConfig::builder()
 
 | 层面 | 基础指纹库 (模拟器) | fingerprint-rust (强化后) |
 |------|-------------------|-------------------------|
-| **HTTP 版本 (Version)** | 仅 Header 声明 | H1/H2/H3 真实协商 |
+| **HTTP 版本** | 仅 Header 声明 | H1/H2/H3 真实协商 |
 | **H2 Settings** | 默认值 | 自适应 Profile (WindowSize 等) |
 | **TLS Cipher** | 通用套件 | 按 Spec 精确筛选 |
 | **JA3/JA4** | 随机/固定 | JA4 哈希与 ClientHello 严格对应 |
@@ -809,7 +809,7 @@ let new_builder = rustls::ClientConfig::builder()
 
 **已实现功能**:
 
-1. **TCP/IP 指纹识别 (p0f)**
+1. **TCP/IP Fingerprinting (p0f)**
    - 移植了 `p0f.rs` 和 `p0f_parser.rs`
    - 支持解析 `p0f.fp` 签名文件
    - 能够被动识别操作系统和 TCP 协议栈特征
@@ -858,7 +858,7 @@ pub struct PassiveAnalysisResult {
 - 在 `Cargo.toml` 中添加了 `fingerprint-defense` 作为可选依赖（feature: `defense`）
 - 在 `lib.rs` 中重新导出了 `PassiveAnalyzer`、`TcpFingerprint` 等核心类型，方便外部调用
 
-**使用示例 (Usage Examples)**:
+**使用示例**:
 ```rust
 #[cfg(feature = "defense")]
 use fingerprint::PassiveAnalyzer;
@@ -898,7 +898,7 @@ let result = analyzer.analyze_packet(&packet)?;
 **迈向全栈伪装**:
 
 1. **应用 TCP 设置（攻击侧）**
-   - 既然我们已经能识别 TCP 指纹（防御侧），下一步就是在发起连接时（攻击侧）
+   - 既然我们已经能识别 TCP Fingerprint（防御侧），下一步就是在发起连接时（攻击侧）
    - 利用 `socket2` 库在 `fingerprint-http` 中动态设置：
      - TTL（Time To Live）
      - Window Size（窗口大小）
@@ -908,7 +908,7 @@ let result = analyzer.analyze_packet(&packet)?;
 
 2. **恢复 Cipher Suite 过滤**
    - 研究在 rustls 0.21 中正确过滤加密套件的方法
-   - 或升级到 rustls 0.23 版本 (Version)
+   - 或升级到 rustls 0.23 版本
 
 3. **扩展系统防护**
    - 如果需要主动防御能力（如防火墙、限流）

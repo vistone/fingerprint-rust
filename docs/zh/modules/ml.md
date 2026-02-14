@@ -1,7 +1,7 @@
 # ML模块文档
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
 **模块**: fingerprint-ml
 
 ---
@@ -27,7 +27,7 @@ println!("Browser Family: {:?} (Confidence: {:.2}%)",
          family_result.family, family_result.confidence * 100.0);
 ```
 
-### Level 2: 浏览器版本识别 (100+版本 (Version))
+### Level 2: 浏览器版本识别 (100+版本)
 **识别目标**: 具体的浏览器版本号
 **准确率**: 95.50%
 **数据集**: 990个样本（训练792 + 验证99 + 测试99）
@@ -274,4 +274,4 @@ let results = processor.process_batch_parallel(&fingerprint_batch)?;
 - [fingerprint-anomaly](anomaly.md) - 异常检测模块
 
 ---
-*最后更新 (Last Updated): 2026-02-13*
+*最后更新: 2026-02-13*

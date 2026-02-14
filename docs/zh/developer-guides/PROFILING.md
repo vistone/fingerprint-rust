@@ -1,8 +1,8 @@
 # Performance Profiling Guide
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 

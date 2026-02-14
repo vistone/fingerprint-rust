@@ -1,7 +1,7 @@
 # API调用指南
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
 **适用版本**: fingerprint-rust 2.1.0+
 
 ---
@@ -406,7 +406,7 @@ println!("Status: {}", response.status);
 
 ### 常见HTTP状态码
 
-| 状态码 | 含义 | 解决方案 |
+| Status Code | 含义 | 解决方案 |
 |--------|------|----------|
 | 200 | 成功 | 正常处理响应 |
 | 400 | 请求错误 | 检查请求参数 |
@@ -438,5 +438,5 @@ println!("Status: {}", response.status);
 - [安全配置](security-configuration.md)
 
 ---
-*最后更新 (Last Updated): 2026-02-13*  
-*版本 (Version): v1.0*
+*最后更新: 2026-02-13*  
+*版本: v1.0*

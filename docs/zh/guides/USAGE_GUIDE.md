@@ -14,7 +14,7 @@ use fingerprint::{get_random_fingerprint, HttpClient};
 // 随机选择一个浏览器指纹（从所有 69 个指纹中）
 let fp_result = get_random_fingerprint()?;
 
-// 使用随机指纹创建 HTTP 客户端 (HTTP Client)
+// 使用随机指纹创建 HTTP 客户端
 let client = HttpClient::with_profile(
     fp_result.profile.clone(),
     fp_result.headers.clone(),
@@ -55,7 +55,7 @@ use fingerprint::{get_random_fingerprint_with_os, OperatingSystem, HttpClient};
 // 随机选择指纹，但指定操作系统为 Windows
 let fp_result = get_random_fingerprint_with_os(Some(OperatingSystem::Windows))?;
 
-// 随机选择 Chrome 指纹，指定操作系统为 macOS
+// 随机选择 Chrome Fingerprint，指定操作系统为 macOS
 let fp_result = get_random_fingerprint_by_browser_with_os(
     "chrome",
     Some(OperatingSystem::MacOS),
@@ -136,7 +136,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("随机选择的指纹: {}", fp_result.hello_client_id);
     println!("User-Agent: {}", fp_result.user_agent);
     
-    // 创建 HTTP 客户端 (HTTP Client)
+    // 创建 HTTP 客户端
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),
         fp_result.headers.clone(),
@@ -145,13 +145,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // 发送请求
     let response = client.get("https://httpbin.org/get")?;
-    println!("状态码: {}", response.status_code);
+    println!("Status Code: {}", response.status_code);
     
     Ok(())
 }
 ```
 
-### 示例 2: 随机选择 Chrome 版本 (Version)
+### 示例 2: 随机选择 Chrome 版本
 
 ```rust
 use fingerprint::{get_random_fingerprint_by_browser, HttpClient};
@@ -160,7 +160,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 随机选择一个 Chrome 版本的指纹
     let fp_result = get_random_fingerprint_by_browser("chrome")?;
     
-    println!("随机选择的 Chrome 版本 (Version): {}", fp_result.hello_client_id);
+    println!("随机选择的 Chrome 版本: {}", fp_result.hello_client_id);
     
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),
@@ -227,7 +227,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 pub struct FingerprintResult {
-    pub profile: ClientProfile,        // TLS 指纹配置
+    pub profile: ClientProfile,        // TLS fingerprint configuration
     pub user_agent: String,            // 对应的 User-Agent
     pub hello_client_id: String,      // Client Hello ID（如 "Chrome-133"）
     pub headers: HTTPHeaders,          // 标准 HTTP 请求头

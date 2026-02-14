@@ -15,7 +15,7 @@
 ### ⏳ 待实现
 - 从 PCAP 数据包中解析 TLS ClientHello
 - 提取 ClientHello 字段到 `ClientHelloSignature`
-- 在 PCAP 分析器中集成 TLS 指纹
+- 在 PCAP 分析器中集成 TLS Fingerprint
 - TLS 指纹比对和匹配
 
 ## 架构设计
@@ -41,7 +41,7 @@ PCAP 文件
     ↓
 生成 ClientHelloSignature
     ↓
-计算 JA3/JA4 指纹
+计算 JA3/JA4 Fingerprint
     ↓
 匹配已知浏览器 Profile
 ```
@@ -53,8 +53,8 @@ crates/fingerprint-core/src/
   ├── tls_parser.rs        [NEW] - TLS 记录层解析
   ├── client_hello_parser.rs [NEW] - ClientHello 解析
   ├── signature.rs         [EXIST] - ClientHelloSignature
-  ├── ja3.rs              [EXIST] - JA3 指纹
-  └── ja4.rs              [EXIST] - JA4 指纹
+  ├── ja3.rs              [EXIST] - JA3 Fingerprint
+  └── ja4.rs              [EXIST] - JA4 Fingerprint
 
 crates/fingerprint/src/bin/
   └── fingerprint_analyze.rs [ENHANCE] - 集成 TLS 解析
@@ -107,7 +107,7 @@ crates/fingerprint/src/bin/
 
 ```rust
 struct ClientHello {
-    // TLS 版本 (Version) (2 bytes)
+    // TLS 版本 (2 bytes)
     client_version: u16,  // 0x0303 = TLS 1.2
     
     // 随机数 (32 bytes)
@@ -117,7 +117,7 @@ struct ClientHello {
     session_id_length: u8,
     session_id: Vec<u8>,
     
-    // 密码套件 (变长)
+    // Cipher Suite (变长)
     cipher_suites_length: u16,
     cipher_suites: Vec<u16>,
     
@@ -567,7 +567,7 @@ impl std::error::Error for TlsParseError {}
 - ✅ ClientHello 检测
 - ⏳ 基本字段提取 (version, cipher_suites)
 
-### v1.1 - 完整 TLS 指纹 (2 周)
+### v1.1 - 完整 TLS Fingerprint (2 周)
 - ⏳ 扩展解析
 - ⏳ JA3 计算
 - ⏳ JA4 计算

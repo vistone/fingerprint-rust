@@ -1,8 +1,8 @@
 # API 噪声注入模块
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
@@ -52,7 +52,7 @@ fn main() {
     
     // 生成带噪声的指纹哈希
     let fingerprint = injector.canvas().fingerprint_hash(&canvas_data);
-    println!("Canvas 指纹: {}", fingerprint);
+    println!("Canvas Fingerprint: {}", fingerprint);
 }
 ```
 
