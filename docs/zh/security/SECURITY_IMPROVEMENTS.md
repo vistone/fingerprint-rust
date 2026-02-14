@@ -1,167 +1,165 @@
-# Security Improvements - 2026-01-06
+# 安全改进 - 2026-01-06
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
+本文档跟踪基于全球最佳实践的综合审计和审查对 fingerprint-rust 项目所做的安全改进。
 
+## 已实施的改进
 
-This document tracks security improvements made to the fingerprint-rust project based on comprehensive audit and review of global best practices.
+### 1. 测试可靠性 (2026-01-06)
+- **问题**: DNS 解析器测试未标记为需要网络访问
+- **修复**: 向 `test_resolve()` 添加 `#[ignore]` 属性，以防止不稳定的测试失败
+- **文件**: `crates/fingerprint-dns/src/dns/resolver.rs`
+- **原因**: 依赖网络的测试应该明确标记，以避免 CI/CD 失败
 
-## Improvements Implemented
+### 2. 依赖项安全审查 (2026-01-06)
+- **操作**: 审查所有依赖项以查找已知漏洞
+- **状态**: 所有依赖项都已更新到其最新小版本
+- **说明**: 主版本升级（rustls 0.21→0.23、quinn 0.10→0.11）延迟到单独的 PR，因为可能存在破坏性变更
 
-### 1. Test Reliability (2026-01-06)
-- **Issue**: DNS resolver test was not marked as requiring network access
-- **Fix**: Added `#[ignore]` attribute to `test_resolve()` to prevent flaky test failures
-- **File**: `crates/fingerprint-dns/src/dns/resolver.rs`
-- **Rationale**: Network-dependent tests should be explicitly marked to avoid CI/CD failures
+## 推荐的未来改进
 
-### 2. Dependency Security Review (2026-01-06)
-- **Action**: Reviewed all dependencies for known vulnerabilities
-- **Status**: All dependencies are up-to-date with their minor versions
-- **Note**: Major version upgrades (rustls 0.21→0.23, quinn 0.10→0.11) deferred to separate PR due to potential breaking changes
+### 高优先级
 
-## Recommended Future Improvements
+#### 1. 升级关键依赖项
+- **rustls**: 从 0.21 升级到 0.23+ 以获取最新的安全补丁
+- **quinn**: 从 0.10 升级到 0.11+ 以获得 HTTP/3 性能和安全性提升
+- **影响**: 需要 API 更改和全面测试
+- **时间表**: 下一个主要版本 (v2.2.0)
 
-### High Priority
+#### 2. 添加模糊测试
+- **工具**: cargo-fuzz
+- **目标**: 
+  - 数据包解析 (IPv4/IPv6、TCP/UDP)
+  - TLS ClientHello 解析
+  - HTTP 头部解析
+- **原因**: 发现边界情况和潜在崩溃
 
-#### 1. Upgrade Critical Dependencies
-- **rustls**: Upgrade from 0.21 to 0.23+ for latest security patches
-- **quinn**: Upgrade from 0.10 to 0.11+ for HTTP/3 performance and security
-- **Impact**: Requires API changes and thorough testing
-- **Timeline**: Next major release (v2.2.0)
+#### 3. 减少生产代码中的 unwrap()
+- **当前**: 核心库中约 58 个实例（主要在示例/测试中）
+- **目标**: 使用 `?` 运算符替换为适当的错误处理
+- **优先级**: 中等（大多数在安全上下文中）
 
-#### 2. Add Fuzzing Tests
-- **Tool**: cargo-fuzz
-- **Targets**: 
-  - Packet parsing (IPv4/IPv6, TCP/UDP)
-  - TLS ClientHello parsing
-  - HTTP header parsing
-- **Rationale**: Discover edge cases and potential crashes
+### 中等优先级
 
-#### 3. Reduce unwrap() in Production Code
-- **Current**: ~58 instances in core crates (mostly in examples/tests)
-- **Goal**: Replace with proper error handling using `?` operator
-- **Priority**: Medium (most are in safe contexts)
+#### 4. 添加基于属性的测试
+- **工具**: proptest
+- **目标**:
+  - 指纹生成永远不应该恐慌
+  - 数据包解析应该优雅地处理格式错误的输入
+  - 数据库操作应该保持一致性
 
-### Medium Priority
+#### 5. 实现速率限制
+- **位置**: HTTP 客户端和连接池
+- **目的**: 防止资源耗尽攻击
+- **配置**: 每个主机的速率限制和指数退避
 
-#### 4. Add Property-Based Testing
-- **Tool**: proptest
-- **Targets**:
-  - Fingerprint generation should never panic
-  - Packet parsing should handle malformed input gracefully
-  - Database operations should maintain consistency
+#### 6. 添加内存分析
+- **工具**: valgrind、heaptrack
+- **目标**: 识别内存泄漏和优化机会
+- **关注**: 长时间运行的服务器场景
 
-#### 5. Implement Rate Limiting
-- **Location**: HTTP client and connection pool
-- **Purpose**: Prevent resource exhaustion attacks
-- **Configuration**: Per-host rate limits with exponential backoff
+### 低优先级
 
-#### 6. Add Memory Profiling
-- **Tool**: valgrind, heaptrack
-- **Goal**: Identify memory leaks and optimization opportunities
-- **Focus**: Long-running server scenarios
+#### 7. 代码覆盖率跟踪
+- **工具**: tarpaulin 或 cargo-llvm-cov
+- **目标**: 达到 >80% 的代码覆盖率
+- **当前**: 约 70%（基于测试计数估计）
 
-### Low Priority
+#### 8. 安全文档
+- **内容**: 威胁模型、安全最佳实践、事件响应
+- **受众**: 用户和贡献者
+- **格式**: docs/ 目录中的 Markdown
 
-#### 7. Code Coverage Tracking
-- **Tool**: tarpaulin or cargo-llvm-cov
-- **Goal**: Achieve >80% code coverage
-- **Current**: Estimated ~70% (based on test count)
+## 采纳的最佳实践
 
-#### 8. Security Documentation
-- **Content**: Threat model, security best practices, incident response
-- **Audience**: Users and contributors
-- **Format**: Markdown in docs/ directory
+### 来自全球标准
 
-## Best Practices Adopted
+#### 1. OWASP 安全编码指南
+- ✅ 对所有外部数据进行输入验证
+- ✅ 数组访问的边界检查
+- ✅ 安全的整数算术（无未检查的溢出）
+- ✅ 适当的错误处理，无恐慌
 
-### From Global Standards
+#### 2. Rust 安全指南
+- ✅ 最小使用不安全代码（仅在测试中）
+- ✅ 不使用弃用或未维护的库
+- ✅ 定期依赖项审计
+- ✅ 拒绝服务保护（数据包大小限制）
 
-#### 1. OWASP Secure Coding Guidelines
-- ✅ Input validation on all external data
-- ✅ Bounds checking on array accesses
-- ✅ Safe integer arithmetic (no unchecked overflow)
-- ✅ Proper error handling without panics
+#### 3. 网络安全最佳实践
+- ✅ TLS 1.3 支持和强密码套件
+- ✅ 证书验证
+- ✅ 所有网络操作的超时保护
+- ✅ 带限制的连接池
 
-#### 2. Rust Security Guidelines
-- ✅ Minimal use of unsafe code (only in tests)
-- ✅ No use of deprecated or unmaintained crates
-- ✅ Regular dependency audits
-- ✅ Denial of service protection (packet size limits)
+#### 4. 现代 Rust 模式
+- ✅ 使用 thiserror 进行错误处理
+- ✅ 使用 tokio 的异步/等待
+- ✅ 尽可能实现零复制解析
+- ✅ 基于工作区的模块化架构
 
-#### 3. Network Security Best Practices
-- ✅ TLS 1.3 support with strong cipher suites
-- ✅ Certificate validation
-- ✅ Timeout protection on all network operations
-- ✅ Connection pooling with limits
+## 安全测试
 
-#### 4. Modern Rust Patterns
-- ✅ Error handling with thiserror
-- ✅ Async/await with tokio
-- ✅ Zero-copy parsing where possible
-- ✅ Workspace-based modular architecture
+### 当前覆盖范围
+- ✅ 关键安全函数的单元测试
+- ✅ 网络协议的集成测试
+- ✅ 数据包验证安全测试
+- ✅ 实际 API 测试（Google Earth）
 
-## Security Testing
+### 计划的补充
+- ⏳ 模糊测试
+- ⏳ 基于属性的测试
+- ⏳ 负载/压力测试
+- ⏳ 渗透测试场景
 
-### Current Coverage
-- ✅ Unit tests for critical security functions
-- ✅ Integration tests for network protocols
-- ✅ Packet validation security tests
-- ✅ Real-world API testing (Google Earth)
+## 漏洞应对
 
-### Planned Additions
-- ⏳ Fuzzing tests
-- ⏳ Property-based tests
-- ⏳ Load/stress testing
-- ⏳ Penetration testing scenarios
+### 流程
+1. 安全问题应该私下报告给项目维护者
+2. 问题将在 48 小时内评估
+3. 补丁将被开发和测试
+4. 安全公告将发布
+5. 用户将被通知关键问题
 
-## Vulnerability Response
+### 联系方式
+- GitHub 安全公告：首选方法
+- 项目问题：用于非关键安全问题
 
-### Process
-1. Security issues should be reported privately to project maintainers
-2. Issues will be assessed within 48 hours
-3. Patches will be developed and tested
-4. Security advisories will be published
-5. Users will be notified of critical issues
+## 合规性
 
-### Contact
-- GitHub Security Advisories: Preferred method
-- Project Issues: For non-critical security concerns
+### 标准
+- ✅ 遵循 Rust API 指南
+- ✅ 遵守 OWASP Top 10（如适用）
+- ✅ 实施 CWE Top 25 缓解
+- ✅ 兼容 NIST 网络安全框架
 
-## Compliance
+### 许可证
+- ✅ 所有依赖项都使用 OSI 批准的许可证
+- ✅ 无 GPL 许可的依赖项（BSD-3-Clause 兼容）
+- ✅ 使用 cargo-deny 验证许可证合规性
 
-### Standards
-- ✅ Follows Rust API Guidelines
-- ✅ Adheres to OWASP Top 10 (where applicable)
-- ✅ Implements CWE Top 25 mitigations
-- ✅ Compatible with NIST Cybersecurity Framework
+## 指标
 
-### Licenses
-- ✅ All dependencies use OSI-approved licenses
-- ✅ No GPL-licensed dependencies (BSD-3-Clause compatible)
-- ✅ License compliance verified with cargo-deny
+### 代码质量
+- **Clippy 警告**: 0
+- **编译器警告**: 0
+- **测试通过率**: 100% (194/194 个测试)
+- **代码行数**: ~54,000
 
-## Metrics
+### 安全态势
+- **已知 CVE**: 0
+- **不安全代码块**: 最少（仅限测试）
+- **输入验证**: 全面
+- **错误处理**: 鲁棒
 
-### Code Quality
-- **Clippy Warnings**: 0
-- **Compiler Warnings**: 0
-- **Test Pass Rate**: 100% (194/194 tests)
-- **Lines of Code**: ~54,000
+## 持续改进
 
-### Security Posture
-- **Known CVEs**: 0
-- **Unsafe Code Blocks**: Minimal (test-only)
-- **Input Validation**: Comprehensive
-- **Error Handling**: Robust
+这是一个活的文档。安全改进是一个持续的过程。
 
-## Continuous Improvement
-
-This is a living document. Security improvements are an ongoing process.
-
-**Last Updated**: 2026-01-06
-**Next Review**: 2026-04-06 (Quarterly)
+**最后更新**: 2026-01-06
+**下次审查**: 2026-04-06 (季度审查)

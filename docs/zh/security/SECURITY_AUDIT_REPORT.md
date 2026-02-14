@@ -1,8 +1,8 @@
 # Security Audit Report
 
-**版本 (Version)**: v1.0  
-**最后更新 (Last Updated)**: 2026-02-13  
-**文档类型 (Document Type)**: 技术文档
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
 
 ---
 
@@ -386,7 +386,7 @@ A comprehensive audit and improvement of the fingerprint-rust project has been c
   - 统计分析 (平均值、标准差、百分位数)
   - 吞吐量计算
 
-#### 2.2 使用示例 (Usage Examples) / Usage Example
+#### 2.2 使用示例 / Usage Example
 ```rust
 let mut bench = Benchmark::new("HTTP Request", 100);
 bench.run(|| {
@@ -973,7 +973,7 @@ for i in 0..max_i {
 - ✅ **编译状态**: 通过 (`cargo check --workspace`)
 - ✅ **测试状态**: 通过 (`cargo test --workspace`)
 - ✅ **格式检查**: 通过 (`cargo fmt --all -- --check`)
-- ✅ **安全审计**: 通过 (`cargo deny check`)
+- ✅ **Security Audit**: 通过 (`cargo deny check`)
 
 ---
 
@@ -1008,5 +1008,5 @@ for i in 0..max_i {
 ---
 
 **报告版本**: v1.0  
-**最后更新 (Last Updated)**: 2025-12-29  
+**最后更新**: 2025-12-29  
 **状态**: ✅ 所有漏洞已修复并验证

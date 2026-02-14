@@ -1,29 +1,29 @@
-# Security Documentation
+# 安全文档
 
-Security audits, policies, and improvements (v2.0 - Consolidated).
+安全审计、政策和改进措施（v2.0 - 合并版）。
 
-## Documentation Files
+## 文档文件
 
-### Security Audits
+### 安全审计
 - **[SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md)**
-  - Comprehensive security audit report
-  - Includes basic audit, detailed analysis, and audit findings
-  - Merged from: SECURITY_AUDIT, AUDIT_REPORT, SECURITY_AUDIT_DETAILED
+  - 全面的安全审计报告
+  - 包括基础审计、详细分析和审计发现
+  - 合并自：SECURITY_AUDIT, AUDIT_REPORT, SECURITY_AUDIT_DETAILED
 
-### Improvements & Recommendations
+### 改进与建议
 - **[SECURITY_IMPROVEMENTS.md](SECURITY_IMPROVEMENTS.md)**
-  - Security improvement recommendations
-  - Best practices and hardening guidelines
+  - 安全改进建议
+  - 最佳实践和强化指南
 
-## Organization
+## 组织结构
 
-✅ **Consolidated** 4 files → 2 files:
-- Multiple audit files merged into single comprehensive report
-- Removed redundant audit documentation
+✅ **已合并** 4 个文件 → 2 个文件：
+- 多个审计文件已合并为单一综合报告
+- 已删除冗余的审计文档
 
-📁 **From 4 files to 2 files** - Focused security documentation
+📁 **从 4 个文件到 2 个文件** - 重点安全文档
 
 ---
 
-**Version**: 2.0 (Consolidated)  
-**Last Updated**: 2026-02-14
+**版本**：2.0（合并版）  
+**最后更新**：2026-02-14
