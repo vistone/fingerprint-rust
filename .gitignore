@@ -33,6 +33,9 @@ target/
 validation_report_*.txt
 docs/reports/validation_report_*.txt
 
+# Translation notes (archive)
+docs/translation-notes/
+
 # Core dump files
 core
 core.*
