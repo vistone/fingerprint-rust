@@ -34,6 +34,10 @@ pub use api_noise::CanvasNoiseGenerator;
 pub use database::{CandidateFingerprint, CandidateStats, FingerprintDatabase};
 pub use hunting::ThreatHunter;
 pub use learner::{FingerprintEvaluator, FingerprintObserver};
+pub use passive::{
+    HttpFingerprint, Packet, PacketParser, PassiveAnalysisResult, PassiveAnalyzer, PassiveError,
+    TcpFingerprint, TlsFingerprint,
+};
 pub use storage::StorageAnalyzer;
 pub use timing::TimingProtector;
 

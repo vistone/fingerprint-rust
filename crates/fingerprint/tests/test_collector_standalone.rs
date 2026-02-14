@@ -2,6 +2,7 @@
 
 #[cfg(feature = "dns")]
 #[tokio::test]
+#[ignore = "requires external network access to public-dns.info"]
 async fn test_collect_public_dns_standalone() {
     use std::net::{IpAddr, SocketAddr};
     use std::time::Duration;

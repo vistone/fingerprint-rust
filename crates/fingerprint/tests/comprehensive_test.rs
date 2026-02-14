@@ -91,7 +91,7 @@ fn test_tls_handshake_builder() {
         let profile = chrome_133();
         let spec = &profile.tls_config;
 
-        let client_hello_result = TLSHandshakeBuilder::build_client_hello(&spec, "example.com");
+        let client_hello_result = TLSHandshakeBuilder::build_client_hello(spec, "example.com");
 
         assert!(client_hello_result.is_ok(), "应该能构建 ClientHello");
 

@@ -49,6 +49,12 @@ pub struct ProfileMetadata {
 
     /// Platform (e.g., "Windows", "macOS", "Linux")
     pub platform: String,
+
+    /// Whether this is a mobile profile
+    pub is_mobile: bool,
+
+    /// Full version string (e.g., "15.6.1" for Safari, "134" for Chrome)
+    pub version_string: String,
 }
 
 impl BrowserProfile {
@@ -60,6 +66,27 @@ impl BrowserProfile {
         user_agent: String,
         platform: String,
         is_mobile: bool,
+    ) -> Self {
+        Self::create_with_version_string(
+            tls_config,
+            browser_type,
+            browser_version,
+            user_agent,
+            platform,
+            is_mobile,
+            browser_version.to_string(),
+        )
+    }
+
+    /// Create a new browser profile with explicit version string
+    fn create_with_version_string(
+        tls_config: ClientHelloSpec,
+        browser_type: BrowserType,
+        browser_version: u32,
+        user_agent: String,
+        platform: String,
+        is_mobile: bool,
+        version_string: String,
     ) -> Self {
         let http_headers = generate_headers(browser_type, &user_agent, is_mobile);
 
@@ -74,6 +101,8 @@ impl BrowserProfile {
             browser_version,
             user_agent,
             platform,
+            is_mobile,
+            version_string,
         };
 
         Self {
@@ -85,13 +114,24 @@ impl BrowserProfile {
         }
     }
 
-    /// Get a unique identifier for this profile (e.g., "chrome_133")
+    /// Get a unique identifier for this profile (e.g., "chrome_133", "chrome_mobile_134")
     pub fn id(&self) -> String {
-        format!(
-            "{}_{}",
-            self.metadata.browser_name.to_lowercase().replace(' ', "_"),
-            self.metadata.browser_version
-        )
+        let browser_name = if self.metadata.is_mobile {
+            match self.metadata.platform.as_str() {
+                "iOS" | "iPadOS" => format!(
+                    "{}_ios",
+                    self.metadata.browser_name.to_lowercase().replace(' ', "_")
+                ),
+                _ => format!(
+                    "{}_mobile",
+                    self.metadata.browser_name.to_lowercase().replace(' ', "_")
+                ),
+            }
+        } else {
+            self.metadata.browser_name.to_lowercase().replace(' ', "_")
+        };
+        let version = self.metadata.version_string.replace('.', "_");
+        format!("{}_{}", browser_name, version)
     }
 }
 
@@ -254,7 +294,7 @@ define_firefox_version!(firefox_138, 138, ClientHelloSpec::firefox_133);
 macro_rules! define_safari_version {
     ($fn_name:ident, $version_str:expr, $version_num:expr, $tls_fn:expr) => {
         pub fn $fn_name() -> BrowserProfile {
-            BrowserProfile::create(
+            BrowserProfile::create_with_version_string(
                 $tls_fn(),
                 BrowserType::Safari,
                 $version_num,
@@ -264,6 +304,7 @@ macro_rules! define_safari_version {
                 ),
                 "macOS".to_string(),
                 false,
+                $version_str.to_string(),
             )
         }
     };
@@ -284,7 +325,7 @@ define_safari_version!(safari_18_3, "18.3", 183, ClientHelloSpec::safari_16_0);
 macro_rules! define_safari_ios_version {
     ($fn_name:ident, $version_str:expr, $version_num:expr, $tls_fn:expr) => {
         pub fn $fn_name() -> BrowserProfile {
-            BrowserProfile::create(
+            BrowserProfile::create_with_version_string(
                 $tls_fn(),
                 BrowserType::Safari,
                 $version_num,
@@ -295,6 +336,7 @@ macro_rules! define_safari_ios_version {
                 ),
                 "iOS".to_string(),
                 true,
+                $version_str.to_string(),
             )
         }
     };

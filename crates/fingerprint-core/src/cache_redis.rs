@@ -4,9 +4,7 @@
 /// This module is only available when the `redis-cache` feature is enabled.
 #[cfg(feature = "redis-cache")]
 pub mod redis_impl {
-    use super::super::{CacheError, CacheResult, CacheStats, CacheTTL};
-    use redis::AsyncCommands;
-    use std::sync::Arc;
+    use super::super::{CacheError, CacheResult, CacheTTL};
     use std::time::Duration;
 
     /// Redis cache configuration

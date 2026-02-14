@@ -40,9 +40,9 @@
 //! use fingerprint_gateway::{GatewayConfig, run_server};
 //!
 //! #[tokio::main]
-//! async fn main() -> anyhow::Result<()> {
+//! async fn main() -> Result<(), Box<dyn std::error::Error>> {
 //!     let config = GatewayConfig::from_env()?;
-//!     run_server(config).await
+//!     run_server(config).await.map_err(|e| e.into())
 //! }
 //! ```
 //!
@@ -89,9 +89,9 @@ pub use rate_limit::RateLimiter;
 /// use fingerprint_gateway::{GatewayConfig, run_server};
 ///
 /// #[tokio::main]
-/// async fn main() -> anyhow::Result<()> {
+/// async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ///     let config = GatewayConfig::default();
-///     run_server(config).await
+///     run_server(config).await.map_err(|e| e.into())
 /// }
 /// ```
 pub async fn run_server(config: GatewayConfig) -> Result<()> {

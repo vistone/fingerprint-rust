@@ -1,9 +1,10 @@
 #!/bin/bash
 # 提交前全面测试脚本
-# 在提交代码前运行所有必要的测试和检查
+# 完全遵循 GitHub Actions 的规则运行本地检查
+# 同步 .github/workflows/ci.yml 和 security-audit.yml 的检查项
 
 echo "=========================================="
-echo "🔍 提交前全面测试"
+echo "🔍 提交前检查（遵循 GitHub Actions 规则）"
 echo "=========================================="
 echo ""
 
@@ -28,21 +29,21 @@ run_test() {
     local test_command="$2"
     
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "🧪 测试: $test_name"
+    echo "🧪 $test_name"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     # 执行测试命令
     if eval "$test_command" > /tmp/test_output.log 2>&1; then
-        echo -e "${GREEN}✅ $test_name 通过${NC}"
+        echo -e "${GREEN}✅ 通过${NC}"
         ((PASSED++))
         echo ""
         return 0
     else
-        echo -e "${RED}❌ $test_name 失败${NC}"
+        echo -e "${RED}❌ 失败${NC}"
         # 显示最后几行输出以便调试
         if [ -f /tmp/test_output.log ]; then
             echo "错误输出:"
-            tail -15 /tmp/test_output.log | sed 's/^/  /'
+            tail -20 /tmp/test_output.log | sed 's/^/  /'
         fi
         ((FAILED++))
         echo ""
@@ -50,43 +51,74 @@ run_test() {
     fi
 }
 
-# 1. 代码格式化检查
-run_test "代码格式化检查" "cargo fmt --all -- --check"
+# ========== LINT 检查（来自 ci.yml:lint job）==========
 
-# 2. 文档规制检查
-run_test "文档规制检查" "python3 scripts/verify_doc_pairs.py"
+# 1. 代码格式化检查（对应 GitHub Actions: Check formatting）
+run_test "格式化检查 (cargo fmt)" "cargo fmt --all -- --check"
 
-# 3. 编译检查
-run_test "编译检查 (cargo check)" "cargo check --workspace"
+# 2. Clippy 检查（对应 GitHub Actions: Run clippy）
+# 注意：使用 --all-features 以符合 GitHub Actions，而不是特定的特性集合
+run_test "Linter 检查 (cargo clippy)" "cargo clippy --workspace --all-targets --all-features -- -D warnings"
 
-# 4. Clippy 检查
-run_test "Clippy 检查" "cargo clippy --workspace --all-targets --features 'rustls-tls,compression,http2,http3,connection-pool,dns' -- -D warnings"
+# ========== 编译检查（来自 ci.yml:test job）==========
 
-# 5. 单元测试
-run_test "单元测试" "cargo test --workspace --lib --quiet"
+# 3. 编译检查（对应 GitHub Actions: Check workspace）
+# 使用完整的特性集合，与 TEST_FEATURES 环保变相同
+TEST_FEATURES="rustls-tls,compression,http2,http3,connection-pool,dns"
+run_test "编译检查 (cargo check --all-features)" "cargo check --workspace --all-features"
 
-# 6. 集成测试（测试 tests/ 目录下的所有测试文件）
-run_test "集成测试" "cargo test --workspace --quiet 2>&1 | grep -E '(test result|error)' || cargo test --workspace --quiet"
+# ========== 测试（来自 ci.yml:test job）==========
 
-# 7. 安全审计 (cargo-deny)
-if command -v cargo-deny &> /dev/null; then
-    run_test "安全审计 (cargo-deny)" "cargo-deny check"
+# 5. 库单元测试（对应 GitHub Actions: Test workspace with nextest）
+# 首先尝试使用 nextest（更快），如果不可用则回退到 cargo test
+if command -v cargo-nextest &> /dev/null; then
+    run_test "单元测试 (cargo nextest --lib)" "cargo nextest run --workspace --features '$TEST_FEATURES' --lib --no-fail-fast"
 else
-    echo -e "${YELLOW}⚠️  cargo-deny 未安装，跳过安全审计${NC}"
+    run_test "单元测试 (cargo test --lib)" "cargo test --workspace --lib --features '$TEST_FEATURES'"
+fi
+
+# 6. 集成测试（对应 GitHub Actions: Test workspace 测试完整套件）
+# 使用 --skip examples 来排除编译示例（这些应该在单独的构建步骤中测试）
+if command -v cargo-nextest &> /dev/null; then
+    run_test "集成测试 (cargo nextest)" "cargo nextest run --workspace --features '$TEST_FEATURES' --no-fail-fast"
+else
+    run_test "集成测试 (cargo test)" "cargo test --workspace --features '$TEST_FEATURES' --lib --tests"
+fi
+
+# ========== 安全审计（来自 security-audit.yml）==========
+
+# 6. cargo-deny 检查（对应 GitHub Actions: cargo deny check）
+if command -v cargo-deny &> /dev/null; then
+    run_test "安全审计 (cargo-deny)" "cargo deny check advisories bans licenses sources"
+else
+    echo -e "${YELLOW}⚠️  cargo-deny 未安装，跳过此检查${NC}"
+    echo "  安装: cargo install cargo-deny"
     echo ""
 fi
 
+# ========== 构建检查（来自 ci.yml:build job，可选）==========
+
+# 7. 构建发布版本（主要特性组合）
+run_test "构建检查 (cargo build --release)" "cargo build --workspace --features '$TEST_FEATURES' --release"
+
 # 总结
 echo "=========================================="
-echo "📊 测试总结"
+echo "📊 本地检查总结"
 echo "=========================================="
 echo -e "${GREEN}✅ 通过: $PASSED${NC}"
 if [ $FAILED -gt 0 ]; then
     echo -e "${RED}❌ 失败: $FAILED${NC}"
     echo ""
-    echo -e "${RED}❌ 测试失败，请修复问题后再提交${NC}"
+    echo -e "${RED}❌ 检查失败，请修复问题后再提交${NC}"
+    echo ""
+    echo "📌 提示："
+    echo "  - 格式化:  cargo fmt --all"
+    echo "  - Clippy:  cargo clippy --workspace --all-targets --all-features -D warnings"
+    echo "  - 测试:    cargo test --workspace"
+    echo ""
     exit 1
 else
-    echo -e "${GREEN}✅ 所有测试通过！可以安全提交代码${NC}"
+    echo -e "${GREEN}✅ 所有检查通过！${NC}"
+    echo -e "${GREEN}✅ 符合 GitHub Actions 规则，可以安全提交代码${NC}"
     exit 0
 fi
