@@ -1,6 +1,6 @@
-//! TLS 扩展模块测试
-//!
-//! 测试各种 TLS 扩展的功能
+// ! TLS extensionmoduletesting
+//! TLS extensions tests.
+// ! testing各种 TLS extensionof functionality
 
 use fingerprint::is_grease_value;
 use fingerprint::tls_extensions::*;
@@ -222,7 +222,7 @@ fn test_padding_extension() {
     assert_eq!(ext.len(), 0);
     assert!(!ext.will_pad);
 
-    // 测试 BoringPaddingStyle
+    // testing BoringPaddingStyle
     let (padding_len, will_pad) = UtlsPaddingExtension::boring_padding_style(256);
     assert!(will_pad);
     assert!(padding_len > 0);
@@ -236,20 +236,20 @@ fn test_padding_extension() {
 
 #[test]
 fn test_extension_from_id() {
-    // 测试已知的扩展 ID
+    // testing已知ofextension ID
     assert!(extension_from_id(0).is_some()); // SNI
     assert!(extension_from_id(5).is_some()); // Status Request
     assert!(extension_from_id(10).is_some()); // Supported Groups
     assert!(extension_from_id(0x0a0a).is_some()); // GREASE
 
-    // 测试未知的扩展 ID
+    // testingunknownofextension ID
     assert!(extension_from_id(9999).is_none());
 }
 
 #[test]
 fn test_buffer_too_short() {
     let ext = StatusRequestExtension;
-    let mut buf = vec![0u8; 2]; // 缓冲区太小
+    let mut buf = vec![0u8; 2]; // buffer区太小
     let result = ext.read(&mut buf);
     assert!(result.is_err());
 }

@@ -1,6 +1,6 @@
-//! DNS Service 测试
-//!
-//! 测试 DNS Service 的 start/stop 功能以及后台运行能力
+// ! DNS Service testing
+//! DNS service start/stop tests.
+// ! testing DNS Service of start/stop functionalityending with及后台runcapabilities
 
 #![cfg(feature = "dns")]
 
@@ -10,59 +10,59 @@ use tokio::time::sleep;
 
 #[tokio::test]
 async fn test_service_start_stop() {
-    // 创建测试配置（使用简单的域名，减少解析时间）
+    // createtestingconfigure（use简单ofdomain，减少parsetime）
     let mut config = DNSConfig::new(
         "f6babc99a5ec26",
-        &["google.com"], // 使用简单域名，减少解析时间
+        &["google.com"], // use简单domain，减少parsetime
     );
-    // 自定义其他配置
+    // customotherconfigure
     config.domain_ips_dir = "./test_dns_data".to_string();
-    // 设置较长的间隔，避免测试时等待太久
-    config.interval = "300s".to_string(); // 5分钟，测试中不会触发第二次解析
+    // set较长of间隔，避免testing时等待太久
+    config.interval = "300s".to_string(); // 5分钟，testing中不会触发第二次parse
 
-    // 创建服务
+    // createservice
     let service = DNSService::new(config).expect("创建服务失败");
 
-    // 检查初始状态
+    // check初始state
     assert!(!service.is_running().await, "服务初始状态应该是未运行");
 
-    // 启动服务（应该在后台运行，不阻塞）
+    // startservice（应该在后台run，不blocking）
     println!("[测试] 启动服务...");
     let start_result = service.start().await;
     assert!(start_result.is_ok(), "启动服务应该成功: {:?}", start_result);
 
-    // 验证服务已在后台启动（不阻塞主线程）
+    // validateservice已在后台start（不blocking主thread）
     println!("[测试] 验证服务在后台运行...");
     let start_time = std::time::Instant::now();
 
-    // 等待一小段时间，验证主线程没有被阻塞
+    // 等待一小段time，validate主thread没有被blocking
     sleep(Duration::from_millis(100)).await;
 
     let elapsed = start_time.elapsed();
     assert!(elapsed < Duration::from_millis(200), "主线程不应该被阻塞");
 
-    // 验证服务状态
+    // validateservicestate
     assert!(service.is_running().await, "服务应该正在运行");
 
     println!("[测试] 服务已在后台运行，主线程未被阻塞");
 
-    // 等待一小段时间，让服务开始执行（但不等待完整解析完成）
+    // 等待一小段time，让service开始执行（但不等待完整parse完成）
     println!("[测试] 等待服务运行 3 秒（验证后台任务已启动）...");
     sleep(Duration::from_secs(3)).await;
 
-    // 停止服务
+    // stopservice
     println!("[测试] 停止服务...");
     let stop_result = service.stop().await;
     assert!(stop_result.is_ok(), "停止服务应该成功: {:?}", stop_result);
 
-    // 等待服务完全停止（后台任务需要时间处理停止信号）
+    // 等待service完全stop（background taskrequiretimeprocessstopsignal）
     let mut attempts = 0;
     while service.is_running().await && attempts < 50 {
         sleep(Duration::from_millis(100)).await;
         attempts += 1;
     }
 
-    // 验证服务已停止
+    // validateservice已stop
     if service.is_running().await {
         eprintln!(
             "[测试] 警告: 服务在停止后仍显示为运行状态，但这是正常的（后台任务可能仍在处理）"
@@ -74,49 +74,49 @@ async fn test_service_start_stop() {
 
 #[tokio::test]
 async fn test_service_double_start() {
-    // 测试重复启动服务应该失败
+    // testing重复startservice应该failure
     let mut config = DNSConfig::new("test_token", &["google.com"]);
     config.domain_ips_dir = "./test_dns_data".to_string();
     config.interval = "5s".to_string();
 
     let service = DNSService::new(config).expect("创建服务失败");
 
-    // 第一次启动应该成功
+    // 第一次start应该success
     let result1 = service.start().await;
     assert!(result1.is_ok(), "第一次启动应该成功");
 
-    // 等待一小段时间确保服务已启动
+    // 等待一小段timeensureservice已start
     sleep(Duration::from_millis(100)).await;
 
-    // 第二次启动应该失败
+    // 第二次start应该failure
     let result2 = service.start().await;
     assert!(result2.is_err(), "重复启动应该失败");
 
-    // 清理
+    // cleanup
     let _ = service.stop().await;
 }
 
 #[tokio::test]
 async fn test_service_stop_before_start() {
-    // 测试在未启动时停止服务
+    // testing在未start时stopservice
     let config = DNSConfig::new("test_token", &["google.com"]);
 
     let service = DNSService::new(config).expect("创建服务失败");
 
-    // 未启动时停止应该返回错误或正常处理
+    // 未start时stop应该returnerror或normalprocess
     let result = service.stop().await;
-    // stop 方法应该能够处理未启动的情况（可能返回 Ok 或 Err，取决于实现）
+    // stop 方法应该能够process未startof情况（可能return Ok 或 Err，取决于 implementation）
     println!("[测试] 未启动时停止服务的结果: {:?}", result);
 }
 
 #[tokio::test]
 async fn test_service_background_resolution() {
-    // 测试服务在后台执行 DNS 解析
-    // 注意：这个测试会启动真实的 DNS 解析，可能需要较长时间
-    // 如果测试环境不允许长时间运行，可以跳过此测试
+    // testingservice在后台执行 DNS parse
+    // 注意：这个testing会start真实of DNS parse，可能require较长time
+    // 如果testing环境不allow长timerun，可ending with跳过此testing
     let mut config = DNSConfig::new("test_token", &["google.com"]);
     config.domain_ips_dir = "./test_dns_data".to_string();
-    // 设置很长的间隔，避免在测试期间触发第二次解析
+    // set很长of间隔，避免在testing期间触发第二次parse
     config.interval = "600s".to_string(); // 10分钟
 
     let service = DNSService::new(config).expect("创建服务失败");
@@ -125,20 +125,20 @@ async fn test_service_background_resolution() {
     let start_result = service.start().await;
     assert!(start_result.is_ok(), "启动服务应该成功");
 
-    // 等待服务开始执行解析（不等待完整解析完成，因为可能需要很长时间）
-    // 只验证服务能够正常启动并开始工作
+    // 等待service开始执行parse（不等待完整parse完成，因to可能require很长time）
+    // 只validateservice能够normalstart并开始工作
     println!("[测试] 等待服务运行 5 秒（验证后台任务已启动）...");
     sleep(Duration::from_secs(5)).await;
 
-    // 验证服务仍在运行
+    // validateservice仍在run
     assert!(service.is_running().await, "服务应该仍在运行");
 
     println!("[测试] 服务在后台正常运行（解析可能在后台继续进行）");
 
-    // 停止服务
+    // stopservice
     let _ = service.stop().await;
 
-    // 等待服务停止
+    // 等待servicestop
     let mut attempts = 0;
     while service.is_running().await && attempts < 50 {
         sleep(Duration::from_millis(100)).await;
@@ -150,15 +150,15 @@ async fn test_service_background_resolution() {
 
 #[tokio::test]
 async fn test_service_config_validation() {
-    // 测试配置验证
-    // 缺少 ipinfo_token 应该失败
+    // testingconfigurevalidate
+    // 缺少 ipinfo_token 应该failure
     let invalid_config = DNSConfig::new("", &["google.com"]);
 
     let result = DNSService::new(invalid_config);
     assert!(result.is_err(), "空 ipinfo_token 应该导致验证失败");
 
-    // 缺少 domain_list 应该失败
-    let invalid_config2 = DNSConfig::new("test_token", &[] as &[&str]); // 空列表
+    // 缺少 domain_list 应该failure
+    let invalid_config2 = DNSConfig::new("test_token", &[] as &[&str]); // 空list
 
     let result2 = DNSService::new(invalid_config2);
     assert!(result2.is_err(), "空 domain_list 应该导致验证失败");

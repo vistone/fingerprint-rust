@@ -23,7 +23,7 @@ pub struct FingerprintMetadata {
     /// samplecount
     pub sample_count: u64,
 
-    /// 首timediscover when between
+    // / 首timediscover when between
     pub first_seen: DateTime<Utc>,
 
     /// finallydiscover when between
@@ -32,7 +32,7 @@ pub struct FingerprintMetadata {
     /// tag
     pub tags: Vec<String>,
 
-    /// 备note
+    // / 备note
     pub notes: Option<String>,
 }
 

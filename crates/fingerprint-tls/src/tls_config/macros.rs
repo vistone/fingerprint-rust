@@ -1,9 +1,9 @@
-//! TLS configuration宏
-//!
-//! provide宏fromsimplifycommonconfigurationBuild, decreaseduplicatecode
+// ! TLS configurationmacro
+//! TLS configuration macros.
+// ! providemacrofromsimplifycommonconfigurationBuild, decreaseduplicatecode
 
-/// Create Chrome extensionlistauxiliary宏
-/// similar wreq-util 宏design
+// / Create Chrome extensionlistauxiliarymacro
+// / similar wreq-util macrodesign
 #[macro_export]
 macro_rules! chrome_extensions {
  (

@@ -66,14 +66,14 @@ pub fn compare_signatures(
     FingerprintMatch::None
 }
 
-/// find and 给fixedsignaturemostsimilarfingerprintconfiguration
+// / find and 给fixedsignaturemostsimilarfingerprintconfiguration
 ///
 /// # Parameters
 /// * `signature` - needmatchsignature
 /// * `specs` - candidate ClientHelloSpec list
 ///
 /// # Returns
-/// * `Option<usize>` - mostsimilarconfigurationindex,  if no找 to thenreturn None
+// / * `Option<usize>` - mostsimilarconfigurationindex, if no找 to thenreturn None
 pub fn find_best_match(
     signature: &ClientHelloSignature,
     specs: &[ClientHelloSpec],
@@ -126,6 +126,6 @@ mod tests {
             ClientHelloSpec::firefox_133(),
         ];
         let best = find_best_match(&signature, &specs);
-        assert_eq!(best, Some(1)); // chrome_133 should is 最match的
+        assert_eq!(best, Some(1)); // chrome_133 should is 最matchof
     }
 }

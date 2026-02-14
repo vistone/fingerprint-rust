@@ -5,7 +5,7 @@
 use crate::passive::tcp::TcpSignature;
 use thiserror::Error;
 
-/// p0f TCP signature (complete版)
+// / p0f TCP signature (complete版)
 #[derive(Debug, Clone)]
 pub struct P0fTcpSignature {
     /// signature ID
@@ -87,7 +87,7 @@ pub enum TtlPattern {
 pub enum WindowMode {
     /// pattern 0: fixedvalue
     Fixed,
-    /// pattern 1: 倍count
+    // / pattern 1: 倍count
     Multiple,
     /// pattern 2: modecount
     Modulo,
@@ -102,7 +102,7 @@ pub enum WindowSizePattern {
     Wildcard,
     /// concretevalue
     Value(u16),
-    /// 倍countpattern：m*N
+    // / 倍countpattern：m*N
     Multiple(u16),
     /// modecountpattern：%N
     Modulo(u16),
@@ -115,8 +115,11 @@ pub enum MssPattern {
     None,
     /// fixedvalue：mss,1460
     Fixed(u16),
-    /// 倍countpattern：mss*20,10 (20倍count+10)
-    Multiple { multiplier: u16, offset: u16 },
+    // / 倍countpattern：mss*20,10 (20倍count+10)
+    Multiple {
+        multiplier: u16,
+        offset: u16,
+    },
 }
 
 /// TCP optionstype
@@ -136,7 +139,7 @@ pub enum TcpOptionType {
 pub struct IpFlags {
     /// Don't Fragment
     pub df: bool,
-    /// ID 递increase
+    // / ID 递increase
     pub id_plus: bool,
     /// ID fixed
     pub id_minus: bool,
@@ -368,7 +371,7 @@ fn parse_tcp_options(options_str: &str) -> Result<(MssPattern, Vec<TcpOptionType
     } else {
         // Ifnosecondpartial, mayoptionsorderthen in firstpartial ( in MSS patternafter)
         // format: mss*20,10 or mss,1460
-        // thissituationdown, optionsordermay不 exists,  or one whoneed from otherplaceExtract
+        // thissituationdown, optionsordermay不 exists, or one whoneed from otherplaceExtract
         // temporary when 不processthissituation
     }
 

@@ -29,7 +29,7 @@ impl CaptureEngine {
 
         let analyzer = self.analyzer.clone();
 
-        // use spawn_blocking because pnet receive is blocking的
+        // use spawn_blocking because pnet receive is blockingof
         tokio::task::spawn_blocking(move || Self::capture_from_interface(interface, analyzer));
 
         Ok(())
@@ -51,7 +51,7 @@ impl CaptureEngine {
         loop {
             match rx.next() {
                 Ok(packet) => {
-                    // securityCheck：limitmaximumcountpacketsize以prevent DoS attack (65535 bytes = maximum IP package)
+                    // securityCheck：limitmaximumcountpacketsizeending withprevent DoS attack (65535 bytes = maximum IP package)
                     const MAX_PACKET_SIZE: usize = 65535;
                     if packet.len() > MAX_PACKET_SIZE {
                         eprintln!(
@@ -78,7 +78,7 @@ impl CaptureEngine {
         }
     }
 
-    /// from fileload并process
+    // / from fileload并process
     pub fn process_file(&self, path: &str) -> Result<(), String> {
         use pcap_file::pcap::PcapReader;
         use std::fs::File;
@@ -90,7 +90,7 @@ impl CaptureEngine {
 
         // readallcountpacket
         let mut packet_count = 0;
-        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcountpacketcount以preventinsidememory exhausted
+        const MAX_PACKETS: usize = 1_000_000; // limitmaximumcountpacketcountending withpreventinsidememory exhausted
 
         while let Some(packet) = pcap_reader.next_packet() {
             // securityCheck：limitprocesscountpacketcount

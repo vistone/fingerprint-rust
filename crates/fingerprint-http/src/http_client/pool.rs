@@ -9,13 +9,16 @@ use std::time::Duration;
 use std::collections::HashMap;
 
 #[cfg(feature = "connection-pool")]
-use std::net::TcpStream;
+use std::net::{SocketAddr, TcpStream};
 
 #[cfg(feature = "connection-pool")]
 use std::sync::{Arc, Mutex};
 
 #[cfg(feature = "connection-pool")]
 use netconnpool::{Config as PoolConfig, ConnectionType, Pool};
+
+#[cfg(feature = "connection-pool")]
+use log;
 
 /// connection poolmanageer
 #[cfg(feature = "connection-pool")]
@@ -39,7 +42,7 @@ impl Default for ConnectionPoolManager {
     }
 }
 
-/// connection poolmanageer (noneconnection poolFeatures when 占bit)
+// / connection poolmanageer (noneconnection poolFeatures when 占bit)
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
     #[allow(dead_code)]
@@ -58,16 +61,18 @@ impl Default for ConnectionPoolManager {
 pub struct PoolManagerConfig {
     /// maximumconnectioncount
     pub max_connections: usize,
-    /// minimumempty闲connectioncount
+    // / minimumempty闲connectioncount
     pub min_idle: usize,
     /// connectiontimeout
     pub connect_timeout: Duration,
-    /// empty闲timeout
+    // / empty闲timeout
     pub idle_timeout: Duration,
     /// maximumlifecycle
     pub max_lifetime: Duration,
     /// whetherenabledconnectionreuse
     pub enable_reuse: bool,
+    /// TCP Profile
+    pub profile: Option<std::sync::Arc<fingerprint_profiles::BrowserProfile>>,
 }
 
 impl Default for PoolManagerConfig {
@@ -79,6 +84,7 @@ impl Default for PoolManagerConfig {
             idle_timeout: Duration::from_secs(90),
             max_lifetime: Duration::from_secs(600), // 10minutes
             enable_reuse: true,
+            profile: None,
         }
     }
 }
@@ -188,8 +194,8 @@ impl ConnectionPoolManager {
 
                 let mut last_err: Option<std::io::Error> = None;
                 for addr in v4.into_iter().chain(v6.into_iter()) {
-                    // Note: heretemporary when usestandardconnection, TCP Profile should in Createconnection pool when throughothermethodapplication
-                    // TODO: support in connection pool in application TCP Profile
+                    // Note: 这里暂时usestandardconnect方式
+                    // TODO: 在后续version中完善TCP Profile在connect池中ofapply
                     match TcpStream::connect_timeout(&addr, connect_timeout) {
                         Ok(s) => return Ok(ConnectionType::Tcp(s)),
                         Err(e) => last_err = Some(e),
@@ -248,7 +254,7 @@ impl ConnectionPoolManager {
         vec![]
     }
 
-    /// cleanupempty闲connection
+    // / cleanupempty闲connection
     #[cfg(feature = "connection-pool")]
     pub fn cleanup_idle(&self) {
         // netconnpool willautomaticcleanup, hereonly is provideinterface
@@ -289,7 +295,7 @@ pub struct PoolStats {
 }
 
 impl PoolStats {
-    /// Getsuccess率
+    // / Getsuccess率
     pub fn success_rate(&self) -> f64 {
         if self.total_requests == 0 {
             return 0.0;

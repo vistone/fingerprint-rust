@@ -2,13 +2,13 @@
 
 //! # fingerprint-webgl
 //!
-//! WebGL 指纹识别模块
+// ! WebGL fingerprintrecognitionmodule
 //!
-//! 提供 GPU 和 WebGL 指纹识别能力
+// ! provide GPU and WebGL fingerprintrecognitioncapabilities
 
 use std::collections::HashMap;
 
-/// WebGL 指纹信息
+// / WebGL fingerprintinfo
 #[derive(Debug, Clone)]
 pub struct WebGLFingerprint {
     pub gpu_vendor: String,
@@ -19,7 +19,7 @@ pub struct WebGLFingerprint {
     pub max_texture_size: u32,
 }
 
-/// WebGL 分析器
+// / WebGL analyzer
 pub struct WebGLAnalyzer {
     profiles: HashMap<String, WebGLProfile>,
 }
@@ -31,11 +31,11 @@ struct WebGLProfile {
 }
 
 impl WebGLAnalyzer {
-    /// 创建新分析器
+    // / create新analyzer
     pub fn new() -> Self {
         let mut profiles = HashMap::new();
 
-        // 预加载常见 GPU 配置
+        // 预loadcommon GPU configure
         profiles.insert(
             "ANGLE".to_string(),
             WebGLProfile {
@@ -55,7 +55,7 @@ impl WebGLAnalyzer {
         WebGLAnalyzer { profiles }
     }
 
-    /// 分析 WebGL 数据
+    // / analyze WebGL data
     pub fn analyze(&self, vendor: &str, renderer: &str, extensions: &[&str]) -> WebGLFingerprint {
         let shader_fp = self.compute_shader_fingerprint(extensions);
 

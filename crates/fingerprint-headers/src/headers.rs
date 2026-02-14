@@ -66,7 +66,7 @@ pub struct HTTPHeaders {
     pub sec_ch_ua_platform: String,
     /// Upgrade-Insecure-Requests header
     pub upgrade_insecure_requests: String,
-    /// usercustom headers (如 Cookie, Authorization, X-API-Key etc.)
+    // / usercustom headers (如 Cookie, Authorization, X-API-Key etc.)
     pub custom: std::collections::HashMap<String, String>,
 }
 
@@ -90,9 +90,9 @@ impl HTTPHeaders {
         }
     }
 
-    /// clone HTTPHeaders pair象, returnannew副this
-    ///
-    /// Note: 此methodname and standardlibrary `Clone::clone` different, 以avoidnamingconflict
+    // / clone HTTPHeaders pair象, returnannew副this
+    /// Clone headers into a new instance.
+    // / Note: 此methodname and standardlibrary `Clone::clone` different, ending withavoidnamingconflict
     #[allow(clippy::should_implement_trait)]
     pub fn clone(&self) -> Self {
         Self {
@@ -132,13 +132,13 @@ impl HTTPHeaders {
     }
 
     /// will HTTPHeaders convert to HashMap
-    /// systemwillautomaticmerge Custom inusercustom headers (如 Cookie, Authorization, X-API-Key etc.)
+    // / systemwillautomaticmerge Custom inusercustom headers (如 Cookie, Authorization, X-API-Key etc.)
     pub fn to_map(&self) -> std::collections::HashMap<String, String> {
         self.to_map_with_custom(&[])
     }
 
-    /// will HTTPHeaders convert to HashMap, 并mergeusercustom headers
-    /// custom_headers: usercustom headers (如 session, cookie, apikey etc.)
+    // / will HTTPHeaders convert to HashMap, 并mergeusercustom headers
+    // / custom_headers: usercustom headers (如 session, cookie, apikey etc.)
     /// usercustom headers prioritymorehigh, willcoversystemGenerate headers
     pub fn to_map_with_custom(
         &self,

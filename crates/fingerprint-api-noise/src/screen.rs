@@ -1,4 +1,4 @@
-/// 屏幕信息噪声注入器
+// / 屏幕info噪声注入器
 pub struct ScreenNoiseInjector {
     seed: u64,
 }
@@ -8,14 +8,14 @@ impl ScreenNoiseInjector {
         Self { seed }
     }
 
-    /// 为屏幕分辨率添加噪声
+    // / to屏幕resolution添加噪声
     pub fn add_screen_noise(&self, width: u32, height: u32) -> (u32, u32) {
         use rand::{Rng, SeedableRng};
         use rand_chacha::ChaCha8Rng;
 
         let mut rng = ChaCha8Rng::seed_from_u64(self.seed);
 
-        // 添加 ±1 到 ±3 像素的噪声
+        // 添加 ±1 到 ±3 像素of噪声
         let width_noise = rng.gen_range(-3..=3);
         let height_noise = rng.gen_range(-3..=3);
 

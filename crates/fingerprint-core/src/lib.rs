@@ -1,27 +1,27 @@
 //! # fingerprint-core
 //!
-//! **system-level protection core abstract layer**
+//! **System-level protection core abstract layer**
 //!
-//! from **single service protection**improve to **system-level protection**, provides system-level core abstractions and interface.
+//! From **single service protection** improve to **system-level protection**, provides system-level core abstractions and interface.
 //!
-//! ## core positioning
+//! ## Core Positioning
 //!
-//! `fingerprint-core` is system-level protectioncore, all external components revolve around this core：
+//! `fingerprint-core` is system-level protection core, all external components revolve around this core:
 //!
-//! - **system-level abstractions**: system context, network traffic, protection decision etc.
-//! - **offense and defense unified interface**: fingerprint abstractions, analysis interface, protection interface etc.
-//! - **core types and utilities**: type definitions, metadata, utility functions etc.
+//! - **System-level abstractions**: system context, network traffic, protection decision etc.
+//! - **Offense and defense unified interface**: fingerprint abstractions, analysis interface, protection interface etc.
+//! - **Core types and utilities**: type definitions, metadata, utility functions etc.
 //!
 //! ## Core Features
 //!
-//! ### system-level abstractions
+//! ### System-level Abstractions
 //!
-//! - **system context** (`SystemContext`): complete network entity information (IP, port, protocol, direction etc.)
-//! - **network traffic** (`NetworkFlow`): systemlevelnetwork traffic, including context and fingerprint info
-//! - **systemprotection interface** (`SystemProtector`): system-level protectionunifiedinterface
-//! - **systemanalysis interface** (`SystemAnalyzer`): unified system-level analysis interface
+//! - **System context** (`SystemContext`): complete network entity information (IP, port, protocol, direction etc.)
+//! - **Network traffic** (`NetworkFlow`): system level network traffic, including context and fingerprint info
+//! - **System protection interface** (`SystemProtector`): system-level protection unified interface
+//! - **System analysis interface** (`SystemAnalyzer`): unified system-level analysis interface
 //!
-//! ### offense and defense unified abstractions
+//! ### Offense and defense unified abstractions
 //!
 //! - **fingerprint abstractions** (`Fingerprint` trait): support TLS, HTTP, TCP etc.multiple fingerprint types
 //! - **fingerprintmetadata** (`FingerprintMetadata`): including browser, operating system, confidence etc.info

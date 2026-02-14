@@ -2,30 +2,30 @@
 
 //! # fingerprint-storage
 //!
-//! 存储特征识别模块
+// ! storefeaturesrecognitionmodule
 //!
-//! 提供 LocalStorage/SessionStorage/IndexedDB 指纹识别能力
+// ! provide LocalStorage/SessionStorage/IndexedDB fingerprintrecognitioncapabilities
 
 use std::collections::HashMap;
 
-/// 存储指纹
+// / storefingerprint
 #[derive(Debug, Clone)]
 pub struct StorageFingerprint {
-    /// LocalStorage 键值对
+    // / LocalStorage 键值对
     pub localstorage: HashMap<String, String>,
-    /// SessionStorage 键值对
+    // / SessionStorage 键值对
     pub sessionstorage: HashMap<String, String>,
-    /// IndexedDB 数据库列表
+    // / IndexedDB datalibrarylist
     pub indexeddb_databases: Vec<String>,
-    /// Cookie 列表
+    // / Cookie list
     pub cookies: Vec<CookieInfo>,
-    /// 存储可用性检查
+    // / storeavailabilitycheck
     pub storage_available: StorageAvailability,
-    /// 存储指纹哈希
+    // / storefingerprinthash
     pub storage_hash: String,
 }
 
-/// Cookie 信息
+// / Cookie info
 #[derive(Debug, Clone, PartialEq)]
 pub struct CookieInfo {
     pub name: String,
@@ -35,7 +35,7 @@ pub struct CookieInfo {
     pub http_only: bool,
 }
 
-/// 存储可用性
+// / storeavailability
 #[derive(Debug, Clone)]
 pub struct StorageAvailability {
     pub localstorage_available: bool,
@@ -44,14 +44,14 @@ pub struct StorageAvailability {
     pub cookies_available: bool,
 }
 
-/// 存储错误类型
+// / storeerrortype
 #[derive(Debug)]
 pub enum StorageError {
-    /// 无效数据
+    // / invaliddata
     InvalidData,
-    /// 分析失败
+    // / analyzefailure
     AnalysisFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -67,18 +67,18 @@ impl std::fmt::Display for StorageError {
 
 impl std::error::Error for StorageError {}
 
-/// 存储分析器
+// / storeanalyzer
 pub struct StorageAnalyzer;
 
 impl StorageAnalyzer {
-    /// 分析存储数据
+    // / analyzestoredata
     pub fn analyze(
         localstorage: &HashMap<String, String>,
         sessionstorage: &HashMap<String, String>,
         indexeddb_dbs: &[&str],
         cookies: &[(&str, &str, &str)],
     ) -> Result<StorageFingerprint, StorageError> {
-        // 检查存储可用性
+        // checkstoreavailability
         let storage_available = StorageAvailability {
             localstorage_available: !localstorage.is_empty(),
             sessionstorage_available: !sessionstorage.is_empty(),
@@ -86,11 +86,11 @@ impl StorageAnalyzer {
             cookies_available: !cookies.is_empty(),
         };
 
-        // 转换 IndexedDB 列表
+        // convert IndexedDB list
         let indexeddb_databases: Vec<String> =
             indexeddb_dbs.iter().map(|s| s.to_string()).collect();
 
-        // 转换 Cookie
+        // convert Cookie
         let cookie_list: Vec<CookieInfo> = cookies
             .iter()
             .map(|(name, domain, path)| CookieInfo {
@@ -102,7 +102,7 @@ impl StorageAnalyzer {
             })
             .collect();
 
-        // 生成存储哈希
+        // generatestorehash
         let storage_hash = Self::generate_storage_hash(
             localstorage,
             sessionstorage,
@@ -120,7 +120,7 @@ impl StorageAnalyzer {
         })
     }
 
-    /// 生成存储哈希
+    // / generatestorehash
     fn generate_storage_hash(
         localstorage: &HashMap<String, String>,
         sessionstorage: &HashMap<String, String>,
@@ -129,12 +129,12 @@ impl StorageAnalyzer {
     ) -> String {
         let mut hash_input = String::new();
 
-        // 添加 LocalStorage 数据
+        // 添加 LocalStorage data
         for (k, v) in localstorage.iter() {
             hash_input.push_str(&format!("{}:{};", k, v));
         }
 
-        // 添加 SessionStorage 数据
+        // 添加 SessionStorage data
         for (k, v) in sessionstorage.iter() {
             hash_input.push_str(&format!("{}:{};", k, v));
         }
@@ -155,7 +155,7 @@ impl StorageAnalyzer {
         format!("{:x}", hash_value)
     }
 
-    /// 检测存储更改
+    // / detectstore更改
     pub fn detect_changes(
         before: &StorageFingerprint,
         after: &StorageFingerprint,
@@ -170,7 +170,7 @@ impl StorageAnalyzer {
     }
 }
 
-/// 存储更改信息
+// / store更改info
 #[derive(Debug, Clone)]
 pub struct StorageChanges {
     pub localstorage_changed: bool,

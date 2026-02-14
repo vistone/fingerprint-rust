@@ -1,6 +1,6 @@
 //! DNS preParselibrary
 //!
-//! provide DNS Parse service, regularParsedomainlist, 并setbecome IPInfo.io Get IP geographicinfo.
+// ! provide DNS Parse service, regularParsedomainlist, 并setbecome IPInfo.io Get IP geographicinfo.
 //!
 //! ## Features
 //!
@@ -10,8 +10,8 @@
 //! - ✅ **intelligentintervaladjust**：discovernew IP when highfrequencydetect, otherwisepointcountbackoff
 //! - ✅ **multipleformatoutput**：support JSON, YAML, TOML threeoutputformat
 //! - ✅ **originalchildpropertywrite**：usetemporaryfileensurecountdatasecurity
-//! - ✅ **easy于setbecome**：providesimple Start/Stop interface, supportaslibraryuse
-//! - ✅ **DNS 缓存**：内存缓存功能，减少重复解析，提高性能
+// ! - ✅ **easy于setbecome**：providesimple Start/Stop interface, supportaslibraryuse
+// ! - ✅ **DNS cache**：memorycache functionality，减少重复parse，improveperformance
 
 mod cache;
 mod collector;

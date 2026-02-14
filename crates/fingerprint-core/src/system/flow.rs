@@ -61,7 +61,7 @@ impl FlowCharacteristics {
         }
     }
 
-    /// settingscontinuous when between并Updaterate
+    // / settingscontinuous when between并Updaterate
     pub fn set_duration(&mut self, duration: Duration) {
         self.duration = duration;
         if !duration.is_zero() {
@@ -84,7 +84,7 @@ impl Default for FlowCharacteristics {
 ///
 /// ## Core Concept
 ///
-/// system-level protectionneed from **network traffic**perspectiveperformanalysis and protection, 而is notonlyonlyfocussingleservice：
+// / system-level protectionneed from **network traffic**perspectiveperformanalysis and protection, 而is notonlyonlyfocussingleservice：
 /// - completesystem context (source/target, protocol, direction etc.)
 /// - detect to fingerprintinfo (TLS, HTTP, TCP etc.)
 /// - trafficstatisticstrait and behaviorpattern
@@ -106,7 +106,7 @@ pub struct NetworkFlow {
     /// system context
     pub context: SystemContext,
 
-    /// detect to fingerprintlist ( if 有)
+    // / detect to fingerprintlist ( if 有)
     /// Note: due to trait object limit, herecannotdirectly Clone, needmanualprocess
     #[cfg_attr(test, allow(dead_code))]
     fingerprints: Vec<Box<dyn Fingerprint>>,
@@ -130,7 +130,7 @@ impl NetworkFlow {
         self.fingerprints.push(fingerprint);
     }
 
-    /// Checkwhether有fingerprint
+    // / Checkwhether有fingerprint
     pub fn has_fingerprints(&self) -> bool {
         !self.fingerprints.is_empty()
     }
@@ -178,7 +178,7 @@ impl std::fmt::Debug for NetworkFlow {
 impl Clone for NetworkFlow {
     fn clone(&self) -> Self {
         // Note: fingerprints cannot Clone, sonewinstance from emptyliststart
-        // this is合process的, becausefingerprintusually不should被copy, 而 is throughreferenceshared
+        // this is合processof, becausefingerprintusually不should被copy, 而 is throughreferenceshared
         Self {
             context: self.context.clone(),
             fingerprints: Vec::new(), // cannot Clone trait object

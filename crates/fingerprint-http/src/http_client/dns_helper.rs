@@ -1,29 +1,29 @@
-//! DNS 解析辅助模块
-//!
-//! 提供 DNS 预解析和缓存功能集成到 HTTP 客户端
+// ! DNS parse辅助module
+//! DNS helper utilities for the HTTP client.
+// ! provide DNS 预parseandcache functionality集成到 HTTP client
 
 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 use std::sync::Arc;
 use std::time::Duration;
 
-/// DNS 解析辅助器
-///
-/// 提供带缓存的 DNS 解析功能，可选择性地集成到 HTTP 客户端
+// / DNS parse辅助器
+/// DNS resolution helper with caching.
+// / provide带cacheof DNS parse functionality，optional择性地集成到 HTTP client
 #[derive(Clone, Debug)]
 pub struct DNSHelper {
-    /// 缓存的域名到 IP 地址映射
+    // / cacheofdomain到 IP addressmap
     cache: Arc<std::sync::RwLock<std::collections::HashMap<String, Vec<IpAddr>>>>,
-    /// 缓存 TTL
+    // / cache TTL
     ttl: Duration,
-    /// 缓存时间戳
+    // / cachetime戳
     cache_time: Arc<std::sync::RwLock<std::collections::HashMap<String, std::time::Instant>>>,
 }
 
 impl DNSHelper {
-    /// 创建新的 DNS 辅助器
+    // / createnew DNS 辅助器
     ///
     /// # Arguments
-    /// * `ttl` - 缓存 TTL，默认 300 秒（5 分钟）
+    // / * `ttl` - cache TTL，default 300 秒（5 分钟）
     pub fn new(ttl: Duration) -> Self {
         Self {
             cache: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
@@ -32,21 +32,21 @@ impl DNSHelper {
         }
     }
 
-    /// 解析域名到 IP 地址（带缓存）
+    // / parsedomain到 IP address（带cache）
     ///
     /// # Arguments
-    /// * `host` - 主机名或域名
-    /// * `port` - 端口号
+    // / * `host` - host名或domain
+    // / * `port` - port号
     ///
     /// # Returns
-    /// 解析后的 SocketAddr 列表
+    // / parse后of SocketAddr list
     pub fn resolve(&self, host: &str, port: u16) -> std::io::Result<Vec<SocketAddr>> {
-        // 如果是 IP 地址，直接返回
+        // 如果是 IP address，直接return
         if let Ok(ip) = host.parse::<IpAddr>() {
             return Ok(vec![SocketAddr::new(ip, port)]);
         }
 
-        // 尝试从缓存获取
+        // 尝试从cacheget
         if let Some(cached_ips) = self.get_cached(host) {
             return Ok(cached_ips
                 .iter()
@@ -54,24 +54,24 @@ impl DNSHelper {
                 .collect());
         }
 
-        // 缓存未命中，执行实际解析
+        // cache未命中，执行实际parse
         let addr = format!("{}:{}", host, port);
         let addrs: Vec<SocketAddr> = addr.to_socket_addrs()?.collect();
 
-        // 提取 IP 地址并缓存
+        // extract IP address并cache
         let ips: Vec<IpAddr> = addrs.iter().map(|addr| addr.ip()).collect();
         self.put_cache(host, ips);
 
         Ok(addrs)
     }
 
-    /// 从缓存获取 IP 地址
+    // / 从cacheget IP address
     fn get_cached(&self, host: &str) -> Option<Vec<IpAddr>> {
-        // 检查缓存是否过期
+        // checkcache是否过期
         if let Ok(cache_time) = self.cache_time.read() {
             if let Some(time) = cache_time.get(host) {
                 if time.elapsed() > self.ttl {
-                    // 缓存已过期
+                    // cache已过期
                     return None;
                 }
             } else {
@@ -79,7 +79,7 @@ impl DNSHelper {
             }
         }
 
-        // 从缓存获取
+        // 从cacheget
         if let Ok(cache) = self.cache.read() {
             cache.get(host).cloned()
         } else {
@@ -87,7 +87,7 @@ impl DNSHelper {
         }
     }
 
-    /// 将 IP 地址存入缓存
+    // / 将 IP address存入cache
     fn put_cache(&self, host: &str, ips: Vec<IpAddr>) {
         if let Ok(mut cache) = self.cache.write() {
             cache.insert(host.to_string(), ips);
@@ -97,17 +97,17 @@ impl DNSHelper {
         }
     }
 
-    /// 预热缓存（预先解析一组域名）
+    // / warm upcache（预先parse一组domain）
     ///
     /// # Arguments
-    /// * `domains` - 域名列表
+    // / * `domains` - domainlist
     pub fn warmup(&self, domains: &[&str]) {
         for domain in domains {
-            let _ = self.resolve(domain, 443); // 默认使用 HTTPS 端口
+            let _ = self.resolve(domain, 443); // defaultuse HTTPS port
         }
     }
 
-    /// 清除缓存
+    // / 清除cache
     pub fn clear_cache(&self) {
         if let Ok(mut cache) = self.cache.write() {
             cache.clear();
@@ -117,7 +117,7 @@ impl DNSHelper {
         }
     }
 
-    /// 使特定域名的缓存失效
+    // / 使特定domainofcache失效
     pub fn invalidate(&self, host: &str) {
         if let Ok(mut cache) = self.cache.write() {
             cache.remove(host);
@@ -127,7 +127,7 @@ impl DNSHelper {
         }
     }
 
-    /// 获取缓存统计信息
+    // / getcachestatisticsinfo
     ///
     /// # Returns
     /// (cached_domains, expired_domains)
@@ -150,14 +150,14 @@ impl DNSHelper {
         (total, expired)
     }
 
-    /// 清理过期的缓存条目
+    // / cleanup过期ofcache条目
     ///
     /// # Returns
-    /// 清理的条目数量
+    // / cleanupof条目count
     pub fn cleanup_expired(&self) -> usize {
         let mut expired_keys = Vec::new();
 
-        // 找出过期的键
+        // 找出过期of键
         if let Ok(cache_time) = self.cache_time.read() {
             for (key, time) in cache_time.iter() {
                 if time.elapsed() > self.ttl {
@@ -166,7 +166,7 @@ impl DNSHelper {
             }
         }
 
-        // 删除过期的条目
+        // delete过期of条目
         let count = expired_keys.len();
         for key in expired_keys {
             self.invalidate(&key);
@@ -178,7 +178,7 @@ impl DNSHelper {
 
 impl Default for DNSHelper {
     fn default() -> Self {
-        Self::new(Duration::from_secs(300)) // 默认 5 分钟 TTL
+        Self::new(Duration::from_secs(300)) // default 5 分钟 TTL
     }
 }
 
@@ -190,12 +190,12 @@ mod tests {
     fn test_dns_helper_basic() {
         let helper = DNSHelper::new(Duration::from_secs(60));
 
-        // 解析 localhost
+        // parse localhost
         let addrs = helper.resolve("localhost", 8080).unwrap();
         assert!(!addrs.is_empty());
         assert_eq!(addrs[0].port(), 8080);
 
-        // 验证缓存
+        // validatecache
         let (cached, _) = helper.stats();
         assert_eq!(cached, 1);
     }
@@ -204,12 +204,12 @@ mod tests {
     fn test_dns_helper_ip_address() {
         let helper = DNSHelper::new(Duration::from_secs(60));
 
-        // 直接使用 IP 地址
+        // 直接use IP address
         let addrs = helper.resolve("127.0.0.1", 8080).unwrap();
         assert_eq!(addrs.len(), 1);
         assert_eq!(addrs[0].port(), 8080);
 
-        // IP 地址不应该被缓存
+        // IP address不应该被cache
         let (cached, _) = helper.stats();
         assert_eq!(cached, 0);
     }
@@ -218,10 +218,10 @@ mod tests {
     fn test_dns_helper_cache_expiration() {
         let helper = DNSHelper::new(Duration::from_millis(100));
 
-        // 解析域名
+        // parsedomain
         let _ = helper.resolve("localhost", 8080);
 
-        // 立即检查：应该被缓存
+        // 立即check：应该被cache
         let (cached, expired) = helper.stats();
         assert_eq!(cached, 1);
         assert_eq!(expired, 0);
@@ -229,12 +229,12 @@ mod tests {
         // 等待过期
         std::thread::sleep(Duration::from_millis(150));
 
-        // 检查过期
+        // check过期
         let (cached, expired) = helper.stats();
         assert_eq!(cached, 1);
         assert_eq!(expired, 1);
 
-        // 清理过期条目
+        // cleanup过期条目
         let cleaned = helper.cleanup_expired();
         assert_eq!(cleaned, 1);
 
@@ -246,10 +246,10 @@ mod tests {
     fn test_dns_helper_warmup() {
         let helper = DNSHelper::new(Duration::from_secs(60));
 
-        // 预热缓存
+        // warm upcache
         helper.warmup(&["localhost"]);
 
-        // 验证缓存
+        // validatecache
         let (cached, _) = helper.stats();
         assert_eq!(cached, 1);
     }
@@ -258,12 +258,12 @@ mod tests {
     fn test_dns_helper_clear_cache() {
         let helper = DNSHelper::new(Duration::from_secs(60));
 
-        // 添加缓存
+        // 添加cache
         let _ = helper.resolve("localhost", 8080);
         let (cached, _) = helper.stats();
         assert_eq!(cached, 1);
 
-        // 清除缓存
+        // 清除cache
         helper.clear_cache();
         let (cached, _) = helper.stats();
         assert_eq!(cached, 0);

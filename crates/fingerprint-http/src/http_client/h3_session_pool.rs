@@ -1,7 +1,7 @@
 //! HTTP/3 sessionpool
 //!
-//! pool化 h3::client::SendRequest handle, implementtrue HTTP/3 multiplereuse
-//! avoideach timerequest都reperform QUIC handshake and HTTP/3 connectionestablish
+// ! pool化 h3::client::SendRequest handle, implementtrue HTTP/3 multiplereuse
+// ! avoideach timerequest都reperform QUIC handshake and HTTP/3 connectionestablish
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use super::Result;

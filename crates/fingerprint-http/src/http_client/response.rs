@@ -128,7 +128,7 @@ impl HttpResponse {
         Ok(headers)
     }
 
-    /// processresponse体 (support chunked and compression)
+    // / processresponse体 (support chunked and compression)
     fn process_body(
         body_bytes: &[u8],
         headers: &HashMap<String, String>,
@@ -201,7 +201,7 @@ impl HttpResponse {
             result.extend_from_slice(&data[pos..pos + size]);
             pos += size;
 
-            // skip chunk back面的 \r\n
+            // skip chunk back面of \r\n
             if pos + 2 <= data.len() && &data[pos..pos + 2] == b"\r\n" {
                 pos += 2;
             } else {
@@ -212,7 +212,7 @@ impl HttpResponse {
         Ok(result)
     }
 
-    /// 解compressionresponse体
+    // / 解compressionresponse体
     fn decompress(data: &[u8], encoding: &str) -> Result<Vec<u8>, String> {
         match encoding.to_lowercase().as_str() {
             #[cfg(feature = "compression")]
@@ -303,7 +303,7 @@ impl HttpResponse {
         Err("brotli decompressionneedenabled feature: compression".to_string())
     }
 
-    /// Getresponse体 as string
+    // / Getresponse体 as string
     pub fn body_as_string(&self) -> Result<String, std::string::FromUtf8Error> {
         String::from_utf8(self.body.clone())
     }

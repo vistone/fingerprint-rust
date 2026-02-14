@@ -2,9 +2,9 @@
 //!
 //! architectureexplain：
 //! - HTTP/3 adoptsessionpool (H3SessionPool)implement QUIC sessionreuse
-//! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
+// ! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
 //! - reusemethod：concurrentmultiplereuse (an QUIC connectioncan when processmultiple Stream)
-//! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage, no need netconnpool
+// ! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage, no need netconnpool
 //! - sessionestablishback, connectionlifecycleby H3Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -13,7 +13,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use std::sync::Arc;
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
-use std::time::Duration;
+use std::time::{Duration, Instant}; // 添加time测量support
 
 /// useconnection poolsend HTTP/3 request
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -64,7 +64,7 @@ pub async fn send_http3_request_with_pool(
                 })?,
             ));
 
-            // optimizetransferconfiguration以improveperformance
+            // optimizetransferconfigurationending withimproveperformance
             let mut transport_config = quinn::TransportConfig::default();
             transport_config.initial_rtt(Duration::from_millis(100));
             transport_config.max_idle_timeout(Some(
@@ -74,7 +74,7 @@ pub async fn send_http3_request_with_pool(
             ));
             transport_config.keep_alive_interval(Some(Duration::from_secs(10)));
 
-            // increasereceivewindow以improvethroughput
+            // increasereceivewindowending withimprovethroughput
             transport_config.stream_receive_window((1024 * 1024u32).into()); // 1MB
             transport_config.receive_window((10 * 1024 * 1024u32).into()); // 10MB
 
@@ -249,7 +249,7 @@ pub async fn send_http3_request_with_pool(
         status_text,
         headers,
         body: body_data,
-        response_time_ms: 0, // TODO: Add计 when
+        response_time_ms: start.elapsed().as_millis() as u64, // 添加实际of响应time测量
     })
 }
 

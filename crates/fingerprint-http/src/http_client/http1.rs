@@ -41,8 +41,10 @@ pub fn send_http1_request(
     }
 
     // Build并send HTTP/1.1 request
-    let header_order = None; // TODO: 从配置中获取 header 顺序
-    let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
+    // useChromestandardheader顺序configure
+    let header_order = Some(fingerprint_headers::chrome_header_order());
+    let http_request =
+        request_with_cookies.build_http1_request_bytes(host, path, header_order.as_deref());
     stream
         .write_all(&http_request)
         .map_err(HttpClientError::Io)?;

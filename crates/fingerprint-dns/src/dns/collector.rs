@@ -16,60 +16,61 @@ impl ServerCollector {
         let timeout = timeout.unwrap_or(Duration::from_secs(30));
         let url = "https://public-dns.info/nameservers.txt";
 
-        // useiteminside部 HttpClient
-        let config = fingerprint_http::http_client::HttpClientConfig {
-            connect_timeout: timeout,
-            read_timeout: timeout,
-            write_timeout: timeout,
-            ..Default::default()
-        };
-        let client = fingerprint_http::http_client::HttpClient::new(config);
+        // use standard HTTP client to avoid Sync issues
+        let client = reqwest::Client::builder()
+            .timeout(timeout)
+            .build()
+            .map_err(|e| DNSError::Http(format!("failed to create HTTP client: {}", e)))?;
 
-        // in asyncupdowntext in executesync HTTP request
-        let response = tokio::task::spawn_blocking(move || client.get(url))
+        let response = client
+            .get(url)
+            .send()
             .await
-            .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
             .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
-        if !response.is_success() {
+        if !response.status().is_success() {
             return Err(DNSError::Http(format!(
                 "failed to fetch nameservers: HTTP {}",
-                response.status_code
+                response.status()
             )));
         }
 
         // readresponsetext
-        let text = String::from_utf8_lossy(&response.body).to_string();
+        let text = response
+            .text()
+            .await
+            .map_err(|e| DNSError::Http(format!("failed to read response: {}", e)))?;
 
-        // Parsetext, 每executean IP address
-        let mut servers = Vec::new();
+        // Parsetext and collect DNS servers
+        let mut dns_servers: Vec<String> = Vec::new();
+
         for line in text.lines() {
-            let line = line.trim();
+            let trimmed_line = line.trim();
 
-            // skipemptyexecute and comment
-            if line.is_empty() || line.starts_with('#') {
+            // Skip empty lines and comments
+            if trimmed_line.is_empty() || trimmed_line.starts_with('#') {
                 continue;
             }
 
-            // Validatewhether as valid IP address
-            if is_valid_ip_address(line) {
-                // Ifnoport, Adddefaultport 53
-                let server = if line.contains(':') {
-                    line.to_string()
-                } else {
-                    format!("{}:53", line)
-                };
-                servers.push(server);
+            // Parse as IP address and format with port
+            match trimmed_line.parse::<std::net::IpAddr>() {
+                Ok(ip_addr) => {
+                    let server_with_port = format!("{}:53", ip_addr);
+                    dns_servers.push(server_with_port);
+                }
+                Err(_) => {
+                    // Skip invalid IP addresses
+                    continue;
+                }
             }
         }
 
-        if servers.is_empty() {
-            // IfGetfailure, returndefaultserver
-            eprintln!("Warning: No servers fetched from public-dns.info, using defaults");
-            return Ok(ServerPool::default());
-        }
+        eprintln!(
+            "[DNS Collector] successfullycollect {} DNS server",
+            dns_servers.len()
+        );
 
-        Ok(ServerPool::new(servers))
+        Ok(ServerPool::new(dns_servers))
     }
 
     /// collectsystem DNS server
@@ -86,8 +87,8 @@ impl ServerCollector {
         ServerPool::default()
     }
 
-    /// Validate并Updateexistingfile in DNS server
-    /// from fileloadallserver, performhealthCheck, onlypreserveavailableserver并save回file
+    // / Validate並Updateexistingfile in DNS server
+    // / from fileloadallserver, performhealthCheck, onlypreserveavailableserver並save回file
     ///
     /// # Parameters
     /// - `test_domain`: for testdomain, default as "google.com"
@@ -176,9 +177,9 @@ impl ServerCollector {
     }
 
     /// collectallavailable DNS server (pairshould Go BootstrapPoolInternal)
-    /// from multiplesourcecollect, 并 in savefrontperformhealthCheck, onlypreserveavailableserver
+    // / from multiplesourcecollect, 并 in savefrontperformhealthCheck, onlypreserveavailableserver
     pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
-        // 先try from localfileload (pairshould Go loadDefault)
+        // 先try from .localfileload (pairshould Go loadDefault)
         let pool = ServerPool::load_default();
 
         if !pool.is_empty() {
@@ -258,6 +259,7 @@ impl ServerCollector {
 }
 
 /// Validatewhether as valid IP address (IPv4 or IPv6)
+#[allow(dead_code)]
 fn is_valid_ip_address(s: &str) -> bool {
     use std::net::{IpAddr, SocketAddr};
 

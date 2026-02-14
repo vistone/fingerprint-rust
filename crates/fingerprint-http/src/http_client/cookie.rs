@@ -86,7 +86,7 @@ impl Cookie {
             } else if part.to_lowercase().starts_with("max-age=") {
                 if let Ok(secs) = part[8..].parse::<u64>() {
                     cookie.max_age = Some(Duration::from_secs(secs));
-                    // let Max-Age true生effect：convert to绝pair expires 以reuse is_expired()
+                    // let Max-Age true生effect：convert to绝pair expires ending withreuse is_expired()
                     cookie.expires = Some(SystemTime::now() + Duration::from_secs(secs));
                 }
             } else if part.to_lowercase() == "secure" {
@@ -149,7 +149,7 @@ impl CookieStore {
     /// Getspecifieddomainallvalid Cookie
     ///
     /// Based on RFC 6265 specificationperformdomainmatch：
-    /// - Cookie domain property (如 `.example.com`)shouldmatch `example.com` and其allchilddomain
+    // / - Cookie domain property (如 `.example.com`)shouldmatch `example.com` and其allchilddomain
     /// - `example.com` Cookie shouldmatch `example.com` and `*.example.com`
     pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
         let cookies = match self.cookies.lock() {
@@ -170,7 +170,7 @@ impl CookieStore {
                 // completelymatch
                 true
             } else if let Some(base) = cookie_domain_lower.strip_prefix('.') {
-                // Cookie domain 以. openheader (如.example.com)
+                // Cookie domain ending with. openheader (如.example.com)
                 // shouldmatch example.com and all *.example.com
                 domain_lower == base || domain_lower.ends_with(&format!(".{}", base))
             } else {

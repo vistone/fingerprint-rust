@@ -2,41 +2,41 @@
 
 //! # fingerprint-fonts
 //!
-//! 字体枚举和指纹识别模块
+// ! fontenumerationandfingerprintrecognitionmodule
 //!
-//! 提供字体识别能力，包括：
-//! - 系统字体列表枚举
-//! - 字体加载时间分析
-//! - 字体渲染特征识别
-//! - 子集支持检测
+// ! providefontrecognitioncapabilities，including：
+// ! - systemfontlistenumeration
+// ! - fontloadtimeanalyze
+// ! - fontrenderingfeaturesrecognition
+// ! - subsetsupportdetect
 
 use std::collections::HashSet;
 
-/// 字体指纹
+// / fontfingerprint
 #[derive(Debug, Clone)]
 pub struct FontFingerprint {
-    /// 检测到的系统字体列表
+    // / detect到ofsystemfontlist
     pub system_fonts: Vec<String>,
-    /// 字体加载时间 (ms)
+    // / fontloadtime (ms)
     pub loading_times: Vec<u64>,
-    /// 独特字体指纹哈希
+    // / uniquefontfingerprinthash
     pub unique_hash: String,
-    /// 字体数量
+    // / fontcount
     pub font_count: usize,
-    /// 支持的子集
+    // / supportofsubset
     pub supported_subsets: Vec<String>,
-    /// 渲染特征
+    // / renderingfeatures
     pub rendering_features: Vec<String>,
 }
 
-/// 字体错误类型
+// / fonterrortype
 #[derive(Debug)]
 pub enum FontError {
-    /// 无效数据
+    // / invaliddata
     InvalidData,
-    /// 枚举失败
+    // / enumerationfailure
     EnumerationFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -52,29 +52,29 @@ impl std::fmt::Display for FontError {
 
 impl std::error::Error for FontError {}
 
-/// 字体分析器
+// / fontanalyzer
 pub struct FontAnalyzer;
 
 impl FontAnalyzer {
-    /// 分析系统字体
+    // / analyzesystemfont
     pub fn analyze(system_fonts: &[&str]) -> Result<FontFingerprint, FontError> {
         if system_fonts.is_empty() {
             return Err(FontError::InvalidData);
         }
 
-        // 转换为字符串向量
+        // converttostringvector
         let fonts: Vec<String> = system_fonts.iter().map(|s| s.to_string()).collect();
 
-        // 计算加载时间
+        // calculateloadtime
         let loading_times = Self::calculate_loading_times(&fonts);
 
-        // 生成唯一哈希
+        // generateuniquehash
         let unique_hash = Self::generate_font_hash(&fonts);
 
-        // 检测子集支持
+        // detectsubsetsupport
         let supported_subsets = Self::detect_subsets(&fonts);
 
-        // 获取渲染特征
+        // getrenderingfeatures
         let rendering_features = Self::get_rendering_features(&fonts);
 
         Ok(FontFingerprint {
@@ -87,9 +87,9 @@ impl FontAnalyzer {
         })
     }
 
-    /// 计算字体加载时间
+    // / calculatefontloadtime
     fn calculate_loading_times(fonts: &[String]) -> Vec<u64> {
-        // 基于字体名称长度和特征的模拟时间
+        // based onfontnamelengthandfeaturesofsimulatedtime
         fonts
             .iter()
             .map(|f| {
@@ -100,7 +100,7 @@ impl FontAnalyzer {
             .collect()
     }
 
-    /// 生成字体哈希
+    // / generatefonthash
     fn generate_font_hash(fonts: &[String]) -> String {
         let hash_input = fonts.join(":");
         let hash_value = hash_input
@@ -109,11 +109,11 @@ impl FontAnalyzer {
         format!("{:x}", hash_value)
     }
 
-    /// 检测支持的子集
+    // / detectsupportofsubset
     fn detect_subsets(fonts: &[String]) -> Vec<String> {
         let mut subsets = HashSet::new();
 
-        // 基于字体名称检测子集
+        // based onfontnamedetectsubset
         for font in fonts {
             let lower = font.to_lowercase();
             if lower.contains("cjk") {
@@ -130,13 +130,13 @@ impl FontAnalyzer {
             }
         }
 
-        // 默认子集
+        // defaultsubset
         subsets.insert("latin".to_string());
 
         subsets.into_iter().collect()
     }
 
-    /// 获取渲染特征
+    // / getrenderingfeatures
     fn get_rendering_features(_fonts: &[String]) -> Vec<String> {
         vec![
             "anti-aliasing".to_string(),
@@ -147,11 +147,11 @@ impl FontAnalyzer {
     }
 }
 
-/// 字体系统检测器
+// / fontsystemdetector
 pub struct FontSystemDetector;
 
 impl FontSystemDetector {
-    /// 检测操作系统字体
+    // / detectoperating systemfont
     pub fn detect_system() -> FontFingerprint {
         let default_fonts = vec![
             "Arial",

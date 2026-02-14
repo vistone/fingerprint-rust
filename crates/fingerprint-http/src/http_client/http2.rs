@@ -52,7 +52,7 @@ async fn send_http2_request_async(
         .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
 
     let tcp = if let Some(_profile) = &config.profile {
-        // 暂时不使用 TCP fingerprint，直接建立连接
+        // 暂时不use TCP fingerprint，直接建立connect
         TcpStream::connect(socket_addrs).await.map_err(|e| {
             HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
         })?
@@ -94,7 +94,7 @@ async fn send_http2_request_async(
             builder.max_header_list_size(max_header_list_size);
         }
 
-        // 设置连接级别窗口大小 (使用默认值)
+        // setconnect级别窗口size (usedefault值)
         // builder.initial_connection_window_size(65535);
     }
 

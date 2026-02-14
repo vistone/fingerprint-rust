@@ -2,45 +2,45 @@
 
 //! # fingerprint-audio
 //!
-//! Audio Context 指纹识别模块
+// ! Audio Context fingerprintrecognitionmodule
 //!
-//! 提供 Web Audio API 指纹识别能力，包括：
-//! - Audio Context 参数提取
-//! - 样本率识别
-//! - 频率分析
-//! - 音频处理精度检测
+// ! provide Web Audio API fingerprintrecognitioncapabilities，including：
+// ! - Audio Context argumentextract
+// ! - sample raterecognition
+// ! - frequencyanalyze
+// ! - audioprocessprecisiondetect
 
 use std::collections::HashMap;
 
-/// Audio Context 指纹
+// / Audio Context fingerprint
 #[derive(Debug, Clone)]
 pub struct AudioFingerprint {
-    /// 样本率 (Hz)
+    // / sample rate (Hz)
     pub sample_rate: u32,
-    /// 通道数
+    // / channel数
     pub channel_count: u32,
-    /// 目标通道数
+    // / targetchannel数
     pub destination_channels: u32,
-    /// FFT 大小
+    // / FFT size
     pub fft_size: u32,
-    /// 频率分析数据
+    // / frequencyanalyzedata
     pub frequency_data: Vec<f32>,
-    /// 音频处理精度
+    // / audioprocessprecision
     pub audio_processing_precision: String,
-    /// 振荡器类型
+    // / oscillatortype
     pub oscillator_types: Vec<String>,
-    /// 融合模式
+    // / blendingmode
     pub blend_modes: Vec<String>,
 }
 
-/// Audio 指纹错误类型
+// / Audio fingerprinterrortype
 #[derive(Debug)]
 pub enum AudioError {
-    /// 无效数据
+    // / invaliddata
     InvalidData,
-    /// 分析失败
+    // / analyzefailure
     AnalysisFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -56,20 +56,20 @@ impl std::fmt::Display for AudioError {
 
 impl std::error::Error for AudioError {}
 
-/// Audio Context 分析器
+// / Audio Context analyzer
 pub struct AudioAnalyzer {
     profile_library: AudioProfileLibrary,
 }
 
 impl AudioAnalyzer {
-    /// 创建新的分析器
+    // / createnewanalyzer
     pub fn new() -> Self {
         AudioAnalyzer {
             profile_library: AudioProfileLibrary::new(),
         }
     }
 
-    /// 分析 Audio Context 数据
+    // / analyze Audio Context data
     pub fn analyze(
         &self,
         sample_rate: u32,
@@ -81,16 +81,16 @@ impl AudioAnalyzer {
             return Err(AudioError::InvalidData);
         }
 
-        // 标准化频率数据
+        // standard化frequencydata
         let normalized = self.normalize_frequency_data(frequency_data);
 
-        // 检测振荡器类型
+        // detectoscillatortype
         let oscillator_types = self.detect_oscillator_types(&normalized);
 
-        // 检测融合模式
+        // detectblendingmode
         let blend_modes = self.detect_blend_modes();
 
-        // 检测精度
+        // detectprecision
         let precision = self.detect_audio_precision(sample_rate);
 
         Ok(AudioFingerprint {
@@ -105,7 +105,7 @@ impl AudioAnalyzer {
         })
     }
 
-    /// 标准化频率数据
+    // / standard化frequencydata
     fn normalize_frequency_data(&self, data: &[f32]) -> Vec<f32> {
         let max = data.iter().cloned().fold(0.0, f32::max);
         if max > 0.0 {
@@ -115,7 +115,7 @@ impl AudioAnalyzer {
         }
     }
 
-    /// 检测振荡器类型
+    // / detectoscillatortype
     fn detect_oscillator_types(&self, frequency_data: &[f32]) -> Vec<String> {
         vec![
             "sine".to_string(),
@@ -125,7 +125,7 @@ impl AudioAnalyzer {
         ]
     }
 
-    /// 检测融合模式
+    // / detectblendingmode
     fn detect_blend_modes(&self) -> Vec<String> {
         vec![
             "source-over".to_string(),
@@ -134,7 +134,7 @@ impl AudioAnalyzer {
         ]
     }
 
-    /// 检测音频精度
+    // / detectaudioprecision
     fn detect_audio_precision(&self, sample_rate: u32) -> String {
         match sample_rate {
             44100 | 48000 => "standard".to_string(),
@@ -150,7 +150,7 @@ impl Default for AudioAnalyzer {
     }
 }
 
-/// Audio 配置文件库
+// / Audio configurefilelibrary
 pub struct AudioProfileLibrary {
     profiles: HashMap<String, AudioProfile>,
 }
@@ -162,11 +162,11 @@ struct AudioProfile {
 }
 
 impl AudioProfileLibrary {
-    /// 创建新的库
+    // / createnewlibrary
     pub fn new() -> Self {
         let mut profiles = HashMap::new();
 
-        // 常见配置
+        // commonconfigure
         profiles.insert(
             "apple_airpods".to_string(),
             AudioProfile {
@@ -186,7 +186,7 @@ impl AudioProfileLibrary {
         AudioProfileLibrary { profiles }
     }
 
-    /// 获取配置数
+    // / getconfigure数
     pub fn profile_count(&self) -> usize {
         self.profiles.len()
     }

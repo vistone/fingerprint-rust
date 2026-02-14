@@ -3,7 +3,6 @@
 //! from IPInfo.io API Get IP addressdetailedinfo (geographicbitplace, ISP etc.)
 
 use crate::dns::types::{DNSError, IPInfo};
-use fingerprint_http::http_client::{HttpClient, HttpClientConfig};
 use std::time::Duration;
 
 /// IPInfo.io client
@@ -24,39 +23,30 @@ impl IPInfoClient {
         // this waycanavoid token leak to log, errormessage, proxyserver etc.
         let url = format!("https://ipinfo.io/{}", ip);
 
-        // useiteminside部 HttpClient
-        let config = HttpClientConfig {
-            connect_timeout: self.timeout,
-            read_timeout: self.timeout,
-            write_timeout: self.timeout,
-            ..Default::default()
-        };
-        let client = HttpClient::new(config);
+        // use standard HTTP client to avoid Sync issues
+        let client = reqwest::Client::builder()
+            .timeout(self.timeout)
+            .build()
+            .map_err(|e| DNSError::Http(format!("failed to create HTTP client: {}", e)))?;
 
-        // Createbring有 Authorization header request
-        use fingerprint_http::http_client::{HttpMethod, HttpRequest};
-        let request = HttpRequest::new(HttpMethod::Get, &url)
-            .with_header("Authorization", &format!("Bearer {}", self.token));
+        let response = client
+            .get(&url)
+            .header("Authorization", format!("Bearer {}", self.token))
+            .send()
+            .await
+            .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
 
-        // in asyncupdowntext in executesync HTTP request
-        let response = tokio::task::spawn_blocking({
-            let request = request.clone();
-            move || client.send_request(&request)
-        })
-        .await
-        .map_err(|e| DNSError::Http(format!("task join error: {}", e)))?
-        .map_err(|e| DNSError::Http(format!("HTTP request failed: {}", e)))?;
-
-        if !response.is_success() {
+        if !response.status().is_success() {
             return Err(DNSError::IPInfo(format!(
                 "IPInfo API returned error: {}",
-                response.status_code
+                response.status()
             )));
         }
 
         // Parse JSON response
-        let body_str = String::from_utf8_lossy(&response.body);
-        let json: serde_json::Value = serde_json::from_str(&body_str)
+        let json: serde_json::Value = response
+            .json()
+            .await
             .map_err(|e| DNSError::Http(format!("failed to parse JSON: {}", e)))?;
 
         // Parseresponse
@@ -77,29 +67,35 @@ impl IPInfoClient {
     pub async fn get_ip_infos(
         &self,
         ips: Vec<String>,
-        max_concurrency: usize,
-    ) -> Vec<(String, Result<IPInfo, DNSError>)> {
+    ) -> Result<std::collections::HashMap<String, IPInfo>, DNSError> {
         use futures::stream::{self, StreamExt};
-        use std::collections::HashSet;
 
-        // pair IP listdeduplicate, ensureeach IP onlyqueryonce
-        let unique_ips: Vec<String> = ips
-            .into_iter()
-            .collect::<HashSet<String>>()
-            .into_iter()
-            .collect();
+        // deduplicateinput IP
+        let unique_ips: std::collections::HashSet<String> = ips.into_iter().collect();
 
-        let tasks = stream::iter(unique_ips)
-            .map(|ip| {
-                let client = &self;
-                async move {
-                    let result = client.get_ip_info(&ip).await;
-                    (ip, result)
-                }
-            })
-            .buffer_unordered(max_concurrency);
+        // concurrentquery (limit 10 concurrency)
+        let results: Result<std::collections::HashMap<String, IPInfo>, DNSError> =
+            stream::iter(unique_ips)
+                .map(|ip| {
+                    let client = self.clone();
+                    async move { client.get_ip_info(&ip).await.map(|info| (ip.clone(), info)) }
+                })
+                .buffer_unordered(10)
+                .collect::<Vec<Result<(String, IPInfo), DNSError>>>()
+                .await
+                .into_iter()
+                .collect();
 
-        tasks.collect().await
+        results
+    }
+}
+
+impl Clone for IPInfoClient {
+    fn clone(&self) -> Self {
+        Self {
+            token: self.token.clone(),
+            timeout: self.timeout,
+        }
     }
 }
 

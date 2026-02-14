@@ -47,7 +47,7 @@ pub type CipherSuiteID = u16;
 /// TLS Client Hello configuration
 /// Corresponds to Go version's tls.ClientHelloSpec
 ///
-/// Note: due toextension is trait pair象, Clone implementwillCreate a newextensioninstance
+// / Note: due toextension is trait pair象, Clone implementwillCreate a newextensioninstance
 #[derive(Debug)]
 pub struct ClientHelloSpec {
     /// cipher suitelist
@@ -72,7 +72,7 @@ pub struct ClientHelloSpec {
 
 impl ClientHelloSpec {
     /// Create a new ClientHelloSpec
-    /// Corresponds to Go version's ClientHelloSpec{} 零value
+    // / Corresponds to Go version's ClientHelloSpec{} 零value
     pub fn new() -> Self {
         Self {
             cipher_suites: Vec::new(),

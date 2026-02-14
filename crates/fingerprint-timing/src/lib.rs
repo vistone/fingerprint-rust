@@ -2,48 +2,48 @@
 
 //! # fingerprint-timing
 //!
-//! 时序攻击防护模块
+// ! timing攻击protectionmodule
 //!
-//! 提供时间戳一致性检查和时序侧信道防护
+// ! providetime戳consistencycheckandtiming侧信道protection
 
 use std::time::{Duration, SystemTime};
 
-/// 时序指纹
+// / timingfingerprint
 #[derive(Debug, Clone)]
 pub struct TimingFingerprint {
-    /// 时间戳
+    // / time戳
     pub timestamp: u64,
-    /// 时间源精度
+    // / time源precision
     pub precision: TimingPrecision,
-    /// 时间漂移
+    // / time漂移
     pub drift: i64,
-    /// 高分辨率时间
+    // / 高resolutiontime
     pub high_resolution_time: f64,
-    /// 时间一致性分数
+    // / timeconsistency分数
     pub consistency_score: f32,
 }
 
-/// 时间精度
+// / timeprecision
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TimingPrecision {
-    /// 毫秒
+    // / milliseconds
     Millisecond,
-    /// 微秒
+    // / 微秒
     Microsecond,
-    /// 纳秒
+    // / 纳秒
     Nanosecond,
-    /// 低精度
+    // / 低precision
     Low,
 }
 
-/// 时序错误类型
+// / timingerrortype
 #[derive(Debug)]
 pub enum TimingError {
-    /// 无效时间
+    // / invalidtime
     InvalidTime,
-    /// 检测失败
+    // / detectfailure
     DetectionFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -59,20 +59,20 @@ impl std::fmt::Display for TimingError {
 
 impl std::error::Error for TimingError {}
 
-/// 时序分析器
+// / timinganalyzer
 pub struct TimingAnalyzer {
     last_timestamp: u64,
 }
 
 impl TimingAnalyzer {
-    /// 创建新的分析器
+    // / createnewanalyzer
     pub fn new() -> Self {
         TimingAnalyzer {
             last_timestamp: Self::current_timestamp(),
         }
     }
 
-    /// 获取当前时间戳
+    // / get当前time戳
     fn current_timestamp() -> u64 {
         SystemTime::now()
             .duration_since(SystemTime::UNIX_EPOCH)
@@ -80,7 +80,7 @@ impl TimingAnalyzer {
             .as_millis() as u64
     }
 
-    /// 分析时序信息
+    // / analyzetiminginfo
     pub fn analyze(&mut self, high_res_time: f64) -> Result<TimingFingerprint, TimingError> {
         let current = Self::current_timestamp();
         let drift = (current as i64) - (self.last_timestamp as i64);
@@ -102,7 +102,7 @@ impl TimingAnalyzer {
         })
     }
 
-    /// 检测时间精度
+    // / detecttimeprecision
     fn detect_precision(high_res_time: f64) -> TimingPrecision {
         if high_res_time > 1_000_000.0 {
             TimingPrecision::Nanosecond
@@ -115,7 +115,7 @@ impl TimingAnalyzer {
         }
     }
 
-    /// 计算时间一致性
+    // / calculatetimeconsistency
     fn calculate_consistency(drift: i64) -> f32 {
         if drift < 0 {
             0.0
@@ -137,22 +137,22 @@ impl Default for TimingAnalyzer {
     }
 }
 
-/// 时序防护器
+// / timingprotector
 pub struct TimingProtection;
 
 impl TimingProtection {
-    /// 添加随机延迟
+    // / 添加randomlatency
     pub fn add_random_delay(min_ms: u64, max_ms: u64) -> Duration {
         let delay = min_ms + ((max_ms - min_ms) / 2);
         Duration::from_millis(delay)
     }
 
-    /// 隐藏时间分辨率
+    // / hidetimeresolution
     pub fn obfuscate_time(timestamp: u64, granularity_ms: u64) -> u64 {
         (timestamp / granularity_ms) * granularity_ms
     }
 
-    /// 检测时间异常
+    // / detecttimeexception
     pub fn detect_anomalies(timings: &[TimingFingerprint]) -> Vec<usize> {
         if timings.len() < 2 {
             return Vec::new();
@@ -171,7 +171,7 @@ impl TimingProtection {
         anomalies
     }
 
-    /// 标准化时间戳
+    // / standard化time戳
     pub fn normalize_timestamps(timings: &mut [TimingFingerprint]) {
         if timings.is_empty() {
             return;

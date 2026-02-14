@@ -2,54 +2,54 @@
 
 //! # fingerprint-hardware
 //!
-//! 硬件指纹识别模块
+// ! 硬件fingerprintrecognitionmodule
 //!
-//! 提供 GPU、CPU、内存等硬件识别能力
+// ! provide GPU、CPU、memory等硬件recognitioncapabilities
 
-/// 硬件指纹
+// / 硬件fingerprint
 #[derive(Debug, Clone)]
 pub struct HardwareFingerprint {
-    /// CPU 型号
+    // / CPU 型号
     pub cpu_model: String,
-    /// CPU 核心数
+    // / CPU 核心数
     pub cpu_cores: u32,
-    /// GPU 型号
+    // / GPU 型号
     pub gpu_model: String,
-    /// GPU 内存
+    // / GPU memory
     pub gpu_memory_gb: u32,
-    /// 系统内存 (GB)
+    // / systemmemory (GB)
     pub system_memory_gb: u64,
-    /// 屏幕 DPI
+    // / 屏幕 DPI
     pub screen_dpi: f32,
-    /// 屏幕分辨率
+    // / 屏幕resolution
     pub screen_resolution: (u32, u32),
-    /// 设备类型
+    // / 设备type
     pub device_type: DeviceType,
 }
 
-/// 设备类型
+// / 设备type
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeviceType {
-    /// 桌面
+    // / 桌面
     Desktop,
-    /// 笔记本
+    // / 笔记本
     Laptop,
-    /// 平板
+    // / 平板
     Tablet,
-    /// 手机
+    // / 手机
     Phone,
-    /// 未知
+    // / unknown
     Unknown,
 }
 
-/// 硬件错误类型
+// / 硬件errortype
 #[derive(Debug)]
 pub enum HardwareError {
-    /// 无效数据
+    // / invaliddata
     InvalidData,
-    /// 检测失败
+    // / detectfailure
     DetectionFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -65,11 +65,11 @@ impl std::fmt::Display for HardwareError {
 
 impl std::error::Error for HardwareError {}
 
-/// 硬件检测器
+// / 硬件detector
 pub struct HardwareDetector;
 
 impl HardwareDetector {
-    /// 检测硬件信息
+    // / detect硬件info
     pub fn detect(
         cpu_cores: u32,
         gpu_model: &str,
@@ -98,7 +98,7 @@ impl HardwareDetector {
         })
     }
 
-    /// 识别 CPU 型号
+    // / recognition CPU 型号
     fn identify_cpu(cores: u32) -> String {
         match cores {
             1..=2 => "Intel Core i5".to_string(),
@@ -108,21 +108,21 @@ impl HardwareDetector {
         }
     }
 
-    /// 识别设备类型
+    // / recognition设备type
     fn identify_device_type(width: u32, height: u32, memory: u64) -> DeviceType {
         match (width, height, memory) {
-            // 手机条件要在Tablet之前，因为更具体
+            // 手机条件要在Tablet之前，因to更具体
             (w, h, _) if (w <= 480 && h <= 960) || (w <= 540 && h <= 960) => DeviceType::Phone,
-            // Tablet: 7-13 英寸屏幕通常为 600-1024 宽
+            // Tablet: 7-13 英寸屏幕通常to 600-1024 宽
             (w, h, _) if (w <= 800 && h <= 1280) || (w <= 1280 && h <= 800) => DeviceType::Tablet,
-            // 桌面: 内存多于16GB
+            // 桌面: memory多于16GB
             (_, _, m) if m > 16 => DeviceType::Desktop,
-            // 默认为笔记本
+            // defaultto笔记本
             _ => DeviceType::Laptop,
         }
     }
 
-    /// 估计 GPU 内存
+    // / 估计 GPU memory
     fn estimate_gpu_memory(gpu_model: &str) -> u32 {
         match gpu_model {
             gpu if gpu.contains("RTX 4090") => 24,
@@ -135,11 +135,11 @@ impl HardwareDetector {
     }
 }
 
-/// 硬件指纹匹配器
+// / 硬件fingerprint匹配器
 pub struct HardwareProfileMatcher;
 
 impl HardwareProfileMatcher {
-    /// 匹配硬件配置
+    // / 匹配硬件configure
     pub fn match_profile(hardware: &HardwareFingerprint) -> Option<String> {
         match (hardware.cpu_cores, hardware.device_type) {
             (4, DeviceType::Laptop) => Some("MacBook Pro".to_string()),
@@ -149,7 +149,7 @@ impl HardwareProfileMatcher {
         }
     }
 
-    /// 计算硬件相似度
+    // / calculate硬件similarity
     pub fn calculate_similarity(hw1: &HardwareFingerprint, hw2: &HardwareFingerprint) -> f32 {
         let mut score = 0.0;
         if hw1.cpu_cores == hw2.cpu_cores {

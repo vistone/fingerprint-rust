@@ -3,7 +3,7 @@ use fingerprint_api_noise::{ApiNoiseInjector, NoiseConfig};
 fn main() {
     println!("🔧 API 噪声注入演示程序\n");
 
-    // 创建噪声注入器
+    // create噪声注入器
     let config = NoiseConfig {
         seed: 12345,
         canvas_noise_level: 0.15,
@@ -14,14 +14,14 @@ fn main() {
 
     let injector = ApiNoiseInjector::new(config);
 
-    // 模拟 Canvas 数据
+    // simulated Canvas data
     println!("📊 Canvas 指纹测试");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     let canvas_data = vec![255u8; 1000];
     let noisy_canvas = injector.canvas().add_noise(&canvas_data);
     let fingerprint = injector.canvas().fingerprint_hash(&canvas_data);
 
-    // 计算差异
+    // calculate差异
     let diff: usize = canvas_data
         .iter()
         .zip(&noisy_canvas)
@@ -37,7 +37,7 @@ fn main() {
     );
     println!();
 
-    // 模拟字体枚举
+    // simulatedfontenumeration
     println!("🔤 字体枚举测试");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     let fonts = injector.fonts().get_fonts_with_noise(12345);
@@ -47,7 +47,7 @@ fn main() {
     }
     println!();
 
-    // 每次运行会略有不同
+    // 每次run会略有不同
     let fonts2 = injector.fonts().get_fonts_with_noise(12346);
     println!("🔄 第二次枚举 ({} 个):", fonts2.len());
     for (i, font) in fonts2.iter().enumerate() {
@@ -55,7 +55,7 @@ fn main() {
     }
     println!();
 
-    // 测试 Audio 噪声
+    // testing Audio 噪声
     println!("🎵 Audio 指纹测试");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     let audio_samples = vec![0.5f32; 100];
@@ -85,7 +85,7 @@ fn main() {
     println!("📊 平均噪声幅度: {:.6}", avg_diff);
     println!();
 
-    // 测试 WebGL 参数
+    // testing WebGL argument
     println!("🎮 WebGL 参数测试");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     let webgl_params = fingerprint_api_noise::webgl::WebGLParams {

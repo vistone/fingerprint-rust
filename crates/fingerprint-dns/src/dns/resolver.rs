@@ -1,4 +1,5 @@
-//! DNS Parseermodule
+//! DNS Parseer module.
+#![allow(clippy::empty_docs)]
 //!
 //! provideconcurrent DNS ParseFeatures, usecustom DNS serverlist
 
@@ -16,12 +17,12 @@ use hickory_resolver::{
     TokioResolver,
 };
 
-/// DNS 解析器 trait
-///
-/// 定义 DNS 解析器的通用接口，便于实现缓存和其他功能
+// / DNS parse器 trait
+/// DNS resolver interface for caching and other extensions.
+// / 定义 DNS parse器of通用interface，便于 implementationcacheandother functionality
 #[async_trait::async_trait]
 pub trait DNSResolverTrait: Send + Sync {
-    /// 解析域名
+    // / parsedomain
     async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError>;
 }
 
@@ -106,7 +107,7 @@ impl DNSResolver {
         self.resolve_with_hickory(domain, ipv6).await
     }
 
-    /// use hickory-resolver perform DNS query, concurrentquerymultiple DNS server以Getallmay IP
+    // / use hickory-resolver perform DNS query, concurrentquerymultiple DNS serverending withGetallmay IP
     async fn resolve_with_hickory(
         &self,
         domain: &str,
@@ -276,7 +277,7 @@ impl DNSResolver {
  Ok(ips)
  }
  Ok(Err(_)) | Err(_) => {
- // recordfailure (queryfailure or timeout), 不printlog以decreaseoutput
+ // recordfailure (queryfailure or timeout), 不printlogending withdecreaseoutput
  let _ = server_pool.record_failure(&server_str);
  // singleserverfailure不impactwhole, returnemptyresult
  Ok::<Vec<String>, DNSError>(Vec::new())
@@ -290,7 +291,7 @@ impl DNSResolver {
 
         // streamstylecollectresult, waitallserverresponse, collect尽maymultiple IP
         // for large numberserver, increaseoveralltimeout duration
-        let overall_timeout = Duration::from_secs(30); // overalltimeout 30 seconds，ensureallserver都有机willresponse
+        let overall_timeout = Duration::from_secs(30); // overalltimeout 30 seconds，ensureallserverall have机willresponse
         let mut all_ips = HashSet::new(); // use HashSet automaticdeduplicate，same IP 只willpreservean
         let mut query_tasks = query_tasks;
         let mut success_count = 0usize;
@@ -326,7 +327,7 @@ impl DNSResolver {
             let after_count = all_ips.len();
             let new_ips_count = after_count - before_count;
 
-            // Ifthisserverreturn IP in 有duplicate的, will in log in display
+            // Ifthisserverreturn IP in 有duplicateof, will in log in display
             if ips_count > new_ips_count {
             eprintln!("[DNS Resolver] serverreturn {} IP，其 in {} is new IP，{} is duplicate的 (alreadyautomaticdeduplicate)",
             ips_count, new_ips_count, ips_count - new_ips_count);

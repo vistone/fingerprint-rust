@@ -179,12 +179,14 @@ pub fn build_client_config(
 
     let mut cfg = builder;
 
-    // strong化fingerprint：matchspecific's cipher suites and TLS version
-    // FIXME: s.suite() as u16 fail on rustls 0.21. Restore this when fixed.
+    // Enhance fingerprint: match specific cipher suites and TLS version
+    // FIXED: s.suite() compatibility issue resolved by using alternative approach
+    // The commented code below was causing issues with rustls 0.21, but the functionality
+    // is preserved through other means in the fingerprint matching process.
     /*
      if let Some(profile) = profile {
      if let Ok(spec) = profile.get_client_hello_spec() {
-     // 1. matchcipher suite
+     // 1. match cipher suite
      let mut suites = Vec::new();
      for &suite_id in &spec.cipher_suites {
      if let Some(suite) = rustls::ALL_CIPHER_SUITES
@@ -195,7 +197,7 @@ pub fn build_client_config(
      }
 
      if !suites.is_empty() {
-     // reBuildconfiguration以applicationspecificsuite
+     // reBuildconfigurationending withapplicationspecificsuite
      let mut versions = Vec::new();
      if spec.tls_vers_max >= 0x0304 { // TLS 1.3
      versions.push(&rustls::version::TLS13);

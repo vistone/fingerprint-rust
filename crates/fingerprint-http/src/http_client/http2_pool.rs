@@ -2,7 +2,7 @@
 //!
 //! architectureexplain：
 //! - HTTP/2 adoptsessionpool (H2SessionPool)implementtrue multiplexreuse
-//! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
+// ! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
 //! - netconnpool role：only in Createnewsession when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
 //! - sessionestablishback, connectionlifecycleby H2Session backbackground task (Driver)manage
@@ -12,6 +12,7 @@ use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use std::sync::Arc;
+use std::time::{Duration, Instant}; // 添加time测量support
 
 /// useconnection poolsend HTTP/2 request
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
@@ -282,7 +283,7 @@ pub async fn send_http2_request_with_pool(
         status_text,
         headers,
         body: body_data,
-        response_time_ms: 0, // TODO: Add计 when
+        response_time_ms: start.elapsed().as_millis() as u64, // 添加实际of响应time测量
     })
 }
 

@@ -1,14 +1,14 @@
-//! Google Earth API 完整测试
+// ! Google Earth API 完整testing
 //!
-//! 测试地址: https://kh.google.com/rt/earth/PlanetoidMetadata
-//! 测试所有浏览器指纹和所有协议（HTTP/1.1、HTTP/2、HTTP/3）
+// ! testingaddress: https://kh.google.com/rt/earth/PlanetoidMetadata
+// ! testingall浏览器fingerprintandallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
 //!
-//! 运行方式:
+// ! run方式:
 //! ```bash
-//! # 测试所有浏览器指纹和协议
+// ! # testingall浏览器fingerprintandprotocol
 //! cargo test --test google_earth_test --features rustls-tls,http2,http3 -- --ignored --nocapture
 //!
-//! # 测试特定协议
+// ! # testing特定protocol
 //! cargo test --test google_earth_test test_google_earth_http1 --features rustls-tls -- --ignored
 //! cargo test --test google_earth_test test_google_earth_http2 --features rustls-tls,http2 -- --ignored
 //! cargo test --test google_earth_test test_google_earth_http3 --features rustls-tls,http3 -- --ignored
@@ -20,12 +20,12 @@ use std::time::Instant;
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 
 // ============================================================================
-// 1. 单协议测试
+// 1. 单protocoltesting
 // ============================================================================
 
-/// 测试 HTTP/1.1
+// / testing HTTP/1.1
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_google_earth_http1() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
@@ -60,10 +60,10 @@ fn test_google_earth_http1() {
     }
 }
 
-/// 测试 HTTP/2
+// / testing HTTP/2
 #[test]
 #[cfg(feature = "http2")]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_google_earth_http2() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
@@ -103,10 +103,10 @@ fn test_google_earth_http2() {
     }
 }
 
-/// 测试 HTTP/3
+// / testing HTTP/3
 #[test]
 #[cfg(feature = "http3")]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_google_earth_http3() {
     let user_agent =
         get_user_agent_by_profile_name("chrome_133").unwrap_or_else(|_| "Mozilla/5.0".to_string());
@@ -149,12 +149,12 @@ fn test_google_earth_http3() {
 }
 
 // ============================================================================
-// 2. 所有协议测试
+// 2. allprotocoltesting
 // ============================================================================
 
-/// 测试所有协议（HTTP/1.1、HTTP/2、HTTP/3）
+// / testingallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_google_earth_all_protocols() {
     println!("\n=== Google Earth API 全协议测试 ===");
     println!("URL: {}\n", TEST_URL);
@@ -164,7 +164,7 @@ fn test_google_earth_all_protocols() {
 
     let mut results = Vec::new();
 
-    // 测试 HTTP/1.1
+    // testing HTTP/1.1
     println!("🔹 测试 HTTP/1.1");
     let config_h1 = HttpClientConfig {
         user_agent: user_agent.clone(),
@@ -190,7 +190,7 @@ fn test_google_earth_all_protocols() {
         }
     }
 
-    // 测试 HTTP/2
+    // testing HTTP/2
     #[cfg(feature = "http2")]
     {
         println!("\n🔹 测试 HTTP/2");
@@ -219,7 +219,7 @@ fn test_google_earth_all_protocols() {
         }
     }
 
-    // 测试 HTTP/3
+    // testing HTTP/3
     #[cfg(feature = "http3")]
     {
         println!("\n🔹 测试 HTTP/3");
@@ -270,12 +270,12 @@ fn test_google_earth_all_protocols() {
 }
 
 // ============================================================================
-// 3. 所有浏览器指纹测试
+// 3. all浏览器fingerprinttesting
 // ============================================================================
 
-/// 测试所有浏览器指纹（核心浏览器）
+// / testingall浏览器fingerprint（核心浏览器）
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_google_earth_all_browsers() {
     println!("\n=== Google Earth API 所有浏览器指纹测试 ===");
 

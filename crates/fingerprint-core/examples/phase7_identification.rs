@@ -1,5 +1,5 @@
-// Phase 7.1.2: JA3计算与单次识别准确性测试
-// 对所有66个浏览器配置进行单次会话识别准确性测试
+// Phase 7.1.2: JA3calculate与单次recognition准确性testing
+// 对all66个浏览器configure进行单次sessionrecognition准确性testing
 
 use std::collections::HashMap;
 use std::fs;
@@ -10,14 +10,14 @@ fn main() {
     println!("╚══════════════════════════════════════════════════════════╝");
     println!();
 
-    // 1. 加载所有配置文件
+    // 1. loadallconfigurefile
     println!("▶ 步骤1: 加载配置文件");
     let profiles_dir = "./exported_profiles";
     let profiles = load_profiles(profiles_dir);
     println!("  ✓ 已加载 {} 个配置文件", profiles.len());
     println!();
 
-    // 2. 统计浏览器族群
+    // 2. statistics浏览器族群
     println!("▶ 步骤2: 浏览器族群统计");
     let mut family_counts: HashMap<String, usize> = HashMap::new();
     let mut grease_count = 0;
@@ -35,17 +35,17 @@ fn main() {
     println!("  ✓ 检测到 {} 个可能包含GREASE的配置", grease_count);
     println!();
 
-    // 3. 进行识别准确性测试
+    // 3. 进行recognition准确性testing
     println!("▶ 步骤3: 单次识别准确性测试");
     let mut results = IdentificationResults::new();
 
     for profile in &profiles {
-        // 简化的识别逻辑: 直接返回配置中的族群和版本
+        // simplifyofrecognition逻辑: 直接returnconfigure中of族群andversion
         let predicted_family = profile.family.clone();
         let predicted_version = profile.version.clone();
 
-        // 在这个测试中，我们假设识别总是正确的（基线测试）
-        // 实际应用中应该使用JA3相似度或ML模型
+        // 在这个testing中，我们假设recognition总是正确of（基线testing）
+        // 实际apply中应该useJA3similarity或ML模型
         let is_correct = true;
         let is_family_correct = true;
         let similarity = 1.0;
@@ -64,12 +64,12 @@ fn main() {
     println!("  ✓ 完成 {} 个配置的识别测试", profiles.len());
     println!();
 
-    // 4. 生成统计报告
+    // 4. generatestatisticsreport
     println!("▶ 步骤4: 生成统计报告");
     results.print_summary();
     println!();
 
-    // 5. 保存详细报告
+    // 5. save详细report
     println!("▶ 步骤5: 保存详细报告");
     save_report(&results, &profiles).expect("Failed to save report");
     println!("  ✓ 报告已保存到 phase7_results/");
@@ -137,7 +137,7 @@ impl IdentificationResults {
             is_family_correct,
         });
 
-        // 更新族群准确性统计
+        // update族群准确性statistics
         let entry = self
             .family_accuracy
             .entry(expected_family.to_string())
@@ -202,7 +202,7 @@ fn load_profiles(dir: &str) -> Vec<Profile> {
                         .unwrap_or("unknown")
                         .to_string();
 
-                    // 解析浏览器名称和版本
+                    // parse浏览器nameandversion
                     let parts: Vec<&str> = file_name.split('_').collect();
                     let family = parts.first().unwrap_or(&"unknown").to_string();
                     let version = if parts.len() > 1 {
@@ -226,10 +226,10 @@ fn load_profiles(dir: &str) -> Vec<Profile> {
 }
 
 fn save_report(results: &IdentificationResults, profiles: &[Profile]) -> std::io::Result<()> {
-    // 创建结果目录
+    // create结果directory
     fs::create_dir_all("phase7_results")?;
 
-    // 保存CSV格式的详细结果
+    // saveCSV格式of详细结果
     let mut csv_content =
         String::from("配置,期望族群,期望版本,预测族群,预测版本,相似度,是否正确\n");
     for result in &results.results {
@@ -249,7 +249,7 @@ fn save_report(results: &IdentificationResults, profiles: &[Profile]) -> std::io
         csv_content,
     )?;
 
-    // 保存Markdown格式的汇总报告
+    // saveMarkdown格式of汇总report
     let total = results.results.len();
     let correct = results.results.iter().filter(|r| r.is_correct).count();
     let family_correct = results
@@ -307,7 +307,7 @@ fn save_report(results: &IdentificationResults, profiles: &[Profile]) -> std::io
             "❌"
         };
 
-        // 统计该族群的版本数
+        // statistics该族群ofversion数
         let version_count = profiles
             .iter()
             .filter(|p| &p.family == family)

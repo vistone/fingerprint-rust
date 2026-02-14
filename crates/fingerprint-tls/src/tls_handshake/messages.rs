@@ -49,7 +49,7 @@ impl ClientHelloMessage {
         let mut random = Vec::with_capacity(32);
 
         // front 4 bytes: Unix when between戳
-        // usecurrent when between,  if Getfailurethenuse 0 (虽natural不toomayfailure)
+        // usecurrent when between, if Getfailurethenuse 0 (虽natural不toomayfailure)
         // fix 2038 year overflowissue：explicittruncatehighbit, ensure u32 rangeinside
         let timestamp = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)

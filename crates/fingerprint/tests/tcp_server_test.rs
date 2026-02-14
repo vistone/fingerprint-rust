@@ -1,8 +1,8 @@
-//! TCP Profile 实际应用测试
+// ! TCP Profile 实际applytesting
 //!
-//! 创建服务端和客户端，验证 TCP Profile 是否真正应用到 TCP 连接上
+// ! createservice端andclient，validate TCP Profile 是否真正apply到 TCP connect上
 //!
-//! 运行方式：
+// ! run方式：
 //! ```bash
 //! cargo test --test tcp_server_test -- --nocapture
 //! ```
@@ -14,12 +14,12 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-/// TCP 服务器：接收连接并检测 TCP 参数
+// / TCP service器：receiveconnect并detect TCP argument
 fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()> {
     let listener = TcpListener::bind(format!("127.0.0.1:{}", port))?;
     println!("✅ TCP 服务器启动在端口 {}", port);
 
-    // 设置非阻塞模式，以便可以检查 stop_flag
+    // set非blockingmode，ending with便可ending withcheck stop_flag
     listener.set_nonblocking(true)?;
 
     while !stop_flag.load(Ordering::Relaxed) {
@@ -29,13 +29,13 @@ fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()
                 println!("📥 收到客户端连接");
                 println!("  客户端地址: {}", addr);
 
-                // 尝试获取 TCP 选项（在 Linux 上）
+                // 尝试get TCP option（在 Linux 上）
                 #[cfg(target_os = "linux")]
                 {
                     use std::os::unix::io::AsRawFd;
                     let fd = stream.as_raw_fd();
 
-                    // 获取接收缓冲区大小（Window Size）
+                    // getreceivebuffer区size（Window Size）
                     unsafe {
                         use libc::{getsockopt, SOL_SOCKET, SO_RCVBUF};
                         let mut rcvbuf: libc::c_int = 0;
@@ -54,14 +54,14 @@ fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()
                     }
                 }
 
-                // 读取客户端发送的数据
+                // 读取clientsendofdata
                 let mut buffer = [0; 1024];
                 match stream.read(&mut buffer) {
                     Ok(size) => {
                         let data = String::from_utf8_lossy(&buffer[..size]);
                         println!("  收到数据: {}", data.trim());
 
-                        // 解析客户端发送的 TCP Profile 信息
+                        // parseclientsendof TCP Profile info
                         if data.starts_with("TCP_PROFILE:") {
                             println!("  ✅ 客户端 TCP Profile 信息:");
                             for line in data.lines() {
@@ -76,7 +76,7 @@ fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()
                     }
                 }
 
-                // 发送响应
+                // send响应
                 let response = "OK: Server received your connection\n";
                 if let Err(e) = stream.write_all(response.as_bytes()) {
                     println!("  写入错误: {}", e);
@@ -85,7 +85,7 @@ fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()
                 println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
             }
             Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                // 非阻塞模式下没有连接，继续循环
+                // 非blockingmode下没有connect，继续循环
                 thread::sleep(Duration::from_millis(10));
                 continue;
             }
@@ -99,7 +99,7 @@ fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()
     Ok(())
 }
 
-/// 客户端：使用 TCP Profile 连接到服务器
+// / client：use TCP Profile connect到service器
 fn test_tcp_client_with_profile(
     port: u16,
     tcp_profile: &fingerprint_core::tcp::TcpProfile,
@@ -118,12 +118,12 @@ fn test_tcp_client_with_profile(
     println!("    MSS: {:?}", tcp_profile.mss);
     println!("    Window Scale: {:?}", tcp_profile.window_scale);
 
-    // 使用 TCP Profile 连接
+    // use TCP Profile connect
     let mut stream = connect_tcp_with_profile_sync(addr, Some(tcp_profile))?;
 
     println!("  ✅ 连接成功！");
 
-    // 发送 TCP Profile 信息给服务器
+    // send TCP Profile info给service器
     let profile_info = format!(
         "TCP_PROFILE: TTL={}, WindowSize={}, MSS={:?}, WindowScale={:?}\n",
         tcp_profile.ttl,
@@ -135,7 +135,7 @@ fn test_tcp_client_with_profile(
     stream.write_all(profile_info.as_bytes())?;
     stream.flush()?;
 
-    // 读取服务器响应
+    // 读取service器响应
     let mut buffer = [0; 1024];
     let size = stream.read(&mut buffer)?;
     let response = String::from_utf8_lossy(&buffer[..size]);
@@ -154,17 +154,17 @@ fn test_tcp_profile_application() {
     let stop_flag = Arc::new(AtomicBool::new(false));
     let stop_flag_clone = stop_flag.clone();
 
-    // 启动服务器（在后台线程）
+    // startservice器（在后台thread）
     let _server_handle = thread::spawn(move || {
         if let Err(e) = start_tcp_server(port, stop_flag_clone) {
             eprintln!("❌ 服务器错误: {}", e);
         }
     });
 
-    // 等待服务器启动
+    // 等待service器start
     thread::sleep(Duration::from_millis(500));
 
-    // 测试不同的 TCP Profile
+    // testing不同of TCP Profile
     let test_cases = vec![
         (
             "Windows",
@@ -206,7 +206,7 @@ fn test_tcp_profile_application() {
     println!("✅ TCP Profile 实际应用测试完成！");
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
 
-    // 停止服务器
+    // stopservice器
     stop_flag.store(true, Ordering::Relaxed);
     thread::sleep(Duration::from_millis(100));
 }

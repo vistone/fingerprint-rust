@@ -1,8 +1,8 @@
-//! DNS 模块与 HTTP 客户端完整集成示例
+//! DNS Module and HTTP Client Full Integration Example
 //!
-//! 展示如何结合 DNS 预解析服务和 HTTP 客户端，实现智能的域名解析和请求优化
+//! Shows how to combine DNS pre-resolution service and HTTP client to achieve intelligent domain resolution and request optimization
 //!
-//! 使用方法：
+//! Usage:
 //!   cargo run --example dns_full_integration --features dns,rustls-tls,http2
 
 #[cfg(feature = "dns")]
@@ -18,28 +18,28 @@ use std::time::Duration;
 #[cfg(feature = "dns")]
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    println!("🚀 DNS 模块与 HTTP 客户端完整集成示例");
+    println!("🚀 DNS Module and HTTP Client Full Integration Example");
     println!("=" .repeat(70));
     println!();
 
-    // === 场景 1: 使用 DNS 缓存加速 HTTP 请求 ===
-    println!("📦 场景 1: DNS 缓存加速");
+    // === Scenario 1: Using DNS Cache to Accelerate HTTP Requests ===
+    println!("📦 Scenario 1: DNS Cache Acceleration");
     println!("-" .repeat(70));
 
-    // 创建 DNS 缓存
+    // Create DNS cache
     let dns_cache = DNSCache::new(Duration::from_secs(300));
 
-    // 创建域名列表
+    // Create domain list
     let domains = vec!["www.google.com", "www.github.com"];
 
-    // 预解析域名并填充缓存
+    // Pre-resolve domains and populate cache
     let resolver = DNSResolver::new(Duration::from_secs(4));
-    println!("🔍 预解析域名...");
+    println!("🔍 Pre-resolving domains...");
     for domain in &domains {
         match resolver.resolve(domain).await {
             Ok(result) => {
                 println!(
-                    "   ✅ {}: {} 个 IPv4, {} 个 IPv6",
+                    "   ✅ {}: {} IPv4, {} IPv6",
                     domain,
                     result.ips.ipv4.len(),
                     result.ips.ipv6.len()
@@ -47,17 +47,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 dns_cache.put(domain, result.ips);
             }
             Err(e) => {
-                println!("   ❌ {} 解析失败: {}", domain, e);
+                println!("   ❌ {} resolution failed: {}", domain, e);
             }
         }
     }
 
-    // 显示缓存统计
+    // Show cache statistics
     let (total, expired) = dns_cache.stats();
-    println!("   📊 DNS 缓存统计: {} 个域名, {} 个已过期", total, expired);
+    println!("   📊 DNS cache statistics: {} domains, {} expired", total, expired);
     println!();
 
-    // 创建 HTTP 客户端
+    // Create HTTP client
     let profile = chrome_133();
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36".to_string(),
@@ -67,68 +67,68 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
     let client = HttpClient::new(config);
 
-    // 发送 HTTP 请求（此时 DNS 已经缓存）
-    println!("🌐 发送 HTTP 请求（使用预解析的 DNS 缓存）...");
+    // Send HTTP requests (DNS is already cached)
+    println!("🌐 Sending HTTP requests (using pre-resolved DNS cache)...");
     for domain in &domains {
         let url = format!("https://{}/", domain);
-        println!("   请求: {}", url);
+        println!("   Request: {}", url);
 
         match client.get(&url) {
             Ok(response) => {
-                println!("      ✅ 状态码: {}", response.status_code);
-                println!("      ✅ HTTP 版本: {}", response.http_version);
-                println!("      ✅ 响应大小: {} 字节", response.body.len());
+                println!("      ✅ Status code: {}", response.status_code);
+                println!("      ✅ HTTP version: {}", response.http_version);
+                println!("      ✅ Response size: {} bytes", response.body.len());
             }
             Err(e) => {
-                println!("      ❌ 请求失败: {}", e);
+                println!("      ❌ Request failed: {}", e);
             }
         }
         println!();
     }
 
-    // === 场景 2: DNS 预解析服务自动维护 ===
-    println!("📦 场景 2: DNS 预解析服务（自动后台维护）");
+    // === Scenario 2: DNS Pre-resolution Service Automatic Maintenance ===
+    println!("📦 Scenario 2: DNS Pre-resolution Service (Automatic Background Maintenance)");
     println!("-" .repeat(70));
-    println!("💡 提示: 此场景需要 IPInfo token 和较长运行时间，这里仅演示配置");
+    println!("💡 Note: This scenario requires IPInfo token and longer runtime, demonstrating configuration only");
     println!();
 
-    // 创建 DNS 服务配置
+    // Create DNS service configuration
     let dns_config = DNSConfig::new(
-        "your-ipinfo-token", // 需要真实的 IPInfo token
+        "your-ipinfo-token", // Requires real IPInfo token
         &["google.com", "github.com"],
     );
 
-    println!("⚙️  DNS 服务配置:");
-    println!("   - IPInfo Token: {} (需要替换为真实 token)", dns_config.ipinfo_token);
-    println!("   - 域名列表: {:?}", dns_config.domain_list);
-    println!("   - 检查间隔: {}", dns_config.interval);
-    println!("   - 最大并发: {}", dns_config.max_concurrency);
-    println!("   - DNS 超时: {}", dns_config.dns_timeout);
+    println!("⚙️  DNS Service Configuration:");
+    println!("   - IPInfo Token: {} (needs to be replaced with real token)", dns_config.ipinfo_token);
+    println!("   - Domain List: {:?}", dns_config.domain_list);
+    println!("   - Check Interval: {}", dns_config.interval);
+    println!("   - Max Concurrency: {}", dns_config.max_concurrency);
+    println!("   - DNS Timeout: {}", dns_config.dns_timeout);
     println!();
 
-    // 注意：实际使用时需要：
-    // 1. 获取真实的 IPInfo token
-    // 2. 启动 DNS 服务: service.start().await?
-    // 3. 定期从 dns_output 目录读取解析结果
-    // 4. 在 HTTP 请求前使用这些预解析的 IP
+    // Note: For actual use:
+    // 1. Obtain real IPInfo token
+    // 2. Start DNS service: service.start().await?
+    // 3. Regularly read resolution results from dns_output directory
+    // 4. Use these pre-resolved IPs in HTTP requests
 
-    println!("📝 实际使用步骤:");
-    println!("   1. 获取 IPInfo token: https://ipinfo.io/");
-    println!("   2. 配置 DNS 服务（见 examples/dns_service.rs）");
-    println!("   3. 启动服务: service.start().await");
-    println!("   4. 服务会自动维护域名 IP 列表");
-    println!("   5. 从 dns_output/*.json 读取最新 IP");
-    println!("   6. 在 HTTP 请求中优先使用这些 IP");
+    println!("📝 Actual Usage Steps:");
+    println!("   1. Get IPInfo token: https://ipinfo.io/");
+    println!("   2. Configure DNS service (see examples/dns_service.rs)");
+    println!("   3. Start service: service.start().await");
+    println!("   4. Service automatically maintains domain IP list");
+    println!("   5. Read latest IPs from dns_output/*.json");
+    println!("   6. Prioritize using these IPs in HTTP requests");
     println!();
 
-    // === 场景 3: 智能 IP 选择（根据地理位置） ===
-    println!("📦 场景 3: 智能 IP 选择（示例）");
+    // === Scenario 3: Intelligent IP Selection (Based on Geographic Location) ===
+    println!("📦 Scenario 3: Intelligent IP Selection (Example)");
     println!("-" .repeat(70));
 
-    // 模拟从 DNS 服务获取的域名 IP 信息
+    // Simulate domain IP information obtained from DNS service
     let mut domain_ips = DomainIPs::new();
 
-    // 添加一些示例 IP 信息（实际应该从 DNS 服务获取）
+    // Add some example IP information (should actually come from DNS service)
     domain_ips.ipv4.push(IPInfo {
         ip: "142.250.191.14".to_string(),
         hostname: None,
@@ -151,43 +151,43 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         timezone: Some("Asia/Tokyo".to_string()),
     });
 
-    println!("🌍 可用的 IP 地址:");
+    println!("🌍 Available IP Addresses:");
     for (i, ip_info) in domain_ips.ipv4.iter().enumerate() {
         println!("   {}. {}", i + 1, ip_info.ip);
         if let Some(city) = &ip_info.city {
-            println!("      城市: {}", city);
+            println!("      City: {}", city);
         }
         if let Some(country) = &ip_info.country {
-            println!("      国家: {}", country);
+            println!("      Country: {}", country);
         }
         if let Some(org) = &ip_info.org {
-            println!("      组织: {}", org);
+            println!("      Organization: {}", org);
         }
         println!();
     }
 
-    println!("💡 智能选择策略:");
-    println!("   - 根据地理位置选择最近的 IP");
-    println!("   - 根据网络延迟选择最快的 IP");
-    println!("   - 根据负载情况动态切换 IP");
-    println!("   - 实现故障转移和高可用");
+    println!("💡 Intelligent Selection Strategy:");
+    println!("   - Select nearest IP based on geographic location");
+    println!("   - Select fastest IP based on network latency");
+    println!("   - Dynamically switch IPs based on load conditions");
+    println!("   - Implement failover and high availability");
     println!();
 
-    // === 总结 ===
+    // === Summary ===
     println!("=" .repeat(70));
-    println!("🎉 集成完成！");
+    println!("🎉 Integration Completed!");
     println!();
-    println!("📚 DNS 模块增强功能总结:");
-    println!("   ✅ DNS 缓存 (DNSCache) - 减少重复解析");
-    println!("   ✅ DNS 预解析 (DNSResolver) - 提前准备 IP");
-    println!("   ✅ DNS 服务 (DNSService) - 自动维护域名 IP");
-    println!("   ✅ IP 地理信息 (IPInfo) - 智能 IP 选择");
-    println!("   ✅ HTTP 客户端集成 - 无缝配合使用");
+    println!("📚 DNS Module Enhanced Features Summary:");
+    println!("   ✅ DNS Cache (DNSCache) - Reduce duplicate resolution");
+    println!("   ✅ DNS Pre-resolution (DNSResolver) - Prepare IPs in advance");
+    println!("   ✅ DNS Service (DNSService) - Automatically maintain domain IPs");
+    println!("   ✅ IP Geographic Information (IPInfo) - Intelligent IP selection");
+    println!("   ✅ HTTP Client Integration - Seamless cooperation");
     println!();
-    println!("🔗 更多示例:");
-    println!("   - examples/dns_service.rs - DNS 服务使用");
-    println!("   - examples/resolve_domains.rs - 域名解析");
-    println!("   - examples/dns_cache_integration.rs - 缓存集成");
+    println!("🔗 More Examples:");
+    println!("   - examples/dns_service.rs - DNS service usage");
+    println!("   - examples/resolve_domains.rs - Domain resolution");
+    println!("   - examples/dns_cache_integration.rs - Cache integration");
     println!();
 
     Ok(())
@@ -195,6 +195,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 #[cfg(not(feature = "dns"))]
 fn main() {
-    println!("此示例需要启用 'dns' feature");
-    println!("使用方法: cargo run --example dns_full_integration --features dns,rustls-tls,http2");
+    println!("This example requires enabling 'dns' feature");
+    println!("Usage: cargo run --example dns_full_integration --features dns,rustls-tls,http2");
 }

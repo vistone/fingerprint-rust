@@ -1,4 +1,4 @@
-# Fuzzing Guide for fingerprint-rust
+# fingerprint-rust 模糊测试指南
 
 **版本**: v1.0  
 **最后更新**: 2026-02-13  
@@ -6,29 +6,27 @@
 
 ---
 
+本指南介绍如何对 fingerprint-rust 项目进行模糊测试，以发现潜在的安全漏洞。
 
+## 概述
 
-This document describes how to perform fuzzing tests on the fingerprint-rust project to discover potential security vulnerabilities.
+模糊测试（Fuzzing）是一种自动化软件测试技术，它向程序提供无效、异常或随机数据作为输入，并监控程序是否出现崩溃、断言失败或潜在内存泄漏等异常。
 
-## Overview
+## 前置条件
 
-Fuzzing (or fuzz testing) is an automated software testing technique that provides invalid, unexpected, or random data as inputs to a program. The program is then monitored for exceptions such as crashes, failing built-in code assertions, or potential memory leaks.
-
-## Prerequisites
-
-Install cargo-fuzz:
+安装 cargo-fuzz：
 
 ```bash
 cargo install cargo-fuzz
 ```
 
-## Fuzz Targets
+## 模糊测试目标
 
-### 1. Packet Parsing
+### 1. 数据包解析
 
-**Target**: IPv4/IPv6 and TCP/UDP packet parsing
-**Location**: `crates/fingerprint-defense/src/passive/packet.rs`
-**Risk**: Buffer overflows, integer overflows, panics
+**目标**: IPv4/IPv6 和 TCP/UDP 数据包解析  
+**位置**: `crates/fingerprint-defense/src/passive/packet.rs`  
+**风险**: 缓冲区溢出、整数溢出、panic
 
 ```bash
 # Create fuzz target
@@ -43,7 +41,7 @@ path = "fuzz_targets/fuzz_packet_parsing.rs"
 cargo fuzz run fuzz_packet_parsing
 ```
 
-Example fuzz target (`fuzz/fuzz_targets/fuzz_packet_parsing.rs`):
+示例目标（`fuzz/fuzz_targets/fuzz_packet_parsing.rs`）：
 
 ```rust
 #![no_main]
@@ -61,17 +59,17 @@ fuzz_target!(|data: &[u8]| {
 });
 ```
 
-### 2. TLS ClientHello Parsing
+### 2. TLS ClientHello 解析
 
-**Target**: TLS ClientHello parsing and fingerprint generation
-**Location**: `crates/fingerprint-tls/src/`
-**Risk**: Parsing errors, malformed extensions, invalid cipher suites
+**目标**: TLS ClientHello 解析与指纹生成  
+**位置**: `crates/fingerprint-tls/src/`  
+**风险**: 解析错误、扩展字段异常、无效密码套件
 
 ```bash
 cargo fuzz run fuzz_tls_parsing
 ```
 
-Example fuzz target:
+示例目标：
 
 ```rust
 #![no_main]
@@ -83,31 +81,31 @@ fuzz_target!(|data: &[u8]| {
 });
 ```
 
-### 3. HTTP Header Parsing
+### 3. HTTP 头部解析
 
-**Target**: HTTP header parsing
-**Location**: `crates/fingerprint-http/src/`
-**Risk**: Header injection, parsing errors, buffer overflows
+**目标**: HTTP 头部解析  
+**位置**: `crates/fingerprint-http/src/`  
+**风险**: 头部注入、解析错误、缓冲区溢出
 
 ```bash
 cargo fuzz run fuzz_http_headers
 ```
 
-### 4. DNS Response Parsing
+### 4. DNS 响应解析
 
-**Target**: DNS response parsing
-**Location**: `crates/fingerprint-dns/src/`
-**Risk**: Malformed DNS responses, integer overflows
+**目标**: DNS 响应解析  
+**位置**: `crates/fingerprint-dns/src/`  
+**风险**: 伪造 DNS 响应、整数溢出
 
 ```bash
 cargo fuzz run fuzz_dns_parsing
 ```
 
-## Running Fuzzing Tests
+## 运行模糊测试
 
-### Continuous Fuzzing
+### 持续运行
 
-Run fuzzing continuously for extended periods:
+长时间连续运行模糊测试：
 
 ```bash
 # Run for 1 hour
@@ -120,28 +118,28 @@ cargo fuzz run fuzz_packet_parsing -- -workers=4
 cargo fuzz run fuzz_packet_parsing -- -rss_limit_mb=2048
 ```
 
-### Minimizing Crash Cases
+### 最小化崩溃用例
 
-If a crash is found, minimize the input:
+如果发现崩溃，先最小化输入：
 
 ```bash
 cargo fuzz cmin fuzz_packet_parsing
 cargo fuzz tmin fuzz_packet_parsing fuzz/artifacts/crash-file
 ```
 
-### Code Coverage
+### 代码覆盖率
 
-Generate coverage reports:
+生成覆盖率报告：
 
 ```bash
 cargo fuzz coverage fuzz_packet_parsing
 ```
 
-## Best Practices
+## 最佳实践
 
-### 1. Dictionary Files
+### 1. 字典文件
 
-Create dictionary files for better fuzzing efficiency:
+为提高效率创建字典文件：
 
 ```
 # fuzz/dictionaries/packet.dict
@@ -152,24 +150,24 @@ Create dictionary files for better fuzzing efficiency:
 "Content-Length: "
 ```
 
-Use with:
+使用方式：
 
 ```bash
 cargo fuzz run fuzz_http_headers -- -dict=fuzz/dictionaries/http.dict
 ```
 
-### 2. Corpus Management
+### 2. 语料库管理
 
-Maintain a corpus of interesting inputs:
+维护一份有意义的输入语料库：
 
 ```bash
 # Add valid test cases to corpus
 cp test_data/*.bin fuzz/corpus/fuzz_packet_parsing/
 ```
 
-### 3. Structured Fuzzing
+### 3. 结构化模糊测试
 
-Use structured fuzzing for complex inputs:
+对复杂输入使用结构化模糊测试：
 
 ```rust
 use arbitrary::Arbitrary;
@@ -186,9 +184,9 @@ fuzz_target!(|input: FuzzInput| {
 });
 ```
 
-## Integration with CI/CD
+## 与 CI/CD 集成
 
-Add fuzzing to your CI pipeline:
+将模糊测试加入 CI 管道：
 
 ```yaml
 # .github/workflows/fuzz.yml
@@ -211,21 +209,21 @@ jobs:
           done
 ```
 
-## Handling Crashes
+## 崩溃处理
 
-When a crash is found:
+发现崩溃时：
 
-1. **Minimize the input**:
+1. **最小化输入**：
    ```bash
    cargo fuzz tmin fuzz_packet_parsing artifacts/crash-file
    ```
 
-2. **Reproduce locally**:
+2. **本地复现**：
    ```bash
    cargo fuzz run fuzz_packet_parsing artifacts/minimized-crash
    ```
 
-3. **Create regression test**:
+3. **创建回归测试**：
    ```rust
    #[test]
    fn test_fuzz_crash() {
@@ -234,19 +232,19 @@ When a crash is found:
    }
    ```
 
-4. **Fix the issue**
+4. **修复问题**
 
-5. **Re-run fuzzing** to ensure fix is complete
+5. **重新运行模糊测试**，确保修复完成
 
-## Performance Tips
+## 性能建议
 
-### 1. Use Release Mode
+### 1. 使用 Release 模式
 
 ```bash
 cargo fuzz run --release fuzz_packet_parsing
 ```
 
-### 2. Enable Sanitizers
+### 2. 启用 Sanitizer
 
 ```bash
 # Address Sanitizer
@@ -256,7 +254,7 @@ RUSTFLAGS="-Zsanitizer=address" cargo fuzz run fuzz_packet_parsing
 RUSTFLAGS="-Zsanitizer=memory" cargo fuzz run fuzz_packet_parsing
 ```
 
-### 3. Parallel Fuzzing
+### 3. 并行模糊测试
 
 ```bash
 # Run multiple instances
@@ -265,33 +263,33 @@ for i in {1..4}; do
 done
 ```
 
-## Expected Results
+## 预期结果
 
-Good fuzzing should:
-- Run without crashes for extended periods (hours/days)
-- Achieve high code coverage (>80%)
-- Find edge cases in parsing logic
-- Validate error handling paths
+高质量的模糊测试应当：
+- 长时间运行（数小时/数天）无崩溃
+- 达到较高的代码覆盖率（>80%）
+- 捕捉解析逻辑的边界情况
+- 覆盖错误处理路径
 
-## Resources
+## 参考资料
 
 - [cargo-fuzz documentation](https://rust-fuzz.github.io/book/cargo-fuzz.html)
 - [libFuzzer documentation](https://llvm.org/docs/LibFuzzer.html)
 - [Rust Fuzzing Authority](https://github.com/rust-fuzz)
 
-## Security Disclosure
+## 安全披露
 
-If fuzzing discovers a security vulnerability:
-1. Do NOT publicly disclose immediately
-2. Report to project maintainers via GitHub Security Advisories
-3. Allow reasonable time for fix development
-4. Coordinate public disclosure
+如果模糊测试发现安全漏洞：
+1. 不要立即公开披露
+2. 通过 GitHub Security Advisories 报告给维护者
+3. 为修复留出合理时间
+4. 协调公开披露
 
-## Maintenance
+## 维护建议
 
-- Review fuzzing results weekly
-- Update corpus with new valid inputs
-- Expand coverage to new code paths
-- Re-run fuzzing after major changes
+- 每周复查模糊测试结果
+- 用新的有效输入更新语料库
+- 扩展覆盖到新增代码路径
+- 重大变更后重新运行模糊测试
 
-**Last Updated**: 2026-01-06
+**最后更新**: 2026-01-06

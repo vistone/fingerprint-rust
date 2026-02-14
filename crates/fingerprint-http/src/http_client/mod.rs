@@ -138,7 +138,7 @@ pub struct HttpClientConfig {
     pub prefer_http3: bool,
     /// Cookie store (optional)
     pub cookie_store: Option<Arc<CookieStore>>,
-    /// DNS 辅助器（可选，用于 DNS 缓存和预解析）
+    // / DNS 辅助器（optional，用于 DNS cacheand预parse）
     pub dns_helper: Option<Arc<DNSHelper>>,
 }
 
@@ -156,7 +156,7 @@ impl Default for HttpClientConfig {
             prefer_http2: true,  // defaultpriorityuse HTTP/2
             prefer_http3: false, // HTTP/3 defaultclose (needspecialconfiguration)
             cookie_store: None,
-            dns_helper: None, // DNS 辅助器默认关闭（可选功能）
+            dns_helper: None, // DNS 辅助器default关闭（optional functionality）
         }
     }
 }
@@ -167,6 +167,7 @@ impl Default for HttpClientConfig {
 pub struct HttpClient {
     config: HttpClientConfig,
     /// connection poolmanageer (optional)
+    #[allow(clippy::arc_with_non_send_sync)]
     pool_manager: Option<Arc<ConnectionPoolManager>>,
 }
 
@@ -182,6 +183,7 @@ impl HttpClient {
     }
 
     /// Createbringconnection pool HTTP client
+    #[allow(clippy::arc_with_non_send_sync)]
     pub fn with_pool(config: HttpClientConfig, pool_config: PoolManagerConfig) -> Self {
         Self {
             config,
@@ -205,7 +207,7 @@ impl HttpClient {
         self.pool_manager.as_ref().map(|pm| pm.get_stats())
     }
 
-    /// cleanupempty闲connection
+    // / cleanupempty闲connection
     pub fn cleanup_idle_connections(&self) {
         if let Some(pm) = &self.pool_manager {
             pm.cleanup_idle();
@@ -234,7 +236,7 @@ impl HttpClient {
         self.send_request_with_redirects(request, 0)
     }
 
-    /// sendrequest并processredirect
+    // / sendrequest并processredirect
     fn send_request_with_redirects(
         &self,
         request: &HttpRequest,
@@ -247,7 +249,7 @@ impl HttpClient {
         )
     }
 
-    /// inside部redirectprocess (bringloopdetect)
+    // / inside部redirectprocess (bringloopdetect)
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,
@@ -305,7 +307,7 @@ impl HttpClient {
                         } else {
                             path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
                         };
-                        // ensure base_path 以 / ending, location not / openheader
+                        // ensure base_path ending with / ending, location not / openheader
                         let location = location.trim_start_matches('/');
                         if base_path == "/" {
                             format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -370,14 +372,14 @@ impl HttpClient {
                     }
                 }
 
-                // Ifkeep POST/PUT/PATCH, preserverequest体； if change as GET, removerequest体 (RFC 7231 require)
+                // Ifkeep POST/PUT/PATCH, preserverequest体； if change as GET, removerequest体 ((RFC 7231 require)
                 if redirect_method != HttpMethod::Get {
                     if let Some(body) = &request.body {
                         final_redirect_request = final_redirect_request.with_body(body.clone());
                     }
                 }
 
-                // recursiveprocessredirect (pass visited_urls 以detectloop)
+                // recursiveprocessredirect (pass visited_urls ending withdetectloop)
                 return self.send_request_with_redirects_internal(
                     &final_redirect_request,
                     redirect_count + 1,
@@ -554,7 +556,7 @@ impl HttpClient {
                 // Ifopen了 HTTP/3, wetry它.
                 // Iffailure, wemaywant to reducelevel, but HTTP/3 to TCP is differenttransferlayer,
                 // usually if userexplicitrequire HTTP/3, failurethenshouldreport error.
-                // butherein order tostable健property,  if is becauseprotocolerror, wecan降level.
+                // butherein order tostable健property, if is becauseprotocolerror, wecan降level.
                 // temporary when keepsimple：directlyreturn.
                 match http3::send_http3_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),

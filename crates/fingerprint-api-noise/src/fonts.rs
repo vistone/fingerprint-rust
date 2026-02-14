@@ -1,6 +1,6 @@
 use rand::seq::SliceRandom;
 
-/// 字体枚举噪声
+// / fontenumeration噪声
 pub struct FontNoiseInjector {
     base_fonts: Vec<String>,
 }
@@ -12,7 +12,7 @@ impl FontNoiseInjector {
         }
     }
 
-    /// 获取常见字体列表
+    // / getcommonfontlist
     fn get_common_fonts() -> Vec<String> {
         vec![
             "Arial".to_string(),
@@ -29,8 +29,8 @@ impl FontNoiseInjector {
         ]
     }
 
-    /// 生成带噪声的字体列表
-    /// 每次调用返回略有不同的字体顺序或数量
+    // / generate带噪声offontlist
+    // / 每次callreturn略有不同offont顺序或count
     pub fn get_fonts_with_noise(&self, seed: u64) -> Vec<String> {
         use rand::{Rng, SeedableRng};
         use rand_chacha::ChaCha8Rng;
@@ -38,10 +38,10 @@ impl FontNoiseInjector {
         let mut rng = ChaCha8Rng::seed_from_u64(seed);
         let mut fonts = self.base_fonts.clone();
 
-        // 随机打乱顺序
+        // random打乱顺序
         fonts.shuffle(&mut rng);
 
-        // 随机移除 0-2 个字体
+        // random移除 0-2 个font
         let remove_count = rng.gen_range(0..=2);
         for _ in 0..remove_count {
             if !fonts.is_empty() {

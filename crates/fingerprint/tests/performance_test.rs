@@ -1,13 +1,13 @@
-//! 性能测试套件
+// ! performancetesting套件
 //!
-//! 测试所有协议的性能表现，包括响应时间、吞吐量等指标
+// ! testingallprotocolofperformance表现，including响应time、throughput等指标
 //!
-//! 运行方式:
+// ! run方式:
 //! ```bash
-//! # 运行所有性能测试
+// ! # runallperformancetesting
 //! cargo test --test performance_test --features rustls-tls,http2,http3 -- --ignored --nocapture
 //!
-//! # 运行特定协议测试
+// ! # run特定protocoltesting
 //! cargo test --test performance_test benchmark_http1 --features rustls-tls -- --ignored
 //! cargo test --test performance_test benchmark_http2 --features rustls-tls,http2 -- --ignored
 //! cargo test --test performance_test benchmark_http3 --features rustls-tls,http3 -- --ignored
@@ -17,7 +17,7 @@ use fingerprint::{HttpClient, HttpClientConfig};
 use std::time::Instant;
 
 const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
-const TEST_ROUNDS: usize = 10; // 每个协议测试10次
+const TEST_ROUNDS: usize = 10; // 每个protocoltesting10次
 
 #[derive(Debug)]
 struct PerformanceMetrics {
@@ -116,11 +116,11 @@ impl PerformanceMetrics {
 }
 
 // ============================================================================
-// 1. 单协议性能测试
+// 1. 单protocolperformancetesting
 // ============================================================================
 
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn benchmark_http1() {
     println!("\n═══════════════════════════════════════");
     println!("  HTTP/1.1 性能基准测试");
@@ -160,7 +160,7 @@ fn benchmark_http1() {
 
 #[test]
 #[cfg(feature = "http2")]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn benchmark_http2() {
     println!("\n═══════════════════════════════════════");
     println!("  HTTP/2 性能基准测试");
@@ -200,7 +200,7 @@ fn benchmark_http2() {
 
 #[test]
 #[cfg(feature = "http3")]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn benchmark_http3() {
     println!("\n═══════════════════════════════════════");
     println!("  HTTP/3 性能基准测试");
@@ -239,12 +239,12 @@ fn benchmark_http3() {
 }
 
 // ============================================================================
-// 2. 全协议性能对比
+// 2. 全protocolperformance对比
 // ============================================================================
 
 #[test]
 #[cfg(all(feature = "http2", feature = "http3"))]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn benchmark_all_protocols() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
     println!("║  Google Earth API 全协议性能对比                        ║");

@@ -1,7 +1,7 @@
-//! fingerprint自learnmodule
+// ! fingerprint self-learning module
 //!
-//! automatic from observe to traffic in learn and Updatefingerprintsignature.
-//! 实现完整的指纹自学习机制，自动识别并记录未知稳定指纹特征以对抗0-day bots
+//! automatically learns and updates fingerprint signatures from observed traffic.
+// ! implements complete fingerprint self-learning mechanism, automatically recognizing and recording unknown stable fingerprint features for combating 0-day bots
 
 use crate::database::FingerprintDatabase;
 use crate::passive::PassiveAnalysisResult;
@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use fingerprint_core::fingerprint::Fingerprint;
 use serde::{Deserialize, Serialize};
 
-/// 获取当前 Unix 时间戳（秒）
+// / get当前 Unix time戳（秒）
 fn current_unix_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -20,41 +20,41 @@ fn current_unix_timestamp() -> u64 {
         .as_secs()
 }
 
-/// 计算时间戳差（秒）
+// / calculatetime戳差（秒）
 fn timestamp_duration(from: u64, to: u64) -> Duration {
     Duration::from_secs(to.saturating_sub(from))
 }
 
-/// 未知指纹观察记录
+// / unknownfingerprint观察record
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnknownFingerprintObservation {
-    /// 指纹ID
+    // / fingerprintID
     pub fingerprint_id: String,
-    /// 指纹类型 (tls/http/tcp)
+    // / fingerprinttype (tls/http/tcp)
     pub fingerprint_type: String,
-    /// 首次观察时间（Unix 时间戳，秒）
+    // / 首次观察time（Unix time戳，秒）
     pub first_seen: u64,
-    /// 最后观察时间（Unix 时间戳，秒）
+    // / 最后观察time（Unix time戳，秒）
     pub last_seen: u64,
-    /// 观察次数
+    // / 观察次数
     pub observation_count: u64,
-    /// 稳定性得分 (0.0-1.0)
+    // / stable性得分 (0.0-1.0)
     pub stability_score: f64,
-    /// 相关特征数据
+    // / 相关featuresdata
     pub features: serde_json::Value,
 }
 
-/// 自learnanalysiser
+// / 自learnanalysiser
 pub struct SelfLearningAnalyzer {
-    #[allow(dead_code)] // will来will for storelearn to fingerprint
+    #[allow(dead_code)] // will be used to store learned fingerprints
     db: Arc<FingerprintDatabase>,
-    /// 未知指纹观察记录 (fp_id -> observation)
+    // / unknownfingerprint观察record (fp_id -> observation)
     observations: DashMap<String, UnknownFingerprintObservation>,
-    /// 学习阈值 (观察多少次后进入数据库)
+    // / learning threshold (how many observations before entering database)
     learning_threshold: u64,
-    /// 稳定性时间窗口 (默认24小时)
+    // / stability time window (default 24 hours)
     stability_window: Duration,
-    /// 最小稳定性得分阈值
+    // / minimum stability score threshold
     min_stability_score: f64,
 }
 
@@ -70,11 +70,11 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    /// processanalysisresult并learn
+    // / processanalysisresult并learn
     pub fn process_result(&self, result: &PassiveAnalysisResult) {
-        // 分别处理各层指纹
+        // 分别process各层fingerprint
         if let Some(tls) = &result.tls {
-            // TLS直接使用观察ID (JA4)
+            // TLS直接use观察ID (JA4)
             self.observe_unknown_fingerprint(
                 tls.id(),
                 "tls",
@@ -119,7 +119,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    /// 观察未知指纹并计算稳定性
+    // / 观察unknownfingerprint并calculatestable性
     fn observe_unknown_fingerprint(
         &self,
         fp_id: String,
@@ -133,14 +133,14 @@ impl SelfLearningAnalyzer {
         let key = format!("{}:{}", fp_type, fp_id);
         let now = current_unix_timestamp();
 
-        // 保护点：限制观察列表大小，防止内存爆增 (DoS防护)
+        // Protection point: limit observation list size to prevent memory explosion (DoS protection)
         const MAX_OBSERVATIONS: usize = 10000;
         if self.observations.len() >= MAX_OBSERVATIONS && !self.observations.contains_key(&key) {
-            // 如果达到上限且是新键，则忽略
+            // If maximum reached and it's a new key, ignore it
             return;
         }
 
-        // 更新或创建观察记录
+        // Update or create observation record
         let mut entry =
             self.observations
                 .entry(key.clone())
@@ -154,40 +154,40 @@ impl SelfLearningAnalyzer {
                     features: features.clone(),
                 });
 
-        // 更新观察记录
+        // update观察record
         entry.observation_count += 1;
         entry.last_seen = now;
 
-        // 计算稳定性得分
+        // calculate stability score
         let time_span = timestamp_duration(entry.first_seen, entry.last_seen);
         let expected_frequency =
-            entry.observation_count as f64 / (time_span.as_secs_f64() / 3600.0).max(1.0); // 每小时观察频率
+            entry.observation_count as f64 / (time_span.as_secs_f64() / 3600.0).max(1.0); // observation frequency per hour
 
-        // 稳定性得分基于观察频率的一致性
+        // stability score based on observation frequency consistency
         let stability_bonus = if expected_frequency > 1.0 && expected_frequency < 100.0 {
-            0.3 // 正常频率加分
+            0.3 // normal frequency bonus
         } else if expected_frequency >= 100.0 {
-            0.1 // 高频但不稳定
+            0.1 // high frequency but not stable
         } else {
-            0.0 // 频率太低
+            0.0 // frequency too low
         };
 
         entry.stability_score =
             (entry.observation_count as f64 / self.learning_threshold as f64).min(1.0) * 0.7
                 + stability_bonus;
 
-        // 检查是否达到学习条件
+        // check if learning conditions are met
         if entry.observation_count >= self.learning_threshold
             && entry.stability_score >= self.min_stability_score
         {
-            // 达到阈值，可以进入数据库建立初步条目
+            // threshold reached, can enter database to create preliminary entry
             self.learn_new_fingerprint(&entry);
         }
     }
 
-    /// 学习新的稳定指纹
+    // / learningnewstablefingerprint
     fn learn_new_fingerprint(&self, observation: &UnknownFingerprintObservation) {
-        println!(
+        log::info!(
             "[Learner] 🎯 Detected stable unknown fingerprint: {}:{} (count: {}, stability: {:.2})",
             observation.fingerprint_type,
             observation.fingerprint_id,
@@ -195,27 +195,45 @@ impl SelfLearningAnalyzer {
             observation.stability_score
         );
 
-        // TODO: 将稳定指纹存入数据库作为待审核候选签名
-        // 这里应该调用数据库接口存储潜在的新指纹模式
-        // 例如：self.db.store_candidate_fingerprint(observation)
+        // 将stablefingerprint存入datalibrary作topending reviewcandidatessignature
+        match self.db.store_candidate_fingerprint(
+            &observation.fingerprint_type,
+            &observation.fingerprint_id,
+            observation.observation_count.try_into().unwrap(),
+            observation.stability_score,
+            Some(&format!(
+                "Auto-detected stable fingerprint with count {} and stability {:.2}",
+                observation.observation_count, observation.stability_score
+            )),
+        ) {
+            Ok(candidate_id) => {
+                log::info!(
+                    "[Learner] ✅ Successfully stored candidate fingerprint #{} for review",
+                    candidate_id
+                );
+            }
+            Err(e) => {
+                log::warn!("[Learner] ⚠️ Failed to store candidate fingerprint: {}", e);
+            }
+        }
     }
 
-    /// 设置学习阈值
+    // / setlearning阈值
     pub fn set_threshold(&mut self, threshold: u64) {
         self.learning_threshold = threshold;
     }
 
-    /// 设置稳定性窗口
+    // / setstable性窗口
     pub fn set_stability_window(&mut self, duration: Duration) {
         self.stability_window = duration;
     }
 
-    /// 设置最小稳定性得分
+    // / set最小stable性得分
     pub fn set_min_stability_score(&mut self, score: f64) {
         self.min_stability_score = score.clamp(0.0, 1.0);
     }
 
-    /// 获取当前观察统计
+    // / get current observation statistics
     pub fn get_observation_stats(&self) -> ObservationStats {
         let total_observations = self.observations.len() as u64;
         let stable_candidates = self
@@ -235,7 +253,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    /// 清理过期观察记录
+    // / cleanup expired observation records
     pub fn cleanup_expired_observations(&self) {
         let now = current_unix_timestamp();
         let expired_keys: Vec<String> = self
@@ -253,11 +271,81 @@ impl SelfLearningAnalyzer {
     }
 }
 
-/// 观察统计信息
+// / 观察statisticsinfo
 #[derive(Debug, Clone)]
 pub struct ObservationStats {
     pub total_observations: u64,
     pub stable_candidates: u64,
     pub learning_threshold: u64,
     pub min_stability_score: f64,
+}
+
+/// Fingerprint evaluator for assessing stability and credibility
+/// 指纹评估器用于评估稳定性和可信度
+pub struct FingerprintEvaluator {
+    stability_threshold: f64,
+    observation_threshold: u64,
+}
+
+impl FingerprintEvaluator {
+    /// Create new fingerprint evaluator
+    /// 创建新的指纹评估器
+    pub fn new(stability_threshold: f64, observation_threshold: u64) -> Self {
+        FingerprintEvaluator {
+            stability_threshold,
+            observation_threshold,
+        }
+    }
+
+    /// Evaluate fingerprint stability
+    /// 评估指纹稳定性
+    pub fn evaluate_stability(&self, observation: &UnknownFingerprintObservation) -> f64 {
+        // Simple stability calculation based on observation consistency
+        if observation.observation_count < self.observation_threshold {
+            0.0
+        } else {
+            observation.stability_score
+        }
+    }
+
+    /// Check if fingerprint is ready for learning
+    /// 检查指纹是否准备好进行学习
+    pub fn is_ready_for_learning(&self, observation: &UnknownFingerprintObservation) -> bool {
+        observation.observation_count >= self.observation_threshold
+            && observation.stability_score >= self.stability_threshold
+    }
+}
+
+/// Fingerprint observer for collecting unknown fingerprints
+/// 指纹观察器用于收集未知指纹
+#[allow(dead_code)]
+pub struct FingerprintObserver {
+    evaluator: FingerprintEvaluator,
+    database: Arc<FingerprintDatabase>,
+}
+
+impl FingerprintObserver {
+    /// Create new fingerprint observer
+    /// 创建新的指纹观察器
+    pub fn new(database: Arc<FingerprintDatabase>) -> Self {
+        FingerprintObserver {
+            evaluator: FingerprintEvaluator::new(0.8, 10),
+            database,
+        }
+    }
+
+    /// Observe network traffic and collect fingerprints
+    /// 观察网络流量并收集指纹
+    pub fn observe(&self, _result: &PassiveAnalysisResult) {
+        // Implementation would go here
+        // 实现会在这里
+    }
+
+    /// Get evaluation results
+    /// 获取评估结果
+    pub fn get_results(&self) -> Vec<UnknownFingerprintObservation> {
+        // Return collected observations
+        // 返回收集的观察结果
+        vec![]
+    }
 }

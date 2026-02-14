@@ -1,14 +1,14 @@
 use rand::{Rng, SeedableRng};
 use rand_chacha::ChaCha8Rng;
 
-/// Canvas 噪声注入器
+// / Canvas 噪声注入器
 pub struct CanvasNoiseInjector {
     seed: u64,
     noise_level: f64, // 0.0 - 1.0
 }
 
 impl CanvasNoiseInjector {
-    /// 创建新的噪声注入器
+    // / createnew噪声注入器
     pub fn new(seed: u64, noise_level: f64) -> Self {
         Self {
             seed,
@@ -16,15 +16,15 @@ impl CanvasNoiseInjector {
         }
     }
 
-    /// 为 Canvas 数据添加噪声
+    // / to Canvas data添加噪声
     pub fn add_noise(&self, data: &[u8]) -> Vec<u8> {
         let mut rng = ChaCha8Rng::seed_from_u64(self.seed);
         let mut result = data.to_vec();
 
-        // 对每个像素添加微小的随机变化
+        // 对每个像素添加微小ofrandom变化
         for pixel in result.chunks_mut(4) {
             if rng.gen::<f64>() < self.noise_level {
-                // RGBA 各通道添加 ±1 的噪声
+                // RGBA 各channel添加 ±1 of噪声
                 for channel in pixel.iter_mut() {
                     let noise = if rng.gen::<bool>() { 1 } else { -1 };
                     *channel = channel.saturating_add_signed(noise);
@@ -35,7 +35,7 @@ impl CanvasNoiseInjector {
         result
     }
 
-    /// 生成 Canvas 指纹哈希（带噪声）
+    // / generate Canvas fingerprinthash（带噪声）
     pub fn fingerprint_hash(&self, canvas_data: &[u8]) -> String {
         use sha2::{Digest, Sha256};
 

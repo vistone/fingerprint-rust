@@ -2,68 +2,68 @@
 
 //! # fingerprint-webrtc
 //!
-//! WebRTC 泄露防护模块
+// ! WebRTC leakprotectionmodule
 //!
-//! 提供 WebRTC IP 泄露防护和指纹识别能力
+// ! provide WebRTC IP leakprotectionandfingerprintrecognitioncapabilities
 
 use std::collections::HashSet;
 use std::net::IpAddr;
 
-/// WebRTC 指纹
+// / WebRTC fingerprint
 #[derive(Debug, Clone)]
 pub struct WebRTCFingerprint {
-    /// 本地 IP 候选地址
+    // / local IP candidatesaddress
     pub local_candidates: Vec<String>,
-    /// 远程 IP 地址
+    // / remote IP address
     pub remote_ip: Option<String>,
-    /// 连接状态
+    // / connectstate
     pub connection_state: ConnectionState,
-    /// mDNS 候选隐藏
+    // / mDNS candidateshide
     pub mdns_hidden: bool,
-    /// 候选过滤统计
+    // / candidatesfilterstatistics
     pub candidate_stats: CandidateStats,
 }
 
-/// 连接状态
+// / connectstate
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConnectionState {
-    /// 新建
+    // / new
     New,
-    /// 连接中
+    // / connect中
     Connecting,
-    /// 已连接
+    // / 已connect
     Connected,
-    /// 已完成
+    // / completed
     Completed,
-    /// 断开连接
+    // / disconnectconnect
     Disconnected,
-    /// 失败
+    // / failure
     Failed,
-    /// 已关闭
+    // / closed
     Closed,
 }
 
-/// 候选统计信息
+// / candidatesstatisticsinfo
 #[derive(Debug, Clone)]
 pub struct CandidateStats {
-    /// 主机候选数
+    // / hostcandidates
     pub host_candidates: u32,
-    /// srflx 候选数
+    // / srflx candidates
     pub srflx_candidates: u32,
-    /// prflx 候选数
+    // / prflx candidates
     pub prflx_candidates: u32,
-    /// relay 候选数
+    // / relay candidates
     pub relay_candidates: u32,
 }
 
-/// WebRTC 错误类型
+// / WebRTC errortype
 #[derive(Debug)]
 pub enum WebRTCError {
-    /// 无效 IP
+    // / invalid IP
     InvalidIP,
-    /// 分析失败
+    // / analyzefailure
     AnalysisFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -79,11 +79,11 @@ impl std::fmt::Display for WebRTCError {
 
 impl std::error::Error for WebRTCError {}
 
-/// WebRTC 分析器
+// / WebRTC analyzer
 pub struct WebRTCAnalyzer;
 
 impl WebRTCAnalyzer {
-    /// 分析 WebRTC 候选
+    // / analyze WebRTC candidates
     pub fn analyze(candidates: &[&str]) -> Result<WebRTCFingerprint, WebRTCError> {
         let mut stats = CandidateStats {
             host_candidates: 0,
@@ -122,9 +122,9 @@ impl WebRTCAnalyzer {
         })
     }
 
-    /// 提取 IP 地址
+    // / extract IP address
     fn extract_ip(candidate: &str) -> Option<String> {
-        // 简单的 IP 提取逻辑
+        // 简单of IP extract逻辑
         let parts: Vec<&str> = candidate.split_whitespace().collect();
         for part in parts {
             if Self::is_valid_ip(part) {
@@ -134,17 +134,17 @@ impl WebRTCAnalyzer {
         None
     }
 
-    /// 验证 IP 地址
+    // / validate IP address
     fn is_valid_ip(s: &str) -> bool {
         s.parse::<IpAddr>().is_ok()
     }
 }
 
-/// WebRTC 防护器
+// / WebRTC protector
 pub struct WebRTCProtection;
 
 impl WebRTCProtection {
-    /// 隐藏 mDNS 候选
+    // / hide mDNS candidates
     pub fn hide_mdns_candidates(candidates: &[&str]) -> Vec<String> {
         candidates
             .iter()
@@ -153,14 +153,14 @@ impl WebRTCProtection {
             .collect()
     }
 
-    /// 伪造 IP 地址
+    // / forge IP address
     pub fn spoof_ip(fingerprint: &WebRTCFingerprint, fake_ip: &str) -> WebRTCFingerprint {
         let mut spoofed = fingerprint.clone();
         spoofed.remote_ip = Some(fake_ip.to_string());
         spoofed
     }
 
-    /// 检测 WebRTC 泄露
+    // / detect WebRTC leak
     pub fn detect_leaks(candidates: &[&str]) -> WebRTCLeakReport {
         let private_ips = HashSet::from(["10.0.0.0", "172.16.0.0", "192.168.0.0", "127.0.0.1"]);
 
@@ -184,7 +184,7 @@ impl WebRTCProtection {
     }
 }
 
-/// WebRTC 泄露报告
+// / WebRTC leakreport
 #[derive(Debug, Clone)]
 pub struct WebRTCLeakReport {
     pub has_leaks: bool,
@@ -204,13 +204,13 @@ mod tests {
 
     #[test]
     fn test_mdns_hiding() {
-        // mDNS地址以.local结尾（RFC 6762)
+        // mDNSaddressending with..local（(RFC 6762)
         let candidates = vec![
             "candidate:1 1 udp 192.168.1.1",
-            "candidate:2 1 udp device.local", // 真正的mDNS格式
+            "candidate:2 1 udp device.local", // 真正ofmDNS格式
         ];
         let filtered = WebRTCProtection::hide_mdns_candidates(&candidates);
-        assert_eq!(filtered.len(), 1); // 只有第一个非mDNS候选保留
+        assert_eq!(filtered.len(), 1); // 只有第一个非mDNScandidates保留
         assert_eq!(filtered[0], "candidate:1 1 udp 192.168.1.1");
     }
 }

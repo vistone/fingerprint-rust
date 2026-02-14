@@ -296,7 +296,7 @@ fn extract_json_number(json: &str, key: &str) -> Option<f64> {
     json.find(&pattern).and_then(|start| {
         let value_start = start + pattern.len();
         json[value_start..]
-            .split(|c: char| c == ',' || c == '\n' || c == '}')
+            .split([',', '\n', '}'])
             .next()
             .and_then(|s| s.trim().parse::<f64>().ok())
     })

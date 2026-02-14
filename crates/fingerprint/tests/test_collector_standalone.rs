@@ -1,4 +1,4 @@
-//! 独立测试 DNS 服务器收集器（不依赖库的其他模块）
+// ! 独立testing DNS service器收集器（不依赖libraryofothermodule）
 
 #[cfg(feature = "dns")]
 #[tokio::test]
@@ -10,7 +10,7 @@ async fn test_collect_public_dns_standalone() {
         let timeout = Duration::from_secs(30);
         let url = "https://public-dns.info/nameservers.txt";
 
-        // 使用项目内部的 HttpClient
+        // use项目内部of HttpClient
         let config = fingerprint::HttpClientConfig {
             connect_timeout: timeout,
             read_timeout: timeout,
@@ -19,7 +19,7 @@ async fn test_collect_public_dns_standalone() {
         };
         let client = fingerprint::HttpClient::new(config);
 
-        // 在异步上下文中执行同步的 HTTP 请求
+        // 在async上下文中执行syncof HTTP 请求
         let response = tokio::task::spawn_blocking(move || client.get(url))
             .await
             .map_err(|e| format!("task join error: {}", e))?
@@ -32,19 +32,19 @@ async fn test_collect_public_dns_standalone() {
         // 读取响应文本
         let text = String::from_utf8_lossy(&response.body).to_string();
 
-        // 解析文本，每行一个 IP 地址
+        // parse文本，每行一个 IP address
         let mut servers = Vec::new();
         for line in text.lines() {
             let line = line.trim();
 
-            // 跳过空行和注释
+            // 跳过空行andcomment
             if line.is_empty() || line.starts_with('#') {
                 continue;
             }
 
-            // 验证是否为有效的 IP 地址
+            // validate是否to有效of IP address
             fn is_valid_ip(s: &str) -> bool {
-                // 如果包含端口号，尝试解析 SocketAddr
+                // 如果includeport号，尝试parse SocketAddr
                 if s.contains(':') && s.matches(':').count() <= 2 {
                     if s.parse::<SocketAddr>().is_ok() {
                         return true;
@@ -53,12 +53,12 @@ async fn test_collect_public_dns_standalone() {
                         return s.parse::<SocketAddr>().is_ok();
                     }
                 }
-                // 尝试解析为 IP 地址
+                // 尝试parseto IP address
                 s.parse::<IpAddr>().is_ok()
             }
 
             if is_valid_ip(line) {
-                // 如果没有端口，添加默认端口 53
+                // 如果没有port，添加defaultport 53
                 let server = if line.contains(':') {
                     line.to_string()
                 } else {
@@ -71,7 +71,7 @@ async fn test_collect_public_dns_standalone() {
         Ok(servers)
     }
 
-    // 运行测试
+    // runtesting
     match collect_public_dns().await {
         Ok(servers) => {
             println!("✅ 成功获取 DNS 服务器列表");

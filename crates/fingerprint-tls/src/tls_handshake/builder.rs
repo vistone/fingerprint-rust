@@ -36,7 +36,7 @@ impl TLSHandshakeBuilder {
         Ok(record.to_bytes())
     }
 
-    /// Build并printdebuginfo
+    // / Build并printdebuginfo
     pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
         // 1. Create ClientHello message
         let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;

@@ -13,7 +13,8 @@
 //! Based on industry best practices from Google Benchmark, Criterion.rs,
 //! and performance engineering guidelines.
 
-use fingerprint::{chrome_133, firefox_133, HttpClient, HttpClientConfig};
+use fingerprint::profiles::{chrome_133, firefox_133};
+use fingerprint::{HttpClient, HttpClientConfig};
 use std::time::{Duration, Instant};
 
 /// Statistical results from benchmark runs
@@ -170,7 +171,7 @@ fn bench_fingerprint_generation() -> Result<(), Box<dyn std::error::Error>> {
     // Benchmark TLS ClientHello spec generation
     let stats = benchmark("TLS ClientHello Spec Generation", 1_000, || {
         let profile = chrome_133();
-        let _spec = profile.get_client_hello_spec()?;
+        let _spec = &profile.tls_config;
         Ok(())
     });
     stats.report("TLS ClientHello Spec Generation");
@@ -209,14 +210,14 @@ fn bench_comparative_analysis() -> Result<(), Box<dyn std::error::Error>> {
     // Approach 1: Creating new profile each time
     let stats1 = benchmark("Approach 1: New Profile Each Time", iterations, || {
         let profile = chrome_133();
-        let _spec = profile.get_client_hello_spec()?;
+        let _spec = &profile.tls_config;
         Ok(())
     });
 
     // Approach 2: Reusing profile
     let profile = chrome_133();
     let stats2 = benchmark("Approach 2: Reusing Profile", iterations, || {
-        let _spec = profile.get_client_hello_spec()?;
+        let _spec = &profile.tls_config;
         Ok(())
     });
 
@@ -255,10 +256,10 @@ fn bench_memory_profile() -> Result<(), Box<dyn std::error::Error>> {
 
     // Estimate memory usage
     let profile = chrome_133();
-    let spec = profile.get_client_hello_spec()?;
+    let spec = &profile.tls_config;
 
     let estimated_profile_size = std::mem::size_of_val(&profile);
-    let estimated_spec_size = std::mem::size_of_val(&spec);
+    let estimated_spec_size = std::mem::size_of_val(spec);
 
     println!("\n┌────────────────────────────────────────────────────────────┐");
     println!("│ Estimated Memory Usage (Stack only, approximate)          │");

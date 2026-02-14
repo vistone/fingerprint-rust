@@ -19,7 +19,7 @@ pub struct HttpFingerprint {
     /// HTTP header
     pub headers: HashMap<String, String>,
 
-    /// HTTP/2 settings ( if 有)
+    // / HTTP/2 settings ( if 有)
     pub http2_settings: Option<Http2Settings>,
 
     /// metadata
@@ -167,7 +167,7 @@ mod tests {
         headers2.insert("Accept".to_string(), "text/html".to_string());
         let fp2 = HttpFingerprint::new("Mozilla/5.0".to_string(), headers2);
 
-        // sameinputshouldproducesame的hash
+        // sameinputshouldproducesameofhash
         assert_eq!(fp1.hash(), fp2.hash());
     }
 }

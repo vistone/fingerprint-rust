@@ -11,7 +11,6 @@
 /// - Identify browser patterns from network traffic
 /// - Generate comprehensive fingerprints
 use fingerprint_core::packet_capture::*;
-use fingerprint_core::tcp_handshake::{TcpHandshakeAnalyzer, TcpOption};
 
 fn main() {
     println!("=== Advanced Packet Capture & Fingerprinting Demo ===\n");
@@ -232,7 +231,7 @@ fn example_6_analyze_tcp_connection() {
     println!("Example 6: TCP Connection Analysis");
     println!("==================================\n");
 
-    let mut analyzer = PacketFlowAnalyzer::new();
+    let analyzer = PacketFlowAnalyzer::new();
 
     // Simulate adding packets
     println!("Analyzer state:");

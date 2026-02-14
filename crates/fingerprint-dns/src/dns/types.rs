@@ -9,22 +9,22 @@ use std::collections::HashSet;
 pub struct IPInfo {
     /// IP address
     pub ip: String,
-    /// host名 (optional)
+    // / host名 (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hostname: Option<String>,
-    /// 城市 (optional)
+    // / 城市 (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub city: Option<String>,
     /// region (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub region: Option<String>,
-    /// 国家code (optional)
+    // / 国家code (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub country: Option<String>,
-    /// geographic坐mark (optional)
+    // / geographic坐mark (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub loc: Option<String>,
-    /// group织/ISP (optional)
+    // / group织/ISP (optional)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub org: Option<String>,
     /// when area (optional)
@@ -80,10 +80,10 @@ impl DomainIPs {
         ips
     }
 
-    /// Checkwhether有new IP address ( and 另an DomainIPs compare)
+    // / Checkwhether有new IP address ( and 另an DomainIPs compare)
     ///
     /// `self` is newParse IP set, `other` is beforesave IP set
-    /// If `self` in 有 `other` no IP, return true (discovernew IP)
+    // / If `self` in 有 `other` no IP, return true (discovernew IP)
     pub fn has_new_ips(&self, other: &DomainIPs) -> bool {
         let self_ips: HashSet<String> = self.all_ips().into_iter().collect();
         let other_ips: HashSet<String> = other.all_ips().into_iter().collect();
@@ -188,7 +188,7 @@ fn default_max_ip_fetch_conc() -> usize {
 }
 
 impl DNSConfig {
-    /// Create a new DNS configuration (conveniencemethod, candirectlyusestring字面quantity)
+    // / Create a new DNS configuration (conveniencemethod, candirectlyusestring字面quantity)
     ///
     /// # Examples
     /// ```

@@ -14,7 +14,7 @@ pub enum TrafficDirection {
     /// outputtraffic (leavesystem)
     Outbound,
 
-    /// inside部traffic (systeminside部)
+    // / inside部traffic (systeminside部)
     Internal,
 }
 
@@ -108,10 +108,10 @@ impl std::fmt::Display for ProtocolType {
 ///
 /// ## Core Concept
 ///
-/// system-level protectionneedconsidercompletesystem context, 而not onlyonly is singleservice or port：
+// / system-level protectionneedconsidercompletesystem context, 而not onlyonly is singleservice or port：
 /// - complete network entity information (source/target IP, port)
 /// - protocoltype and direction
-/// - when between戳 and network interfaceinterface
+// / - when between戳 and network interfaceinterface
 /// - countpacketlevelinfo
 ///
 /// ## Examples
@@ -150,7 +150,7 @@ pub struct SystemContext {
     /// protocoltype
     pub protocol: ProtocolType,
 
-    /// when between戳
+    // / when between戳
     pub timestamp: DateTime<Utc>,
 
     /// network interfaceinterfacename

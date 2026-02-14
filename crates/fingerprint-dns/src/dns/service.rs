@@ -8,7 +8,6 @@ use crate::dns::ipinfo::IPInfoClient;
 use crate::dns::resolver::DNSResolver;
 use crate::dns::serverpool::ServerPool;
 use crate::dns::storage::{load_domain_ips, save_domain_ips};
-use crate::dns::types::IPInfo;
 use crate::dns::types::{DNSConfig, DNSError, DomainIPs};
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -49,7 +48,7 @@ impl Service {
         })
     }
 
-    /// Create a new Service instance, 并usespecified DNS serverpool
+    // / Create a new Service instance, 并usespecified DNS serverpool
     pub async fn with_server_pool(
         config: DNSConfig,
         server_pool: Arc<ServerPool>,
@@ -84,7 +83,7 @@ impl Service {
         Self::new(config)
     }
 
-    /// startservice ( in back台threadrun, non-blockingmainthread)
+    // / startservice ( in back台threadrun, non-blockingmainthread)
     /// automaticmaintain DNS serverpool (dnsservernames.json), no needmanualinterferepre
     pub async fn start(&self) -> Result<(), DNSError> {
         // Checkwhetheralready in run
@@ -97,7 +96,7 @@ impl Service {
         }
 
         // load/collect DNS serverpool (pairshould Go NewServerPool)
-        // priority from localfileload,  if 不 exists or as empty, 才 from networkcollect
+        // priority from .localfileload, if 不 exists or as empty, 才 from networkcollect
         // collect_all alreadyprocess了：
         // - if file exists and is notempty：directlyuse, 不performCheck
         // - if file不 exists or as empty： from networkcollect并performhealthCheckbacksave
@@ -222,7 +221,7 @@ impl Service {
                             resolve_duration.as_secs_f64()
                         );
 
-                        // intelligentintervaladjust：discovernew IP when highfrequencydetect, otherwisepointcountbackoff
+                        // intelligentintervaladjust：discovernew IP when highfrequencydetect, otherwisepointcountback
                         if has_new_ips {
                             current_interval = base_interval;
                             last_has_new_ips = true;
@@ -304,15 +303,15 @@ impl Service {
         // thisfunctionmain for staticpattern, itemfronttemporary不support
     }
 
-    /// Parse并savealldomain IP info
-    /// Note: 此methoditemfrontnotdirectlyuse, actualuse的 is resolve_and_save_all_internal
+    // / Parse并savealldomain IP info
+    // / Note: 此methoditemfrontnotdirectlyuse, actualuseof is resolve_and_save_all_internal
     #[allow(dead_code)]
     async fn resolve_and_save_all(&self) -> Result<bool, DNSError> {
         resolve_and_save_all_internal(&self.resolver, &self.ipinfo_client, &self.config).await
     }
 }
 
-/// auxiliaryfunction：Parse并savealldomain IP info (can in closepackage in use)
+// / auxiliaryfunction：Parse并savealldomain IP info (can in closepackage in use)
 async fn resolve_and_save_all_internal(
     resolver: &Arc<RwLock<DNSResolver>>,
     ipinfo_client: &Arc<IPInfoClient>,
@@ -389,23 +388,13 @@ async fn resolve_and_save_all_internal(
                         "[DNS Service] discover {} new IPv4 address，正 in Getdetailedinfo...",
                         new_ipv4.len()
                     );
-                    let ipv4_results = ipinfo_client
-                        .get_ip_infos(new_ipv4.clone(), config.max_ip_fetch_conc)
-                        .await;
+                    let ipv4_results = ipinfo_client.get_ip_infos(new_ipv4.clone()).await?;
 
-                    for (ip, ip_result) in ipv4_results {
-                        match ip_result {
-                            Ok(mut ip_info) => {
-                                // preserveoriginalbeginning IP (because IPInfo mayreturndifferentformat)
-                                ip_info.ip = ip.clone();
-                                domain_ips.ipv4.push(ip_info);
-                            }
-                            Err(e) => {
-                                eprintln!("[DNS Service] Failed to get IP info for {}: {}", ip, e);
-                                // that is使failure, alsosavebasic IP info
-                                domain_ips.ipv4.push(IPInfo::new(ip));
-                            }
-                        }
+                    for (ip, ip_info) in ipv4_results {
+                        // preserveoriginalbeginning IP (because IPInfo mayreturndifferentformat)
+                        let mut ip_info = ip_info;
+                        ip_info.ip = ip.clone();
+                        domain_ips.ipv4.push(ip_info);
                     }
                 }
 
@@ -415,21 +404,12 @@ async fn resolve_and_save_all_internal(
                         "[DNS Service] discover {} new IPv6 address，正 in Getdetailedinfo...",
                         new_ipv6.len()
                     );
-                    let ipv6_results = ipinfo_client
-                        .get_ip_infos(new_ipv6.clone(), config.max_ip_fetch_conc)
-                        .await;
+                    let ipv6_results = ipinfo_client.get_ip_infos(new_ipv6.clone()).await?;
 
-                    for (ip, ip_result) in ipv6_results {
-                        match ip_result {
-                            Ok(mut ip_info) => {
-                                ip_info.ip = ip.clone();
-                                domain_ips.ipv6.push(ip_info);
-                            }
-                            Err(e) => {
-                                eprintln!("[DNS Service] Failed to get IP info for {}: {}", ip, e);
-                                domain_ips.ipv6.push(IPInfo::new(ip));
-                            }
-                        }
+                    for (ip, ip_info) in ipv6_results {
+                        let mut ip_info = ip_info;
+                        ip_info.ip = ip.clone();
+                        domain_ips.ipv6.push(ip_info);
                     }
                 }
 
@@ -467,7 +447,7 @@ fn format_duration(d: &Duration) -> String {
     }
 }
 
-/// Parse when betweenstring (如 "2m", "30s", "1h")
+// / Parse when betweenstring (如 "2m", "30s", "1h")
 fn parse_duration(s: &str) -> Option<Duration> {
     let s = s.trim();
     if s.is_empty() {

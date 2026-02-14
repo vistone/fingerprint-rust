@@ -471,7 +471,7 @@ fn example_9_index_reuse() {
     println!("Index reuse pattern: {:?}", pattern);
     println!(
         "Index 2 (`:method GET`) reused: {} times\n",
-        pattern.get(0).unwrap_or(&0)
+        pattern.first().unwrap_or(&0)
     );
 }
 

@@ -22,14 +22,14 @@ pub enum SystemProtectionDecision {
 
     /// rate limit
     RateLimit {
-        /// 每secondsmaximumcountpacketcount
+        // / 每secondsmaximumcountpacketcount
         max_packets_per_second: u64,
 
         /// rate limitcontinuous when between
         duration: Duration,
     },
 
-    /// recordbut不block
+    // / recordbut不block
     Log {
         /// recordreason
         reason: String,
@@ -85,7 +85,7 @@ pub struct SystemProtectionResult {
 
     /// risk score (0.0 - 1.0)
     /// - 0.0: completelysecurity
-    /// - 1.0: 极highrisk
+    // / - 1.0: 极highrisk
     pub risk_score: f64,
 
     /// confidence (0.0 - 1.0)
@@ -153,13 +153,13 @@ impl SystemProtectionResult {
 
 /// system-level protection interface
 ///
-/// allsystem-level protectioner都shouldimplementthis trait.
+// / allsystem-level protectioner都shouldimplementthis trait.
 ///
 /// ## Core Concept
 ///
 /// system-level protection from **systemperspective**makeprotection decision：
-/// - not onlyonly is single service protection, 而 is wholesystemprotection
-/// - canactual施systemlevelmeasure (blacklist, rate limit, firewallrule etc.)
+// / - not onlyonly is single service protection, 而 is wholesystemprotection
+// / - canactual施systemlevelmeasure (blacklist, rate limit, firewallrule etc.)
 /// - needconsidersystemwholesecuritystatus
 ///
 /// ## Implementation Example
@@ -186,7 +186,7 @@ impl SystemProtectionResult {
 /// }
 /// ```
 pub trait SystemProtector: Send {
-    /// analysisnetwork traffic并makeprotection decision
+    // / analysisnetwork traffic并makeprotection decision
     ///
     /// # Parameters
     ///
@@ -199,7 +199,7 @@ pub trait SystemProtector: Send {
 
     /// Updatesystemstatus
     ///
-    /// in makeprotection decisionback, canBased onresultUpdatesystemstatus (如Updateblacklist, statisticsinfo etc.).
+    // / in makeprotection decisionback, canBased onresultUpdatesystemstatus (如Updateblacklist, statisticsinfo etc.).
     ///
     /// # Parameters
     ///

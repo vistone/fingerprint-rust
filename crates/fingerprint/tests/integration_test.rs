@@ -1,6 +1,6 @@
-//! 集成测试套件
-//!
-//! 全面测试 fingerprint 库的各项功能
+// ! 集成testing套件
+//! Integration tests for fingerprint library.
+// ! 全面testing fingerprint libraryof各项 functionality
 
 use fingerprint::generate_headers;
 use fingerprint::types::OPERATING_SYSTEMS;
@@ -17,8 +17,8 @@ fn test_get_random_fingerprint() {
         "User-Agent should not be empty"
     );
     assert!(
-        !result.hello_client_id.is_empty(),
-        "HelloClientID should not be empty"
+        !result.profile_id.is_empty(),
+        "Profile ID should not be empty"
     );
     assert!(
         !result.headers.user_agent.is_empty(),
@@ -32,12 +32,12 @@ fn test_get_random_fingerprint_with_os() {
     assert!(result.is_ok());
 
     let result = result.unwrap();
-    // 移动端指纹可能不包含操作系统信息，所以只检查 User-Agent 不为空
+    // move端fingerprint可能不includeoperating systeminfo，所ending with只check User-Agent 不to空
     assert!(
         !result.user_agent.is_empty(),
         "User-Agent should not be empty"
     );
-    // 如果包含操作系统信息，应该包含 Macintosh
+    // 如果includeoperating systeminfo，应该include Macintosh
     if result.user_agent.contains("Macintosh") || result.user_agent.contains("Mac OS X") {
         assert!(result.user_agent.contains("Macintosh") || result.user_agent.contains("Mac OS X"));
     }
@@ -54,8 +54,8 @@ fn test_get_random_fingerprint_by_browser_chrome() {
         "User-Agent should contain Chrome"
     );
     assert!(
-        result.hello_client_id.starts_with("Chrome"),
-        "HelloClientID should start with Chrome"
+        result.profile_id.starts_with("chrome_"),
+        "Profile ID should start with chrome_"
     );
 }
 
@@ -122,7 +122,7 @@ fn test_get_user_agent_by_profile_name_with_os() {
 fn test_random_language() {
     let lang = random_language();
     assert!(!lang.is_empty());
-    // 验证格式
+    // validate格式
     assert!(
         lang.contains(",") || lang.contains(";"),
         "Language should be in Accept-Language format"
@@ -132,7 +132,7 @@ fn test_random_language() {
 #[test]
 fn test_random_os() {
     let os = random_os();
-    // 验证返回的是有效的操作系统
+    // validatereturnof是有效ofoperating system
     assert!(OPERATING_SYSTEMS.contains(&os));
 }
 
@@ -239,7 +239,7 @@ fn test_mapped_tls_clients() {
     let clients = mapped_tls_clients();
     assert!(!clients.is_empty(), "MappedTLS clients should not be empty");
 
-    // 验证一些常见的指纹存在
+    // validate一些commonoffingerprint存在
     assert!(clients.contains_key("chrome_133"));
     assert!(clients.contains_key("firefox_133"));
     assert!(clients.contains_key("safari_16_0"));
@@ -248,17 +248,17 @@ fn test_mapped_tls_clients() {
 
 #[test]
 fn test_client_profile() {
-    let profile = mapped_tls_clients().get("chrome_133").unwrap();
-    assert_eq!(profile.get_client_hello_str(), "Chrome-133");
-    assert!(!profile.get_pseudo_header_order().is_empty());
+    let profiles = mapped_tls_clients();
+    let profile = profiles.get("chrome_133").unwrap();
+    assert_eq!(profile.id(), "chrome_133");
+    assert!(!profile.http2_settings_order.is_empty());
 }
 
 #[test]
 fn test_get_client_hello_spec() {
-    let profile = mapped_tls_clients().get("chrome_133").unwrap();
-    let spec = profile.get_client_hello_spec();
-    assert!(spec.is_ok(), "get_client_hello_spec should succeed");
-    let spec = spec.unwrap();
+    let profiles = mapped_tls_clients();
+    let profile = profiles.get("chrome_133").unwrap();
+    let spec = &profile.tls_config;
     assert!(
         !spec.cipher_suites.is_empty(),
         "cipher_suites should not be empty"
@@ -276,16 +276,17 @@ fn test_get_client_hello_spec() {
 
 #[test]
 fn test_http2_settings() {
-    let chrome_profile = mapped_tls_clients().get("chrome_133").unwrap();
-    let firefox_profile = mapped_tls_clients().get("firefox_133").unwrap();
+    let profiles = mapped_tls_clients();
+    let chrome_profile = profiles.get("chrome_133").unwrap();
+    let firefox_profile = profiles.get("firefox_133").unwrap();
 
-    let chrome_settings = chrome_profile.get_settings();
-    let firefox_settings = firefox_profile.get_settings();
+    let chrome_settings = &chrome_profile.http2_settings;
+    let firefox_settings = &firefox_profile.http2_settings;
 
     assert!(!chrome_settings.is_empty());
     assert!(!firefox_settings.is_empty());
 
-    // Chrome 和 Firefox 的 Settings 应该不同
+    // Chrome and Firefox of Settings 应该不同
     let chrome_window_size = chrome_settings.get(&4).unwrap(); // InitialWindowSize
     let firefox_window_size = firefox_settings.get(&4).unwrap();
     assert_ne!(chrome_window_size, firefox_window_size);
@@ -293,15 +294,11 @@ fn test_http2_settings() {
 
 #[test]
 fn test_pseudo_header_order_differences() {
-    let chrome_profile = mapped_tls_clients().get("chrome_133").unwrap();
-    let firefox_profile = mapped_tls_clients().get("firefox_133").unwrap();
-    let safari_profile = mapped_tls_clients().get("safari_16_0").unwrap();
+    let chrome_order = chrome_pseudo_header_order();
+    let firefox_order = firefox_pseudo_header_order();
+    let safari_order = safari_pseudo_header_order();
 
-    let chrome_order = chrome_profile.get_pseudo_header_order();
-    let firefox_order = firefox_profile.get_pseudo_header_order();
-    let safari_order = safari_profile.get_pseudo_header_order();
-
-    // 不同浏览器的 Pseudo Header Order 应该不同
+    // 不同浏览器of Pseudo Header Order 应该不同
     assert_ne!(chrome_order, firefox_order);
     assert_ne!(chrome_order, safari_order);
     assert_ne!(firefox_order, safari_order);
@@ -329,12 +326,12 @@ fn test_concurrent_access() {
 
 #[test]
 fn test_multiple_random_calls() {
-    // 多次调用应该返回不同的结果（至少大部分情况下）
+    // 多次call应该return不同of结果（至少大部分情况下）
     let results: Vec<_> = (0..10)
-        .map(|_| get_random_fingerprint().unwrap().hello_client_id)
+        .map(|_| get_random_fingerprint().unwrap().profile_id)
         .collect();
 
-    // 至少应该有一些不同的结果
+    // 至少应该有一些不同of结果
     let unique_count = results
         .iter()
         .collect::<std::collections::HashSet<_>>()

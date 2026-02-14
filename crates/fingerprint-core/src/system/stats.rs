@@ -101,7 +101,7 @@ impl SystemProtectionStats {
         }
     }
 
-    /// Getanalysis率 (alreadyanalysis/total)
+    // / Getanalysis率 (alreadyanalysis/total)
     pub fn analysis_rate(&self) -> f64 {
         if self.total_packets > 0 {
             self.analyzed_packets as f64 / self.total_packets as f64
@@ -110,7 +110,7 @@ impl SystemProtectionStats {
         }
     }
 
-    /// Getblock率 (alreadyblock/total)
+    // / Getblock率 (alreadyblock/total)
     pub fn block_rate(&self) -> f64 {
         if self.total_packets > 0 {
             self.blocked_packets as f64 / self.total_packets as f64

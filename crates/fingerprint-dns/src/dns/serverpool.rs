@@ -9,7 +9,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
 
-/// defaultserverpoolfile名 (pairshould Go item dnsservernames.json)
+// / defaultserverpoolfile名 (pairshould Go item dnsservernames.json)
 const DEFAULT_SERVER_FILE: &str = "dnsservernames.json";
 
 /// DNS serverlist JSON struct (pairshould Go item DNSServerList)
@@ -63,7 +63,7 @@ impl ServerStats {
         }
     }
 
-    /// Getfailure率
+    // / Getfailure率
     fn failure_rate(&self) -> f64 {
         let total = self.success_count + self.failure_count;
         if total > 0 {
@@ -78,7 +78,7 @@ impl ServerStats {
 #[derive(Debug, Clone)]
 pub struct ServerPool {
     servers: Arc<Vec<String>>,
-    /// serverperformancestatistics (only in run when use, 不persistent化)
+    // / serverperformancestatistics (only in run when use, 不persistent化)
     stats: Arc<std::sync::RwLock<HashMap<String, ServerStats>>>,
 }
 
@@ -132,7 +132,7 @@ impl ServerPool {
         Ok(())
     }
 
-    /// slow eliminationserver (averageresponse when betweenexceedthresholdvalue or failure率overhigh)
+    // / slow eliminationserver (averageresponse when betweenexceedthresholdvalue or failure率overhigh)
     /// returnnewserverpool, non-blockingmainthread
     /// Fix: increase min_active_servers parameter, ensureat leastpreservespecifiedcountserver ( by performancesort)
     pub fn remove_slow_servers(
@@ -176,9 +176,9 @@ impl ServerPool {
             .map(|(s, _, _)| s.clone())
             .collect();
 
-        // fault tolerance guarantee： if filterback剩downservertoo少,  by performancesortforcepreserve top N
+        // fault tolerance guarantee： if filterback剩downservertoo少, by performancesortforcepreserve top N
         if filtered.len() < min_active_servers && !scored_servers.is_empty() {
-            //  by  failure率 (firstclosekey字) and response when between (secondclosekey字) 升sequencesort
+            // by failure率 (firstclosekey字) and response when between (secondclosekey字) 升sequencesort
             scored_servers.sort_by(|a, b| {
                 a.2.partial_cmp(&b.2)
                     .unwrap_or(std::cmp::Ordering::Equal)
@@ -202,7 +202,7 @@ impl ServerPool {
     }
 
     /// from local JSON fileloadserverpool (pairshould Go loadDefault)
-    /// Iffile不 exists or as empty, returnemptypool
+    // / Iffile不 exists or as empty, returnemptypool
     pub fn load_from_file<P: AsRef<Path>>(path: P) -> Result<Self, crate::dns::types::DNSError> {
         let path = path.as_ref();
 
@@ -286,8 +286,8 @@ impl ServerPool {
         self.save_to_file(DEFAULT_SERVER_FILE)
     }
 
-    /// Addserver并returnnew ServerPool (pairshould Go AddServer)
-    /// return (newpool, whether is newAdd的)
+    // / Addserver并returnnew ServerPool (pairshould Go AddServer)
+    // / return (newpool, whether is newAddof)
     pub fn with_added_server(&self, ip: &str) -> (Self, bool) {
         use std::net::IpAddr;
         use std::str::FromStr;
@@ -321,7 +321,7 @@ impl ServerPool {
         (
             Self {
                 servers: Arc::new(new_servers),
-                stats: self.stats.clone(), // Fix: 继承originalstatisticscountdata，avoid丢失历史performancecountdata
+                stats: self.stats.clone(), // Fix: inheritoriginalstatisticscountdata，avoid丢失历史performancecountdata
             },
             true,
         )
@@ -342,7 +342,7 @@ impl ServerPool {
         self.servers.is_empty()
     }
 
-    /// healthCheck并incrementalsave：highconcurrenttest DNS server, 每detect to 一batchavailableserverthenimmediatelysave
+    // / healthCheck并incrementalsave：highconcurrenttest DNS server, 每detect to 一batchavailableserverthenimmediatelysave
     /// in backbackground task in run, non-blockingmainthread
     pub async fn health_check_and_save_incremental(
         &self,
@@ -516,8 +516,8 @@ impl ServerPool {
         Self::new(final_servers)
     }
 
-    /// healthCheck：testwhich DNS server is available的
-    /// throughqueryanalready知domain (如 google.com)fromtestserverwhetheravailable
+    // / healthCheck：testwhich DNS server is availableof
+    // / throughqueryanalready知domain (如 google.com)fromtestserverwhetheravailable
     pub async fn health_check(
         &self,
         test_domain: &str,

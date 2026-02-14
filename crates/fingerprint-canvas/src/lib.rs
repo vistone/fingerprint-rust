@@ -2,60 +2,60 @@
 
 //! # fingerprint-canvas
 //!
-//! Canvas 指纹识别和混淆模块
+// ! Canvas fingerprintrecognitionand混淆module
 //!
-//! 提供完整的 HTML5 Canvas 指纹识别能力，包括：
-//! - Canvas 2D 指纹识别
-//! - Canvas 混淆和防护
-//! - 预生成指纹库匹配
-//! - 浏览器版本识别
+// ! provide完整of HTML5 Canvas fingerprintrecognitioncapabilities，including：
+// ! - Canvas 2D fingerprintrecognition
+// ! - Canvas 混淆andprotection
+// ! - 预generatefingerprintlibrary匹配
+// ! - 浏览器versionrecognition
 
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-/// Canvas 2D 指纹信息
+// / Canvas 2D fingerprintinfo
 #[derive(Debug, Clone, PartialEq)]
 pub struct CanvasFingerprint {
-    /// 像素数据 (Base64)
+    // / 像素data (Base64)
     pub pixel_data: String,
-    /// 指纹哈希值
+    // / fingerprinthash值
     pub hash: String,
-    /// 复杂度评分 (0.0-1.0)
+    // / 复杂度score (0.0-1.0)
     pub complexity: f32,
-    /// 渲染层级
+    // / rendering层级
     pub rendering_level: RenderingLevel,
-    /// 硬件加速状态
+    // / 硬件加速state
     pub hardware_accelerated: bool,
-    /// 检测到的浏览器版本 (如果可能)
+    // / detect到of浏览器version (如果可能)
     pub detected_browser: Option<String>,
-    /// 匹配可信度 (0.0-1.0)
+    // / 匹配可信度 (0.0-1.0)
     pub confidence: f32,
 }
 
-/// 渲染层级
+// / rendering层级
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RenderingLevel {
-    /// 软件渲染
+    // / 软件rendering
     Software,
-    /// 硬件加速
+    // / 硬件加速
     Hardware,
-    /// WebGL 加速
+    // / WebGL 加速
     WebGL,
-    /// 未知
+    // / unknown
     Unknown,
 }
 
-/// Canvas 指纹错误类型
+// / Canvas fingerprinterrortype
 #[derive(Debug)]
 pub enum CanvasError {
-    /// 无效的 Canvas 数据
+    // / invalidof Canvas data
     InvalidCanvasData,
-    /// 指纹生成失败
+    // / fingerprintgeneratefailure
     FingerprintGenerationFailed(String),
-    /// 库查询失败
+    // / libraryqueryfailure
     LibraryQueryFailed(String),
-    /// 其他错误
+    // / othererror
     Other(String),
 }
 
@@ -74,20 +74,20 @@ impl std::fmt::Display for CanvasError {
 
 impl std::error::Error for CanvasError {}
 
-/// Canvas 指纹识别器
+// / Canvas fingerprintrecognition器
 pub struct CanvasAnalyzer {
     profile_library: CanvasProfileLibrary,
 }
 
 impl CanvasAnalyzer {
-    /// 创建新的 Canvas 分析器
+    // / createnew Canvas analyzer
     pub fn new() -> Self {
         CanvasAnalyzer {
             profile_library: CanvasProfileLibrary::new(),
         }
     }
 
-    /// 分析 Canvas 数据并生成指纹
+    // / analyze Canvas data并generatefingerprint
     pub fn analyze(&self, canvas_data: &str) -> Result<CanvasFingerprint, CanvasError> {
         if canvas_data.is_empty() {
             return Err(CanvasError::InvalidCanvasData);
@@ -110,7 +110,7 @@ impl CanvasAnalyzer {
         })
     }
 
-    /// 计算指纹哈希
+    // / calculatefingerprinthash
     fn compute_hash(&self, canvas_data: &str) -> Result<String, CanvasError> {
         let mut hasher = DefaultHasher::new();
         canvas_data.hash(&mut hasher);
@@ -118,12 +118,12 @@ impl CanvasAnalyzer {
         Ok(format!("{:x}", hash_value))
     }
 
-    /// 从指纹库中检测浏览器版本
+    // / 从fingerprintlibrary中detect浏览器version
     fn detect_browser(&self, hash: &str) -> (Option<String>, f32) {
         self.profile_library.find_match(hash)
     }
 
-    /// 评估 Canvas 复杂度
+    // / 评估 Canvas 复杂度
     fn evaluate_complexity(&self, canvas_data: &str) -> f32 {
         let length = canvas_data.len() as f32;
         let max_length = 100000.0;
@@ -136,7 +136,7 @@ impl CanvasAnalyzer {
         (base_complexity * 0.6 + diversity * 0.4).min(1.0)
     }
 
-    /// 检测渲染层级
+    // / detectrendering层级
     fn detect_rendering_level(&self, canvas_data: &str) -> RenderingLevel {
         if canvas_data.contains("webgl") || canvas_data.len() > 50000 {
             RenderingLevel::Hardware
@@ -147,7 +147,7 @@ impl CanvasAnalyzer {
         }
     }
 
-    /// 检测硬件加速状态
+    // / detect硬件加速state
     fn detect_hardware_acceleration(&self, canvas_data: &str) -> bool {
         canvas_data.len() > 30000
     }
@@ -159,12 +159,12 @@ impl Default for CanvasAnalyzer {
     }
 }
 
-/// Canvas 指纹配置文件库
+// / Canvas fingerprintconfigurefilelibrary
 pub struct CanvasProfileLibrary {
     profiles: HashMap<String, CanvasProfile>,
 }
 
-/// Canvas 配置文件
+// / Canvas configurefile
 #[derive(Debug, Clone)]
 struct CanvasProfile {
     browser: String,
@@ -175,14 +175,14 @@ struct CanvasProfile {
 }
 
 impl CanvasProfileLibrary {
-    /// 创建新的配置文件库
+    // / createnewconfigurefilelibrary
     pub fn new() -> Self {
         let mut profiles = HashMap::new();
         Self::load_builtin_profiles(&mut profiles);
         CanvasProfileLibrary { profiles }
     }
 
-    /// 从指纹库中查找匹配
+    // / 从fingerprintlibrary中查找匹配
     fn find_match(&self, hash: &str) -> (Option<String>, f32) {
         if let Some(profile) = self.profiles.get(hash) {
             return (
@@ -209,7 +209,7 @@ impl CanvasProfileLibrary {
         }
     }
 
-    /// 计算两个哈希值之间的相似度
+    // / calculate两个hash值之间ofsimilarity
     fn calculate_similarity(hash1: &str, hash2: &str) -> f32 {
         if hash1 == hash2 {
             return 1.0;
@@ -225,7 +225,7 @@ impl CanvasProfileLibrary {
         matches as f32 / max_len as f32
     }
 
-    /// 加载内置的浏览器配置
+    // / load内置of浏览器configure
     fn load_builtin_profiles(profiles: &mut HashMap<String, CanvasProfile>) {
         profiles.insert(
             "a1b2c3d4e5f6g7h8".to_string(),
@@ -268,7 +268,7 @@ impl CanvasProfileLibrary {
         );
     }
 
-    /// 添加自定义配置文件
+    // / 添加customconfigurefile
     pub fn add_profile(&mut self, hash: String, browser: String, version: String) {
         self.profiles.insert(
             hash.clone(),
@@ -281,7 +281,7 @@ impl CanvasProfileLibrary {
         );
     }
 
-    /// 获取配置文件数量
+    // / getconfigurefilecount
     pub fn profile_count(&self) -> usize {
         self.profiles.len()
     }
@@ -293,11 +293,11 @@ impl Default for CanvasProfileLibrary {
     }
 }
 
-/// Canvas 混淆器
+// / Canvas 混淆器
 pub struct CanvasObfuscator;
 
 impl CanvasObfuscator {
-    /// 对 Canvas 数据进行混淆
+    // / 对 Canvas data进行混淆
     pub fn obfuscate(canvas_data: &str, noise_level: f32) -> String {
         if noise_level <= 0.0 {
             return canvas_data.to_string();

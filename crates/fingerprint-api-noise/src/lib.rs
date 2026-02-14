@@ -1,15 +1,15 @@
 //! # fingerprint-api-noise
 //!
-//! 浏览器 API 噪声注入模块，用于对抗基于 JavaScript 的指纹识别。
+// ! 浏览器 API 噪声注入module，用于对抗based on JavaScript offingerprintrecognition。
 //!
-//! ## 功能
+// ! ## functionality
 //!
-//! - Canvas 指纹噪声
-//! - WebGL 参数噪声
-//! - AudioContext 噪声
-//! - 字体枚举噪声
-//! - 屏幕信息噪声
-//! - Navigator API 噪声
+// ! - Canvas fingerprint噪声
+// ! - WebGL argument噪声
+// ! - AudioContext 噪声
+// ! - fontenumeration噪声
+// ! - 屏幕info噪声
+// ! - Navigator API 噪声
 
 pub mod audio;
 pub mod canvas;
@@ -25,18 +25,18 @@ pub use webgl::{WebGLNoiseInjector, WebGLParams};
 
 use rand::Rng;
 
-/// API 噪声配置
+// / API 噪声configure
 #[derive(Clone, Debug)]
 pub struct NoiseConfig {
-    /// 噪声种子（用于可重现的噪声）
+    // / 噪声种子（用于可重现of噪声）
     pub seed: u64,
-    /// Canvas 噪声等级 (0.0 - 1.0)
+    // / Canvas 噪声等级 (0.0 - 1.0)
     pub canvas_noise_level: f64,
-    /// WebGL 噪声启用
+    // / WebGL 噪声enable
     pub enable_webgl_noise: bool,
-    /// Audio 噪声启用
+    // / Audio 噪声enable
     pub enable_audio_noise: bool,
-    /// 字体噪声启用
+    // / font噪声enable
     pub enable_font_noise: bool,
 }
 
@@ -52,7 +52,7 @@ impl Default for NoiseConfig {
     }
 }
 
-/// 统一的 API 噪声注入器
+// / 统一of API 噪声注入器
 pub struct ApiNoiseInjector {
     #[allow(dead_code)]
     config: NoiseConfig,
@@ -63,7 +63,7 @@ pub struct ApiNoiseInjector {
 }
 
 impl ApiNoiseInjector {
-    /// 创建新的 API 噪声注入器
+    // / createnew API 噪声注入器
     pub fn new(config: NoiseConfig) -> Self {
         Self {
             canvas: CanvasNoiseInjector::new(config.seed, config.canvas_noise_level),
@@ -74,27 +74,27 @@ impl ApiNoiseInjector {
         }
     }
 
-    /// 使用默认配置创建
+    // / usedefaultconfigurecreate
     pub fn with_defaults() -> Self {
         Self::new(NoiseConfig::default())
     }
 
-    /// 获取 Canvas 噪声注入器
+    // / get Canvas 噪声注入器
     pub fn canvas(&self) -> &CanvasNoiseInjector {
         &self.canvas
     }
 
-    /// 获取 WebGL 噪声注入器
+    // / get WebGL 噪声注入器
     pub fn webgl(&self) -> &WebGLNoiseInjector {
         &self.webgl
     }
 
-    /// 获取 Audio 噪声注入器
+    // / get Audio 噪声注入器
     pub fn audio(&self) -> &AudioNoiseInjector {
         &self.audio
     }
 
-    /// 获取字体噪声注入器
+    // / getfont噪声注入器
     pub fn fonts(&self) -> &FontNoiseInjector {
         &self.fonts
     }

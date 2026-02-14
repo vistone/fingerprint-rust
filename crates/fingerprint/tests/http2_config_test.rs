@@ -1,4 +1,4 @@
-//! HTTP/2 配置模块测试
+// ! HTTP/2 configuremoduletesting
 
 use fingerprint::*;
 
@@ -6,10 +6,10 @@ use fingerprint::*;
 fn test_chrome_http2_settings() {
     let (settings, settings_order) = chrome_http2_settings();
 
-    // 验证 settings 不为空
+    // validate settings 不to空
     assert!(!settings.is_empty());
 
-    // 验证包含所有必需的设置
+    // validateincludeallrequiredofset
     assert!(settings.contains_key(&HTTP2SettingID::HeaderTableSize.as_u16()));
     assert!(settings.contains_key(&HTTP2SettingID::EnablePush.as_u16()));
     assert!(settings.contains_key(&HTTP2SettingID::MaxConcurrentStreams.as_u16()));
@@ -17,11 +17,11 @@ fn test_chrome_http2_settings() {
     assert!(settings.contains_key(&HTTP2SettingID::MaxFrameSize.as_u16()));
     assert!(settings.contains_key(&HTTP2SettingID::MaxHeaderListSize.as_u16()));
 
-    // 验证顺序
+    // validate顺序
     assert_eq!(settings_order.len(), 6);
     assert_eq!(settings_order[0], HTTP2SettingID::HeaderTableSize.as_u16());
 
-    // 验证具体值
+    // validate具体值
     assert_eq!(
         settings.get(&HTTP2SettingID::HeaderTableSize.as_u16()),
         Some(&65536)
@@ -36,7 +36,7 @@ fn test_firefox_http2_settings() {
     assert!(!settings.is_empty());
     assert_eq!(settings_order.len(), 6);
 
-    // Firefox 的 InitialWindowSize 与 Chrome 不同
+    // Firefox of InitialWindowSize 与 Chrome 不同
     let firefox_window = settings
         .get(&HTTP2SettingID::InitialWindowSize.as_u16())
         .unwrap();
@@ -54,7 +54,7 @@ fn test_safari_http2_settings() {
     assert!(!settings.is_empty());
     assert_eq!(settings_order.len(), 6);
 
-    // Safari 的 MaxConcurrentStreams 与 Chrome 不同
+    // Safari of MaxConcurrentStreams 与 Chrome 不同
     let safari_streams = settings
         .get(&HTTP2SettingID::MaxConcurrentStreams.as_u16())
         .unwrap();
@@ -80,7 +80,7 @@ fn test_firefox_pseudo_header_order() {
     assert_eq!(order[2], ":authority");
     assert_eq!(order[3], ":scheme");
 
-    // Firefox 和 Chrome 的顺序不同
+    // Firefox and Chrome of顺序不同
     let chrome_order = chrome_pseudo_header_order();
     assert_ne!(order, chrome_order);
 }
@@ -94,7 +94,7 @@ fn test_safari_pseudo_header_order() {
     assert_eq!(order[2], ":path");
     assert_eq!(order[3], ":authority");
 
-    // Safari 的顺序与 Chrome 和 Firefox 都不同
+    // Safari of顺序与 Chrome and Firefox 都不同
     let chrome_order = chrome_pseudo_header_order();
     let firefox_order = firefox_pseudo_header_order();
     assert_ne!(order, chrome_order);
@@ -139,7 +139,7 @@ fn test_different_browsers_have_different_settings() {
     let (firefox, _) = firefox_http2_settings();
     let (safari, _) = safari_http2_settings();
 
-    // 验证不同浏览器的 InitialWindowSize 不同
+    // validate不同浏览器of InitialWindowSize 不同
     let chrome_window = chrome
         .get(&HTTP2SettingID::InitialWindowSize.as_u16())
         .unwrap();

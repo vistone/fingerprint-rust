@@ -1,7 +1,7 @@
-//! 自定义 TLS 指纹测试
-//!
-//! 验证我们真正使用了自己的 TLS 指纹库
-//! 不依赖 rustls/native-tls
+// ! custom TLS fingerprinttesting
+//! Custom TLS fingerprint tests.
+// ! validate我们真正use了自己of TLS fingerprintlibrary
+// ! 不依赖 rustls/native-tls
 
 use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
 use std::io::{Read, Write};
@@ -13,44 +13,40 @@ fn test_custom_tls_fingerprint_generation() {
     println!("║        测试自定义 TLS 指纹生成（不使用外部库）           ║");
     println!("╚══════════════════════════════════════════════════════════╝\n");
 
-    // 获取所有浏览器配置
+    // getall浏览器configure
     let profiles = mapped_tls_clients();
 
     println!("📋 可用的浏览器指纹: {} 个\n", profiles.len());
 
-    // 测试几个主要浏览器
+    // testing几个主要浏览器
     let test_browsers = vec!["chrome_133", "firefox_133", "safari_18_2"];
 
     for browser_name in test_browsers {
         if let Some(profile) = profiles.get(browser_name) {
             println!("🔍 测试浏览器: {}", browser_name);
 
-            // 从配置生成 ClientHelloSpec
-            if let Ok(spec) = profile.get_client_hello_spec() {
-                println!("  ✅ ClientHelloSpec 生成成功");
-                println!("     - 密码套件: {}", spec.cipher_suites.len());
-                println!("     - 扩展: {}", spec.extensions.len());
+            let spec = &profile.tls_config;
+            println!("  ✅ ClientHelloSpec 生成成功");
+            println!("     - 密码套件: {}", spec.cipher_suites.len());
+            println!("     - 扩展: {}", spec.extensions.len());
 
-                // 构建 TLS ClientHello
-                match TLSHandshakeBuilder::build_client_hello(&spec, "www.example.com") {
-                    Ok(client_hello_bytes) => {
-                        println!(
-                            "  ✅ ClientHello 构建成功: {} bytes",
-                            client_hello_bytes.len()
-                        );
+            // build TLS ClientHello
+            match TLSHandshakeBuilder::build_client_hello(spec, "www.example.com") {
+                Ok(client_hello_bytes) => {
+                    println!(
+                        "  ✅ ClientHello 构建成功: {} bytes",
+                        client_hello_bytes.len()
+                    );
 
-                        // 验证 TLS 记录格式
-                        assert_eq!(client_hello_bytes[0], 22, "应该是握手记录");
-                        assert_eq!(client_hello_bytes[1], 0x03, "TLS 版本主版本号");
+                    // validate TLS record格式
+                    assert_eq!(client_hello_bytes[0], 22, "应该是握手记录");
+                    assert_eq!(client_hello_bytes[1], 0x03, "TLS 版本主版本号");
 
-                        println!("  ✅ TLS 记录格式验证通过");
-                    }
-                    Err(e) => {
-                        println!("  ❌ ClientHello 构建失败: {}", e);
-                    }
+                    println!("  ✅ TLS 记录格式验证通过");
                 }
-            } else {
-                println!("  ❌ ClientHelloSpec 生成失败");
+                Err(e) => {
+                    println!("  ❌ ClientHello 构建失败: {}", e);
+                }
             }
 
             println!();
@@ -59,42 +55,40 @@ fn test_custom_tls_fingerprint_generation() {
 }
 
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_custom_tls_fingerprint_real_connection() {
     println!("\n╔══════════════════════════════════════════════════════════╗");
     println!("║      测试自定义 TLS 指纹与真实服务器建立连接             ║");
     println!("╚══════════════════════════════════════════════════════════╝\n");
 
-    // 获取 Chrome 133 配置
+    // get Chrome 133 configure
     let profiles = mapped_tls_clients();
     let chrome = profiles.get("chrome_133").expect("找不到 Chrome 133");
 
     println!("🔍 使用浏览器: Chrome 133");
 
-    // 生成 ClientHelloSpec
-    let spec = chrome
-        .get_client_hello_spec()
-        .expect("无法生成 ClientHelloSpec");
+    // generate ClientHelloSpec
+    let spec = &chrome.tls_config;
 
     println!("  ✅ ClientHelloSpec 生成");
     println!("     - 密码套件: {}", spec.cipher_suites.len());
     println!("     - 扩展: {}", spec.extensions.len());
 
-    // 构建 TLS ClientHello
-    let client_hello = TLSHandshakeBuilder::build_client_hello(&spec, "www.example.com")
+    // build TLS ClientHello
+    let client_hello = TLSHandshakeBuilder::build_client_hello(spec, "www.example.com")
         .expect("无法构建 ClientHello");
 
     println!("  ✅ ClientHello 构建完成: {} bytes\n", client_hello.len());
 
-    // 连接到真实服务器
+    // connect到真实service器
     println!("🌐 连接到 www.example.com:443 ...");
 
     match TcpStream::connect("93.184.215.14:443") {
-        // example.com 的 IP
+        // example.com of IP
         Ok(mut stream) => {
             println!("  ✅ TCP 连接建立\n");
 
-            // 发送我们自己构建的 ClientHello
+            // send我们自己buildof ClientHello
             println!(
                 "📤 发送自定义 TLS ClientHello ({} bytes)...",
                 client_hello.len()
@@ -104,13 +98,13 @@ fn test_custom_tls_fingerprint_real_connection() {
                 Ok(_) => {
                     println!("  ✅ ClientHello 发送成功\n");
 
-                    // 尝试读取服务器响应
+                    // 尝试读取service器响应
                     println!("📥 等待服务器响应...");
 
                     let mut response = vec![0u8; 5];
                     match stream.read_exact(&mut response) {
                         Ok(_) => {
-                            // 解析 TLS 记录头
+                            // parse TLS record头
                             let record_type = response[0];
                             let version = u16::from_be_bytes([response[1], response[2]]);
                             let length = u16::from_be_bytes([response[3], response[4]]);
@@ -120,7 +114,7 @@ fn test_custom_tls_fingerprint_real_connection() {
                             println!("     - TLS 版本: 0x{:04x}", version);
                             println!("     - 数据长度: {} bytes", length);
 
-                            // 如果是握手记录 (22)，说明服务器接受了我们的 ClientHello
+                            // 如果是握手record (22)，descriptionservice器接受了我们of ClientHello
                             if record_type == 22 {
                                 println!("\n  🎉 服务器接受了我们的自定义 TLS 指纹！");
                                 println!("  ✅ TLS 握手开始！");
@@ -166,27 +160,20 @@ fn test_all_browser_fingerprints() {
     for (i, (name, profile)) in profiles.iter().enumerate() {
         print!("  [{}/{}] {} ... ", i + 1, total, name);
 
-        match profile.get_client_hello_spec() {
-            Ok(spec) => {
-                match TLSHandshakeBuilder::build_client_hello(&spec, "example.com") {
-                    Ok(bytes) => {
-                        // 验证基本格式
-                        if bytes[0] == 22 && bytes.len() > 50 {
-                            println!("✅ ({} bytes)", bytes.len());
-                            success += 1;
-                        } else {
-                            println!("❌ (格式错误)");
-                            failed.push(name.clone());
-                        }
-                    }
-                    Err(e) => {
-                        println!("❌ (构建失败: {})", e);
-                        failed.push(name.clone());
-                    }
+        let spec = &profile.tls_config;
+        match TLSHandshakeBuilder::build_client_hello(spec, "example.com") {
+            Ok(bytes) => {
+                // validate基本格式
+                if bytes[0] == 22 && bytes.len() > 50 {
+                    println!("✅ ({} bytes)", bytes.len());
+                    success += 1;
+                } else {
+                    println!("❌ (格式错误)");
+                    failed.push(name.clone());
                 }
             }
             Err(e) => {
-                println!("❌ (Spec 失败: {})", e);
+                println!("❌ (构建失败: {})", e);
                 failed.push(name.clone());
             }
         }
@@ -205,6 +192,6 @@ fn test_all_browser_fingerprints() {
         }
     }
 
-    // 要求至少 90% 成功率
+    // 要求至少 90% success率
     assert!((success as f64 / total as f64) >= 0.9, "成功率低于 90%");
 }

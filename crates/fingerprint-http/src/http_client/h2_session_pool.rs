@@ -1,7 +1,7 @@
 //! HTTP/2 sessionpool
 //!
-//! pool化 h2::client::SendRequest handle, implementtrue HTTP/2 multiplereuse
-//! avoideach timerequest都reperform TLS and HTTP/2 handshake
+// ! pool化 h2::client::SendRequest handle, implementtrue HTTP/2 multiplereuse
+// ! avoideach timerequest都reperform TLS and HTTP/2 handshake
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::Result;
@@ -20,7 +20,7 @@ use tokio::sync::Mutex as TokioMutex;
 use h2::client::SendRequest;
 
 /// HTTP/2 sessionpoolmanageer
-/// Fix: pool化 SendRequest handle, implementtrue multiplexreuse
+// / Fix: pool化 SendRequest handle, implementtrue multiplexreuse
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub struct H2SessionPool {
     /// sessionpool ( by  host:port group)
@@ -38,7 +38,7 @@ struct H2Session {
     /// SendRequest handle ( for sendrequest)
     send_request: Arc<TokioMutex<SendRequest<bytes::Bytes>>>,
     /// backbackground taskhandle ( for manage h2_conn lifecycle)
-    /// whenconnectioninvalid when , taskwillend, wecandetect to 并removesession
+    // / whenconnectioninvalid when , taskwillend, wecandetect to 并removesession
     _background_task: tokio::task::JoinHandle<()>,
     /// finallywhen used between
     last_used: Arc<Mutex<Instant>>,
@@ -133,7 +133,7 @@ impl H2SessionPool {
         if let Some(mut rx) = rx {
             // waitoriginalCreatetaskcomplete
             let _ = rx.changed().await;
-            // Createcompletebackrecursivecall以GetnewCreatesession
+            // Createcompletebackrecursivecallending withGetnewCreatesession
             // Note: due to Fut limit, herecannotdirectlyrecursive, weactualupshould in outsidelayerloop
             // butin order tocodeconcise, weheredirectlyjump to reChecklogic
             return Box::pin(self.get_or_create_session(key, create_session)).await;
@@ -197,7 +197,7 @@ impl H2SessionPool {
             let is_valid = session.is_valid.lock().map(|v| *v).unwrap_or(false);
             let is_finished = session._background_task.is_finished();
 
-            // preservevalidsession,  and notexpire,  and backbackground task仍 in run
+            // preservevalidsession, and notexpire, and backbackground task仍 in run
             if is_valid && !is_finished {
                 if let Ok(last_used) = session.last_used.lock() {
                     now.duration_since(*last_used) < self.session_timeout

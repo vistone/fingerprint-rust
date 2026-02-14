@@ -56,7 +56,7 @@ async fn send_http3_request_async(
         })?,
     ));
 
-    // optimizetransferconfiguration以improveperformance and connectionmigratecapability
+    // optimizetransferconfigurationending withimproveperformance and connectionmigratecapability
     let mut transport = TransportConfig::default();
 
     // connectionmigrate (Connection Migration) optimize
@@ -65,13 +65,13 @@ async fn send_http3_request_async(
     transport.max_idle_timeout(Some(Duration::from_secs(60).try_into().map_err(|e| {
         HttpClientError::ConnectionFailed(format!("configurationtimeoutfailure: {}", e))
     })?));
-    // increasekeep-alivefrequency以auxiliaryconnectionmigrateidentify
+    // increasekeep-alivefrequencyending withauxiliaryconnectionmigrateidentify
     transport.keep_alive_interval(Some(Duration::from_secs(20)));
 
     // allowpairendmigrate (defaultalreadyopen, hereexplicitexplain其importantproperty)
     // transport.allow_peer_migration(true);
 
-    // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindow以improve吞吐)
+    // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindowending withimprove吞吐)
     transport.stream_receive_window((6 * 1024 * 1024u32).into()); // 6MB (Chrome style)
     transport.receive_window((15 * 1024 * 1024u32).into()); // 15MB (Chrome style)
 
@@ -100,7 +100,7 @@ async fn send_http3_request_async(
     ));
 
     for remote_addr in addrs {
-        // Create QUIC endpoint ( by  remote address族selectbind)
+        // Create QUIC endpoint ( by remote address族selectbind)
         let bind_addr = match remote_addr.ip() {
             IpAddr::V4(_) => SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), 0),
             IpAddr::V6(_) => SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), 0),

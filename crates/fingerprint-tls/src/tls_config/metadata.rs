@@ -6,7 +6,7 @@
 use std::collections::HashMap;
 
 /// TLS extensionmetadata
-/// storeextensioninside部countdata,  for backcontinueExtract
+// / storeextensioninside部countdata, for backcontinueExtract
 #[derive(Debug, Clone, Default)]
 pub struct ExtensionMetadata {
     /// SNI value ( if exists)
@@ -24,7 +24,7 @@ pub struct ExtensionMetadata {
 }
 
 /// ClientHelloSpec metadata
-/// for storeextensioninside部countdata
+// / for storeextensioninside部countdata
 #[derive(Debug, Clone, Default)]
 pub struct SpecMetadata {
     /// extensionmetadatamap (extension ID -> metadata)

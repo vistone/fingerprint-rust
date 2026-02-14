@@ -14,12 +14,12 @@ actix-rt = "2.10"
 actix-cors = "0.7"
 
 # Rate limiting backend
-redis = { version = "0.24", features = ["tokio-comp", "connection-manager", "cluster"] }
-bb8-redis = "0.14"
+redis = { version = "0.25", features = ["tokio-comp", "connection-manager", "cluster"] }
+bb8-redis = "0.15"
 bb8 = "0.8"
 
 # Metrics
-prometheus = { version = "0.13", features = ["process"] }
+prometheus = { version = "0.14", features = ["process"] }
 
 # Async runtime
 tokio = { version = "1", features = ["full"] }

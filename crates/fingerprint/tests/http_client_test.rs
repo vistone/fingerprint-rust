@@ -1,29 +1,36 @@
-//! HTTP 客户端测试
+// ! HTTP clienttesting
 //!
-//! 测试 fingerprint-rust + 自己的 HTTP 客户端库
+// ! testing fingerprint-rust + 自己of HTTP clientlibrary
 //!
-//! 运行方式：
+// ! run方式：
 //! ```bash
-//! # 本地测试（不需要网络）
+// ! # localtesting（不requirenetwork）
 //! cargo test --test http_client_test
 //!
-//! # 网络测试
+// ! # networktesting
 //! cargo test --test http_client_test -- --ignored --nocapture
 //! ```
 
 use fingerprint::*;
 use std::time::Instant;
 
+fn load_profile(profile_id: &str) -> BrowserProfile {
+    let mut profiles = mapped_tls_clients();
+    profiles
+        .remove(profile_id)
+        .unwrap_or_else(|| panic!("profile not found: {}", profile_id))
+}
+
 #[test]
 fn test_http_client_creation() {
-    // 获取浏览器指纹
+    // get浏览器fingerprint
     let fp_result = get_random_fingerprint_by_browser("chrome").expect("生成指纹失败");
 
-    // 创建 HTTP 客户端配置
+    // create HTTP clientconfigure
     let config = HttpClientConfig {
         user_agent: fp_result.user_agent.clone(),
         headers: fp_result.headers.clone(),
-        profile: Some(fp_result.profile.clone()),
+        profile: Some(load_profile(&fp_result.profile_id)),
         ..Default::default()
     };
 
@@ -31,14 +38,14 @@ fn test_http_client_creation() {
 
     println!("✅ HTTP 客户端创建成功");
     println!("   User-Agent: {}", fp_result.user_agent);
-    println!("   Profile: {}", fp_result.hello_client_id);
+    println!("   Profile: {}", fp_result.profile_id);
 }
 
 #[test]
 fn test_url_parsing() {
     let _client = HttpClient::new(HttpClientConfig::default());
 
-    // 测试各种 URL 格式
+    // testing各种 URL 格式
     let test_cases = vec![
         (
             "https://example.com/path",
@@ -83,30 +90,30 @@ fn test_http_request_builder() {
 }
 
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_http_get_request() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║         测试 HTTP GET 请求 (使用自己的 HTTP 库)           ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
 
-    // 1. 获取浏览器指纹
+    // 1. get浏览器fingerprint
     let fp_result = get_random_fingerprint_by_browser("chrome").expect("生成指纹失败");
-    println!("📌 使用指纹: {}", fp_result.hello_client_id);
+    println!("📌 使用指纹: {}", fp_result.profile_id);
     println!("📌 User-Agent: {}", fp_result.user_agent);
 
-    // 2. 创建 HTTP 客户端
+    // 2. create HTTP client
     let client = HttpClient::with_profile(
-        fp_result.profile.clone(),
+        load_profile(&fp_result.profile_id),
         fp_result.headers.clone(),
         fp_result.user_agent.clone(),
     );
 
-    // 3. 发送 HTTP 请求
+    // 3. send HTTP 请求
     let start = Instant::now();
     let response = match client.get("http://httpbin.org/get") {
         Ok(r) => r,
         Err(e) => {
-            // 实网测试可能因临时网络抖动/限流导致失败；这里不把“非确定性失败”当成单元测试失败。
+            // 实网testing可能因temporarynetwork抖动/rate limit导致failure；这里不把“非确定性failure”当成单元testingfailure。
             println!("❌ 错误: {}", e);
             if let HttpClientError::Io(ioe) = &e {
                 if ioe.kind() == std::io::ErrorKind::WouldBlock {
@@ -119,7 +126,7 @@ fn test_http_get_request() {
     };
     let duration = start.elapsed();
 
-    // 4. 验证响应
+    // 4. validate响应
     println!("\n📊 响应结果:");
     println!("   状态码: {}", response.status_code);
     println!("   耗时: {:?}", duration);
@@ -149,47 +156,47 @@ fn test_http_get_request() {
 }
 
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_https_get_request() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║        测试 HTTPS GET 请求 (使用自己的 HTTP 库)           ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
 
-    // 1. 获取浏览器指纹
+    // 1. get浏览器fingerprint
     let fp_result = get_random_fingerprint_by_browser("firefox").expect("生成指纹失败");
-    println!("📌 使用指纹: {}", fp_result.hello_client_id);
+    println!("📌 使用指纹: {}", fp_result.profile_id);
 
-    // 2. 创建 HTTPS 客户端
+    // 2. create HTTPS client
     let client = HttpClient::with_profile(
-        fp_result.profile.clone(),
+        load_profile(&fp_result.profile_id),
         fp_result.headers.clone(),
         fp_result.user_agent.clone(),
     );
 
-    // 3. 发送 HTTPS 请求
+    // 3. send HTTPS 请求
     let start = Instant::now();
-    let response = client.get("https://httpbin.org/get").expect("请求失败");
+    let response = client.get("https:// httpbin.org/get").expect("请求failure");
     let duration = start.elapsed();
 
-    // 4. 验证响应
+    // 4. validate响应
     println!("\n📊 响应结果:");
     println!("   状态码: {}", response.status_code);
     println!("   耗时: {:?}", duration);
     println!("   响应大小: {} 字节", response.body.len());
 
-    // 5. 检查 User-Agent 是否被正确发送
+    // 5. check User-Agent 是否被正确send
     if let Ok(body_str) = response.body_as_string() {
         if body_str.contains(&fp_result.user_agent) {
             println!("   ✅ User-Agent 正确发送");
         }
     }
 
-    // 外部服务可能短暂返回 429/503 等；此处主要验证“HTTPS 路径可用 + 响应可解析”。
+    // 外部service可能短暂return 429/503 等；此处主要validate“HTTPS path可用 + 响应可parse”。
     assert!(response.status_code > 0);
 }
 
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_multiple_browsers() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║          测试多个浏览器指纹 (HTTP/HTTPS)                   ║");
@@ -205,7 +212,7 @@ fn test_multiple_browsers() {
 
         let fp_result = get_random_fingerprint_by_browser(browser).expect("生成指纹失败");
         let client = HttpClient::with_profile(
-            fp_result.profile.clone(),
+            load_profile(&fp_result.profile_id),
             fp_result.headers.clone(),
             fp_result.user_agent.clone(),
         );
@@ -240,18 +247,18 @@ fn test_multiple_browsers() {
 }
 
 #[test]
-#[ignore] // 需要网络连接
+#[ignore] // requirenetworkconnect
 fn test_google_earth_api() {
     println!("\n╔═══════════════════════════════════════════════════════════╗");
     println!("║       测试 Google Earth API (使用自己的 HTTP 库)          ║");
     println!("╚═══════════════════════════════════════════════════════════╝\n");
 
     let fp_result = get_random_fingerprint_by_browser("chrome").expect("生成指纹失败");
-    println!("📌 使用指纹: {}", fp_result.hello_client_id);
+    println!("📌 使用指纹: {}", fp_result.profile_id);
     println!("📌 User-Agent: {}", fp_result.user_agent);
 
     let client = HttpClient::with_profile(
-        fp_result.profile.clone(),
+        load_profile(&fp_result.profile_id),
         fp_result.headers.clone(),
         fp_result.user_agent.clone(),
     );
@@ -301,7 +308,7 @@ fn test_http_response_parsing() {
     println!("   Body: {}", response.body_as_string().unwrap());
 
     assert_eq!(response.status_code, 200);
-    // headers 存储时会转换为小写
+    // headers store时会convertto小写
     assert_eq!(
         response.get_header("content-type"),
         Some(&"application/json".to_string())

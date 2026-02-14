@@ -2,48 +2,48 @@
 
 //! # fingerprint-anomaly
 //!
-//! 异常检测模块
+// ! exceptiondetectmodule
 //!
-//! 提供指纹异常检测和攻击识别能力
+// ! providefingerprintexceptiondetectand攻击recognitioncapabilities
 
 use std::collections::VecDeque;
 
-/// 异常检测结果
+// / exceptiondetect结果
 #[derive(Debug, Clone)]
 pub struct AnomalyDetectionResult {
-    /// 是否异常
+    // / 是否exception
     pub is_anomaly: bool,
-    /// 异常评分 (0-1)
+    // / exceptionscore (0-1)
     pub anomaly_score: f32,
-    /// 异常类型
+    // / exceptiontype
     pub anomaly_type: Option<AnomalyType>,
-    /// 置信度
+    // / confidence
     pub confidence: f32,
 }
 
-/// 异常类型
+// / exceptiontype
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AnomalyType {
-    /// 指纹矛盾
+    // / fingerprint矛盾
     FingerprintContradiction,
-    /// 不可能的转换
+    // / 不可能ofconvert
     ImpossibleTransition,
-    /// 时间异常
+    // / timeexception
     TimingAnomaly,
-    /// 统计异常
+    // / statisticsexception
     StatisticalAnomaly,
-    /// 行为异常
+    // / behaviorexception
     BehaviorAnomaly,
 }
 
-/// 异常检测器
+// / exceptiondetector
 pub struct AnomalyDetector {
     history: VecDeque<f32>,
     max_history: usize,
 }
 
 impl AnomalyDetector {
-    /// 创建新的检测器
+    // / createnewdetector
     pub fn new(max_history: usize) -> Self {
         AnomalyDetector {
             history: VecDeque::with_capacity(max_history),
@@ -51,7 +51,7 @@ impl AnomalyDetector {
         }
     }
 
-    /// 检测异常
+    // / detectexception
     pub fn detect(&mut self, features: &[f32]) -> AnomalyDetectionResult {
         if features.is_empty() {
             return AnomalyDetectionResult {
@@ -79,13 +79,13 @@ impl AnomalyDetector {
         }
     }
 
-    /// 计算异常评分
+    // / calculateexceptionscore
     fn calculate_anomaly_score(&self, current: &f32) -> (f32, Option<AnomalyType>) {
         if self.history.len() < 2 {
             return (0.0, None);
         }
 
-        // 统计异常检测
+        // statisticsexceptiondetect
         let mean: f32 = self.history.iter().sum::<f32>() / self.history.len() as f32;
         let variance: f32 = self.history.iter().map(|x| (x - mean).powi(2)).sum::<f32>()
             / self.history.len() as f32;
@@ -95,7 +95,7 @@ impl AnomalyDetector {
             return (0.8, Some(AnomalyType::StatisticalAnomaly));
         }
 
-        // 时间异常检测
+        // timeexceptiondetect
         if let Some(&last) = self.history.back() {
             if (current - last).abs() > 0.5 {
                 return (0.6, Some(AnomalyType::TimingAnomaly));
@@ -105,7 +105,7 @@ impl AnomalyDetector {
         (0.0, None)
     }
 
-    /// 清除历史
+    // / 清除历史
     pub fn clear_history(&mut self) {
         self.history.clear();
     }
@@ -117,11 +117,11 @@ impl Default for AnomalyDetector {
     }
 }
 
-/// 指纹矛盾检测器
+// / fingerprint矛盾detector
 pub struct ContradictionDetector;
 
 impl ContradictionDetector {
-    /// 检测指纹矛盾
+    // / detectfingerprint矛盾
     pub fn detect_contradictions(fingerprints: &[(&str, f32)]) -> Vec<(usize, usize, String)> {
         let mut contradictions = Vec::new();
 
@@ -130,7 +130,7 @@ impl ContradictionDetector {
                 let (name1, score1) = fingerprints[i];
                 let (name2, score2) = fingerprints[j];
 
-                // 检查不匹配的组合
+                // check不匹配ofcomposite
                 if Self::is_contradictory(name1, name2, score1, score2) {
                     contradictions.push((
                         i,
@@ -144,7 +144,7 @@ impl ContradictionDetector {
         contradictions
     }
 
-    /// 检查是否矛盾
+    // / check是否矛盾
     fn is_contradictory(name1: &str, name2: &str, score1: f32, score2: f32) -> bool {
         // 例如: Chrome 不能同时是 Firefox
         if (name1.contains("Chrome") && name2.contains("Firefox"))
@@ -170,10 +170,10 @@ mod tests {
 
     #[test]
     fn test_contradiction_detection() {
-        // Chrome和Firefox同时有高分是矛盾的（不能同时识别为两个不同浏览器）
+        // ChromeandFirefox同时有高分是矛盾of（不能同时recognitionto两个不同浏览器）
         let fingerprints = vec![("Chrome", 0.9), ("Firefox", 0.85)];
         let contradictions = ContradictionDetector::detect_contradictions(&fingerprints);
-        assert_eq!(contradictions.len(), 1); // 应该检测到1个矛盾
+        assert_eq!(contradictions.len(), 1); // 应该detect到1个矛盾
 
         // 如果其中一个分数低，则不矛盾
         let non_contradictory = vec![("Chrome", 0.9), ("Firefox", 0.3)];

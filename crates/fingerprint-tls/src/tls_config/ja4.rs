@@ -118,7 +118,7 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
 /// Generate 12 characterhash (SHA256 front 12character)
 ///
 /// SHA256 hashalwaysproduce 64hexadecimalcharacter, sofront 12characteralways exists.
-/// 此function for JA4 fingerprintGenerate.
+// / 此function for JA4 fingerprintGenerate.
 pub fn hash12(input: &str) -> String {
     let hash = Sha256::digest(input.as_bytes());
     let hash_hex = format!("{:x}", hash);
@@ -223,7 +223,7 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // Based onspecification,  if nosignaturealgorithm, string不belowunderscoreending
+        // Based onspecification, if nosignaturealgorithm, string不belowunderscoreending
         let ja4_c_raw = if sig_algs_str.is_empty() {
             extensions_str
         } else if extensions_str.is_empty() {

@@ -118,7 +118,7 @@ fn main() {
     ];
 
     for browser in browsers {
-        if let Some(profile) = adapter.get_latest_profile(browser) {
+        if let Some(_profile) = adapter.get_latest_profile(browser) {
             if let Some(info) = adapter.get_version_info(browser, 138) {
                 println!("   {}", info);
             } else {
@@ -228,7 +228,7 @@ fn main() {
     let firefox_count = adapter
         .get_versions_with_capability(BrowserType::Firefox, "http2")
         .len();
-    let safari_count = adapter
+    let _safari_count = adapter
         .get_versions_with_capability(BrowserType::Safari, "http2")
         .len();
 

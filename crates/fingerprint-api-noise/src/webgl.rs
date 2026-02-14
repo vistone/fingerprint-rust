@@ -1,4 +1,4 @@
-/// WebGL 参数噪声
+// / WebGL argument噪声
 pub struct WebGLNoiseInjector {
     seed: u64,
 }
@@ -15,18 +15,18 @@ impl WebGLNoiseInjector {
         Self::with_seed(0)
     }
 
-    /// 使用指定种子创建 WebGL 噪声注入器
+    // / use指定种子create WebGL 噪声注入器
     pub fn with_seed(seed: u64) -> Self {
         Self { seed }
     }
 
-    /// 为 WebGL 参数添加噪声
+    // / to WebGL argument添加噪声
     pub fn add_webgl_noise(&self, params: &WebGLParams) -> WebGLParams {
         let mut result = params.clone();
 
-        // 对浮点参数添加微小噪声
+        // 对浮点argument添加微小噪声
         if let Some(aliased_line_width_range) = &mut result.aliased_line_width_range {
-            // 添加 ±0.01 的噪声
+            // 添加 ±0.01 of噪声
             aliased_line_width_range[0] += self.generate_small_noise(0);
             aliased_line_width_range[1] += self.generate_small_noise(1);
         }

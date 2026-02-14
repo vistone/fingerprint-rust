@@ -1,7 +1,7 @@
 //! HASSH SSH fingerprintimplement
 //!
 //! HASSH is Salesforce opensend SSH client/serverfingerprintidentifymethod.
-//! similar于 JA3 for TLS, HASSH for identify SSH client and server.
+// ! similar于 JA3 for TLS, HASSH for identify SSH client and server.
 //!
 //! ## reference
 //! - paper: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
@@ -368,7 +368,7 @@ impl SSHKexInit {
 
     /// from originalbeginning SSH countpacketParse (simplified version)
     ///
-    /// Note: this isanSimplified implementation, complete SSH protocolParseneedmorecomplexstatus机
+    // / Note: this isanSimplified implementation, complete SSH protocolParseneedmorecomplexstatus机
     pub fn parse(data: &[u8]) -> Result<Self, String> {
         // SSH protocolformatcomplex, hereprovidebasicframework
         // actualapplication in shouldusespecifically SSH protocolParselibrary
@@ -495,7 +495,7 @@ mod tests {
 
 /// JA4SSH - SSH fingerprint (JA4 style)
 ///
-/// similar于 HASSH, butuse SHA256 rather than MD5, 并adopt JA4 seriesformatstyle
+// / similar于 HASSH, butuse SHA256 rather than MD5, 并adopt JA4 seriesformatstyle
 ///
 /// format: c{kex_count:02}{enc_count:02}{mac_count:02}_{kex_hash}_{enc_hash}_{mac_hash}
 ///
@@ -819,7 +819,7 @@ mod ja4ssh_tests {
 
     #[test]
     fn test_ja4ssh_hash_consistency() {
-        // same样algorithmshouldproducesame的hash
+        // same样algorithmshouldproducesameofhash
         let ja4ssh1 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
         let ja4ssh2 = JA4SSH::generate(&["algo1", "algo2"], &["enc"], &["mac"], &["none"]);
 

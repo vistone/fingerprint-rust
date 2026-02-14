@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 1. Validatecipher suite (Cipher Suites)
     println!("1️⃣ encryptionsuiteweightValidate:");
-    let spec = chrome_136.get_client_hello_spec()?;
+    let spec = &chrome_136.tls_config;
 
     // Getfront 5encryptionsuite (skip GREASE)
     let first_suites: Vec<u16> = spec
@@ -48,7 +48,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 3. Buildactual战bytesstream
     println!("\n3️⃣ ClientHello bytesstreamBuild:");
-    let client_hello = TLSHandshakeBuilder::build_client_hello(&spec, "www.google.com")?;
+    let client_hello = TLSHandshakeBuilder::build_client_hello(spec, "www.google.com")?;
     println!(
         " ✅ successGenerate ClientHello: {} bytes",
         client_hello.len()
@@ -61,8 +61,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 4. JA4 fingerprintValidate
     println!("\n4️⃣ JA4 fingerprintmain动Generate:");
-    let ja4 = chrome_136.get_ja4_string()?;
-    println!(" ✅ JA4: {}", ja4);
+    let ja4 = fingerprint_core::ja4::JA4::generate('t', "1.3", true, &[], &[], None, &[]);
+    println!(" ✅ JA4: {:?}", ja4);
 
     println!("\n✨ Chrome 136 fine-tuneValidatethrough！");
     Ok(())

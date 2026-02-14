@@ -34,7 +34,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
 
     // 3. settingsreceivebuffersize (impact Window Size)
     // Window Size usually and receivebuffersizerelated
-    // Note: actual Window Size is in TCP handshake when negotiate的, hereonly is settingsbuffer
+    // Note: actual Window Size is in TCP handshake when negotiateof, hereonly is settingsbuffer
     let recv_buffer_size = tcp_profile.window_size as usize;
     socket.set_recv_buffer_size(recv_buffer_size)?;
 
@@ -44,7 +44,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
     Ok(())
 }
 
-/// Createbring有 TCP Profile TCP socket
+// / Createbring有 TCP Profile TCP socket
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -66,7 +66,7 @@ pub fn create_tcp_socket_with_profile(
 
     // application TCP Profile ( if provide)
     // Note: TTL must in connectionbeforesettings
-    // in Linux up,  for client socket, TTL can in connectionfrontsettings, 不needbind
+    // in Linux up, for client socket, TTL can in connectionfrontsettings, 不needbind
     if let Some(profile) = tcp_profile {
         apply_tcp_profile(&socket, profile)?;
     }
@@ -74,7 +74,7 @@ pub fn create_tcp_socket_with_profile(
     Ok(socket)
 }
 
-/// Createbring有 TCP Profile TcpStream (async)
+// / Createbring有 TCP Profile TcpStream (async)
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -101,7 +101,7 @@ pub async fn connect_tcp_with_profile(
             TcpStream::from_std(std_stream)
         }
         Err(e) if e.kind() == io::ErrorKind::WouldBlock => {
-            // non-blockingconnectionwillreturn WouldBlock, this isnormal的
+            // non-blockingconnectionwillreturn WouldBlock, this isnormalof
             // convert to tokio::net::TcpStream 并waitconnectioncomplete
             let std_stream: std::net::TcpStream = socket.into();
             let stream = TcpStream::from_std(std_stream)?;
@@ -124,7 +124,7 @@ pub async fn connect_tcp_with_profile(
     }
 }
 
-/// Createbring有 TCP Profile TcpStream (sync)
+// / Createbring有 TCP Profile TcpStream (sync)
 ///
 /// # Parameters
 /// - `addr`: targetaddress
