@@ -973,7 +973,7 @@ for i in 0..max_i {
 - ✅ **编译状态**: 通过 (`cargo check --workspace`)
 - ✅ **测试状态**: 通过 (`cargo test --workspace`)
 - ✅ **格式检查**: 通过 (`cargo fmt --all -- --check`)
-- ✅ **安全审计**: 通过 (`cargo deny check`)
+- ✅ **Security Audit**: 通过 (`cargo deny check`)
 
 ---
 

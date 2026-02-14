@@ -1,8 +1,8 @@
 # Contributing to fingerprint-rust
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 
@@ -48,7 +48,7 @@ We are committed to providing a welcoming and inclusive environment for all cont
 ### Prerequisites
 
 - **Rust**: 1.92.0 or later (use `rustup` for installation)
-- **Git**: For 版本 control
+- **Git**: For 版本 (Version) control
 - **Cargo**: Comes with Rust installation
 
 ### Fork and Clone

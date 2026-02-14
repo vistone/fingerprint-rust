@@ -163,7 +163,7 @@ let random = get_random_fingerprint_by_browser("Safari")?;  // 从 15+ 版本随
   - `SystemAnalyzer`: 系统级别分析的统一接口
 
 - ✅ **fingerprint-defense Crate (防御侧)**: 新建防御和分析逻辑模块
-  - TCP/IP 指纹识别 (p0f): 支持解析 p0f.fp 签名文件，被动识别操作系统和 TCP 协议栈特征
+  - TCP/IP Fingerprinting (p0f): 支持解析 p0f.fp 签名文件，被动识别操作系统和 TCP 协议栈特征
   - 底层包解析: 支持解析 TCP/UDP/ICMP/IP 数据包
   - HTTP/TLS 被动分析: 针对 HTTP 和 TLS 流量的分析器
   - 构成闭环中的"服务端/防御"侧，用于验证客户端伪装效果
@@ -239,7 +239,7 @@ let random = get_random_fingerprint_by_browser("Safari")?;  // 从 15+ 版本随
 
 - ✅ **代码质量提升**: 完善错误处理和资源管理
   - 改进锁中毒处理机制
-  - 添加防御性编程（响应体/Header 限制）
+  - 添加防御性编程（Response Body/Header 限制）
   - 完善异步驱动任务管理
 
 ### 性能优化

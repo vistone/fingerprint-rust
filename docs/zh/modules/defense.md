@@ -1,7 +1,7 @@
 # 🛡️ fingerprint-defense 模块
 
 **Crate**: `fingerprint-defense`  
-**版本**: 2.1.0  
+**版本 (Version)**: 2.1.0  
 **用途**: 被动网络分析和指纹识别
 
 ---
@@ -183,7 +183,7 @@ pub enum PassiveError {
 }
 ```
 
-使用示例：
+使用示例 (Usage Examples)：
 ```rust
 match analyzer.analyze_http(data) {
     Ok(fingerprint) => println!("分析成功: {:?}", fingerprint),
@@ -370,7 +370,7 @@ impl AnomalyDetector {
         // 检查 TLS 异常
         if let Ok(tls) = analyzer.analyze_tls(data) {
             if !self.normal_tls_versions.contains(&tls.version) {
-                anomalies.push(format!("异常 TLS 版本: 0x{:04x}", tls.version));
+                anomalies.push(format!("异常 TLS 版本 (Version): 0x{:04x}", tls.version));
             }
         }
         
@@ -530,7 +530,7 @@ impl AnomalyDetector {
         // 检查 TLS 异常
         if let Ok(tls) = analyzer.analyze_tls(data) {
             if !self.normal_tls_versions.contains(&tls.version) {
-                anomalies.push(format!("异常 TLS 版本: 0x{:04x}", tls.version));
+                anomalies.push(format!("异常 TLS 版本 (Version): 0x{:04x}", tls.version));
             }
         }
         
@@ -556,4 +556,4 @@ impl AnomalyDetector {
 - [fingerprint-anomaly](anomaly.md) - 异常检测模块
 
 ---
-*最后更新: 2026-02-13*
+*最后更新 (Last Updated): 2026-02-13*

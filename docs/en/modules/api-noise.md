@@ -52,7 +52,7 @@ fn main() {
     
     // 生成带噪声的指纹哈希
     let fingerprint = injector.canvas().fingerprint_hash(&canvas_data);
-    println!("Canvas 指纹: {}", fingerprint);
+    println!("Canvas Fingerprint: {}", fingerprint);
 }
 ```
 

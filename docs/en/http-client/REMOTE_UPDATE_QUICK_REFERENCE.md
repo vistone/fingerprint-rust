@@ -6,7 +6,7 @@
 ```rust
 let client = HttpClient::new(HttpClientConfig::default());
 let response = client.get("https://api.example.com/data")?;
-println!("状态码: {}", response.status_code);
+println!("Status Code: {}", response.status_code);
 ```
 
 ### 最简单的 POST 请求
@@ -66,7 +66,7 @@ let response = client.send_request(&request)?;
 
 ### HttpResponse
 ```rust
-println!("状态码: {}", response.status_code);
+println!("Status Code: {}", response.status_code);
 println!("头部: {:?}", response.headers);
 println!("体: {:?}", response.body);
 
@@ -365,7 +365,7 @@ urls.par_iter().for_each(|url| {
 let profile = chrome_133();
 let ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...";
 let client = HttpClient::with_profile(profile, HTTPHeaders::default(), ua.to_string());
-// 现在的请求会使用 Chrome 133 的 TLS 指纹
+// 现在的请求会使用 Chrome 133 的 TLS Fingerprint
 ```
 
 ### Q5: 如何处理 API 速率限制？

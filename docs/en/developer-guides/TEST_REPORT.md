@@ -99,7 +99,7 @@
 - ✅ **指定浏览器类型获取指纹**: Chrome, Firefox, Safari, Opera, Edge
 - ✅ **User-Agent 生成**: 所有浏览器版本
 - ✅ **HTTP Headers 生成和管理**: 30+ 种语言
-- ✅ **TLS 指纹生成和比较**: JA4 指纹
+- ✅ **TLS 指纹生成和比较**: JA4 Fingerprint
 - ✅ **HTTP/1.1 客户端**: Chunked, Gzip, 重定向
 - ✅ **HTTP/2 客户端**: 多路复用, HPACK, Server Push
 - ✅ **HTTP/3 客户端**: QUIC, 0-RTT, 连接迁移

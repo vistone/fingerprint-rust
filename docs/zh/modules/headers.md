@@ -1,8 +1,8 @@
 # Headers 模块文档
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 
@@ -51,7 +51,7 @@ pub struct HTTPHeaders {
 - `random_language() -> String`
   - 随机选择语言（30+ 种语言支持）
 
-## 使用示例
+## 使用示例 (Usage Examples)
 
 ```rust
 use fingerprint::{HTTPHeaders, BrowserType, random_language};

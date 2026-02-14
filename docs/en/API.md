@@ -1,19 +1,19 @@
-# API 参考文档
+# API Reference Document
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**Version**: v1.0  
+**Last Updated**: 2026-02-13  
+**Document Type**: Technical Reference
 
 ---
 
 
 
-## 核心函数
+## Core Functions
 
-### 随机指纹获取
+### Random Fingerprint Generation
 
 ```rust
-// 随机指纹（推荐）
+// Generate a random fingerprint (recommended)
 pub fn get_random_fingerprint() -> Result<FingerprintResult, String>
 pub fn get_random_fingerprint_with_os(os: Option<OperatingSystem>) -> Result<FingerprintResult, String>
 pub fn get_random_fingerprint_by_browser(browser_type: &str) -> Result<FingerprintResult, Box<dyn Error>>
@@ -23,7 +23,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 ) -> Result<FingerprintResult, Box<dyn Error>>
 ```
 
-### User-Agent 生成
+### User-Agent Generation
 
 ```rust
 pub fn get_user_agent_by_profile_name(profile_name: &str) -> Result<String, String>
@@ -35,7 +35,7 @@ pub fn random_os() -> OperatingSystem
 pub fn random_language() -> String
 ```
 
-### Headers 生成
+### HTTP Headers Generation
 
 ```rust
 pub fn generate_headers(
@@ -45,16 +45,16 @@ pub fn generate_headers(
 ) -> HTTPHeaders
 ```
 
-## 数据结构
+## Data Structures
 
 ### FingerprintResult
 
 ```rust
 pub struct FingerprintResult {
-    pub profile: ClientProfile,           // TLS 指纹配置
-    pub user_agent: String,               // 对应的 User-Agent
-    pub hello_client_id: String,          // Client Hello ID
-    pub headers: HTTPHeaders,             // 标准 HTTP 请求头
+    pub profile: ClientProfile,           // TLS fingerprint configuration
+    pub user_agent: String,               // Corresponding User-Agent string
+    pub hello_client_id: String,          // ClientHello ID
+    pub headers: HTTPHeaders,             // Standard HTTP request headers
 }
 ```
 
@@ -144,7 +144,7 @@ result.headers.set("Cookie", "session_id=abc123");
 ### 指定浏览器类型
 
 ```rust
-// 随机获取 Chrome 指纹
+// 随机获取 Chrome Fingerprint
 let result = get_random_fingerprint_by_browser("chrome")?;
 
 // 指定浏览器和操作系统
@@ -198,24 +198,24 @@ use fingerprint::{HttpClient, HttpClientConfig, chrome_133};
 // 创建客户端配置
 let config = HttpClientConfig {
     profile: Some(chrome_133()),
-    max_redirects: 10,  // 最大重定向次数
-    verify_tls: true,    // 验证 TLS 证书
-    prefer_http2: true, // 优先使用 HTTP/2
+    max_redirects: 10,  // Maximum redirect hops
+    verify_tls: true,    // Verify TLS certificates
+    prefer_http2: true, // Prefer HTTP/2 when available
     ..Default::default()
 };
 
-// 创建客户端
+// Create HTTP Client
 let client = HttpClient::new(config);
 
-// 发送 GET 请求（自动处理重定向）
+// Send GET request（自动处理重定向）
 let response = client.get("https://example.com")?;
 
-// 发送 POST 请求
+// Send POST request
 let response = client.post("https://example.com/api", b"data")?;
 
-// 查看响应
-println!("状态码: {}", response.status_code);
-println!("响应体: {}", response.body_as_string()?);
+// View response
+println!("Status Code: {}", response.status_code);
+println!("Response Body: {}", response.body_as_string()?);
 ```
 
 ### 连接池支持
@@ -224,7 +224,7 @@ println!("响应体: {}", response.body_as_string()?);
 use fingerprint::{HttpClient, HttpClientConfig};
 use fingerprint::http_client::PoolManagerConfig;
 
-// 创建连接池配置
+// Configure connection pool
 let pool_config = PoolManagerConfig {
     max_connections: 100,
     min_idle: 10,
@@ -232,13 +232,13 @@ let pool_config = PoolManagerConfig {
     ..Default::default()
 };
 
-// 创建带连接池的客户端
+// Create HTTP client with connection pool
 let client = HttpClient::with_pool(config, pool_config);
 
-// 自动使用连接池发送请求
+// Send requests using connection pool automatically
 let response = client.get("http://example.com/")?;
 
-// 查看连接池统计
+// View connection pool statistics
 if let Some(stats) = client.pool_stats() {
     for stat in stats {
         stat.print();

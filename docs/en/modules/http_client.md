@@ -5,7 +5,7 @@
 **用户的正确指出**：
 > "我要测试的是netconnpool +fingerprint-rust 。我们调用reqwest 不可以，那我自己造一个http的库，补充我们的不足"
 
-**这是正确的思路！** 我们不应该依赖 reqwest（它使用固定的 TLS 指纹），而应该：
+**这是正确的思路！** 我们不应该依赖 reqwest（它使用固定的 TLS Fingerprint），而应该：
 1. ✅ 使用 netconnpool 管理连接
 2. ✅ 使用 fingerprint-rust 的配置
 3. ✅ 自己实现 HTTP 客户端
@@ -49,10 +49,10 @@ impl HttpClient {
         user_agent: String
     ) -> Self;
 
-    /// 发送 GET 请求
+    /// Send GET request
     pub fn get(&self, url: &str) -> Result<HttpResponse>;
 
-    /// 发送 POST 请求
+    /// Send POST request
     pub fn post(&self, url: &str, body: &[u8]) -> Result<HttpResponse>;
 }
 ```
@@ -105,7 +105,7 @@ impl HttpResponse {
 
 **特点**：
 - ✅ 完整的 HTTP 响应解析
-- ✅ 状态码、headers、body 分离
+- ✅ Status Code、headers、body 分离
 - ✅ 支持二进制和文本 body
 - ✅ 支持 chunked encoding（`parse_chunked()`）
 - ✅ 支持 gzip/deflate/brotli 解压（需要 `compression` feature，使用 `flate2` 和 `brotli-decompressor`）
@@ -217,7 +217,7 @@ let client = HttpClient::with_profile(
 // 3. 发送请求
 let response = client.get("https://api.example.com/data")?;
 
-println!("状态码: {}", response.status_code);
+println!("Status Code: {}", response.status_code);
 println!("响应: {}", response.body_as_string()?);
 ```
 
@@ -269,7 +269,7 @@ let spec = fp_result.profile.get_client_hello_spec()?;
                     ↓
 ┌────────────────────┬────────────────────────────────────┐
 │ HTTP/1.1 ✅        │ TLS (rustls) ⚠️                    │
-│ 直接 TcpStream     │ 固定的 TLS 指纹                     │
+│ 直接 TcpStream     │ 固定的 TLS Fingerprint                     │
 └────────────────────┴────────────────────────────────────┘
 ```
 

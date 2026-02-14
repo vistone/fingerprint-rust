@@ -1,7 +1,7 @@
 # API调用指南
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
 **适用版本**: fingerprint-rust 2.1.0+
 
 ---
@@ -438,5 +438,5 @@ println!("Status: {}", response.status);
 - [安全配置](security-configuration.md)
 
 ---
-*最后更新: 2026-02-13*  
-*版本: v1.0*
+*最后更新 (Last Updated): 2026-02-13*  
+*版本 (Version): v1.0*

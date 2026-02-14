@@ -451,11 +451,11 @@ let client = HttpClient::new(config);
 
 ## 相关文件位置
 
-- **HTTP 客户端** - `src/http_client/mod.rs`
+- **HTTP 客户端 (HTTP Client)** - `src/http_client/mod.rs`
 - **请求定义** - `src/http_client/request.rs`
 - **响应定义** - `src/http_client/response.rs`
 - **Cookie 管理** - `src/http_client/cookie.rs`
-- **连接池** - `src/http_client/pool.rs`
+- **连接池支持 (Connection Pool Support)** - `src/http_client/pool.rs`
 - **TLS 实现** - `src/http_client/tls.rs`
 - **HTTP/2 实现** - `src/http_client/http2.rs`
 - **HTTP/3 实现** - `src/http_client/http3.rs`
@@ -471,6 +471,6 @@ let client = HttpClient::new(config);
 
 ---
 
-**最后更新**: 2026-02-11
-**版本**: 1.0.0
+**最后更新 (Last Updated)**: 2026-02-11
+**版本 (Version)**: 1.0.0
 

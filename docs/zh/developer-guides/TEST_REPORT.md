@@ -95,7 +95,7 @@
 
 ### 功能测试
 
-- ✅ **随机指纹获取**: 所有浏览器类型
+- ✅ **随机指纹获取 (Random Fingerprint Generation)**: 所有浏览器类型
 - ✅ **指定浏览器类型获取指纹**: Chrome, Firefox, Safari, Opera, Edge
 - ✅ **User-Agent 生成**: 所有浏览器版本
 - ✅ **HTTP Headers 生成和管理**: 30+ 种语言

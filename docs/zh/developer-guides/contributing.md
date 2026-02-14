@@ -1,7 +1,7 @@
 # 贡献指南
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
 **贡献者**: 欢迎加入我们的开源社区！
 
 ---
@@ -42,7 +42,7 @@ fingerprint-rust/
 │   ├── fingerprint-core/     # 核心库
 │   ├── fingerprint-tls/      # TLS实现
 │   └── ...                   # 其他模块
-├── examples/                 # 使用示例
+├── examples/                 # 使用示例 (Usage Examples)
 ├── tests/                    # 测试文件
 ├── docs/                     # 文档
 └── Cargo.toml                # 工作区配置
@@ -433,5 +433,5 @@ echo '{ "path": "cz-conventional-changelog" }' > .czrc
 让我们一起打造更好的fingerprint-rust！
 
 ---
-*最后更新: 2026-02-13*  
-*版本: v1.0*
+*最后更新 (Last Updated): 2026-02-13*  
+*版本 (Version): v1.0*

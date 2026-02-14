@@ -1,7 +1,7 @@
 # DNS 模块增强与集成指南
 
-**版本**: v2.1.0  
-**最后更新**: 2025-01-08
+**版本 (Version)**: v2.1.0  
+**最后更新 (Last Updated)**: 2025-01-08
 
 ---
 
@@ -34,7 +34,7 @@ fingerprint-rust/
 │   ├── fingerprint-tls/        # TLS 配置和握手
 │   ├── fingerprint-profiles/   # 浏览器指纹配置
 │   ├── fingerprint-headers/    # HTTP Headers 生成
-│   ├── fingerprint-http/       # HTTP 客户端（HTTP/1.1/2/3）
+│   ├── fingerprint-http/       # HTTP 客户端 (HTTP Client)（HTTP/1.1/2/3）
 │   ├── fingerprint-dns/        # DNS 预解析服务（增强）✨
 │   ├── fingerprint-defense/    # 被动识别与主动防护
 │   └── fingerprint/            # 主库，重新导出所有功能
@@ -95,7 +95,7 @@ let dns_helper = Arc::new(DNSHelper::new(Duration::from_secs(300)));
 // 预热缓存
 dns_helper.warmup(&["www.google.com", "www.github.com"]);
 
-// 配置 HTTP 客户端
+// 配置 HTTP 客户端 (HTTP Client)
 let config = HttpClientConfig {
     dns_helper: Some(dns_helper),  // 集成 DNS 缓存
     ..Default::default()
@@ -130,7 +130,7 @@ pub trait DNSResolverTrait: Send + Sync {
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                  HTTP 客户端                         │
+│                  HTTP 客户端 (HTTP Client)                         │
 │                HttpClientConfig                      │
 │              ┌──────────────────┐                    │
 │              │   dns_helper     │ (可选)             │
@@ -175,7 +175,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "api.example.com",
     ]);
 
-    // 3. 配置 HTTP 客户端
+    // 3. 配置 HTTP 客户端 (HTTP Client)
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (...)".to_string(),
         prefer_http2: true,
@@ -223,7 +223,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         println!("✅ 已缓存 {}: {} 个 IP", domain, result.ips.all_ips().len());
     }
 
-    // 4. 创建 HTTP 客户端
+    // 4. 创建 HTTP 客户端 (HTTP Client)
     let client = HttpClient::new(HttpClientConfig::default());
 
     // 5. 发送请求（受益于预解析的 DNS）
@@ -290,7 +290,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 **解决方案**：使用 DNSHelper 缓存 DNS 结果
 
 ```rust
-// 创建带缓存的 HTTP 客户端
+// 创建带缓存的 HTTP 客户端 (HTTP Client)
 let dns_helper = Arc::new(DNSHelper::new(Duration::from_secs(300)));
 let config = HttpClientConfig {
     dns_helper: Some(dns_helper),

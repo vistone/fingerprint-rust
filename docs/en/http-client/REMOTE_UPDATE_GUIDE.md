@@ -30,9 +30,9 @@
 ```
 
 ### 关键概念
-- **ClientProfile** - 浏览器指纹配置（密码套件、椭圆曲线等）
+- **ClientProfile** - 浏览器指纹配置（Cipher Suite、椭圆曲线等）
 - **HTTPHeaders** - 标准 HTTP 头部
-- **TLS 指纹** - Client Hello 的签名
+- **TLS Fingerprint** - Client Hello 的签名
 - **JA4** - TLS 客户端指纹格式
 
 ---
@@ -80,12 +80,12 @@ pub struct HttpClient {
 |-----|------|-------|------|
 | `user_agent` | String | "Mozilla/5.0" | 用户代理字符串 |
 | `headers` | HTTPHeaders | default | HTTP 请求头 |
-| `profile` | Option | None | 浏览器 TLS 指纹 |
+| `profile` | Option | None | 浏览器 TLS Fingerprint |
 | `connect_timeout` | Duration | 30s | 连接超时 |
 | `read_timeout` | Duration | 30s | 读取超时 |
 | `write_timeout` | Duration | 30s | 写入超时 |
-| `max_redirects` | usize | 10 | 最大重定向次数 |
-| `verify_tls` | bool | true | 验证 TLS 证书 |
+| `max_redirects` | usize | 10 | Maximum redirect hops |
+| `verify_tls` | bool | true | Verify TLS certificates |
 | `prefer_http2` | bool | true | 优先 HTTP/2 |
 | `prefer_http3` | bool | false | 优先 HTTP/3 |
 | `cookie_store` | Option | None | Cookie 存储 |
@@ -142,7 +142,7 @@ pub struct HttpClient {
                 ▼
          ┌──────────────────────┐
          │ HttpResponse 返回    │
-         │ (状态码、头部、体)   │
+         │ (Status Code、头部、体)   │
          └──────────────────────┘
 ```
 
@@ -190,7 +190,7 @@ fn send_request_with_redirects(
         )),
     };
 
-    // 4. 处理重定向（3xx 状态码）
+    // 4. 处理重定向（3xx Status Code）
     if (300..400).contains(&response.status_code) {
         if let Some(location) = response.headers.get("location") {
             // 构建新的重定向 URL
@@ -334,14 +334,14 @@ path: "/v1/users?id=123"
 ```rust
 use fingerprint::*;
 
-// 创建连接池配置
+// Configure connection pool
 let pool_config = PoolManagerConfig {
     max_idle_per_host: 10,           // 每个主机最多 10 个空闲连接
     idle_timeout: Duration::from_secs(300), // 5 分钟空闲超时
     ..Default::default()
 };
 
-// 创建带连接池的客户端
+// Create HTTP client with connection pool
 let client = HttpClient::with_pool(config, pool_config);
 
 // 第一个请求 - 建立新连接
@@ -440,16 +440,16 @@ let proxy = ProxyConfig {
 ```rust
 use fingerprint::*;
 
-// Chrome 133 指纹
+// Chrome 133 Fingerprint
 let profile = chrome_133();
 
-// Firefox 133 指纹
+// Firefox 133 Fingerprint
 let firefox_profile = firefox_133();
 
-// Safari 16.0 指纹
+// Safari 16.0 Fingerprint
 let safari_profile = safari_16_0();
 
-// Opera 91 指纹
+// Opera 91 Fingerprint
 let opera_profile = opera_91();
 
 // 创建带指纹的客户端
@@ -491,8 +491,8 @@ fn main() -> Result<()> {
     // 获取数据
     let response = client.get("https://api.github.com/repos/vistone/fingerprint-rust")?;
     
-    println!("状态码: {}", response.status_code);
-    println!("响应体: {}", String::from_utf8_lossy(&response.body));
+    println!("Status Code: {}", response.status_code);
+    println!("Response Body: {}", String::from_utf8_lossy(&response.body));
 
     Ok(())
 }
@@ -529,18 +529,18 @@ fn main() -> Result<()> {
 use fingerprint::*;
 
 fn main() -> Result<()> {
-    // 使用 Chrome 133 指纹
+    // 使用 Chrome 133 Fingerprint
     let profile = chrome_133();
     let headers = HTTPHeaders::default();
     let user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36".to_string();
 
     let client = HttpClient::with_profile(profile, headers, user_agent);
 
-    // 发送请求时会使用 Chrome 的 TLS 指纹
+    // 发送请求时会使用 Chrome 的 TLS Fingerprint
     let response = client.get("https://example.com")?;
 
-    println!("请求成功，使用 Chrome 133 的 TLS 指纹");
-    println!("状态码: {}", response.status_code);
+    println!("请求成功，使用 Chrome 133 的 TLS Fingerprint");
+    println!("Status Code: {}", response.status_code);
 
     Ok(())
 }
@@ -741,7 +741,7 @@ fn fetch_data(url: &str) -> Result<String, Box<dyn std::error::Error>> {
 
     match client.get(url) {
         Ok(response) => {
-            // 检查 HTTP 状态码
+            // 检查 HTTP Status Code
             match response.status_code {
                 200 => {
                     Ok(String::from_utf8(response.body)?)
@@ -789,7 +789,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 1. **HTTP 客户端是浏览器指纹模拟器**
    - 不仅仅发送 HTTP 请求
-   - 包含完整的 TLS 指纹配置
+   - 包含完整的 TLS fingerprint configuration
    - 66+ 真实浏览器配置
 
 2. **请求处理有自动降级**
@@ -954,7 +954,7 @@ Cookie 管理           → 高级特性 > 2. Cookie 管理
 请求流程              → 🔑 核心代码流程 > 1. HttpClient 初始化
 URL 解析              → 🔄 URL 解析详解
 重定向处理            → 🔀 重定向处理详解
-TLS 指纹              → 🔐 TLS 指纹应用
+TLS Fingerprint              → 🔐 TLS 指纹应用
 连接池                → 📦 连接池实现
 错误处理              → ⚙️ 错误处理流程
 ```
@@ -1361,7 +1361,7 @@ send_https_request()
      │
      ├─ 获取 ClientProfile
      │  ├─ TLS 版本
-     │  ├─ 密码套件
+     │  ├─ Cipher Suite
      │  ├─ 椭圆曲线
      │  ├─ 扩展列表
      │  └─ GREASE 处理
@@ -1401,9 +1401,9 @@ impl HttpRequest {
 ### HttpResponse
 ```rust
 pub struct HttpResponse {
-    pub status_code: u16,                    // 状态码 (200, 404, etc.)
+    pub status_code: u16,                    // Status Code (200, 404, etc.)
     pub headers: HashMap<String, String>,    // 响应头
-    pub body: Vec<u8>,                      // 响应体
+    pub body: Vec<u8>,                      // Response Body
 }
 ```
 
@@ -1500,7 +1500,7 @@ fn parse_url(&self, url: &str) -> Result<(String, String, u16, String)>
          ├─ 发送请求
          │
          └─ 收到响应
-            ├─ 状态码: 301 (Moved Permanently)
+            ├─ Status Code: 301 (Moved Permanently)
             ├─ Location: /new-endpoint  (相对路径)
             │
             └─ 构建新 URL

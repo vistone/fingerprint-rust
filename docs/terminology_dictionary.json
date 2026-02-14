@@ -1,0 +1,196 @@
+{
+  "术语词典": {
+    "必须保留英文_不翻译": {
+      "TLS相关": [
+        "TLS",
+        "ClientHello",
+        "ServerHello",
+        "Extension",
+        "Cipher Suite",
+        "handshake",
+        "certificate"
+      ],
+      "HTTP相关": [
+        "HTTP/1.1",
+        "HTTP/2",
+        "HTTP/3",
+        "QUIC",
+        "HPACK",
+        "GREASE",
+        "User-Agent",
+        "Content-Type"
+      ],
+      "网络相关": [
+        "DNS",
+        "RTT",
+        "TTL",
+        "TCP",
+        "UDP",
+        "SYN",
+        "ACK"
+      ],
+      "Rust相关": [
+        "Rust",
+        "Cargo",
+        "Crate",
+        "Workspace",
+        "Module",
+        "macro",
+        "trait"
+      ],
+      "库和框架": [
+        "rustls",
+        "tokio",
+        "ring",
+        "quinn",
+        "h2",
+        "h3",
+        "candle-core",
+        "serde"
+      ],
+      "标准术语": [
+        "API",
+        "SDK",
+        "CLI",
+        "DevOps",
+        "CI/CD",
+        "Repository",
+        "Issue",
+        "Pull Request"
+      ]
+    },
+    "需要翻译_一致对照": {
+      "核心业务": {
+        "Browser Fingerprinting": "浏览器指纹识别",
+        "Fingerprint": "指纹",
+        "Fingerprinting": "指纹识别",
+        "Passive Identification": "被动识别",
+        "Active Defense": "主动防御",
+        "Security Audit": "安全审计",
+        "Threat Detection": "威胁检测",
+        "Anomaly Detection": "异常检测"
+      },
+      "系统架构": {
+        "Architecture": "架构",
+        "System Design": "系统设计",
+        "Component": "组件",
+        "Layer": "层",
+        "Interface": "接口",
+        "Abstraction": "抽象",
+        "Dependency": "依赖"
+      },
+      "开发相关": {
+        "Contributing": "贡献",
+        "Contribution" : "贡献",
+        "Guideline": "指南",
+        "Development": "开发",
+        "Testing": "测试",
+        "Fuzzing": "模糊测试",
+        "Profiling": "性能分析",
+        "Troubleshooting": "故障排除"
+      },
+      "性能优化": {
+        "Performance": "性能",
+        "Optimization": "优化",
+        "Connection Pool": "连接池",
+        "Caching": "缓存",
+        "Compression": "压缩",
+        "Throughput": "吞吐量",
+        "Latency": "延迟"
+      },
+      "文档相关": {
+        "Documentation": "文档",
+        "Guide": "指南",
+        "Tutorial": "教程",
+        "Example": "示例",
+        "Reference": "参考",
+        "Specification": "规范",
+        "Implementation": "实现"
+      },
+      "运维相关": {
+        "Operations": "运维",
+        "Deployment": "部署",
+        "Configuration": "配置",
+        "Monitoring": "监控",
+        "Logging": "日志",
+        "Runbook": "手册",
+        "Maintenance": "维护"
+      }
+    },
+    "格式规范": {
+      "中英混合": "在中文后加空格，再跟英文。例：浏览器指纹 (Browser Fingerprinting)",
+      "代码保留": "所有代码块、代码示例保持不变，只翻译注释",
+      "链接处理": "链接文本根据语言版本翻译，URL 保持不变",
+      "列表项": "列表项中如有中英混合，保持 '中文 (English)' 格式",
+      "标题翻译": "标题需要准确翻译，技术术语保持英文"
+    },
+    "常见错误修正": {
+      "错误1": {
+        "原文": "指纹识别协议",
+        "错误": "fingerprinting protocol",
+        "正确": "Browser Fingerprinting 技术"
+      },
+      "错误2": {
+        "原文": "密码套装",
+        "错误": "cipher package",
+        "正确": "密码套件 (Cipher Suite)"
+      },
+      "错误3": {
+        "原文": "用户代理",
+        "错误": "user representative",
+        "正确": "User-Agent"
+      },
+      "错误4": {
+        "原文": "TLS 握手协议",
+        "错误": "TLS handshake protocol",
+        "正确": "TLS 握手"
+      },
+      "错误5": {
+        "原文": "服务器你好",
+        "错误": "server hello",
+        "正确": "ServerHello"
+      },
+      "错误6": {
+        "原文": "客户端信息",
+        "错误": "client hello information",
+        "正确": "ClientHello"
+      },
+      "错误7": {
+        "原文": "安全策略",
+        "错误": "security strategy",
+        "正确": "安全政策"
+      },
+      "错误8": {
+        "原文": "贡献者指南",
+        "错误": "contributor's guide",
+        "正确": "贡献指南"
+      }
+    }
+  },
+  "翻译优先级": [
+    {
+      "阶段": "1号",
+      "文件": ["API.md", "ARCHITECTURE.md", "CONTRIBUTING.md"],
+      "优先级": "高",
+      "理由": "这些是用户首先接触的关键文件"
+    },
+    {
+      "阶段": "2号",
+      "文件": ["SECURITY.md", "CHANGELOG.md", "ORGANIZATION.md"],
+      "优先级": "中",
+      "理由": "这些是重要参考文档"
+    },
+    {
+      "阶段": "3号",
+      "目录": ["developer-guides", "user-guides", "guides"],
+      "优先级": "中",
+      "理由": "应用术语词典到指南文档"
+    },
+    {
+      "阶段": "4号",
+      "目录": ["modules", "reference", "architecture", "http-client", "security"],
+      "优先级": "低",
+      "理由": "应用术语词典到所有剩余文档"
+    }
+  ]
+}

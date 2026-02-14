@@ -13,12 +13,12 @@
 
 ## 核心概念
 
-### 什么是 HTTP 客户端？
+### 什么是 HTTP 客户端 (HTTP Client)？
 
 这个项目的 HTTP 客户端不是简单的网络请求工具，而是**浏览器 TLS 指纹模拟器**：
 
 ```
-普通 HTTP 客户端              |  Fingerprint HTTP 客户端
+普通 HTTP 客户端 (HTTP Client)              |  Fingerprint HTTP 客户端 (HTTP Client)
 ─────────────────────────────────────────────────────────
 发送 HTTP 请求               |  模拟真实浏览器的请求
 基础 User-Agent              |  66+ 真实浏览器指纹
@@ -51,11 +51,11 @@ http_client/mod.rs (主入口)
     │   └─ rustls_client_hello_customizer.rs
     ├─ proxy.rs (代理配置)
     ├─ http1.rs (HTTP/1.1 协议)
-    ├─ http1_pool.rs (HTTP/1.1 连接池)
+    ├─ http1_pool.rs (HTTP/1.1 连接池支持 (Connection Pool Support))
     ├─ http2.rs (HTTP/2 协议)
-    ├─ http2_pool.rs (HTTP/2 连接池)
+    ├─ http2_pool.rs (HTTP/2 连接池支持 (Connection Pool Support))
     ├─ http3.rs (HTTP/3 协议)
-    ├─ http3_pool.rs (HTTP/3 连接池)
+    ├─ http3_pool.rs (HTTP/3 连接池支持 (Connection Pool Support))
     ├─ pool.rs (连接池管理器)
     ├─ io.rs (IO 工具)
     └─ reporter.rs (验证报告)
@@ -68,7 +68,7 @@ pub struct HttpClient {
     // 配置信息
     config: HttpClientConfig,
     
-    // 连接池（可选）
+    // 连接池支持 (Connection Pool Support)（可选）
     // 提供：连接复用、自动清理、统计信息
     pool_manager: Option<Arc<ConnectionPoolManager>>,
 }
@@ -883,7 +883,7 @@ HttpClient::new(config)
 GET 请求             → 快速开始 > 最简单的 GET 请求
 POST 请求            → 快速开始 > 最简单的 POST 请求
 浏览器指纹           → 浏览器指纹速查表
-连接池               → 常见任务 > 任务 4
+连接池支持 (Connection Pool Support)               → 常见任务 > 任务 4
 错误处理             → 错误处理
 超时配置             → 常见任务 > 任务 7
 ```
@@ -898,7 +898,7 @@ POST 请求            → 快速开始 > 最简单的 POST 请求
 - 🎯 **核心概念** - 普通客户端 vs 指纹客户端的区别
 - 🏗️ **HTTP 客户端结构** - 模块依赖、核心属性、参数说明
 - 🔄 **请求处理流程** - 完整流程图和关键方法详解
-- 🚀 **高级特性** - 连接池、Cookie、代理、浏览器指纹
+- 🚀 **高级特性** - 连接池支持 (Connection Pool Support)、Cookie、代理、浏览器指纹
 - 💡 **实战示例** - 6 个详细的完整示例
 - ⚡ **性能优化** - 连接复用、超时优化等
 - 🚨 **错误处理** - 错误类型、最佳实践
@@ -906,7 +906,7 @@ POST 请求            → 快速开始 > 最简单的 POST 请求
 **何时查看**:
 - ✅ 想深入理解 HTTP 客户端的工作原理
 - ✅ 需要了解浏览器指纹的原理
-- ✅ 要学习高级特性（连接池、Cookie 等）
+- ✅ 要学习高级特性（连接池支持 (Connection Pool Support)、Cookie 等）
 - ✅ 需要完整的使用示例
 - ✅ 想了解性能优化方法
 
@@ -955,7 +955,7 @@ Cookie 管理           → 高级特性 > 2. Cookie 管理
 URL 解析              → 🔄 URL 解析详解
 重定向处理            → 🔀 重定向处理详解
 TLS 指纹              → 🔐 TLS 指纹应用
-连接池                → 📦 连接池实现
+连接池支持 (Connection Pool Support)                → 📦 连接池实现
 错误处理              → ⚙️ 错误处理流程
 ```
 
@@ -978,7 +978,7 @@ TLS 指纹              → 🔐 TLS 指纹应用
 | 7 | Firefox 浏览器指纹 | ⭐⭐ |
 | 8 | 随机浏览器指纹 | ⭐⭐ |
 | 9 | 超时配置 | ⭐⭐ |
-| 10 | 连接池 - 批量请求 | ⭐⭐⭐ |
+| 10 | 连接池支持 (Connection Pool Support) - 批量请求 | ⭐⭐⭐ |
 | 11 | Cookie 管理 | ⭐⭐ |
 | 12 | 获取远程配置 JSON | ⭐⭐ |
 | 13 | 下载文件 | ⭐⭐ |
@@ -1171,7 +1171,7 @@ TLS 指纹              → 🔐 TLS 指纹应用
 - `src/http_client/request.rs` - 请求定义
 - `src/http_client/response.rs` - 响应定义
 - `src/http_client/cookie.rs` - Cookie 存储
-- `src/http_client/pool.rs` - 连接池
+- `src/http_client/pool.rs` - 连接池支持 (Connection Pool Support)
 
 ### 项目资源
 - [项目主页](https://github.com/vistone/fingerprint-rust)
@@ -1230,7 +1230,7 @@ A: 可以！打开"REMOTE_UPDATE_EXAMPLES.rs"，取消注释要运行的示例�
 
 ---
 
-**最后更新**: 2026-02-11
+**最后更新 (Last Updated)**: 2026-02-11
 **文档版本**: 1.0.0
 **对应项目版本**: fingerprint-rust 1.0.0
 
@@ -1250,17 +1250,17 @@ fingerprint-rust/
 │   ├── tls_config/               # TLS 配置模块
 │   ├── tls_extensions/           # TLS 扩展实现
 │   ├── tls_handshake/            # TLS 握手处理
-│   ├── http_client/              # HTTP 客户端 ⭐ 远程更新的核心
+│   ├── http_client/              # HTTP 客户端 (HTTP Client) ⭐ 远程更新的核心
 │   │   ├── mod.rs               # 主 HTTP 客户端实现
 │   │   ├── request.rs           # 请求定义
 │   │   ├── response.rs          # 响应定义
 │   │   ├── cookie.rs            # Cookie 管理
 │   │   ├── http1.rs             # HTTP/1.1 实现
-│   │   ├── http1_pool.rs        # HTTP/1.1 连接池
+│   │   ├── http1_pool.rs        # HTTP/1.1 连接池支持 (Connection Pool Support)
 │   │   ├── http2.rs             # HTTP/2 实现
-│   │   ├── http2_pool.rs        # HTTP/2 连接池
+│   │   ├── http2_pool.rs        # HTTP/2 连接池支持 (Connection Pool Support)
 │   │   ├── http3.rs             # HTTP/3 实现
-│   │   ├── http3_pool.rs        # HTTP/3 连接池
+│   │   ├── http3_pool.rs        # HTTP/3 连接池支持 (Connection Pool Support)
 │   │   ├── tls.rs               # TLS 层实现
 │   │   ├── proxy.rs             # 代理配置
 │   │   ├── pool.rs              # 连接池管理
@@ -1274,7 +1274,7 @@ fingerprint-rust/
 │   ├── utils.rs                  # 工具函数
 │   ├── dicttls/                  # TLS 字典
 │   └── export.rs                 # 配置导出
-├── examples/                      # 使用示例
+├── examples/                      # 使用示例 (Usage Examples)
 │   ├── basic.rs                  # 基础示例
 │   ├── custom_tls_fingerprint.rs # TLS 指纹示例
 │   ├── headers.rs                # 头部示例
@@ -1360,7 +1360,7 @@ send_https_request()
   └─ 建立 TLS 连接
      │
      ├─ 获取 ClientProfile
-     │  ├─ TLS 版本
+     │  ├─ TLS 版本 (Version)
      │  ├─ 密码套件
      │  ├─ 椭圆曲线
      │  ├─ 扩展列表
@@ -1859,17 +1859,17 @@ socket.set_write_timeout(Some(self.config.write_timeout))?;
 
 | 功能 | 文件 | 关键方法/结构 |
 |------|------|---------------|
-| HTTP 客户端 | `src/http_client/mod.rs` | `HttpClient`, `send_request_with_redirects` |
+| HTTP 客户端 (HTTP Client) | `src/http_client/mod.rs` | `HttpClient`, `send_request_with_redirects` |
 | 请求定义 | `src/http_client/request.rs` | `HttpRequest`, `HttpMethod` |
 | 响应定义 | `src/http_client/response.rs` | `HttpResponse` |
 | Cookie | `src/http_client/cookie.rs` | `CookieStore`, `Cookie` |
 | HTTP/1.1 | `src/http_client/http1.rs` | `send_http1_request` |
 | HTTP/2 | `src/http_client/http2.rs` | `send_http2_request` |
-| 连接池 | `src/http_client/pool.rs` | `ConnectionPoolManager` |
+| 连接池支持 (Connection Pool Support) | `src/http_client/pool.rs` | `ConnectionPoolManager` |
 | TLS | `src/http_client/tls.rs` | `TlsConnector` |
 | 代理 | `src/http_client/proxy.rs` | `ProxyConfig`, `ProxyType` |
 
 ---
 
-**最后更新**: 2026-02-11
+**最后更新 (Last Updated)**: 2026-02-11
 

@@ -121,7 +121,7 @@ let client = HttpClient::builder()
     .connection_pool_size(100)           // 连接池大小
     .idle_timeout(Duration::from_secs(300))  // 空闲超时
     .connection_timeout(Duration::from_secs(10)) // 连接超时
-    .max_redirects(5)                    // 最大重定向次数
+    .max_redirects(5)                    // Maximum redirect hops
     .build()?;
 ```
 

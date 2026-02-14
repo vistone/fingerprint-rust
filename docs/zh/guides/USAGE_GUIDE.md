@@ -14,7 +14,7 @@ use fingerprint::{get_random_fingerprint, HttpClient};
 // 随机选择一个浏览器指纹（从所有 69 个指纹中）
 let fp_result = get_random_fingerprint()?;
 
-// 使用随机指纹创建 HTTP 客户端
+// 使用随机指纹创建 HTTP 客户端 (HTTP Client)
 let client = HttpClient::with_profile(
     fp_result.profile.clone(),
     fp_result.headers.clone(),
@@ -136,7 +136,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("随机选择的指纹: {}", fp_result.hello_client_id);
     println!("User-Agent: {}", fp_result.user_agent);
     
-    // 创建 HTTP 客户端
+    // 创建 HTTP 客户端 (HTTP Client)
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),
         fp_result.headers.clone(),
@@ -151,7 +151,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 }
 ```
 
-### 示例 2: 随机选择 Chrome 版本
+### 示例 2: 随机选择 Chrome 版本 (Version)
 
 ```rust
 use fingerprint::{get_random_fingerprint_by_browser, HttpClient};
@@ -160,7 +160,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 随机选择一个 Chrome 版本的指纹
     let fp_result = get_random_fingerprint_by_browser("chrome")?;
     
-    println!("随机选择的 Chrome 版本: {}", fp_result.hello_client_id);
+    println!("随机选择的 Chrome 版本 (Version): {}", fp_result.hello_client_id);
     
     let client = HttpClient::with_profile(
         fp_result.profile.clone(),

@@ -1,8 +1,8 @@
 # DNS 预解析模块文档
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 
@@ -14,7 +14,7 @@
 
 **v2.1 新增功能**：
 - ✅ **DNS 缓存 (DNSCache)**：内存缓存功能，减少重复解析，提高性能
-- ✅ **HTTP 客户端集成**：通过 `DNSHelper` 无缝集成到 HTTP 客户端
+- ✅ **HTTP 客户端集成**：通过 `DNSHelper` 无缝集成到 HTTP 客户端 (HTTP Client)
 - ✅ **智能 IP 选择**：基于地理位置信息实现智能 IP 路由
 - ✅ **缓存管理**：自动过期清理和手动失效控制
 
@@ -209,7 +209,7 @@ let dns_helper = Arc::new(DNSHelper::new(Duration::from_secs(300)));
 // 2. 可选：预热缓存
 dns_helper.warmup(&["www.google.com", "www.github.com"]);
 
-// 3. 配置 HTTP 客户端
+// 3. 配置 HTTP 客户端 (HTTP Client)
 let config = HttpClientConfig {
     user_agent: "Mozilla/5.0 ...".to_string(),
     prefer_http2: true,
@@ -246,7 +246,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         dns_cache.put(domain, result.ips);
     }
     
-    // 4. 创建 HTTP 客户端（DNS 已缓存）
+    // 4. 创建 HTTP 客户端 (HTTP Client)（DNS 已缓存）
     let client = HttpClient::new(HttpClientConfig::default());
     
     // 5. 发送请求（受益于预解析的 DNS）
@@ -336,9 +336,9 @@ httpTimeout: "20s"
 maxIpFetchConc: 50
 ```
 
-## 使用示例
+## 使用示例 (Usage Examples)
 
-### 基础使用
+### 基础使用 (Basic Usage)
 
 ```rust
 use fingerprint::dns::{Service, DNSConfig};

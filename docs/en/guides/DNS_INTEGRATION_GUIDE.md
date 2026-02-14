@@ -189,7 +189,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 5. 发送请求（自动使用 DNS 缓存）
     let response = client.get("https://www.google.com/")?;
-    println!("状态码: {}", response.status_code);
+    println!("Status Code: {}", response.status_code);
 
     // 6. 查看缓存统计
     let (cached, expired) = dns_helper.stats();

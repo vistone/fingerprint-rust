@@ -31,7 +31,7 @@
    - 查看 ClientHello 消息的详细信息：
      - Cipher Suites（密码套件）
      - Extensions（扩展）
-     - Supported Versions（支持的 TLS 版本）
+     - Supported Versions（支持的 TLS 版本 (Version)）
      - 扩展顺序
 
 ### 导出数据
@@ -227,7 +227,7 @@ cat chrome_133.json
    - 提取密码套件列表
    - 提取扩展列表和顺序
    - 提取 GREASE 值
-   - 提取 TLS 版本
+   - 提取 TLS 版本 (Version)
 
 4. **生成配置**
    - 使用本项目的数据结构
@@ -277,9 +277,9 @@ mitmproxy -p 8080
 
 ## Firefox 浏览器特定部分
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 

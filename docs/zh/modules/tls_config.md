@@ -17,7 +17,7 @@
 
 ```rust
 pub struct ClientHelloSpec {
-    pub tls_versions: Vec<u16>,                    // TLS 版本
+    pub tls_versions: Vec<u16>,                    // TLS 版本 (Version)
     pub cipher_suites: Vec<CipherSuiteID>,        // 密码套件列表
     pub compression_methods: Vec<u8>,              // 压缩方法
     pub extensions: Vec<Extension>,                // 扩展列表
@@ -109,7 +109,7 @@ if let Some(priority) = profile.get_header_priority() {
 - **Initial Window Size**: 65535
 - **Max Frame Size**: 16777215
 
-## 集成到 HTTP 客户端
+## 集成到 HTTP 客户端 (HTTP Client)
 
 这些配置可以用于配置各种 Rust HTTP 客户端库：
 

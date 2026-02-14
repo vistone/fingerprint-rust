@@ -10,7 +10,7 @@
 
 ## 概述
 
-fingerprint-rust 现在支持在创建 TCP 连接时应用 TCP Profile，确保 TCP 指纹（TTL、Window Size、MSS、Window Scale）与浏览器指纹一致，避免被检测系统识别为异常。
+fingerprint-rust 现在支持在创建 TCP 连接时应用 TCP Profile，确保 TCP Fingerprint（TTL、Window Size、MSS、Window Scale）与浏览器指纹一致，避免被检测系统识别为异常。
 
 ## 功能说明
 
@@ -92,7 +92,7 @@ let stream = tcp_fingerprint::connect_tcp_with_profile(addr, Some(&tcp_profile))
 let stream = tcp_fingerprint::connect_tcp_with_profile_sync(addr, Some(&tcp_profile))?;
 ```
 
-## 验证 TCP 指纹
+## 验证 TCP Fingerprint
 
 ### 使用 fingerprint-defense 验证
 
@@ -147,7 +147,7 @@ wireshark capture.pcap
    let profile = generate_unified_fingerprint(profile_name, user_agent)?;
    ```
 
-2. **验证 TCP 指纹**
+2. **验证 TCP Fingerprint**
    - 使用 `fingerprint-defense` 的 `PassiveAnalyzer` 验证
    - 或使用 tcpdump/wireshark 抓包分析
 
@@ -251,7 +251,7 @@ profile = profile.with_synced_tcp_profile(&ua);
 
 ### 同步规则
 
-| User-Agent 包含 | 操作系统 | TCP TTL | TCP Window Size |
+| User-Agent 包含 | Operating System | TCP TTL | TCP Window Size |
 |----------------|---------|---------|----------------|
 | `Windows NT 10.0` / `Windows NT 11.0` | Windows | 128 | 64240 |
 | `Macintosh` / `Mac OS X` | macOS | 64 | 65535 |
@@ -282,7 +282,7 @@ let config = HttpClientConfig {
 ### 示例 2: 按浏览器类型选择（自动同步）
 
 ```rust
-// 随机选择 Chrome 指纹
+// 随机选择 Chrome Fingerprint
 let result = get_random_fingerprint_by_browser("chrome")?;
 
 // ✅ TCP Profile 已自动同步
@@ -294,7 +294,7 @@ let result = get_random_fingerprint_by_browser("chrome")?;
 ```rust
 use fingerprint_core::types::OperatingSystem;
 
-// 指定 Linux 操作系统
+// 指定 Linux Operating System
 let result = get_random_fingerprint_with_os(Some(OperatingSystem::Linux))?;
 
 // ✅ TCP Profile 已自动同步为 Linux

@@ -1,7 +1,7 @@
 # 架构设计文档
 
-**版本**: v2.1.0 (Workspace with Active/Passive Defense)  
-**最后更新**: 2026-02-13
+**版本 (Version)**: v2.1.0 (Workspace with Active/Passive Defense)  
+**最后更新 (Last Updated)**: 2026-02-13
 
 ---
 
@@ -27,7 +27,7 @@
 
 - **97+ 浏览器指纹配置**：Chrome、Firefox、Safari、Opera、Edge 等主流浏览器及移动端变体
 - **完整 TLS 指纹生成**：ClientHello Spec、密码套件、扩展等
-- **高性能 HTTP 客户端**：支持 HTTP/1.1、HTTP/2、HTTP/3 (QUIC)
+- **高性能 HTTP 客户端 (HTTP Client)**：支持 HTTP/1.1、HTTP/2、HTTP/3 (QUIC)
 - **真实环境验证**：Google Earth API 端到端测试，100% 通过率
 - **机器学习分类**：三层分层分类器架构，95%+ 准确率
 - **被动识别防护**：JA4+全栈指纹识别与威胁检测
@@ -41,7 +41,7 @@
 - **HTTP/3**: quinn 0.11 + h3 0.0.8
 - **异步运行时**: tokio 1.40
 - **密码学库**: ring 0.17.14（真实密钥生成）
-- **连接池**: netconnpool-rust（自定义）
+- **连接池支持 (Connection Pool Support)**: netconnpool-rust（自定义）
 - **DNS 解析**: hickory-resolver 0.24（可选）
 - **机器学习**: candle-core 0.8（Rust ML框架）
 
@@ -81,7 +81,7 @@ fingerprint-rust/
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── headers.rs         # HTTP 请求头生成
+│   │       ├── headers.rs         # HTTP HTTP 请求头生成 (HTTP Headers Generation)
 │   │       ├── useragent.rs       # User-Agent 生成
 │   │       └── http2_config.rs    # HTTP/2 配置
 │   │
@@ -185,7 +185,7 @@ fingerprint-rust/
 │           ├── lib.rs
 │           └── fingerprint.rs     # 统一公共API
 │
-├── examples/                      # 使用示例
+├── examples/                      # 使用示例 (Usage Examples)
 ├── tests/                         # 集成测试
 ├── docs/                          # 文档
 ├── config/                        # 配置文件
@@ -261,7 +261,7 @@ rand = "0.8"
   - `UserAgentTemplate`: User-Agent 模板结构
 - `utils.rs`: 工具函数
   - `random_choice`: 线程安全的随机选择
-  - `extract_chrome_version`: 从 User-Agent 提取 Chrome 版本
+  - `extract_chrome_version`: 从 User-Agent 提取 Chrome 版本 (Version)
   - `extract_platform`: 从 User-Agent 提取平台信息
   - `infer_browser_from_profile_name`: 从 profile 名称推断浏览器类型
   - `is_mobile_profile`: 判断是否为移动端 profile
@@ -300,11 +300,11 @@ pub use dicttls::*;
   - `stats.rs`: 统计信息
   - `observable.rs`: 可观察性
   - `metadata.rs`: 元数据
-  - `version.rs`: TLS 版本
+  - `version.rs`: TLS 版本 (Version)
 - `tls_extensions.rs`: TLS 扩展实现
   - `SNIExtension`: SNI 扩展
   - `KeyShareExtension`: KeyShare 扩展
-  - `SupportedVersionsExtension`: 支持的 TLS 版本
+  - `SupportedVersionsExtension`: 支持的 TLS 版本 (Version)
   - 等等...
 - `tls_handshake/`: TLS 握手消息构建
   - `builder.rs`: TLS Handshake Builder
@@ -360,7 +360,7 @@ pub use profiles::{
 **代码位置**: `crates/fingerprint-headers/src/`
 
 **包含模块**:
-- `headers.rs`: HTTP 请求头生成
+- `headers.rs`: HTTP HTTP 请求头生成 (HTTP Headers Generation)
   - `HTTPHeaders`: HTTP 请求头结构
   - `generate_headers`: 根据浏览器类型生成标准 Headers
   - `random_language`: 随机选择语言（30+ 种语言）
@@ -436,7 +436,7 @@ pub use http2_config::{chrome_http2_settings, HTTP2Settings, ...};
 - `fingerprint-profiles`: 指纹配置
 - `fingerprint-headers`: HTTP Headers
 - `rustls`, `h2`, `quinn`, `h3` (optional): HTTP 协议实现
-- `netconnpool` (optional): 连接池
+- `netconnpool` (optional): 连接池支持 (Connection Pool Support)
 
 **公共 API**:
 ```rust
@@ -473,7 +473,7 @@ pub use http_client::{
 
 **依赖**:
 - `fingerprint-core`: 核心类型
-- `fingerprint-http`: HTTP 客户端（用于 IPInfo API）
+- `fingerprint-http`: HTTP 客户端 (HTTP Client)（用于 IPInfo API）
 - `hickory-resolver`: DNS 解析
 - `serde`, `toml`, `serde_yaml`: 配置解析
 - `tokio`, `futures`: 异步运行时
@@ -719,8 +719,8 @@ tests/
 examples/
 ├── basic.rs                     # 基础使用示例
 ├── custom_tls_fingerprint.rs    # 自定义 TLS 指纹
-├── http2_with_pool.rs           # HTTP/2 + 连接池
-├── http3_with_pool.rs           # HTTP/3 + 连接池
+├── http2_with_pool.rs           # HTTP/2 + 连接池支持 (Connection Pool Support)
+├── http3_with_pool.rs           # HTTP/3 + 连接池支持 (Connection Pool Support)
 ├── dns_service.rs               # DNS 服务示例
 └── ...
 ```
@@ -744,7 +744,7 @@ examples/
 
 ### 7.3 测试覆盖
 
-- ✅ 随机指纹获取
+- ✅ 随机指纹获取 (Random Fingerprint Generation)
 - ✅ 指定浏览器类型获取指纹
 - ✅ User-Agent 生成
 - ✅ HTTP Headers 生成和管理
@@ -860,4 +860,4 @@ cargo check -p fingerprint-tls
 ---
 
 **文档版本**: v2.0.0  
-**最后更新**: 2025-12-14
+**最后更新 (Last Updated)**: 2025-12-14

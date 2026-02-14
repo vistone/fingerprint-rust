@@ -4,7 +4,7 @@
 
 We take security seriously and provide security updates for the following versions:
 
-| 版本 | Supported          | Notes                        |
+| 版本 (Version) | Supported          | Notes                        |
 | ------- | ------------------ | ---------------------------- |
 | 2.1.x   | :white_check_mark: | Current stable release       |
 | 2.0.x   | :white_check_mark: | LTS, security fixes only     |
@@ -84,12 +84,12 @@ We use CVSS v3.1 for severity assessment:
 1. **Develop Fix**: Create patch in private branch
 2. **Internal Review**: Security team reviews fix
 3. **测试**: Comprehensive 测试 including regression tests
-4. **Prepare Release**: Create new 版本 with fix
+4. **Prepare Release**: Create new 版本 (Version) with fix
 5. **Coordinate Disclosure**: 
    - Notify reporter
    - Prepare security advisory
    - Update CHANGELOG
-6. **Release**: Publish fixed 版本
+6. **Release**: Publish fixed 版本 (Version)
 7. **Public Disclosure**: Publish security advisory
 8. **Notify Users**: Announce via GitHub, social media, etc.
 
@@ -289,6 +289,6 @@ This security policy may be updated from time to time. Significant changes will 
 - Security advisories
 - Project documentation
 
-**最后更新**: 2026-01-06  
-**版本**: 1.0  
+**最后更新 (Last Updated)**: 2026-01-06  
+**版本 (Version)**: 1.0  
 **Next Review**: 2026-04-06

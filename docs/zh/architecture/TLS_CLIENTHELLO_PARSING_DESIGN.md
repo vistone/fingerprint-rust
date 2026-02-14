@@ -107,7 +107,7 @@ crates/fingerprint/src/bin/
 
 ```rust
 struct ClientHello {
-    // TLS 版本 (2 bytes)
+    // TLS 版本 (Version) (2 bytes)
     client_version: u16,  // 0x0303 = TLS 1.2
     
     // 随机数 (32 bytes)

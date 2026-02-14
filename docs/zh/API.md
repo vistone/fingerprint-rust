@@ -1,16 +1,16 @@
-# API 参考文档
+# API 参考 (API Reference)
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 
 
 
-## 核心函数
+## 核心函数 (Core Functions)
 
-### 随机指纹获取
+### 随机指纹获取 (Random Fingerprint Generation)
 
 ```rust
 // 随机指纹（推荐）
@@ -45,7 +45,7 @@ pub fn generate_headers(
 ) -> HTTPHeaders
 ```
 
-## 数据结构
+## 数据结构 (Data Structures)
 
 ### FingerprintResult
 
@@ -123,9 +123,9 @@ impl OperatingSystem {
 }
 ```
 
-## 使用示例
+## 使用示例 (Usage Examples)
 
-### 基础使用
+### 基础使用 (Basic Usage)
 
 ```rust
 use fingerprint::*;
@@ -190,7 +190,7 @@ headers.set_headers(&[
 let headers_map = headers.to_map();
 ```
 
-### HTTP 客户端
+### HTTP 客户端 (HTTP Client)
 
 ```rust
 use fingerprint::{HttpClient, HttpClientConfig, chrome_133};

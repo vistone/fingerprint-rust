@@ -113,19 +113,19 @@ fingerprint-rust/
 │   │       ├── lib.rs
 │   │       └── detector.rs        # ML异常检测实现
 │   │
-│   ├── fingerprint-canvas/       # Canvas 指纹识别
+│   ├── fingerprint-canvas/       # Canvas Fingerprinting
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
 │   │       └── canvas.rs          # Canvas指纹分析
 │   │
-│   ├── fingerprint-webgl/        # WebGL 指纹识别
+│   ├── fingerprint-webgl/        # WebGL Fingerprinting
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
 │   │       └── webgl.rs           # WebGL指纹分析
 │   │
-│   ├── fingerprint-audio/        # Audio Context 指纹
+│   ├── fingerprint-audio/        # Audio Context Fingerprint
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
@@ -255,7 +255,7 @@ rand = "0.8"
 **代码位置**: `crates/fingerprint-core/src/`
 
 **包含模块**:
-- `types.rs`: 浏览器类型、操作系统类型等核心类型
+- `types.rs`: Browser Type、操作系统类型等核心类型
   - `BrowserType`: 浏览器类型枚举
   - `OperatingSystem`: 操作系统类型枚举
   - `UserAgentTemplate`: User-Agent 模板结构
@@ -314,7 +314,7 @@ pub use dicttls::*;
 
 **依赖**:
 - `fingerprint-core`: 核心类型和字典
-- `sha2`: 哈希函数（JA4 指纹）
+- `sha2`: 哈希函数（JA4 Fingerprint）
 - `thiserror`: 错误处理
 - `ring` (optional): 真实密钥生成
 - `rand` (optional): 随机数生成（用于握手）
@@ -495,7 +495,7 @@ pub use dns::{
 
 **包含模块**:
 - `passive/`: 协议层被动分析
-  - `tcp.rs`: JA4T (TCP) 指纹识别，底层 OS 特征审计
+  - `tcp.rs`: JA4T (TCP) Fingerprinting，底层 OS 特征审计
   - `tls.rs`: JA4 (TLS) 静态特征解析
   - `http.rs`: JA4H (HTTP) 特征提取与 HTTP/2 二进制帧支持
   - `consistency.rs`: 跨层一致性校验引擎
@@ -516,14 +516,14 @@ pub use dns::{
 **包含模块**:
 - `fingerprint-api-noise`: API 噪声生成与对抗
 - `fingerprint-gateway`: Rust API Gateway（速率限制、监控）
-- `fingerprint-canvas`: Canvas 指纹
-- `fingerprint-webgl`: WebGL 指纹
-- `fingerprint-audio`: Audio 指纹
+- `fingerprint-canvas`: Canvas Fingerprint
+- `fingerprint-webgl`: WebGL Fingerprint
+- `fingerprint-audio`: Audio Fingerprint
 - `fingerprint-fonts`: 字体指纹
-- `fingerprint-storage`: Storage 指纹
-- `fingerprint-webrtc`: WebRTC 指纹
-- `fingerprint-hardware`: Hardware 指纹
-- `fingerprint-timing`: Timing 指纹
+- `fingerprint-storage`: Storage Fingerprint
+- `fingerprint-webrtc`: WebRTC Fingerprint
+- `fingerprint-hardware`: Hardware Fingerprint
+- `fingerprint-timing`: Timing Fingerprint
 - `fingerprint-ml`: ML 指纹分析
 - `fingerprint-anomaly`: 异常检测
 

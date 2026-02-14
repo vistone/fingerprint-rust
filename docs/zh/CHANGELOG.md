@@ -102,7 +102,7 @@ let random = get_random_fingerprint_by_browser("Safari")?;  // 从 15+ 版本随
 
 - ✅ **JA4+ 全系列指纹支持**:
   - **JA4 (TLS)**: 深度集成全协议栈 TLS 指纹，支持客户端 ClientHello 字节流解析与主动生成对比。
-  - **JA4H (HTTP)**: 整合方法、版本、Cookie 状态、Referer 状态及自定义 Header 排序特征。
+  - **JA4H (HTTP)**: 整合方法、版本 (Version)、Cookie 状态、Referer 状态及自定义 Header 排序特征。
   - **JA4T (TCP)**: 基于 Window Size、TCP Options、MSS、TTL 实现底层协议栈被动识别。
 
 - ✅ **跨层一致性分析 (Consistency Analyzer)**:
@@ -181,7 +181,7 @@ let random = get_random_fingerprint_by_browser("Safari")?;  // 从 15+ 版本随
 ### 重大架构改进
 
 - ✅ **全协议多路复用架构**: 实现 HTTP/1.1、HTTP/2、HTTP/3 的统一连接/会话管理
-  - HTTP/1.1: 基于 netconnpool 的 TCP 连接池（L4 层池化）
+  - HTTP/1.1: 基于 netconnpool 的 TCP 连接池支持 (Connection Pool Support)（L4 层池化）
   - HTTP/2: 实现 H2SessionPool，池化 SendRequest 句柄（L7 层池化）
   - HTTP/3: 实现 H3SessionPool，池化 QUIC 会话句柄（L7 层池化）
   - 性能提升：高并发场景下吞吐量提升 5-10 倍
@@ -334,7 +334,7 @@ let random = get_random_fingerprint_by_browser("Safari")?;  // 从 15+ 版本随
 ### 新增
 - ✅ 完整的 TLS Client Hello Spec 实现
 - ✅ 69 个真实浏览器指纹配置
-- ✅ JA4 指纹生成（sorted 和 unsorted 版本）
+- ✅ JA4 指纹生成（sorted 和 unsorted 版本 (Version)）
 - ✅ 指纹比较和最佳匹配查找
 - ✅ GREASE 值过滤和处理
 - ✅ HTTP/2 配置（Settings、Pseudo Header Order、Header Priority）

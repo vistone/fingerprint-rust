@@ -1,8 +1,8 @@
 # TCP 指纹应用指南
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 
@@ -135,7 +135,7 @@ wireshark capture.pcap
    - 某些网络环境可能会修改 TCP 参数（如 NAT、防火墙）
    - 实际发送的参数可能与设置的值不完全一致
 
-4. **连接池**
+4. **连接池支持 (Connection Pool Support)**
    - 连接池中的连接在创建时应用 TCP Profile
    - 复用的连接会保持原有的 TCP 参数
    - 建议在创建连接池之前就同步 TCP Profile
@@ -201,9 +201,9 @@ socket.set_send_buffer_size(tcp_profile.window_size as usize)?;
 
 ## 同步指南
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
+**文档类型 (Document Type)**: 技术文档
 
 ---
 
@@ -257,7 +257,7 @@ profile = profile.with_synced_tcp_profile(&ua);
 | `Macintosh` / `Mac OS X` | macOS | 64 | 65535 |
 | `Linux` / `X11` | Linux | 64 | 65535 |
 
-## 使用示例
+## 使用示例 (Usage Examples)
 
 ### 示例 1: 随机选择（自动同步）
 

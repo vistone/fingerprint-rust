@@ -10,14 +10,14 @@
 
 ## 概述
 
-fingerprint-rust 现在支持**统一指纹生成**，确保浏览器指纹（User-Agent、TLS 指纹）和 TCP 指纹（p0f）完全同步，避免因指纹不一致而被检测。
+fingerprint-rust 现在支持**统一指纹生成**，确保浏览器指纹（User-Agent、TLS Fingerprint）和 TCP Fingerprint（p0f）完全同步，避免因指纹不一致而被检测。
 
 ## 问题背景
 
 在之前的实现中，浏览器指纹和 TCP 指纹是独立生成的：
 
 - **浏览器指纹**：包含 User-Agent、TLS ClientHello、HTTP/2 Settings 等
-- **TCP 指纹**：包含 TTL、Window Size、MSS、Window Scale 等
+- **TCP Fingerprint**：包含 TTL、Window Size、MSS、Window Scale 等
 
 如果浏览器指纹显示是 "Chrome on Windows"，但 TCP 指纹显示是 "Linux"，就会被检测系统识别为异常。
 
@@ -39,10 +39,10 @@ use fingerprint_profiles::profiles::generate_unified_fingerprint;
 // 生成 User-Agent
 let user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36";
 
-// 生成统一的指纹（浏览器指纹 + TCP 指纹）
+// 生成统一的指纹（浏览器指纹 + TCP Fingerprint）
 let profile = generate_unified_fingerprint("chrome_135", user_agent)?;
 
-// profile.tcp_profile 现在包含与 User-Agent 匹配的 TCP 指纹
+// profile.tcp_profile 现在包含与 User-Agent 匹配的 TCP Fingerprint
 // Windows -> TTL=128, Window Size=64240, MSS=1460, Window Scale=8
 ```
 
@@ -82,7 +82,7 @@ let tcp_profile = TcpProfile::from_user_agent(user_agent);
 
 ## TCP Profile 映射表
 
-| 操作系统 | TTL | Window Size | MSS | Window Scale |
+| Operating System | TTL | Window Size | MSS | Window Scale |
 |---------|-----|-------------|-----|--------------|
 | Windows 10/11 | 128 | 64240 | 1460 | 8 |
 | macOS 13/14/15 | 64 | 65535 | 1460 | 6 |
@@ -99,7 +99,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_agent = get_user_agent_by_profile_name("chrome_135")?;
     println!("User-Agent: {}", user_agent);
     
-    // 2. 生成统一的指纹（浏览器指纹 + TCP 指纹）
+    // 2. 生成统一的指纹（浏览器指纹 + TCP Fingerprint）
     let profile = generate_unified_fingerprint("chrome_135", &user_agent)?;
     
     // 3. 验证 TCP Profile 已同步
@@ -124,7 +124,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
    - 使用 `generate_unified_fingerprint()` 确保浏览器指纹和 TCP 指纹同步
 
 2. **在生成 User-Agent 后立即同步**
-   - 不要单独生成浏览器指纹和 TCP 指纹
+   - 不要单独生成浏览器指纹和 TCP Fingerprint
    - 确保它们来自同一个 User-Agent
 
 3. **验证指纹一致性**
@@ -246,7 +246,7 @@ test profiles::tests::test_unified_fingerprint_generation ... ok
    - Linux → TTL=64, Window Size=65535
 
 3. **确保一致性**
-   - 浏览器指纹（User-Agent）和 TCP 指纹（p0f）完全匹配
+   - 浏览器指纹（User-Agent）和 TCP Fingerprint（p0f）完全匹配
    - 避免被检测系统识别为异常
 
 ## 完整示例
@@ -260,7 +260,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let user_agent = get_user_agent_by_profile_name("chrome_135")?;
     println!("User-Agent: {}", user_agent);
     
-    // 2. 生成统一的指纹（浏览器指纹 + TCP 指纹）
+    // 2. 生成统一的指纹（浏览器指纹 + TCP Fingerprint）
     let profile = generate_unified_fingerprint("chrome_135", &user_agent)?;
     
     // 3. 验证 TCP Profile 已同步

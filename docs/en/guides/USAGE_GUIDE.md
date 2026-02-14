@@ -55,7 +55,7 @@ use fingerprint::{get_random_fingerprint_with_os, OperatingSystem, HttpClient};
 // 随机选择指纹，但指定操作系统为 Windows
 let fp_result = get_random_fingerprint_with_os(Some(OperatingSystem::Windows))?;
 
-// 随机选择 Chrome 指纹，指定操作系统为 macOS
+// 随机选择 Chrome Fingerprint，指定操作系统为 macOS
 let fp_result = get_random_fingerprint_by_browser_with_os(
     "chrome",
     Some(OperatingSystem::MacOS),
@@ -145,7 +145,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     
     // 发送请求
     let response = client.get("https://httpbin.org/get")?;
-    println!("状态码: {}", response.status_code);
+    println!("Status Code: {}", response.status_code);
     
     Ok(())
 }
@@ -227,7 +227,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```rust
 pub struct FingerprintResult {
-    pub profile: ClientProfile,        // TLS 指纹配置
+    pub profile: ClientProfile,        // TLS fingerprint configuration
     pub user_agent: String,            // 对应的 User-Agent
     pub hello_client_id: String,      // Client Hello ID（如 "Chrome-133"）
     pub headers: HTTPHeaders,          // 标准 HTTP 请求头

@@ -111,7 +111,7 @@ pub struct BrowserFingerprint {
 
 pub struct TLSConfig {
     pub ja3: &'static str,          // JA3指纹
-    pub cipher_suites: Vec<&'static str>,  // 密码套件
+    pub cipher_suites: Vec<&'static str>,  // Cipher Suite
     pub extensions: Vec<&'static str>,     // 扩展字段
     pub signature_algorithms: Vec<&'static str>, // 签名算法
     pub supported_groups: Vec<&'static str>,     // 支持的群组

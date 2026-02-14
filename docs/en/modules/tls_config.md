@@ -45,7 +45,7 @@ let profile = mapped_tls_clients().get("chrome_133").unwrap();
 let client_hello_spec = profile.get_client_hello_spec()?;
 
 // 使用配置
-println!("密码套件: {:?}", client_hello_spec.cipher_suites);
+println!("Cipher Suite: {:?}", client_hello_spec.cipher_suites);
 println!("椭圆曲线: {:?}", client_hello_spec.elliptic_curves);
 println!("ALPN: {:?}", client_hello_spec.alpn_protocols);
 ```

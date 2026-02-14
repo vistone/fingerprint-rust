@@ -1,4 +1,4 @@
-# 如何抓取真实浏览器的 TLS 指纹
+# 如何抓取真实浏览器的 TLS Fingerprint
 
 ## 方法概述
 
@@ -29,7 +29,7 @@
    - 在 Wireshark 中找到 TLS Handshake Protocol: Client Hello
    - 右键 → Follow → TLS Stream
    - 查看 ClientHello 消息的详细信息：
-     - Cipher Suites（密码套件）
+     - Cipher Suites（Cipher Suite）
      - Extensions（扩展）
      - Supported Versions（支持的 TLS 版本）
      - 扩展顺序
@@ -65,7 +65,7 @@ tshark -r capture.pcap -Y "tls.handshake.type == 1" -V | grep -A 100 "Client Hel
 
 ## 3. 使用 JA3/JA4 工具
 
-### JA3 指纹
+### JA3 Fingerprint
 
 JA3 是一个 TLS 指纹识别方法，可以快速识别浏览器类型。
 
@@ -77,12 +77,12 @@ pip install ja3
 ja3 -f capture.pcap
 ```
 
-### JA4 指纹（更现代）
+### JA4 Fingerprint（更现代）
 
 JA4 是 JA3 的改进版本，提供更详细的指纹信息。
 
 ```bash
-# 使用 tshark 提取 JA4 指纹
+# 使用 tshark 提取 JA4 Fingerprint
 tshark -r capture.pcap -Y "tls.handshake.type == 1" \
   -T fields -e tls.handshake.ja4
 ```
@@ -161,7 +161,7 @@ func main() {
 - **BrowserLeaks**: https://browserleaks.com/
 - **AmIUnique**: https://amiunique.org/
 
-这些网站可以显示浏览器的各种指纹信息，包括 TLS 指纹。
+这些网站可以显示浏览器的各种指纹信息，包括 TLS Fingerprint。
 
 ## 8. 使用 Python 脚本自动抓取
 

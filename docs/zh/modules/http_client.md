@@ -8,7 +8,7 @@
 **这是正确的思路！** 我们不应该依赖 reqwest（它使用固定的 TLS 指纹），而应该：
 1. ✅ 使用 netconnpool 管理连接
 2. ✅ 使用 fingerprint-rust 的配置
-3. ✅ 自己实现 HTTP 客户端
+3. ✅ 自己实现 HTTP 客户端 (HTTP Client)
 
 ## 🎯 已实现的功能
 
@@ -27,14 +27,14 @@ crates/fingerprint-http/src/http_client/
 ├── http1.rs        - HTTP/1.1 实现
 ├── http2.rs        - HTTP/2 实现 ✅
 ├── http3.rs        - HTTP/3 实现 ✅
-├── http1_pool.rs   - HTTP/1.1 连接池 ✅
-├── http2_pool.rs   - HTTP/2 连接池 ✅
-├── http3_pool.rs   - HTTP/3 连接池 ✅
+├── http1_pool.rs   - HTTP/1.1 连接池支持 (Connection Pool Support) ✅
+├── http2_pool.rs   - HTTP/2 连接池支持 (Connection Pool Support) ✅
+├── http3_pool.rs   - HTTP/3 连接池支持 (Connection Pool Support) ✅
 ├── pool.rs         - 连接池管理器 ✅
 └── tls.rs          - TLS 连接支持 ✅
 ```
 
-### 1. HTTP 客户端 (`src/http_client/mod.rs`)
+### 1. HTTP 客户端 (HTTP Client) (`src/http_client/mod.rs`)
 
 ```rust
 pub struct HttpClient {
@@ -197,9 +197,9 @@ test test_google_earth_api ... ❌ (响应解析问题)
 1. **httpbin.org 503**: 服务暂时不可用（不是我们的问题）
 2. **Google Earth API 失败**: 响应解析需要改进（chunked encoding）
 
-## 🎯 使用示例
+## 🎯 使用示例 (Usage Examples)
 
-### 基础使用
+### 基础使用 (Basic Usage)
 
 ```rust
 use fingerprint::*;
@@ -207,7 +207,7 @@ use fingerprint::*;
 // 1. 获取浏览器指纹
 let fp_result = get_random_fingerprint_by_browser("chrome")?;
 
-// 2. 创建 HTTP 客户端
+// 2. 创建 HTTP 客户端 (HTTP Client)
 let client = HttpClient::with_profile(
     fp_result.profile.clone(),
     fp_result.headers.clone(),
@@ -408,7 +408,7 @@ pub async fn send_http2_request_with_pool(
 
 - [hyper](https://github.com/hyperium/hyper) - HTTP 实现
 - [h2](https://github.com/hyperium/h2) - HTTP/2 实现
-- [reqwest](https://github.com/seanmonstar/reqwest) - HTTP 客户端（但 TLS 固定）
+- [reqwest](https://github.com/seanmonstar/reqwest) - HTTP 客户端 (HTTP Client)（但 TLS 固定）
 
 ### TLS 实现参考
 

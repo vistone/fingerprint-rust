@@ -809,7 +809,7 @@ let new_builder = rustls::ClientConfig::builder()
 
 **已实现功能**:
 
-1. **TCP/IP 指纹识别 (p0f)**
+1. **TCP/IP Fingerprinting (p0f)**
    - 移植了 `p0f.rs` 和 `p0f_parser.rs`
    - 支持解析 `p0f.fp` 签名文件
    - 能够被动识别操作系统和 TCP 协议栈特征
@@ -898,7 +898,7 @@ let result = analyzer.analyze_packet(&packet)?;
 **迈向全栈伪装**:
 
 1. **应用 TCP 设置（攻击侧）**
-   - 既然我们已经能识别 TCP 指纹（防御侧），下一步就是在发起连接时（攻击侧）
+   - 既然我们已经能识别 TCP Fingerprint（防御侧），下一步就是在发起连接时（攻击侧）
    - 利用 `socket2` 库在 `fingerprint-http` 中动态设置：
      - TTL（Time To Live）
      - Window Size（窗口大小）

@@ -1,7 +1,7 @@
 # TLS模块文档
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
+**版本 (Version)**: v1.0  
+**最后更新 (Last Updated)**: 2026-02-13  
 **模块**: fingerprint-tls
 
 ---
@@ -107,7 +107,7 @@ let public_key = key_pair.public_key();
 - [fingerprint-http](http.md) - HTTP协议支持
 - [fingerprint-profiles](profiles.md) - 浏览器指纹配置
 
-## 🧪 使用示例
+## 🧪 使用示例 (Usage Examples)
 
 ### 基础TLS配置
 ```rust
@@ -142,4 +142,4 @@ let handshake = TLSHandshakeBuilder::new()
 ```
 
 ---
-*最后更新: 2026-02-13*
+*最后更新 (Last Updated): 2026-02-13*
