@@ -147,15 +147,22 @@ mod tests {
 
     #[test]
     fn test_gather_metrics() {
+        // Record some metrics first
+        record_http_request("GET", "/health", 200);
+        record_rate_limit_check("Free", true);
+        update_redis_connections(5);
+
         let result = gather_metrics();
         assert!(result.is_ok());
         let metrics = result.unwrap();
-        // Check that metrics output contains some of our metric names
+
+        // Check that metrics output contains the correct metric names with _gateway prefix
         assert!(
-            metrics.contains("fingerprint_http_requests_total")
-                || metrics.contains("fingerprint_rate_limit_checks_total")
+            metrics.contains("fingerprint_gateway_http_requests_total")
+                || metrics.contains("fingerprint_gateway_rate_limit_checks_total")
+                || metrics.contains("fingerprint_gateway_redis_connections_active")
                 || !metrics.is_empty(),
-            "Metrics output should contain metric names or be non-empty"
+            "Metrics output should contain gateway metric names or be non-empty"
         );
     }
 }
