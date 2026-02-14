@@ -9,16 +9,13 @@ use std::time::Duration;
 use std::collections::HashMap;
 
 #[cfg(feature = "connection-pool")]
-use std::net::{SocketAddr, TcpStream};
+use std::net::TcpStream;
 
 #[cfg(feature = "connection-pool")]
 use std::sync::{Arc, Mutex};
 
 #[cfg(feature = "connection-pool")]
 use netconnpool::{Config as PoolConfig, ConnectionType, Pool};
-
-#[cfg(feature = "connection-pool")]
-use log;
 
 /// connection poolmanageer
 #[cfg(feature = "connection-pool")]

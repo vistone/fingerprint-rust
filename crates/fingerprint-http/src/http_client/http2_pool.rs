@@ -12,7 +12,7 @@ use super::pool::ConnectionPoolManager;
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use std::sync::Arc;
-use std::time::{Duration, Instant}; // 添加time测量support
+use std::time::Instant;
 
 /// useconnection poolsend HTTP/2 request
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
@@ -34,6 +34,8 @@ pub async fn send_http2_request_with_pool(
 
     // from connection poolGetconnection
     let pool = pool_manager.get_pool(host, port)?;
+
+    let start = Instant::now();
 
     // Get TCP connection
     let conn = pool.get_tcp().map_err(|e| {
@@ -107,22 +109,19 @@ pub async fn send_http2_request_with_pool(
  // applicationfingerprintconfiguration in HTTP/2 Settings
  if let Some(profile) = &config.profile {
  // settingsinitialbeginningwindowsize
- if let Some(&window_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16()) {
+ if let Some(&window_size) = profile.http2_settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16()) {
  builder.initial_window_size(window_size);
  }
 
  // settingsmaximumframesize
- if let Some(&max_frame_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxFrameSize.as_u16()) {
+ if let Some(&max_frame_size) = profile.http2_settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxFrameSize.as_u16()) {
  builder.max_frame_size(max_frame_size);
  }
 
  // settingsmaximumheaderlistsize
- if let Some(&max_header_list_size) = profile.settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxHeaderListSize.as_u16()) {
+ if let Some(&max_header_list_size) = profile.http2_settings.get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxHeaderListSize.as_u16()) {
  builder.max_header_list_size(max_header_list_size);
  }
-
- // settingsconnectionlevelwindowsize (Connection Flow)
- builder.initial_connection_window_size(profile.connection_flow);
  }
 
  let (client, h2_conn) = builder.handshake(tls_stream)
@@ -307,7 +306,12 @@ mod tests {
             ..Default::default()
         };
 
-        let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
+        let pool_manager = {
+            #[allow(clippy::arc_with_non_send_sync)]
+            {
+                Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()))
+            }
+        };
 
         let request = HttpRequest::new(HttpMethod::Get, "https://httpbin.org/get");
 

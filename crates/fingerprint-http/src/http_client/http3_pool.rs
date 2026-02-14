@@ -13,7 +13,7 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
 use std::sync::Arc;
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
-use std::time::{Duration, Instant}; // 添加time测量support
+use std::time::{Duration, Instant};
 
 /// useconnection poolsend HTTP/3 request
 #[cfg(all(feature = "connection-pool", feature = "http3"))]
@@ -29,9 +29,11 @@ pub async fn send_http3_request_with_pool(
     use h3_quinn::quinn;
     use http::{Request as HttpRequest2, Version};
 
-    // Fix: use H3SessionPool implementtrue multiplexreuse
+    //Fix: use H3SessionPool implementtrue multiplexreuse
     let session_pool = pool_manager.h3_session_pool();
     let key = format!("{}:{}", host, port);
+
+    let start = Instant::now();
 
     // Get or Createsession
     let send_request_mutex = session_pool
@@ -270,7 +272,12 @@ mod tests {
             ..Default::default()
         };
 
-        let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
+        let pool_manager = {
+            #[allow(clippy::arc_with_non_send_sync)]
+            {
+                Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()))
+            }
+        };
 
         let request = HttpRequest::new(HttpMethod::Get, "https://cloudflare-quic.com/");
 

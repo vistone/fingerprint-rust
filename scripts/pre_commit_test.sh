@@ -53,19 +53,22 @@ run_test() {
 # 1. 代码格式化检查
 run_test "代码格式化检查" "cargo fmt --all -- --check"
 
-# 2. 编译检查
+# 2. 文档规制检查
+run_test "文档规制检查" "python3 scripts/verify_doc_pairs.py"
+
+# 3. 编译检查
 run_test "编译检查 (cargo check)" "cargo check --workspace"
 
-# 3. Clippy 检查
+# 4. Clippy 检查
 run_test "Clippy 检查" "cargo clippy --workspace --all-targets --features 'rustls-tls,compression,http2,http3,connection-pool,dns' -- -D warnings"
 
-# 4. 单元测试
+# 5. 单元测试
 run_test "单元测试" "cargo test --workspace --lib --quiet"
 
-# 5. 集成测试（测试 tests/ 目录下的所有测试文件）
+# 6. 集成测试（测试 tests/ 目录下的所有测试文件）
 run_test "集成测试" "cargo test --workspace --quiet 2>&1 | grep -E '(test result|error)' || cargo test --workspace --quiet"
 
-# 6. 安全审计 (cargo-deny)
+# 7. 安全审计 (cargo-deny)
 if command -v cargo-deny &> /dev/null; then
     run_test "安全审计 (cargo-deny)" "cargo-deny check"
 else

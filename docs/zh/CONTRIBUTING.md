@@ -392,6 +392,15 @@ proptest! {
 - 更新 `docs/` 目录中的相关指南
 - 保持 CHANGELOG.md 最新
 
+### 文档规制（必须遵守）
+
+- 文档必须成对放在 `docs/en/...` 与 `docs/zh/...`
+- 更新任一语言时，必须在同一次变更中更新另一语言
+- 禁止在仓库根目录新增文件，使用 `docs/`、`config/`、`scripts/` 等目录
+- 翻译草稿与记录放在 `docs/translation-notes/`（已被 git 忽略）
+- 提交前运行 `python3 scripts/verify_doc_pairs.py` 或 `./scripts/pre_commit_test.sh`
+- 详细规制见 `docs/zh/PROJECT_POLICIES.md`
+
 ### API 文档
 
 生成和检查文档：

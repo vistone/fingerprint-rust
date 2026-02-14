@@ -98,7 +98,12 @@ mod tests {
     fn test_http1_with_pool() {
         let request = HttpRequest::new(HttpMethod::Get, "http://example.com/");
         let config = HttpClientConfig::default();
-        let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
+        let pool_manager = {
+            #[allow(clippy::arc_with_non_send_sync)]
+            {
+                Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()))
+            }
+        };
 
         let result =
             send_http1_request_with_pool("example.com", 80, "/", &request, &config, &pool_manager);
@@ -115,7 +120,12 @@ mod tests {
     fn test_connection_reuse() {
         let request = HttpRequest::new(HttpMethod::Get, "http://example.com/");
         let config = HttpClientConfig::default();
-        let pool_manager = Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()));
+        let pool_manager = {
+            #[allow(clippy::arc_with_non_send_sync)]
+            {
+                Arc::new(ConnectionPoolManager::new(PoolManagerConfig::default()))
+            }
+        };
 
         // 第oncerequest
         let _ =

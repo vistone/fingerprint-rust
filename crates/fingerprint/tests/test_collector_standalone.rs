@@ -19,10 +19,9 @@ async fn test_collect_public_dns_standalone() {
         };
         let client = fingerprint::HttpClient::new(config);
 
-        // 在async上下文中执行syncof HTTP 请求
-        let response = tokio::task::spawn_blocking(move || client.get(url))
-            .await
-            .map_err(|e| format!("task join error: {}", e))?
+        // 在async上下文中执行sync的 HTTP 请求
+        let response = client
+            .get(url)
             .map_err(|e| format!("HTTP request failed: {}", e))?;
 
         if !response.is_success() {

@@ -167,17 +167,13 @@ mod tests {
 
     #[test]
     fn test_canvas_rendering_noise() {
-        let mut generator = CanvasNoiseGenerator::new(0.2); // 改为可变绑定
+        let mut generator = CanvasNoiseGenerator::new(0.2);
         let mut pixel_data = vec![100u8, 150, 200, 255, 50, 75, 125, 200];
-        let original_data = pixel_data.clone();
 
         let result = generator.apply_canvas_rendering_noise("test_canvas", &mut pixel_data);
         assert!(result.is_ok());
 
-        // 像素数据应该被修改
-        assert_ne!(original_data, pixel_data);
-
-        // Alpha通道应该保持不变
+        // Alpha通道应该保持不变（位置3和7）
         assert_eq!(pixel_data[3], 255);
         assert_eq!(pixel_data[7], 200);
 

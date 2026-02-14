@@ -394,6 +394,15 @@ proptest! {
 - Update relevant guides in `docs/` directory
 - Keep CHANGELOG.md up to date
 
+### Documentation Policy (Required)
+
+- Keep documentation in paired paths: `docs/en/...` and `docs/zh/...`
+- Update both languages in the same change
+- Do not add new files at the repository root; use `docs/`, `config/`, `scripts/`, etc.
+- Put translation drafts and notes under `docs/translation-notes/` (ignored by git)
+- Run `python3 scripts/verify_doc_pairs.py` or `./scripts/pre_commit_test.sh`
+- See `docs/en/PROJECT_POLICIES.md` for full policy details
+
 ### API Documentation
 
 Generate and review documentation:
