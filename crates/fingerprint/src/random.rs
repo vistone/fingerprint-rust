@@ -10,19 +10,19 @@ use fingerprint_headers::headers::generate_headers;
 use fingerprint_headers::useragent::{
     get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os,
 };
-use fingerprint_profiles::{mapped_tls_clients, BrowserProfile};
+use fingerprint_profiles::mapped_tls_clients;
 
 /// Fingerprint result, including fingerprint, User-Agent and standard HTTP headers
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct FingerprintResult {
-    /// TLS fingerprint configuration
-    pub profile: BrowserProfile,
+    /// Profile name/ID (e.g., "chrome_133")
+    pub profile_id: String,
     /// Matching User-Agent
     pub user_agent: String,
-    /// Client Hello ID (consistent with tls-client)
-    pub hello_client_id: String,
     /// Standard HTTP request headers (including global language support)
     pub headers: fingerprint_headers::headers::HTTPHeaders,
+    /// Browser type
+    pub browser_type: BrowserType,
 }
 
 /// Browser type not found error
@@ -75,17 +75,11 @@ pub fn get_random_fingerprint_with_os(
     let random_name = random_choice_string(&name_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
 
-    let mut profile = clients
+    let profile = clients
         .get(&random_name)
-        .ok_or_else(|| format!("profile {} not found", random_name))?
-        .clone();
+        .ok_or_else(|| format!("profile {} not found", random_name))?;
 
-    if profile.get_client_hello_str().is_empty() {
-        return Err(format!(
-            "profile {} is invalid (empty ClientHelloStr)",
-            random_name
-        ));
-    }
+    let profile_id = profile.id();
 
     // Get matching User-Agent
     let ua = match os {
@@ -93,22 +87,17 @@ pub fn get_random_fingerprint_with_os(
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 Critical fix: Based on User-Agent sync TCP profile
-    // Ensure browser fingerprint and TCP fingerprint are completely consistent
-    profile = profile.with_synced_tcp_profile(&ua);
-
     // Generate standard HTTP headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
     let browser_type = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
     let headers = generate_headers(browser_type, &ua, is_mobile);
 
-    let hello_client_id = profile.get_client_hello_str();
     Ok(FingerprintResult {
-        profile,
+        profile_id,
         user_agent: ua,
-        hello_client_id,
         headers,
+        browser_type,
     })
 }
 
@@ -157,14 +146,11 @@ pub fn get_random_fingerprint_by_browser_with_os(
     let random_name = random_choice_string(&candidate_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
 
-    let mut profile = clients
+    let profile = clients
         .get(&random_name)
-        .ok_or_else(|| format!("profile {} not found", random_name))?
-        .clone();
+        .ok_or_else(|| format!("profile {} not found", random_name))?;
 
-    if profile.get_client_hello_str().is_empty() {
-        return Err(format!("profile {} is invalid (empty ClientHelloStr)", random_name).into());
-    }
+    let profile_id = profile.id();
 
     // Getpairshould User-Agent
     let ua = match os {
@@ -172,22 +158,17 @@ pub fn get_random_fingerprint_by_browser_with_os(
         None => get_user_agent_by_profile_name(&random_name)?,
     };
 
-    // 🔥 closekeyFix: Based on User-Agent sync TCP Profile
-    // ensurebrowserfingerprint and TCP fingerprintcompletelyconsistent
-    profile = profile.with_synced_tcp_profile(&ua);
-
     // Generatestandard HTTP Headers
     let (browser_type_str, _) = infer_browser_from_profile_name(&random_name);
     let is_mobile = is_mobile_profile(&random_name);
     let browser_type_enum = BrowserType::from_str(&browser_type_str).unwrap_or(BrowserType::Chrome);
     let headers = generate_headers(browser_type_enum, &ua, is_mobile);
 
-    let hello_client_id = profile.get_client_hello_str();
     Ok(FingerprintResult {
-        profile,
+        profile_id,
         user_agent: ua,
-        hello_client_id,
         headers,
+        browser_type: browser_type_enum,
     })
 }
 

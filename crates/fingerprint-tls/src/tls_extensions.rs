@@ -14,7 +14,7 @@ use std::io;
 pub type ExtensionID = u16;
 
 /// Padding length calculation function type
-pub type PaddingLengthFn = Box<dyn Fn(usize) -> (usize, bool)>;
+pub type PaddingLengthFn = Box<dyn Fn(usize) -> (usize, bool) + Send>;
 
 /// Key Share Entry
 /// Corresponds to Go version's tls.KeyShare
@@ -26,7 +26,7 @@ pub struct KeyShare {
 
 /// TLS extension trait
 /// Corresponds to Go version's tls.TLSExtension interface
-pub trait TLSExtension: std::fmt::Debug + Any {
+pub trait TLSExtension: std::fmt::Debug + Any + Send {
     /// Getextensionlength (includeheader)
     /// Corresponds to Go version's Len() int
     fn len(&self) -> usize;

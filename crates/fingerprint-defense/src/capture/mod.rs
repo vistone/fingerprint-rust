@@ -64,7 +64,8 @@ impl CaptureEngine {
                     // skipEthernetframeheader (14 bytes)
                     if packet.len() > 14 {
                         let ip_packet = &packet[14..];
-                        if let Ok(p) = PacketParser::parse(ip_packet) {
+                        let parser = PacketParser::new();
+                        if let Ok(p) = parser.parse(ip_packet) {
                             let _ = analyzer.analyze(&p);
                         }
                     }
@@ -119,7 +120,8 @@ impl CaptureEngine {
                     if data.len() > 14 {
                         // skipEthernetframeheader (14 bytes)
                         let ip_packet = &data[14..];
-                        if let Ok(p) = PacketParser::parse(ip_packet) {
+                        let parser = PacketParser::new();
+                        if let Ok(p) = parser.parse(ip_packet) {
                             let _ = self.analyzer.analyze(&p);
                         }
                     }

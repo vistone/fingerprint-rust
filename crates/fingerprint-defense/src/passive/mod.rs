@@ -67,11 +67,11 @@ impl PassiveAnalyzer {
             packet.src_port,
             packet.dst_port,
         ) {
-            (true, 80, _) | (true, _, 80) => ProtocolType::Http,
-            (true, 443, _) | (true, _, 443) => ProtocolType::Https,
+            (true, Some(80), _) | (true, _, Some(80)) => ProtocolType::Http,
+            (true, Some(443), _) | (true, _, Some(443)) => ProtocolType::Https,
             (true, _, _) => ProtocolType::Tcp,
-            (false, 53, _) | (false, _, 53) => ProtocolType::Udp, // simple DNS identify
-            (false, _, _) if packet.src_port > 0 || packet.dst_port > 0 => ProtocolType::Udp,
+            (false, Some(53), _) | (false, _, Some(53)) => ProtocolType::Udp, // simple DNS identify
+            (false, Some(_), _) | (false, _, Some(_)) => ProtocolType::Udp,
             _ => ProtocolType::Icmp,
         };
 
@@ -79,8 +79,8 @@ impl PassiveAnalyzer {
         let mut context = SystemContext::with_ports(
             packet.src_ip,
             packet.dst_ip,
-            packet.src_port,
-            packet.dst_port,
+            packet.src_port.unwrap_or(0),
+            packet.dst_port.unwrap_or(0),
             protocol,
         );
 
@@ -113,9 +113,10 @@ impl PassiveAnalyzer {
         if let Some(tcp) = analysis_result.tcp {
             flow.add_fingerprint(Box::new(tcp));
         }
-        if let Some(http) = analysis_result.http {
-            flow.add_fingerprint(Box::new(http));
-        }
+        // HTTP fingerprint not yet implemented for Fingerprint trait
+        // if let Some(http) = analysis_result.http {
+        //     flow.add_fingerprint(Box::new(http));
+        // }
         if let Some(tls) = analysis_result.tls {
             flow.add_fingerprint(Box::new(tls));
         }

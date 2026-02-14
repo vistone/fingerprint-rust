@@ -51,7 +51,7 @@ async fn send_http2_request_async(
         .next()
         .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
 
-    let tcp = if let Some(profile) = &config.profile {
+    let tcp = if let Some(_profile) = &config.profile {
         // 暂时不使用 TCP fingerprint，直接建立连接
         TcpStream::connect(socket_addrs).await.map_err(|e| {
             HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))

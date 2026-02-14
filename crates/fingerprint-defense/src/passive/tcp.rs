@@ -266,9 +266,10 @@ impl TcpAnalyzer {
     /// Extract MSS
     fn extract_mss(&self, options: &[crate::passive::packet::TcpOption]) -> Option<u16> {
         for opt in options {
-            if opt.kind == 2 && opt.data.len() >= 2 {
+            if opt.kind() == 2 && opt.data().len() >= 2 {
                 // MSS option
-                return Some(u16::from_be_bytes([opt.data[0], opt.data[1]]));
+                let data = opt.data();
+                return Some(u16::from_be_bytes([data[0], data[1]]));
             }
         }
         None
@@ -277,9 +278,10 @@ impl TcpAnalyzer {
     /// Extract Window Scale
     fn extract_window_scale(&self, options: &[crate::passive::packet::TcpOption]) -> Option<u8> {
         for opt in options {
-            if opt.kind == 3 && !opt.data.is_empty() {
+            if opt.kind() == 3 && !opt.data().is_empty() {
                 // Window Scale option
-                return Some(opt.data[0]);
+                let data = opt.data();
+                return Some(data[0]);
             }
         }
         None
@@ -290,14 +292,14 @@ impl TcpAnalyzer {
         let mut parts = Vec::new();
 
         for opt in options {
-            match opt.kind {
+            match opt.kind() {
                 0 => break,                          // End of options
                 1 => parts.push("nop".to_string()),  // NOP
                 2 => parts.push("mss".to_string()),  // MSS
                 3 => parts.push("ws".to_string()),   // Window Scale
                 4 => parts.push("sack".to_string()), // SACK permitted
                 8 => parts.push("ts".to_string()),   // Timestamp
-                _ => parts.push(format!("opt{}", opt.kind)),
+                _ => parts.push(format!("opt{}", opt.kind())),
             }
         }
 
