@@ -1,53 +1,88 @@
-# 文档中心
+# fingerprint-rust Documentation
 
-欢迎来到 fingerprint-rust 文档中心！
+Welcome to the fingerprint-rust documentation! Here you'll find everything you need to use and develop with this library.
 
-## 📚 用户指南
+## 🚀 Getting Started
 
-### 入门指南
-- [🚀 快速开始](user-guides/getting-started.md) - 项目安装和基础使用
-- [🎯 指纹使用指南](user-guides/fingerprint-guide.md) - 浏览器指纹配置和使用
-- [🔌 API调用指南](user-guides/api-usage.md) - REST API接口使用说明
+- **[Quick Start Guide](user-guides/getting-started.md)** - Installation and basic setup
+- **[Fingerprint Guide](user-guides/fingerprint-guide.md)** - Browser fingerprint configuration
+- **[API Usage Guide](user-guides/api-usage.md)** - REST API usage
 
-### 高级主题
-- [⚡ 性能优化](user-guides/performance-optimization.md) - 性能调优和最佳实践
-- [🛡️ 安全配置](user-guides/security-configuration.md) - 安全设置和防护措施
-- [🔧 故障排除](user-guides/troubleshooting.md) - 常见问题和解决方案
+## 📚 Core Documentation
 
-## 👨‍💻 开发者指南
+### Architecture & Design
+- **[System Architecture](ARCHITECTURE.md)** - Complete system design and architecture
+- **[Module Design](modules/)** - Detailed module specifications:
+  - [Core Module](modules/core.md)
+  - [TLS Module](modules/tls.md)
+  - [HTTP Module](modules/http.md)
+  - [Profiles Module](modules/profiles.md)
+  - [Defense Module](modules/defense.md)
 
-### 架构设计
-- [🏗️ 系统架构](developer-guides/architecture.md) - 完整的系统架构设计
-- [🧩 模块设计](developer-guides/module-design.md) - 各模块详细设计说明
-- [🔄 扩展开发](developer-guides/extension-development.md) - 如何扩展和定制功能
+### Development
+- **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
+- **[Developer Guides](developer-guides/)** - Development documentation
+- **[API Reference](reference/)** - Complete API documentation
 
-### 开发流程
-- [🤝 贡献指南](developer-guides/contributing.md) - 如何参与项目开发
-- [🧪 测试策略](developer-guides/testing.md) - 测试框架和测试方法
-- [📦 构建部署](developer-guides/build-deploy.md) - 构建和部署流程
+### Operations
+- **[Security](SECURITY.md)** - Security policies and best practices
+- **[Organization](ORGANIZATION.md)** - Documentation organization guide
+- **[Changelog](CHANGELOG.md)** - Version history and release notes
 
-### API参考
-- [📖 API参考文档](reference/api-reference.md) - 完整的API接口文档
-- [⚙️ 配置参数](reference/configuration.md) - 所有配置选项详解
-- [📋 错误码说明](reference/error-codes.md) - 错误码和异常处理
+## 📦 Module Documentation
 
-## 📖 参考文档
+Each crate has detailed documentation:
+- **fingerprint-core** - Core types and utilities
+- **fingerprint-tls** - TLS configuration and handshake
+- **fingerprint-http** - HTTP client implementation
+- **fingerprint-profiles** - Browser fingerprint profiles
+- **fingerprint-defense** - Passive detection and active protection
+- **fingerprint-gateway** - API gateway implementation
 
-### 技术参考
-- [📘 指纹数据库](reference/fingerprint-database.md) - 支持的浏览器指纹列表
-- [📡 协议支持](reference/protocol-support.md) - 支持的网络协议详情
-- [📊 性能基准](reference/performance-benchmarks.md) - 性能测试结果和基准
+## 📖 How to Use This Documentation
 
-### 运维手册
-- [📋 部署手册](reference/deployment-manual.md) - 生产环境部署指南
-- [📈 监控告警](reference/monitoring-alerting.md) - 监控配置和告警设置
-- [🔄 维护操作](reference/maintenance-operations.md) - 日常维护操作手册
+1. **New Users**: Start with [Quick Start Guide](user-guides/) for basic setup
+2. **API Users**: Check [API Reference](reference/) for interface documentation  
+3. **Developers**: See [System Architecture](ARCHITECTURE.md) and [Developer Guides](developer-guides/)
+4. **Operators**: Review [Security](SECURITY.md) and [Organization](ORGANIZATION.md)
 
-## 📋 项目管理
+## 🔍 Find What You Need
 
-### 规划文档
-- [🗺️ 项目路线图](project-management/roadmap.md) - 项目发展路线图
-- [🎯 发布计划](project-management/release-plan.md) - 版本发布计划
+- **Looking for code examples?** → Check [examples/](../examples/) directory
+- **Need performance tips?** → See Developer Guides
+- **Want to contribute?** → Read [CONTRIBUTING.md](CONTRIBUTING.md)
+- **Have security concerns?** → Review [SECURITY.md](SECURITY.md)
+
+## 📋 Documentation Structure
+
+```
+docs/
+├── INDEX.md                 # This file - documentation hub
+├── ARCHITECTURE.md          # System architecture
+├── CONTRIBUTING.md          # Contributing guidelines
+├── SECURITY.md             # Security policies
+├── ORGANIZATION.md         # Docs organization guide
+├── CHANGELOG.md            # Version history
+├── user-guides/            # User guides and tutorials
+├── developer-guides/       # Development documentation
+├── modules/                # Module-specific documentation
+├── reference/              # API reference and specs
+├── specifications/         # Technical specifications
+├── guides/                 # Additional guides
+└── archives/               # Historical and archived documents
+```
+
+## 🎯 Quick Links
+
+- [Project Repository](https://github.com/vistone/fingerprint-rust)
+- [Issue Tracker](https://github.com/vistone/fingerprint-rust/issues)
+- [Releases](https://github.com/vistone/fingerprint-rust/releases)
+
+---
+
+**Version**: 2.1.0  
+**Last Updated**: 2026-02-14  
+**Status**: Actively Maintained
 - [📊 进度报告](project-management/progress-reports.md) - 项目进度跟踪
 
 ### 阶段文档
