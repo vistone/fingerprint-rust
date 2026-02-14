@@ -6,7 +6,7 @@
 ```rust
 let client = HttpClient::new(HttpClientConfig::default());
 let response = client.get("https://api.example.com/data")?;
-println!("状态码: {}", response.status_code);
+println!("Status Code: {}", response.status_code);
 ```
 
 ### 最简单的 POST 请求
@@ -66,7 +66,7 @@ let response = client.send_request(&request)?;
 
 ### HttpResponse
 ```rust
-println!("状态码: {}", response.status_code);
+println!("Status Code: {}", response.status_code);
 println!("头部: {:?}", response.headers);
 println!("体: {:?}", response.body);
 
@@ -365,7 +365,7 @@ urls.par_iter().for_each(|url| {
 let profile = chrome_133();
 let ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...";
 let client = HttpClient::with_profile(profile, HTTPHeaders::default(), ua.to_string());
-// 现在的请求会使用 Chrome 133 的 TLS 指纹
+// 现在的请求会使用 Chrome 133 的 TLS Fingerprint
 ```
 
 ### Q5: 如何处理 API 速率限制？
@@ -451,11 +451,11 @@ let client = HttpClient::new(config);
 
 ## 相关文件位置
 
-- **HTTP 客户端 (HTTP Client)** - `src/http_client/mod.rs`
+- **HTTP 客户端** - `src/http_client/mod.rs`
 - **请求定义** - `src/http_client/request.rs`
 - **响应定义** - `src/http_client/response.rs`
 - **Cookie 管理** - `src/http_client/cookie.rs`
-- **连接池支持 (Connection Pool Support)** - `src/http_client/pool.rs`
+- **连接池** - `src/http_client/pool.rs`
 - **TLS 实现** - `src/http_client/tls.rs`
 - **HTTP/2 实现** - `src/http_client/http2.rs`
 - **HTTP/3 实现** - `src/http_client/http3.rs`
@@ -471,6 +471,6 @@ let client = HttpClient::new(config);
 
 ---
 
-**最后更新 (Last Updated)**: 2026-02-11
-**版本 (Version)**: 1.0.0
+**最后更新**: 2026-02-11
+**版本**: 1.0.0
 
