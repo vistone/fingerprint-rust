@@ -67,37 +67,33 @@ docs/
 ├── developer-guides/       # Development documentation
 ├── modules/                # Module-specific documentation
 ├── reference/              # API reference and specs
-├── specifications/         # Technical specifications
-├── guides/                 # Additional guides
-└── archives/               # Historical and archived documents
+├── guides/                 # Implementation guides (精简版)
+├── http-client/            # HTTP client docs (精简版)
+├── security/               # Security audit docs (精简版)
+└── archives/               # Historical documents & reports
 ```
 
-## 🎯 Quick Links
+## 🎯 Key Resources
 
-- [Project Repository](https://github.com/vistone/fingerprint-rust)
-- [Issue Tracker](https://github.com/vistone/fingerprint-rust/issues)
-- [Releases](https://github.com/vistone/fingerprint-rust/releases)
+- [Implementation Guides](guides/) - Protocol and feature implementation
+  - [Browser Fingerprinting](guides/CAPTURE_BROWSER_FINGERPRINTS.md)
+  - [TCP Fingerprinting](guides/TCP_FINGERPRINT.md)
+  - [Unified Fingerprinting](guides/UNIFIED_FINGERPRINT.md)
+  - [DNS Integration](guides/DNS_INTEGRATION_GUIDE.md)
+  - [HTTP/2 Integration](guides/HTTP2_INTEGRATION_GUIDE.md)
 
----
+- [Technical References](reference/technical/)
+  - TLS, HTTP/2, TCP, DNS specifications
+  - GREASE, HPACK, PSK/0RTT implementation details
 
-**Version**: 2.1.0  
-**Last Updated**: 2026-02-14  
-**Status**: Actively Maintained
-- [📊 进度报告](project-management/progress-reports.md) - 项目进度跟踪
+- [HTTP Client Documentation](http-client/)
+  - Remote update guides and references
 
-### 阶段文档
-- [✅ Phase 9.4 完整报告](project-management/phase-9-4-complete.md) - API网关和限速功能
-- [📁 其他阶段文档](project-management/phases/) - 历史阶段文档归档
-- [📝 项目报告](project-management/reports/) - 执行报告和总结
+- [Security Documentation](security/)
+  - Security audit reports and improvements
 
-### 历史文档
-- [📋 变更日志](project-management/changelog.md) - 版本变更历史
-- [🔍 架构演进](project-management/architecture-evolution.md) - 架构发展历程
-- [🎉 里程碑](project-management/milestones.md) - 重要里程碑记录
-
-## 🔍 快速查找
-
-### 按功能查找
+- [Archived Resources](archives/)
+  - All historical reports and phase documentation
 - **想了解指纹功能？** → [指纹使用指南](user-guides/fingerprint-guide.md)
 - **想集成API？** → [API调用指南](user-guides/api-usage.md)
 - **想参与开发？** → [贡献指南](developer-guides/contributing.md)

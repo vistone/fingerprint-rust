@@ -10,7 +10,7 @@ Welcome to the fingerprint-rust documentation! This directory contains all docum
 
 ```
 docs/
-├── INDEX.md                    # Documentation hub (START HERE)
+├── INDEX.md                    # Main documentation hub (START HERE)
 ├── ARCHITECTURE.md             # System architecture and design
 ├── CONTRIBUTING.md             # How to contribute to the project
 ├── SECURITY.md                 # Security policies and guidelines
@@ -19,11 +19,13 @@ docs/
 ├── API.md                      # API overview
 │
 ├── user-guides/                # User guides and tutorials
+│   ├── README.md
 │   ├── getting-started.md
 │   ├── api-usage.md
 │   └── fingerprint-guide.md
 │
-├── developer-guides/           # Development documentation
+├── developer-guides/           # Development & troubleshooting
+│   ├── README.md
 │   ├── FUZZING.md
 │   ├── PROFILING.md
 │   ├── TROUBLESHOOTING_GUIDE.md
@@ -32,22 +34,53 @@ docs/
 │   ├── architecture.md
 │   └── TEST_REPORT.md
 │
-├── modules/                    # Module-specific documentation
-│   └── [Module guides]
-│
-├── guides/                     # Implementation guides
+├── guides/                     # Implementation guides (精简)
 │   ├── README.md
-│   ├── HTTP2_INTEGRATION_GUIDE.md
+│   ├── CAPTURE_BROWSER_FINGERPRINTS.md (合并)
 │   ├── DNS_INTEGRATION_GUIDE.md
+│   ├── HTTP2_INTEGRATION_GUIDE.md
 │   ├── OPERATIONS_RUNBOOK.md
-│   └── [Other technical guides]
+│   ├── TCP_FINGERPRINT.md (合并)
+│   ├── UNIFIED_FINGERPRINT.md (合并)
+│   └── USAGE_GUIDE.md
 │
 ├── reference/                  # Reference documentation
 │   ├── README.md
 │   ├── document-management-tools.md
-│   └── technical/              # Technical specifications
-│       ├── GREASE_NORMALIZATION.md
-│       ├── HPACK_FINGERPRINTING.md
+│   ├── technical/              # Technical specifications
+│   │   ├── GREASE_NORMALIZATION.md
+│   │   ├── HPACK_FINGERPRINTING.md
+│   │   ├── PACKET_CAPTURE_IMPLEMENTATION.md
+│   │   ├── PSK_0RTT_IMPLEMENTATION.md
+│   │   ├── RUSTLS_FINGERPRINT_INTEGRATION.md
+│   │   ├── TCP_HANDSHAKE_FINGERPRINTING.md
+│   │   ├── TLS_CLIENTHELLO_INTEGRATION_COMPLETE.md
+│   │   └── TTL_SCORING_OPTIMIZATION.md
+│   └── modules/                # Module documentation (13个)
+│
+├── architecture/               # Architecture documentation
+│   └── [Design documents]
+│
+├── modules/                    # Module-specific guides (13个)
+│   └── [core, tls, http, dns, etc.]
+│
+├── http-client/                # HTTP client documentation (精简)
+│   ├── REMOTE_UPDATE_GUIDE.md (合并)
+│   └── REMOTE_UPDATE_QUICK_REFERENCE.md
+│
+├── security/                   # Security documentation (精简)
+│   ├── SECURITY_AUDIT_REPORT.md (合并)
+│   └── SECURITY_IMPROVEMENTS.md
+│
+└── archives/                   # Historical documents & reports
+    ├── published-reports/      # Past reports (27个)
+    ├── completion-reports/     # Completion documentation
+    ├── progress-reports/       # Progress tracking
+    ├── phases/                 # Phase-wise documentation
+    ├── historical-guides/      # Archived guides
+    ├── analysis-reports/       # Analysis reports
+    ├── project-docs/           # Project documentation
+    └── fingerprint_api_deprecated/  # Deprecated API docs
 │       ├── TLS_CLIENTHELLO_INTEGRATION_COMPLETE.md
 │       └── [Other specifications]
 │
