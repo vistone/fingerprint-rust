@@ -53,6 +53,8 @@ cargo test --workspace
 
 | 文件类型 | 位置 | 示例 |
 |---------|------|------|
+| **Crate 配置** | `crates/*/Cargo.toml` | `crates/fingerprint-core/Cargo.toml` |
+| **Crate 说明** | `crates/*/README.md` | `crates/fingerprint-core/README.md` ✅ **必须** |
 | **Rust 源代码** | `crates/*/src/` | `crates/fingerprint-core/src/lib.rs` |
 | **单元测试** | 源文件中 (inline) | `#[cfg(test)] mod tests {` |
 | **集成测试** | `crates/*/tests/` | `crates/fingerprint/tests/integration.rs` |

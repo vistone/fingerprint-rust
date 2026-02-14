@@ -48,14 +48,24 @@ fingerprint-rust/
 
 ```
 crates/
-├── README.md                    # Crates 说明
+├── README.md                    # Crates 总体说明
 ├── fingerprint/                 # 主 crate
+│   ├── Cargo.toml               # ✅ 必须
+│   ├── README.md                # ✅ 必须：模块功能说明
 │   └── src/
-│       ├── lib.rs               # 库入口
+│       ├── lib.rs               # ✅ 必须：库入口
 │       ├── main.rs              # 二进制入口（如果有）
 │       └── ...
 ├── fingerprint-core/            # 核心库
+│   ├── Cargo.toml               # ✅ 必须
+│   ├── README.md                # ✅ 必须：模块功能说明
+│   └── src/
+│       └── lib.rs               # ✅ 必须
 ├── fingerprint-gateway/         # 网关相关
+│   ├── Cargo.toml               # ✅ 必须
+│   ├── README.md                # ✅ 必须：模块功能说明
+│   └── src/
+│       └── lib.rs               # ✅ 必须
 ├── fingerprint-defense/         # 防护机制
 ├── fingerprint-ml/              # 机器学习模块
 ├── fingerprint-profiles/        # 浏览器配置文件
@@ -63,11 +73,14 @@ crates/
 └── [其他 crates]
 ```
 
-**规则：**
-- ⚠️ 每个 crate 必须有 `Cargo.toml` 和 `src/lib.rs`
+**强制规则（必须遵守）：**
+- ✅ **必须有** `Cargo.toml` - crate 的配置文件
+- ✅ **必须有** `src/lib.rs` - 库的主入口
+- ✅ **必须有** `README.md` - 模块功能说明（中文）
+- ✅ **建议有** `README.en.md` - 模块功能说明（英文）
 - ⚠️ crate 名称必须使用 `fingerprint-*` 前缀
 - ⚠️ 不允许创建 `src/bin/` 目录用于多个二进制，应该创建独立的 crate
-- ⚠️ 每个 crate 必须包含模块文档注释
+- ⚠️ 每个 crate 的 `src/lib.rs` 开头必须包含模块文档注释（`//!`）
 
 ### 1.3 Docs 目录结构
 
