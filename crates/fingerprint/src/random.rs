@@ -10,13 +10,13 @@ use fingerprint_headers::headers::generate_headers;
 use fingerprint_headers::useragent::{
     get_user_agent_by_profile_name, get_user_agent_by_profile_name_with_os,
 };
-use fingerprint_profiles::profiles::{mapped_tls_clients, ClientProfile};
+use fingerprint_profiles::{mapped_tls_clients, BrowserProfile};
 
 /// Fingerprint result, including fingerprint, User-Agent and standard HTTP headers
 #[derive(Debug, Clone)]
 pub struct FingerprintResult {
     /// TLS fingerprint configuration
-    pub profile: ClientProfile,
+    pub profile: BrowserProfile,
     /// Matching User-Agent
     pub user_agent: String,
     /// Client Hello ID (consistent with tls-client)

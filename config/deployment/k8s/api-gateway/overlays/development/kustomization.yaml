@@ -1,0 +1,56 @@
+---
+# Development environment API Gateway configuration
+# Lightweight setup with single replicas
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: api-gateway-dev
+
+resources:
+- ../../
+
+namePrefix: dev-
+
+commonLabels:
+  environment: development
+
+replicas:
+- name: kong
+  count: 1
+- name: redis
+  count: 1
+- name: kong-postgres
+  count: 1
+
+configMapGenerator:
+- name: kong-env-config
+  behavior: replace
+  literals:
+  - KONG_LOG_LEVEL=debug
+  - KONG_WORKER_PROCESSES=1
+  - KONG_UPSTREAM_KEEPALIVE=30
+
+patches:
+- target:
+    kind: Deployment
+    name: kong
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests
+      value:
+        cpu: 100m
+        memory: 256Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits
+      value:
+        cpu: 500m
+        memory: 512Mi
+
+- target:
+    kind: StatefulSet
+    name: redis
+  patch: |-
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: 256Mi

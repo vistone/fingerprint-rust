@@ -295,6 +295,10 @@ impl TlsAnalyzer {
         let mut metadata = fingerprint_core::metadata::FingerprintMetadata::new();
         metadata.add_tag(format!("ja4:{}", ja4_string));
 
+        if let Some(version_value) = version {
+            metadata.set("tls_version", &format!("0x{:04x}", version_value));
+        }
+
         TlsFingerprint {
             version,
             cipher_suites_count: cipher_suites.len(),

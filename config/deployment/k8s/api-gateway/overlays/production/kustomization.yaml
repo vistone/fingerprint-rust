@@ -1,0 +1,104 @@
+---
+# Production environment API Gateway configuration
+# High availability setup with multiple replicas and resource tuning
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: api-gateway
+
+resources:
+- ../../
+
+namePrefix: prod-
+
+commonLabels:
+  environment: production
+
+replicas:
+- name: kong
+  count: 5
+- name: redis
+  count: 5
+- name: kong-postgres
+  count: 1  # Keep PostgreSQL at 1, use external HA database in production
+
+configMapGenerator:
+- name: kong-env-config
+  behavior: replace
+  literals:
+  - KONG_LOG_LEVEL=warn
+  - KONG_WORKER_PROCESSES=4
+  - KONG_UPSTREAM_KEEPALIVE=120
+
+patches:
+# Kong production resource tuning
+- target:
+    kind: Deployment
+    name: kong
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 5
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests
+      value:
+        cpu: 1000m
+        memory: 1Gi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits
+      value:
+        cpu: 2000m
+        memory: 2Gi
+    - op: replace
+      path: /spec/template/spec/containers/0/livenessProbe/initialDelaySeconds
+      value: 60
+
+# Redis production resource tuning
+- target:
+    kind: StatefulSet
+    name: redis
+  patch: |-
+    - op: replace
+      path: /spec/replicas
+      value: 5
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/requests
+      value:
+        cpu: 200m
+        memory: 512Mi
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits
+      value:
+        cpu: 500m
+        memory: 1Gi
+    - op: replace
+      path: /spec/volumeClaimTemplates/0/spec/resources/requests/storage
+      value: 50Gi
+
+# Update PostgreSQL to use external connection (comment out if using internal)
+- target:
+    kind: ConfigMap
+    name: kong-config
+  patch: |-
+    - op: replace
+      path: /data/kong.conf
+      value: |
+        database = postgres
+        pg_host = kong-postgres-external.prod-cluster.internal
+        pg_port = 5432
+        pg_user = kong
+        pg_password = ${KONG_PG_PASSWORD}
+        pg_database = kong
+        
+        proxy_listen = 0.0.0.0:8000, 0.0.0.0:8443 ssl
+        admin_listen = 127.0.0.1:8001
+        status_listen = 0.0.0.0:8100
+        
+        plugins = bundled,rate-limiting,key-auth,jwt,cors,request-transformer,opentelemetry
+        
+        log_level = warn
+        
+        worker_processes = 4
+        worker_connections = 8192
+        upstream_keepalive = 120

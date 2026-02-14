@@ -8,6 +8,7 @@ members = [
     "crates/fingerprint-dns",
     "crates/fingerprint-defense",
     "crates/fingerprint-api-noise",
+    "crates/fingerprint-gateway",
     "crates/fingerprint",
     "crates/fingerprint-canvas",
     "crates/fingerprint-webgl",

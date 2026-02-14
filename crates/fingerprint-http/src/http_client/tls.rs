@@ -94,7 +94,7 @@ pub fn send_https_request(
         }
 
         // send HTTP request
-        let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
+        let header_order = None; // TODO: 从配置中获取 header 顺序
         let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
         tls_stream
             .write_all(&http_request)
@@ -188,7 +188,7 @@ pub fn send_https_request_with_pool(
             );
         }
 
-        let header_order = config.profile.as_ref().map(|p| p.header_order.as_slice());
+        let header_order = None; // TODO: 从配置中获取 header 顺序
         let http_request = request_with_cookies.build_http1_request_bytes(host, path, header_order);
         tls_stream
             .write_all(&http_request)

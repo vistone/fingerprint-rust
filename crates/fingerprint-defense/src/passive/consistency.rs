@@ -158,13 +158,28 @@ impl ConsistencyAnalyzer {
     /// 检查TCP和HTTP一致性
     fn check_tcp_http_consistency(
         &self,
-        _tcp_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
-        _http_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
+        tcp_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
+        http_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
         report: &mut ConsistencyReport,
     ) {
-        // 模拟User-Agent检查（实际应该从HTTP指纹获取）
-        let ua_lower = "mozilla/5.0 (windows nt 10.0; win64; x64)".to_string();
-        let tcp_os_hint = "windows".to_string(); // 模拟TCP推断
+        let ua = http_fp.metadata().get("user_agent").or_else(|| {
+            let id = http_fp.id();
+            if id != "unknown" {
+                Some(id)
+            } else {
+                None
+            }
+        });
+
+        let tcp_os_hint = tcp_fp
+            .metadata()
+            .get("os")
+            .or_else(|| self.extract_os_from_tcp_fingerprint(&tcp_fp.id()));
+
+        let (ua_lower, tcp_os_hint) = match (ua, tcp_os_hint) {
+            (Some(ua_value), Some(os_value)) => (ua_value.to_lowercase(), os_value),
+            _ => return,
+        };
 
         // 检查TCP栈与User-Agent声明的一致性
         if !self.is_os_consistent(&tcp_os_hint, &ua_lower) {
@@ -180,25 +195,43 @@ impl ConsistencyAnalyzer {
     fn check_tls_http_consistency(
         &self,
         tls_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
-        _http_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
+        http_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
         report: &mut ConsistencyReport,
     ) {
-        // 从JA4指纹推断TLS版本
-        let ja4_id = tls_fp.id();
-        if let Some(tls_version) = self.extract_tls_version_from_ja4(&ja4_id) {
-            // 模拟浏览器信息
-            let browser_version = "133".to_string();
+        let tls_version = tls_fp
+            .metadata()
+            .get("tls_version")
+            .and_then(|hex| self.parse_tls_version_hex(&hex))
+            .or_else(|| self.extract_tls_version_from_ja4(&tls_fp.id()));
 
-            // 检查TLS版本兼容性
-            if !self.is_tls_version_compatible("chrome", &tls_version) {
-                report.add_discrepancy(
-                    format!(
-                        "TLS版本{}与{}浏览器版本可能存在兼容性问题",
-                        tls_version, browser_version
-                    ),
-                    60, // 中等风险
-                );
+        let ua = http_fp.metadata().get("user_agent").or_else(|| {
+            let id = http_fp.id();
+            if id != "unknown" {
+                Some(id)
+            } else {
+                None
             }
+        });
+
+        let browser_name = http_fp.metadata().get("browser").or_else(|| {
+            ua.as_ref()
+                .and_then(|value| self.infer_browser_from_ua(value))
+        });
+
+        let (tls_version, browser_name) = match (tls_version, browser_name) {
+            (Some(version), Some(browser)) => (version, browser),
+            _ => return,
+        };
+
+        let browser_key = browser_name.to_lowercase();
+        if !self.is_tls_version_compatible(&browser_key, &tls_version) {
+            report.add_discrepancy(
+                format!(
+                    "TLS版本{}与浏览器({})可能存在兼容性问题",
+                    tls_version, browser_name
+                ),
+                60, // 中等风险
+            );
         }
     }
 
@@ -430,24 +463,6 @@ impl ConsistencyAnalyzer {
         true // 默认认为一致，避免误报
     }
 
-    /// 从User-Agent提取操作系统信息
-    #[allow(dead_code)]
-    fn extract_os_from_ua(&self, ua: &str) -> String {
-        if ua.contains("windows") {
-            "Windows".to_string()
-        } else if ua.contains("macintosh") || ua.contains("mac os x") {
-            "macOS".to_string()
-        } else if ua.contains("linux") {
-            "Linux".to_string()
-        } else if ua.contains("iphone") || ua.contains("ipad") {
-            "iOS".to_string()
-        } else if ua.contains("android") {
-            "Android".to_string()
-        } else {
-            "Unknown".to_string()
-        }
-    }
-
     /// 从JA4指纹提取TLS版本
     fn extract_tls_version_from_ja4(&self, ja4: &str) -> Option<String> {
         // JA4格式: <TLSVersion>_<Ciphers>_<Extensions>_<Curves>_<SigAlgs>
@@ -464,25 +479,36 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    /// 提取版本号
-    #[allow(dead_code)]
-    fn extract_version(&self, ua: &str, browser_name: &str) -> String {
-        // 简化的版本提取逻辑
-        if let Some(start_pos) = ua.find(browser_name) {
-            let version_start = start_pos + browser_name.len();
-            if version_start < ua.len() && ua.chars().nth(version_start) == Some('/') {
-                let version_part = &ua[version_start + 1..];
-                if let Some(end_pos) = version_part.find(|c: char| !c.is_ascii_digit() && c != '.')
-                {
-                    version_part[..end_pos].to_string()
-                } else {
-                    version_part.to_string()
-                }
-            } else {
-                "unknown".to_string()
-            }
+    fn parse_tls_version_hex(&self, hex: &str) -> Option<String> {
+        let normalized = hex.trim_start_matches("0x");
+        let value = u16::from_str_radix(normalized, 16).ok()?;
+        match value {
+            0x0304 => Some("TLSv1.3".to_string()),
+            0x0303 => Some("TLSv1.2".to_string()),
+            0x0302 => Some("TLSv1.1".to_string()),
+            0x0301 => Some("TLSv1.0".to_string()),
+            _ => None,
+        }
+    }
+
+    fn infer_browser_from_ua(&self, user_agent: &str) -> Option<String> {
+        let ua_lower = user_agent.to_lowercase();
+
+        if ua_lower.contains("edg/") {
+            Some("Edge".to_string())
+        } else if ua_lower.contains("opr/") || ua_lower.contains("opera") {
+            Some("Opera".to_string())
+        } else if ua_lower.contains("chrome")
+            && !ua_lower.contains("chromium")
+            && !ua_lower.contains("edg/")
+        {
+            Some("Chrome".to_string())
+        } else if ua_lower.contains("firefox") {
+            Some("Firefox".to_string())
+        } else if ua_lower.contains("safari") && !ua_lower.contains("chrome") {
+            Some("Safari".to_string())
         } else {
-            "unknown".to_string()
+            None
         }
     }
 
@@ -498,8 +524,8 @@ impl ConsistencyAnalyzer {
 
 /// 浏览器信息结构
 #[derive(Debug)]
-#[allow(dead_code)]
 struct BrowserInfo {
     name: String,
+    #[allow(dead_code)]
     version: String,
 }

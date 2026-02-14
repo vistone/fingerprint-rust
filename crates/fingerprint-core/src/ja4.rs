@@ -5,6 +5,16 @@
 
 use serde::{Deserialize, Serialize};
 
+/// Safe string slicing function that prevents panics
+/// Returns slice[start..min(end, slice.len())] or entire slice if start is out of bounds
+fn safe_slice(s: &str, start: usize, end: usize) -> &str {
+    let len = s.len();
+    if start >= len {
+        return s;
+    }
+    &s[start..end.min(len)]
+}
+
 /// JA4 TLS clientfingerprint
 /// format: t_p_c_e_s_k (for example: t13d1516h2_8daaf6152771_000a)
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
@@ -105,9 +115,9 @@ impl JA4 {
             cipher_count: c_count,
             extension_count: e_count,
             alpn: alpn_id.to_string(),
-            cipher_hash: c_hash_full[0..12].to_string(),
-            extension_hash: e_hash_full[0..12].to_string(),
-            signature_hash: s_hash_full[0..4].to_string(),
+            cipher_hash: safe_slice(&c_hash_full, 0, 12).to_string(),
+            extension_hash: safe_slice(&e_hash_full, 0, 12).to_string(),
+            signature_hash: safe_slice(&s_hash_full, 0, 4).to_string(),
         }
     }
 

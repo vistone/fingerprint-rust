@@ -1,4 +1,4 @@
-use super::profiles::ClientProfile;
+use super::profiles::BrowserProfile;
 use super::version_detector::{BrowserInfo, VersionDetector};
 /// Browser Version Adapter
 ///
@@ -28,7 +28,7 @@ impl VersionAdapter {
     }
 
     /// Get profile for a specific browser and version
-    pub fn get_profile(&self, browser: BrowserType, version: u32) -> Option<ClientProfile> {
+    pub fn get_profile(&self, browser: BrowserType, version: u32) -> Option<BrowserProfile> {
         // Try exact version first
         if let Some(entry) = self.registry.get_version(browser, version) {
             return Some(self.load_profile(&entry.profile_fn));
@@ -45,19 +45,19 @@ impl VersionAdapter {
     }
 
     /// Get profile from User-Agent string
-    pub fn get_profile_from_ua(&self, user_agent: &str) -> Option<ClientProfile> {
+    pub fn get_profile_from_ua(&self, user_agent: &str) -> Option<BrowserProfile> {
         let info = VersionDetector::detect(user_agent)?;
         self.get_profile(info.browser, info.version)
     }
 
     /// Get profile for latest browser version
-    pub fn get_latest_profile(&self, browser: BrowserType) -> Option<ClientProfile> {
+    pub fn get_latest_profile(&self, browser: BrowserType) -> Option<BrowserProfile> {
         let entry = self.registry.get_latest(browser)?;
         Some(self.load_profile(&entry.profile_fn))
     }
 
     /// Load profile by function name (dynamically)
-    fn load_profile(&self, profile_fn: &str) -> ClientProfile {
+    fn load_profile(&self, profile_fn: &str) -> BrowserProfile {
         // This is a dispatch function that maps profile function names to actual profiles
         // In a real implementation, this could use a plugin system or code generation
 
@@ -251,17 +251,17 @@ pub mod quick {
     use super::*;
 
     /// Get profile from User-Agent string (quick API)
-    pub fn profile_from_ua(user_agent: &str) -> Option<ClientProfile> {
+    pub fn profile_from_ua(user_agent: &str) -> Option<BrowserProfile> {
         VersionAdapter::instance().get_profile_from_ua(user_agent)
     }
 
     /// Get profile for specific browser and version (quick API)
-    pub fn profile(browser: BrowserType, version: u32) -> Option<ClientProfile> {
+    pub fn profile(browser: BrowserType, version: u32) -> Option<BrowserProfile> {
         VersionAdapter::instance().get_profile(browser, version)
     }
 
     /// Get latest profile (quick API)
-    pub fn latest_profile(browser: BrowserType) -> Option<ClientProfile> {
+    pub fn latest_profile(browser: BrowserType) -> Option<BrowserProfile> {
         VersionAdapter::instance().get_latest_profile(browser)
     }
 

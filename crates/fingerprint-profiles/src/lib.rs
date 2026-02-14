@@ -8,7 +8,7 @@ pub mod version_detector;
 pub mod version_registry;
 pub mod version_update;
 
-pub use profiles::*;
+pub use profiles::{BrowserProfile, ProfileMetadata};
 pub use version_adapter::VersionAdapter;
 pub use version_detector::VersionDetector;
 pub use version_registry::{BrowserType, VersionEntry, VersionRegistry};

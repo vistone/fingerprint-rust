@@ -89,7 +89,7 @@ impl VersionUpdateManager {
 
         format!(
             r#"/// {} v{} fingerprint configuration
-pub fn {fn_name}() -> ClientProfile {{
+pub fn {fn_name}() -> BrowserProfile {{
     // TODO: Implement {} v{} specific configuration
     // Base on: {fallback_fn}() or copy from previous stable version
     {fallback_fn}()  // Temporary fallback

@@ -1,5 +1,13 @@
 # Translation Status
 
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
+
+---
+
+
+
 **Last Updated**: 2026-01-02
 
 ## Overview

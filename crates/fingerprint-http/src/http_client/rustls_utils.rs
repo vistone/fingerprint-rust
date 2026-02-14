@@ -32,7 +32,7 @@
 #[cfg(feature = "dangerous_configuration")]
 use std::sync::Arc;
 
-use fingerprint_profiles::profiles::ClientProfile;
+use fingerprint_profiles::BrowserProfile;
 use std::sync::Once;
 
 // Note: ProfileClientHelloCustomizer needsupport ClientHelloCustomizer rustls fork
@@ -168,7 +168,7 @@ pub fn apply_verify_tls(cfg: &mut rustls::ClientConfig, verify_tls: bool) {
 pub fn build_client_config(
     verify_tls: bool,
     alpn_protocols: Vec<Vec<u8>>,
-    #[allow(unused_variables)] profile: Option<&ClientProfile>,
+    #[allow(unused_variables)] profile: Option<&BrowserProfile>,
 ) -> rustls::ClientConfig {
     let root_store = build_root_store();
 

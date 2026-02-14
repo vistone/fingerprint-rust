@@ -51,19 +51,11 @@ async fn send_http2_request_async(
         .next()
         .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
 
-    // application TCP Profile ( if configuration了)
     let tcp = if let Some(profile) = &config.profile {
-        if let Some(ref tcp_profile) = profile.tcp_profile {
-            super::tcp_fingerprint::connect_tcp_with_profile(socket_addrs, Some(tcp_profile))
-                .await
-                .map_err(|e| {
-                    HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-                })?
-        } else {
-            TcpStream::connect(socket_addrs).await.map_err(|e| {
-                HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-            })?
-        }
+        // 暂时不使用 TCP fingerprint，直接建立连接
+        TcpStream::connect(socket_addrs).await.map_err(|e| {
+            HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
+        })?
     } else {
         TcpStream::connect(socket_addrs).await.map_err(|e| {
             HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
@@ -80,7 +72,7 @@ async fn send_http2_request_async(
     if let Some(profile) = &config.profile {
         // settingsinitialbeginningwindowsize
         if let Some(&window_size) = profile
-            .settings
+            .http2_settings
             .get(&fingerprint_headers::http2_config::HTTP2SettingID::InitialWindowSize.as_u16())
         {
             builder.initial_window_size(window_size);
@@ -88,7 +80,7 @@ async fn send_http2_request_async(
 
         // settingsmaximumframesize
         if let Some(&max_frame_size) = profile
-            .settings
+            .http2_settings
             .get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxFrameSize.as_u16())
         {
             builder.max_frame_size(max_frame_size);
@@ -96,14 +88,14 @@ async fn send_http2_request_async(
 
         // settingsmaximumheaderlistsize
         if let Some(&max_header_list_size) = profile
-            .settings
+            .http2_settings
             .get(&fingerprint_headers::http2_config::HTTP2SettingID::MaxHeaderListSize.as_u16())
         {
             builder.max_header_list_size(max_header_list_size);
         }
 
-        // settingsconnectionlevelwindowsize (Connection Flow)
-        builder.initial_connection_window_size(profile.connection_flow);
+        // 设置连接级别窗口大小 (使用默认值)
+        // builder.initial_connection_window_size(65535);
     }
 
     let (mut client, h2_conn) = builder.handshake(tls_stream).await.map_err(|e| {

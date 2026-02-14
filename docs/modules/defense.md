@@ -228,220 +228,160 @@ tls-analysis = []
 
 ---
 
-## 🚀 完整的实战示例
+## 🔍 高级使用场景
 
-### 示例 1: HTTP 指纹识别 (完整流程)
-
-```rust
-use fingerprint_defense::{PassiveAnalyzer, PacketParser};
-
-#[test]
-fn test_http_fingerprint_analysis() {
-    let analyzer = PassiveAnalyzer::new();
-    
-    // 真实的 HTTP 请求数据
-    let http_request = b"GET /api/users HTTP/1.1\r\n\
-                         Host: api.example.com\r\n\
-                         User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\r\n\
-                         Accept: application/json\r\n\
-                         Accept-Language: en-US,en;q=0.9\r\n\
-                         Accept-Encoding: gzip, deflate\r\n\
-                         Connection: keep-alive\r\n\
-                         Upgrade-Insecure-Requests: 1\r\n\
-                         \r\n";
-    
-    // 分析 HTTP 请求
-    match analyzer.analyze_http(http_request) {
-        Ok(fingerprint) => {
-            println!("✅ HTTP 指纹识别成功");
-            println!("  方法: {}", fingerprint.method);
-            println!("  路径: {}", fingerprint.path);
-            println!("  User-Agent: {:?}", fingerprint.user_agent);
-            
-            // 检查请求头
-            for (name, value) in &fingerprint.headers {
-                println!("  Header: {} = {}", name, value);
-            }
-        }
-        Err(e) => {
-            eprintln!("❌ HTTP 分析失败: {}", e);
-        }
-    }
-}
-```
-
-### 示例 2: TLS Client Hello 指纹识别
+### 场景 A: 从网络流量捕获实时指纹
 
 ```rust
-use fingerprint_defense::{PassiveAnalyzer};
+use fingerprint_defense::PassiveAnalyzer;
+use pnet::datalink;
+use pnet::packet::ethernet::EtherTypes;
 
-#[test]
-fn test_tls_fingerprint_analysis() {
+async fn capture_and_analyze() {
     let analyzer = PassiveAnalyzer::new();
     
-    // 模拟 TLS Client Hello 数据
-    // 实际应该从网络流量捕获
-    let tls_client_hello = vec![
-        0x16, 0x03, 0x01, 0x00, 0x4a, // TLS 1.0 record header
-        0x01,                          // Handshake type: Client Hello
-        // ... 更多 TLS 握手数据 ...
-    ];
+    // 获取网络接口
+    let interfaces = datalink::interfaces();
+    let interface = interfaces.iter()
+        .find(|i| !i.is_loopback())
+        .expect("找不到非本地接口");
     
-    // 分析 TLS 握手
-    match analyzer.analyze_tls(&tls_client_hello) {
-        Ok(fingerprint) => {
-            println!("✅ TLS 指纹识别成功");
-            println!("  版本: 0x{:04x}", fingerprint.version);
-            println!("  Cipher Suites: {} 个", fingerprint.cipher_suites.len());
-            println!("  Extensions: {} 个", fingerprint.extensions.len());
-            
-            // 分析加密套件
-            for (i, suite) in fingerprint.cipher_suites.iter().enumerate() {
-                println!("    [{}] 0x{:04x}", i, suite);
-            }
-        }
-        Err(e) => {
-            eprintln!("❌ TLS 分析失败: {}", e);
-        }
-    }
-}
-```
-
-### 示例 3: TCP 指纹识别
-
-```rust
-use fingerprint_defense::{PassiveAnalyzer};
-
-#[test]
-fn test_tcp_fingerprint_analysis() {
-    let analyzer = PassiveAnalyzer::new();
+    println!("在接口 {} 上捕获数据包", interface.name);
     
-    // 模拟 TCP 数据包
-    let tcp_packet = vec![
-        0x45, 0x00, 0x00, 0x3c, // IP header
-        0x1c, 0x46, 0x40, 0x00, // IP flags, fragment offset, TTL, protocol
-        0x40, 0x06, 0x00, 0x00, // Checksum
-        // ... 更多 TCP 数据 ...
-    ];
-    
-    // 分析 TCP 特征
-    match analyzer.analyze_tcp(&tcp_packet) {
-        Ok(fingerprint) => {
-            println!("✅ TCP 指纹识别成功");
-            println!("  TTL: {}", fingerprint.ttl);
-            println!("  Window Size: {}", fingerprint.window_size);
-            if let Some(mss) = fingerprint.mss {
-                println!("  MSS: {}", mss);
-            }
-            
-            // TCP 指纹可用于识别操作系统
-            match (fingerprint.ttl, fingerprint.window_size) {
-                (64, _) => println!("  推测: Linux/Unix"),
-                (128, _) => println!("  推测: Windows"),
-                (255, _) => println!("  推测: 其他操作系统"),
-                _ => println!("  推测: 未知"),
-            }
-        }
-        Err(e) => {
-            eprintln!("❌ TCP 分析失败: {}", e);
-        }
-    }
-}
-```
-
-### 示例 4: 完整的多层指纹分析
-
-```rust
-use fingerprint_defense::{PassiveAnalyzer, Packet, PacketDirection};
-use std::time::SystemTime;
-
-#[test]
-fn test_multi_layer_analysis() {
-    let analyzer = PassiveAnalyzer::new();
-    
-    // 创建完整的数据包
-    let complete_packet_data = vec![
-        // IP header + TCP header + TLS data + HTTP data
-        // ...
-    ];
-    
-    let packet = Packet {
-        data: complete_packet_data,
-        timestamp: SystemTime::now()
-            .duration_since(SystemTime::UNIX_EPOCH)
-            .unwrap()
-            .as_secs(),
-        direction: PacketDirection::ClientToServer,
+    let (_, mut rx) = match datalink::channel(interface, Default::default()) {
+        Ok(Channel::Ethernet(tx, rx)) => (tx, rx),
+        Ok(_) => panic!("不支持的接口类型"),
+        Err(e) => panic!("创建通道失败: {}", e),
     };
     
-    // 执行完整分析
-    match analyzer.analyze(&packet) {
-        Ok(result) => {
-            println!("✅ 多层分析成功");
-            println!("  置信度: {:.2}%", result.confidence * 100.0);
-            
-            // HTTP 层分析
-            if let Some(http) = result.http {
-                println!("  HTTP 指纹:");
-                println!("    - 方法: {}", http.method);
-                println!("    - User-Agent: {:?}", http.user_agent);
+    // 捕获和分析数据包
+    loop {
+        match rx.next() {
+            Ok(packet) => {
+                let ethernet = EthernetPacket::new(packet);
+                
+                match ethernet.map(|eth| eth.get_ethertype()) {
+                    Some(EtherTypes::Ipv4) => {
+                        // 分析 IPv4 数据包
+                        if let Ok(fingerprint) = analyzer.analyze_tcp(packet) {
+                            println!("发现 TCP 指纹: TTL={}, Window={}", 
+                                fingerprint.ttl, fingerprint.window_size);
+                        }
+                    }
+                    Some(EtherTypes::Ipv6) => {
+                        // 分析 IPv6 数据包
+                    }
+                    _ => {}
+                }
             }
-            
-            // TLS 层分析
-            if let Some(tls) = result.tls {
-                println!("  TLS 指纹:");
-                println!("    - Cipher Suites: {} 个", tls.cipher_suites.len());
-                println!("    - Extensions: {} 个", tls.extensions.len());
+            Err(e) => {
+                eprintln!("接收错误: {}", e);
+                break;
             }
-            
-            // TCP 层分析
-            if let Some(tcp) = result.tcp {
-                println!("  TCP 指纹:");
-                println!("    - TTL: {}", tcp.ttl);
-                println!("    - Window Size: {}", tcp.window_size);
-            }
-        }
-        Err(e) => {
-            eprintln!("❌ 多层分析失败: {}", e);
         }
     }
 }
 ```
 
-### 示例 5: 错误处理最佳实践
+### 场景 B: 构建指纹数据库
 
 ```rust
-use fingerprint_defense::{PassiveAnalyzer, PassiveError};
+use fingerprint_defense::PassiveAnalyzer;
+use std::collections::HashMap;
 
-#[test]
-fn test_error_handling() {
-    let analyzer = PassiveAnalyzer::new();
+struct FingerprintDatabase {
+    http_fingerprints: HashMap<String, usize>,
+    tls_fingerprints: HashMap<String, usize>,
+    tcp_fingerprints: HashMap<String, usize>,
+}
+
+impl FingerprintDatabase {
+    fn new() -> Self {
+        FingerprintDatabase {
+            http_fingerprints: HashMap::new(),
+            tls_fingerprints: HashMap::new(),
+            tcp_fingerprints: HashMap::new(),
+        }
+    }
     
-    // 测试各种错误情况
-    let test_cases = vec![
-        ("空数据", b"".to_vec()),
-        ("无效 HTTP", b"INVALID HTTP".to_vec()),
-        ("截断数据", b"GET /path".to_vec()),
-    ];
+    fn record_http(&mut self, analyzer: &PassiveAnalyzer, data: &[u8]) {
+        if let Ok(fp) = analyzer.analyze_http(data) {
+            let key = format!("{} {} {:?}", fp.method, fp.path, fp.user_agent);
+            *self.http_fingerprints.entry(key).or_insert(0) += 1;
+        }
+    }
     
-    for (name, data) in test_cases {
-        match analyzer.analyze_http(&data) {
-            Ok(fingerprint) => {
-                println!("✅ {}: 成功", name);
-            }
-            Err(PassiveError::InvalidData) => {
-                println!("⚠️ {}: 数据无效", name);
-            }
-            Err(PassiveError::ParseError(e)) => {
-                println!("⚠️ {}: 解析失败 - {}", name, e);
-            }
-            Err(PassiveError::UnsupportedProtocol) => {
-                println!("⚠️ {}: 协议不支持", name);
-            }
-            Err(PassiveError::Other(e)) => {
-                println!("❌ {}: 其他错误 - {}", name, e);
+    fn record_tls(&mut self, analyzer: &PassiveAnalyzer, data: &[u8]) {
+        if let Ok(fp) = analyzer.analyze_tls(data) {
+            let key = format!("TLS 0x{:04x} (ciphers: {})", fp.version, fp.cipher_suites.len());
+            *self.tls_fingerprints.entry(key).or_insert(0) += 1;
+        }
+    }
+    
+    fn get_statistics(&self) {
+        println!("=== 指纹数据库统计 ===");
+        println!("HTTP 指纹类型: {}", self.http_fingerprints.len());
+        println!("TLS 指纹类型: {}", self.tls_fingerprints.len());
+        println!("TCP 指纹类型: {}", self.tcp_fingerprints.len());
+        
+        // 输出最常见的指纹
+        for (fp, count) in self.http_fingerprints.iter().take(5) {
+            println!("  HTTP: {} (出现 {} 次)", fp, count);
+        }
+    }
+}
+```
+
+### 场景 C: 实时异常检测
+
+```rust
+use fingerprint_defense::PassiveAnalyzer;
+
+struct AnomalyDetector {
+    normal_http_ua: Vec<String>,
+    normal_tls_versions: Vec<u16>,
+    normal_ttl_range: (u8, u8),
+}
+
+impl AnomalyDetector {
+    fn new() -> Self {
+        AnomalyDetector {
+            normal_http_ua: vec![
+                "Mozilla/5.0".to_string(),
+                "Chrome/".to_string(),
+            ],
+            normal_tls_versions: vec![0x0303, 0x0304], // TLS 1.2, 1.3
+            normal_ttl_range: (64, 255),
+        }
+    }
+    
+    fn check_anomaly(&self, analyzer: &PassiveAnalyzer, data: &[u8]) -> Vec<String> {
+        let mut anomalies = Vec::new();
+        
+        // 检查 HTTP 异常
+        if let Ok(http) = analyzer.analyze_http(data) {
+            if let Some(ua) = http.user_agent {
+                if !self.normal_http_ua.iter().any(|n| ua.contains(n)) {
+                    anomalies.push(format!("异常 User-Agent: {}", ua));
+                }
             }
         }
+        
+        // 检查 TLS 异常
+        if let Ok(tls) = analyzer.analyze_tls(data) {
+            if !self.normal_tls_versions.contains(&tls.version) {
+                anomalies.push(format!("异常 TLS 版本: 0x{:04x}", tls.version));
+            }
+        }
+        
+        // 检查 TCP 异常
+        if let Ok(tcp) = analyzer.analyze_tcp(data) {
+            if tcp.ttl < self.normal_ttl_range.0 || tcp.ttl > self.normal_ttl_range.1 {
+                anomalies.push(format!("异常 TTL: {}", tcp.ttl));
+            }
+        }
+        
+        anomalies
     }
 }
 ```
@@ -608,4 +548,12 @@ impl AnomalyDetector {
 
 ---
 
+## 🔗 相关模块
 
+- [fingerprint-core](core.md) - 系统级核心抽象
+- [fingerprint-tls](tls.md) - TLS协议分析
+- [fingerprint-http](http.md) - HTTP协议分析
+- [fingerprint-anomaly](anomaly.md) - 异常检测模块
+
+---
+*最后更新: 2026-02-13*

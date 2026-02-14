@@ -1,5 +1,13 @@
 # TCP 指纹应用指南
 
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
+
+---
+
+
+
 ## 概述
 
 fingerprint-rust 现在支持在创建 TCP 连接时应用 TCP Profile，确保 TCP 指纹（TTL、Window Size、MSS、Window Scale）与浏览器指纹一致，避免被检测系统识别为异常。

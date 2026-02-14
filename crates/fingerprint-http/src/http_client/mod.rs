@@ -45,7 +45,7 @@ pub use response::HttpResponse;
 pub use tls::TlsConnector;
 
 use fingerprint_headers::headers::HTTPHeaders;
-use fingerprint_profiles::profiles::ClientProfile;
+use fingerprint_profiles::BrowserProfile;
 use std::io as std_io;
 use std::time::Duration;
 
@@ -55,8 +55,19 @@ use std::time::Duration;
 use once_cell::sync::Lazy;
 
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
-static SHARED_RUNTIME: Lazy<tokio::runtime::Runtime> =
-    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
+static SHARED_RUNTIME: Lazy<Result<tokio::runtime::Runtime>> = Lazy::new(|| {
+    tokio::runtime::Runtime::new().map_err(|e| {
+        HttpClientError::ConnectionFailed(format!("Failed to create Tokio runtime: {}", e))
+    })
+});
+
+#[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
+fn get_shared_runtime() -> Result<&'static tokio::runtime::Runtime> {
+    SHARED_RUNTIME.as_ref().map_err(|e| match e {
+        HttpClientError::ConnectionFailed(msg) => HttpClientError::ConnectionFailed(msg.clone()),
+        _ => HttpClientError::ConnectionFailed("Runtime initialization failed".to_string()),
+    })
+}
 
 /// HTTP clienterror
 #[derive(Debug)]
@@ -103,14 +114,14 @@ impl From<std_io::Error> for HttpClientError {
 pub type Result<T> = std::result::Result<T, HttpClientError>;
 
 /// HTTP clientconfiguration
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct HttpClientConfig {
     /// userproxy
     pub user_agent: String,
     /// HTTP Headers
     pub headers: HTTPHeaders,
     /// browserconfiguration
-    pub profile: Option<ClientProfile>,
+    pub profile: Option<BrowserProfile>,
     /// connectiontimeout
     pub connect_timeout: Duration,
     /// readtimeout
@@ -179,7 +190,7 @@ impl HttpClient {
     }
 
     /// usebrowserconfigurationCreateclient
-    pub fn with_profile(profile: ClientProfile, headers: HTTPHeaders, user_agent: String) -> Self {
+    pub fn with_profile(profile: BrowserProfile, headers: HTTPHeaders, user_agent: String) -> Self {
         let config = HttpClientConfig {
             profile: Some(profile),
             headers,
@@ -489,7 +500,8 @@ impl HttpClient {
             #[cfg(feature = "http3")]
             if self.config.prefer_http3 {
                 // Fix: useglobalsingleton Runtime
-                return SHARED_RUNTIME.block_on(async {
+                let runtime = get_shared_runtime()?;
+                return runtime.block_on(async {
                     http3_pool::send_http3_request_with_pool(
                         host,
                         port,
@@ -508,7 +520,8 @@ impl HttpClient {
                 // Fix: useglobalsingleton Runtime
                 // Note: herenot do"automatic降level", because pool scenariowemore希望by userpreference走specifiedprotocol
                 // (test里alsowillstrictValidateversion)
-                return SHARED_RUNTIME.block_on(async {
+                let runtime = get_shared_runtime()?;
+                return runtime.block_on(async {
                     http2_pool::send_http2_request_with_pool(
                         host,
                         port,

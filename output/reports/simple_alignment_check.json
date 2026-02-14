@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-02-13",
+  "summary": {
+    "crates_count": 20,
+    "markdown_files": 227,
+    "inconsistencies_count": 71,
+    "duplicates_count": 1
+  },
+  "key_findings": [
+    "发现 71 个不一致项",
+    "发现 1 组重复内容",
+    "主要问题集中在模块描述匹配上"
+  ]
+}

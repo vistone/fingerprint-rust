@@ -1,5 +1,13 @@
 # Merge Instructions
 
+**版本**: v1.0  
+**最后更新**: 2026-02-13  
+**文档类型**: 技术文档
+
+---
+
+
+
 ## Status
 All 14 merge conflicts have been resolved locally. The conflicts were formatting-related and all dependency upgrade API changes have been preserved.
 

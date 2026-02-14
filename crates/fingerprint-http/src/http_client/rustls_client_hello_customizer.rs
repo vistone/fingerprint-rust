@@ -20,7 +20,7 @@
 #[cfg(feature = "rustls-client-hello-customizer")]
 use std::sync::Arc;
 
-use fingerprint_profiles::profiles::ClientProfile;
+use fingerprint_profiles::BrowserProfile;
 #[cfg(feature = "rustls-client-hello-customizer")]
 use fingerprint_tls::tls_config::{is_grease_value, ClientHelloSpec, TLS_GREASE_VALUES};
 
@@ -96,7 +96,7 @@ pub struct ProfileClientHelloCustomizer {
 
 #[cfg(feature = "rustls-client-hello-customizer")]
 impl ProfileClientHelloCustomizer {
-    pub fn try_from_profile(profile: &ClientProfile) -> Option<Self> {
+    pub fn try_from_profile(profile: &BrowserProfile) -> Option<Self> {
         let spec = profile.get_client_hello_spec().ok()?;
         Some(Self {
             desired_extension_ids: desired_extension_ids_from_spec(&spec),

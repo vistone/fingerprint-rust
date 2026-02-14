@@ -1,0 +1,50 @@
+---
+# Kustomize configuration for API Gateway deployment
+# Supports multiple environments: development, staging, production
+
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: api-gateway
+
+resources:
+# Base infrastructure
+- kong-postgres.yaml
+- redis-deployment.yaml
+- kong-deployment.yaml
+- kong-plugins.yaml
+- rate-limiting-configmap.yaml
+
+# ConfigMap generators for environment-specific settings
+configMapGenerator:
+- name: kong-env-config
+  literals:
+  - KONG_LOG_LEVEL=info
+  - KONG_WORKER_PROCESSES=2
+  - KONG_UPSTREAM_KEEPALIVE=60
+
+# Secret generators (use external secret management in production)
+secretGenerator:
+- name: kong-postgres-secret
+  literals:
+  - password=kong-secure-password-change-in-production
+  options:
+    disableNameSuffixHash: true
+
+# Common labels for all resources
+commonLabels:
+  app.kubernetes.io/part-of: fingerprint-api
+  app.kubernetes.io/managed-by: kustomize
+  app.kubernetes.io/component: api-gateway
+
+# Images customization
+images:
+- name: kong
+  newTag: "3.4-alpine"
+- name: redis
+  newTag: "7-alpine"
+- name: postgres
+  newTag: "15-alpine"
+
+# Apply patches for production configurations
+patches: []

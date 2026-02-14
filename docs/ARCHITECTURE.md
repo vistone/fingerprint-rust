@@ -1,7 +1,7 @@
 # 架构设计文档
 
 **版本**: v2.1.0 (Workspace with Active/Passive Defense)  
-**最后更新**: 2025-12-31
+**最后更新**: 2026-02-13
 
 ---
 
@@ -23,24 +23,27 @@
 
 ### 1.1 项目定位
 
-`fingerprint-rust` 是一个**生产级**的浏览器 TLS 指纹库，采用 Cargo Workspace 架构，提供：
+`fingerprint-rust` 是一个**生产级**的浏览器指纹库，采用 Cargo Workspace 架构，提供：
 
-- **69+ 浏览器指纹配置**：Chrome、Firefox、Safari、Opera、Edge 等主流浏览器
+- **97+ 浏览器指纹配置**：Chrome、Firefox、Safari、Opera、Edge 等主流浏览器及移动端变体
 - **完整 TLS 指纹生成**：ClientHello Spec、密码套件、扩展等
-- **高性能 HTTP 客户端**：支持 HTTP/1.1、HTTP/2、HTTP/3
+- **高性能 HTTP 客户端**：支持 HTTP/1.1、HTTP/2、HTTP/3 (QUIC)
 - **真实环境验证**：Google Earth API 端到端测试，100% 通过率
+- **机器学习分类**：三层分层分类器架构，95%+ 准确率
+- **被动识别防护**：JA4+全栈指纹识别与威胁检测
 
 ### 1.2 技术栈
 
-- **语言**: Rust 2021 Edition
-- **架构**: Cargo Workspace（7 个独立 crate）
-- **TLS 实现**: rustls 0.21（可选），自研 TLS Handshake Builder
+- **语言**: Rust 1.92.0+
+- **架构**: Cargo Workspace（20 个独立 crate）
+- **TLS 实现**: rustls 0.23（可选），自研 TLS Handshake Builder
 - **HTTP/2**: h2 0.4
-- **HTTP/3**: quinn 0.10 + h3 0.0.4
+- **HTTP/3**: quinn 0.11 + h3 0.0.8
 - **异步运行时**: tokio 1.40
 - **密码学库**: ring 0.17.14（真实密钥生成）
 - **连接池**: netconnpool-rust（自定义）
 - **DNS 解析**: hickory-resolver 0.24（可选）
+- **机器学习**: candle-core 0.8（Rust ML框架）
 
 ---
 
@@ -52,13 +55,13 @@
 fingerprint-rust/
 ├── Cargo.toml                    # Workspace 根配置
 ├── crates/                        # 所有 crate 代码
-│   ├── fingerprint-core/          # 核心类型和工具
+│   ├── fingerprint-core/          # 系统级保护核心抽象层
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       ├── types.rs           # 浏览器类型、操作系统类型
+│   │       ├── types.rs           # 核心类型定义
 │   │       ├── utils.rs           # 工具函数
-│   │       └── dicttls/           # TLS 字典（密码套件、扩展类型等）
+│   │       └── traits.rs          # 核心trait定义
 │   │
 │   ├── fingerprint-tls/          # TLS 配置、扩展和握手
 │   │   ├── Cargo.toml
@@ -68,51 +71,125 @@ fingerprint-rust/
 │   │       ├── tls_extensions.rs  # TLS 扩展实现
 │   │       └── tls_handshake/     # TLS 握手消息构建
 │   │
-│   ├── fingerprint-profiles/     # 浏览器指纹配置
+│   ├── fingerprint-profiles/     # 浏览器指纹配置模块
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       └── profiles.rs        # 69+ 个浏览器指纹配置
+│   │       └── profiles.rs        # 97+ 个浏览器指纹配置函数
 │   │
-│   ├── fingerprint-headers/      # HTTP Headers 和 User-Agent
+│   ├── fingerprint-headers/      # HTTP Headers 和 User-Agent 生成
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
 │   │       ├── headers.rs         # HTTP 请求头生成
-│   │       ├── useragent.rs        # User-Agent 生成
+│   │       ├── useragent.rs       # User-Agent 生成
 │   │       └── http2_config.rs    # HTTP/2 配置
 │   │
 │   ├── fingerprint-http/         # HTTP 客户端实现
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       └── http_client/       # HTTP/1.1、HTTP/2、HTTP/3
+│   │       └── http_client/       # HTTP/1.1、HTTP/2、HTTP/3 支持
 │   │
-│   ├── fingerprint-dns/          # DNS 预解析服务（可选）
+│   ├── fingerprint-dns/          # DNS 预解析服务
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
-│   │       └── dns/               # DNS 解析器、服务器池等
+│   │       └── dns_resolver.rs    # DNS 解析器实现
 │   │
-│   ├── fingerprint-defense/      # 被动识别与主动防护（可选）
+│   ├── fingerprint-defense/      # 系统级保护实现层
 │   │   ├── Cargo.toml
 │   │   └── src/
 │   │       ├── lib.rs
 │   │       ├── passive/           # 被动分析器 (TCP/HTTP/TLS/JA4+)
-│   │       ├── database.rs        # SQLite 持久化层
-│   │       ├── learner.rs         # 指纹自学习逻辑
-│   │       └── capture/           # 实时报文捕获 (Pcap)
+│   │       ├── consistency/       # 跨层一致性审计
+│   │       ├── database/          # 指纹数据库 (SQLite)
+│   │       ├── learner/           # 自学习机制
+│   │       └── capture/           # 数据包捕获
 │   │
-│   └── fingerprint/              # 主库，重新导出所有功能
+│   ├── fingerprint-anomaly/      # 异常检测模块
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── detector.rs        # ML异常检测实现
+│   │
+│   ├── fingerprint-canvas/       # Canvas 指纹识别
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── canvas.rs          # Canvas指纹分析
+│   │
+│   ├── fingerprint-webgl/        # WebGL 指纹识别
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── webgl.rs           # WebGL指纹分析
+│   │
+│   ├── fingerprint-audio/        # Audio Context 指纹
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── audio.rs           # 音频指纹分析
+│   │
+│   ├── fingerprint-fonts/        # 字体枚举检测
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── fonts.rs           # 字体指纹分析
+│   │
+│   ├── fingerprint-webrtc/       # WebRTC IP 泄漏检测
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── webrtc.rs          # WebRTC指纹分析
+│   │
+│   ├── fingerprint-hardware/     # 硬件能力检测
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── hardware.rs        # 硬件指纹分析
+│   │
+│   ├── fingerprint-timing/       # 时序攻击防护
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── timing.rs          # 时序指纹防护
+│   │
+│   ├── fingerprint-storage/      # 存储指纹识别
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── storage.rs         # 存储指纹分析
+│   │
+│   ├── fingerprint-ml/           # 机器学习指纹匹配
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── classifier.rs      # 三层分层分类器
+│   │
+│   ├── fingerprint-api-noise/    # API 噪声注入
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── noise.rs           # API噪声实现
+│   │
+│   ├── fingerprint-gateway/      # 高性能API网关
+│   │   ├── Cargo.toml
+│   │   └── src/
+│   │       ├── lib.rs
+│   │       └── gateway.rs         # API网关实现
+│   │
+│   └── fingerprint/              # 独立浏览器TLS指纹库
 │       ├── Cargo.toml
 │       └── src/
-│           ├── lib.rs             # 重新导出所有公共 API
-│           ├── random.rs           # 随机指纹生成
-│           └── export.rs          # 配置导出功能
+│           ├── lib.rs
+│           └── fingerprint.rs     # 统一公共API
 │
-├── tests/                        # 集成测试
-├── examples/                     # 示例代码
-└── docs/                        # 文档
+├── examples/                      # 使用示例
+├── tests/                         # 集成测试
+├── docs/                          # 文档
+├── config/                        # 配置文件
+└── output/                        # 输出文件
 ```
 
 ### 2.2 Workspace 配置
@@ -129,7 +206,19 @@ members = [
     "crates/fingerprint-http",
     "crates/fingerprint-dns",
     "crates/fingerprint-defense",
+  "crates/fingerprint-api-noise",
+  "crates/fingerprint-gateway",
     "crates/fingerprint",
+  "crates/fingerprint-canvas",
+  "crates/fingerprint-webgl",
+  "crates/fingerprint-audio",
+  "crates/fingerprint-fonts",
+  "crates/fingerprint-storage",
+  "crates/fingerprint-webrtc",
+  "crates/fingerprint-hardware",
+  "crates/fingerprint-timing",
+  "crates/fingerprint-ml",
+  "crates/fingerprint-anomaly",
 ]
 resolver = "2"
 
@@ -420,7 +509,25 @@ pub use dns::{
 - `rusqlite`: 数据库支持
 - `pcap`: 报文捕获
 
-### 3.8 fingerprint
+### 3.8 其他扩展 crate
+
+**职责**: 补充前端与特征维度的指纹能力与服务能力。
+
+**包含模块**:
+- `fingerprint-api-noise`: API 噪声生成与对抗
+- `fingerprint-gateway`: Rust API Gateway（速率限制、监控）
+- `fingerprint-canvas`: Canvas 指纹
+- `fingerprint-webgl`: WebGL 指纹
+- `fingerprint-audio`: Audio 指纹
+- `fingerprint-fonts`: 字体指纹
+- `fingerprint-storage`: Storage 指纹
+- `fingerprint-webrtc`: WebRTC 指纹
+- `fingerprint-hardware`: Hardware 指纹
+- `fingerprint-timing`: Timing 指纹
+- `fingerprint-ml`: ML 指纹分析
+- `fingerprint-anomaly`: 异常检测
+
+### 3.9 fingerprint
 
 **职责**: 主库，重新导出所有功能
 
@@ -507,7 +614,7 @@ fingerprint (主库)
 - 子 crate 通过 `dependency.workspace = true` 引用
 
 **示例**:
-```toml
+``toml
 # 根 Cargo.toml
 [workspace.dependencies]
 rand = "0.8"

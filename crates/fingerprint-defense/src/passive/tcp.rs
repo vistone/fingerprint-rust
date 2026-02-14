@@ -201,6 +201,10 @@ impl TcpAnalyzer {
 
         let mut metadata = fingerprint_core::metadata::FingerprintMetadata::new();
 
+        if let Some(os_type) = signature.as_ref().and_then(|sig| sig.os_type.clone()) {
+            metadata.set("os", &os_type);
+        }
+
         // Calculate JA4T
         let ja4t = fingerprint_core::ja4::JA4T::generate(
             features.window,
