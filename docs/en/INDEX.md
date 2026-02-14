@@ -67,9 +67,9 @@ docs/
 ├── developer-guides/       # Development documentation
 ├── modules/                # Module-specific documentation
 ├── reference/              # API reference and specs
-├── guides/                 # Implementation guides (精简版)
-├── http-client/            # HTTP client docs (精简版)
-├── security/               # Security audit docs (精简版)
+├── guides/                 # Implementation guides
+├── http-client/            # HTTP client documentation
+├── security/               # Security audit documentation
 └── archives/               # Historical documents & reports
 ```
 
@@ -94,24 +94,28 @@ docs/
 
 - [Archived Resources](archives/)
   - All historical reports and phase documentation
-- **想了解指纹功能？** → [指纹使用指南](user-guides/fingerprint-guide.md)
-- **想集成API？** → [API调用指南](user-guides/api-usage.md)
-- **想参与开发？** → [贡献指南](developer-guides/contributing.md)
-- **遇到问题？** → [故障排除](user-guides/troubleshooting.md)
 
-### 按角色查找
-- **新用户** → [快速开始](user-guides/getting-started.md)
-- **开发者** → [架构设计](developer-guides/architecture.md)
-- **运维人员** → [部署手册](reference/deployment-manual.md)
-- **项目管理者** → [项目路线图](project-management/roadmap.md)
+### Quick Links by Topic
 
-## 🆘 获取帮助
+- **Want to learn about fingerprint features?** → [Fingerprint Usage Guide](user-guides/fingerprint-guide.md)
+- **Want to integrate APIs?** → [API Integration Guide](user-guides/api-usage.md)
+- **Want to contribute to development?** → [Contributing Guidelines](developer-guides/contributing.md)
+- **Having issues or problems?** → [Troubleshooting Guide](user-guides/troubleshooting.md)
 
-- **GitHub Issues**: [提交问题](https://github.com/vistone/fingerprint-rust/issues)
-- **讨论区**: [社区讨论](https://github.com/vistone/fingerprint-rust/discussions)
-- **邮件列表**: project@fingerprint-rust.org
-- **实时聊天**: [Discord频道](https://discord.gg/fingerprint-rust)
+### Find by Role
+
+- **New Users** → [Getting Started](user-guides/getting-started.md)
+- **Developers** → [Architecture Design](developer-guides/architecture.md)
+- **Operations Team** → [Deployment Manual](reference/deployment-manual.md)
+- **Project Management** → [Project Roadmap](project-management/roadmap.md)
+
+## 🆘 Getting Help
+
+- **GitHub Issues**: [Submit Issues](https://github.com/vistone/fingerprint-rust/issues)
+- **Discussion Forum**: [Community Discussion](https://github.com/vistone/fingerprint-rust/discussions)
+- **Mailing List**: project@fingerprint-rust.org
+- **Real-time Chat**: [Discord Channel](https://discord.gg/fingerprint-rust)
 
 ---
-**最后更新**: 2026-02-13  
-**文档版本**: v2.1.0
+**Last Updated**: 2026-02-13  
+**Documentation Version**: v2.1.0

@@ -1,8 +1,8 @@
 # Contributing to fingerprint-rust
 
-**版本**: v1.0  
-**最后更新**: 2026-02-13  
-**文档类型**: 技术文档
+**Version**: v1.0  
+**Last Updated**: 2026-02-13  
+**Document Type**: Technical Documentation
 
 ---
 

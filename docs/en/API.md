@@ -74,7 +74,7 @@ pub struct HTTPHeaders {
     pub sec_ch_ua_mobile: String,
     pub sec_ch_ua_platform: String,
     pub upgrade_insecure_requests: String,
-    pub custom: HashMap<String, String>,  // 用户自定义的 headers
+    pub custom: HashMap<String, String>,  // User-defined headers
 }
 
 impl HTTPHeaders {
@@ -123,79 +123,79 @@ impl OperatingSystem {
 }
 ```
 
-## 使用示例
+## Usage Examples
 
-### 基础使用
+### Basic Usage
 
 ```rust
 use fingerprint::*;
 
-// 获取随机指纹
+// Get a random fingerprint
 let result = get_random_fingerprint()?;
 println!("User-Agent: {}", result.user_agent);
 
-// 获取 Headers Map
+// Get Headers as Map
 let headers_map = result.headers.to_map();
 
-// 设置自定义 Headers
+// Set custom headers
 result.headers.set("Cookie", "session_id=abc123");
 ```
 
-### 指定浏览器类型
+### Specifying Browser Type
 
 ```rust
-// 随机获取 Chrome Fingerprint
+// Generate a random Chrome fingerprint
 let result = get_random_fingerprint_by_browser("chrome")?;
 
-// 指定浏览器和操作系统
+// Specify browser and operating system
 let result = get_random_fingerprint_by_browser_with_os(
     "firefox",
     Some(OperatingSystem::Windows10),
 )?;
 ```
 
-### User-Agent 生成
+### User-Agent Generation
 
 ```rust
-// 根据 profile 名称获取 User-Agent
+// Get User-Agent by profile name
 let ua = get_user_agent_by_profile_name("chrome_120")?;
 
-// 指定操作系统
+// Specify operating system
 let ua = get_user_agent_by_profile_name_with_os(
     "chrome_120",
     OperatingSystem::MacOS14,
 )?;
 ```
 
-### Headers 管理
+### Headers Management
 
 ```rust
 use fingerprint::headers::generate_headers;
 
-// 生成 Headers
+// Generate headers
 let headers = generate_headers(
     BrowserType::Chrome,
     user_agent,
     false, // is_mobile
 );
 
-// 设置自定义 Headers
+// Set custom headers
 headers.set("Cookie", "session_id=abc123");
 headers.set_headers(&[
     ("Authorization", "Bearer token"),
     ("X-API-Key", "key"),
 ]);
 
-// 转换为 Map
+// Convert to Map
 let headers_map = headers.to_map();
 ```
 
-### HTTP 客户端
+### HTTP Client
 
 ```rust
 use fingerprint::{HttpClient, HttpClientConfig, chrome_133};
 
-// 创建客户端配置
+// Create client configuration
 let config = HttpClientConfig {
     profile: Some(chrome_133()),
     max_redirects: 10,  // Maximum redirect hops
@@ -207,7 +207,7 @@ let config = HttpClientConfig {
 // Create HTTP Client
 let client = HttpClient::new(config);
 
-// Send GET request（自动处理重定向）
+// Send GET request (automatic redirect handling)
 let response = client.get("https://example.com")?;
 
 // Send POST request
@@ -218,7 +218,7 @@ println!("Status Code: {}", response.status_code);
 println!("Response Body: {}", response.body_as_string()?);
 ```
 
-### 连接池支持
+### Connection Pool Support
 
 ```rust
 use fingerprint::{HttpClient, HttpClientConfig};
