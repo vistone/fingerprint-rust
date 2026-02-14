@@ -1,14 +1,14 @@
 # 安全文档
 
-安全审计、政策和改进措施（v2.0 - 合并版）。
+安全审计、政策和改进（v2.0 - 综合版）。
 
 ## 文档文件
 
 ### 安全审计
 - **[SECURITY_AUDIT_REPORT.md](SECURITY_AUDIT_REPORT.md)**
   - 全面的安全审计报告
-  - 包括基础审计、详细分析和审计发现
-  - 合并自：SECURITY_AUDIT, AUDIT_REPORT, SECURITY_AUDIT_DETAILED
+  - 包括基本审计、详细分析和审计结果
+  - 合并来自：SECURITY_AUDIT、AUDIT_REPORT、SECURITY_AUDIT_DETAILED
 
 ### 改进与建议
 - **[SECURITY_IMPROVEMENTS.md](SECURITY_IMPROVEMENTS.md)**
@@ -18,12 +18,12 @@
 ## 组织结构
 
 ✅ **已合并** 4 个文件 → 2 个文件：
-- 多个审计文件已合并为单一综合报告
-- 已删除冗余的审计文档
+- 将多个审计文件合并为单一全面报告
+- 删除冗余审计文档
 
-📁 **从 4 个文件到 2 个文件** - 重点安全文档
+📁 **从 4 个文件到 2 个文件** - 专注安全文档
 
 ---
 
-**版本**：2.0（合并版）  
-**最后更新**：2026-02-14
+**版本**：2.0（综合版）  
+**最后更新时间**：2026-02-14

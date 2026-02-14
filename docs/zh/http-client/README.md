@@ -1,29 +1,29 @@
-# HTTP Client Documentation
+# HTTP客户端文档
 
-Remote update and HTTP client implementation guides (v2.0 - Consolidated).
+远程更新和HTTP客户端实现指南（v2.0 - 整合版）。
 
-## Documentation Files
+## 文档文件
 
-### Complete Guides
+### 完整指南
 - **[REMOTE_UPDATE_GUIDE.md](REMOTE_UPDATE_GUIDE.md)** 
-  - Comprehensive guide to remote updates
-  - Implementation details, source code overview, and practical examples
-  - Merged from: CODE_GUIDE, INDEX, SOURCE_CODE_OVERVIEW
+  - 远程更新综合指南
+  - 实现细节、源代码概览和实用示例
+  - 合并自：CODE_GUIDE、INDEX、SOURCE_CODE_OVERVIEW
 
-### Quick References
+### 快速参考
 - **[REMOTE_UPDATE_QUICK_REFERENCE.md](REMOTE_UPDATE_QUICK_REFERENCE.md)**
-  - Quick start and key commands
-  - Rapid lookup for common tasks
+  - 快速入门和关键命令
+  - 常见任务的快速查找
 
-## What's Consolidated
+## 整合内容
 
-✅ **Merged** 5 files → 2 files:
+✅ **已合并** 5个文件 → 2个文件：
 - REMOTE_UPDATE_CODE_GUIDE + REMOTE_UPDATE_INDEX + REMOTE_UPDATE_SOURCE_CODE_OVERVIEW → REMOTE_UPDATE_GUIDE
-- Removed: REMOTE_UPDATE_SUMMARY, REMOTE_UPDATE_EXAMPLES.rs
+- 已移除：REMOTE_UPDATE_SUMMARY、REMOTE_UPDATE_EXAMPLES.rs
 
-📁 **From 6 files to 2 files** - Cleaner documentation
+📁 **从6个文件减少到2个文件** - 文档更清晰
 
 ---
 
-**Version**: 2.0 (Consolidated)  
-**Last Updated**: 2026-02-14
+**版本**: 2.0（整合版）  
+**最后更新**: 2026-02-14
