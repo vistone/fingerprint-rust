@@ -39,6 +39,7 @@ pub mod cache; // Multi-tier caching (L1/L2/L3)
 pub mod cache_redis; // Redis-backed cache implementation
 pub mod database;
 pub mod dicttls;
+pub mod error; // Comprehensive error types
 pub mod fingerprint;
 pub mod grease;
 pub mod hassh;
@@ -67,6 +68,12 @@ pub mod version; // Performance benchmarking utilities
 pub mod wasm; // WebAssembly fingerprinting detection
 
 // Re-export public API
+
+// Error types
+pub use error::{
+    CacheError, ConfigError, DatabaseError, DnsError, FingerprintError, HttpError, ParseError,
+    RateLimitError, TcpError, TlsError, ValidationError, Result,
+};
 
 // fingerprint abstractions
 pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison, FingerprintType};
@@ -131,7 +138,7 @@ pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics,
 
 // rate limiting service (Phase 9.4)
 pub use rate_limiting::{
-    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitError,
+    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier,
     RateLimitResponse, RateLimiter, UserQuota,
 };
 
@@ -145,7 +152,7 @@ pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // cache (Phase 9.3)
 pub use cache::{
-    Cache, CacheError, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard,
+    Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard,
 };
 
 // Redis cache (optional, requires redis-cache feature)
