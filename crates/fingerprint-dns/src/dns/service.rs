@@ -48,20 +48,20 @@ impl Service {
         })
     }
 
-    // / Create a new Service instance, 并usespecified DNS serverpool
+    /// 创建新的 Service 实例，并使用指定的 DNS 服务器池
     pub async fn with_server_pool(
         config: DNSConfig,
         server_pool: Arc<ServerPool>,
     ) -> Result<Self, DNSError> {
         config.validate()?;
 
-        // Parse timeout duration
+        // 解析超时时长
         let dns_timeout = parse_duration(&config.dns_timeout).unwrap_or(Duration::from_secs(4));
 
-        // HTTP timeout duration
+        // HTTP 超时时长
         let http_timeout = parse_duration(&config.http_timeout).unwrap_or(Duration::from_secs(20));
 
-        // usespecified DNS serverpoolCreate resolver
+        // 使用指定的 DNS 服务器池创建 resolver
         let resolver = Arc::new(RwLock::new(DNSResolver::with_server_pool(
             dns_timeout,
             server_pool,

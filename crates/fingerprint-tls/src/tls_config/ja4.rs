@@ -200,11 +200,11 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // JA4_c: extension (sort or originalbeginningorder, comma-separated, 4-bithexadecimal)+ "_" + signaturealgorithm
+        // JA4_c: 扩展（排序或保持原始顺序，逗号分隔，4位十六进制）+ "_" + 签名算法
         let mut extensions_for_c = filtered_extensions;
 
-        // for sortversion：remove SNI (0x0000) and ALPN (0x0010) 并sort
-        // for originalbeginningversion：preserve SNI/ALPN 并keeporiginalbeginningorder
+        // 对于排序版本：移除 SNI (0x0000) 和 ALPN (0x0010) 并排序
+        // 对于原始顺序版本：保留 SNI/ALPN 并保持原始顺序
         if !original_order {
             extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010);
             extensions_for_c.sort_unstable();
