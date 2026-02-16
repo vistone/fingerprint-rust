@@ -130,7 +130,7 @@ fn demonstrate_pqc() -> Result<()> {
     println!("  PQC Support: {}", pqc_caps.supported);
     println!("  Algorithms detected: {}", pqc_caps.algorithms.len());
     for algo in &pqc_caps.algorithms {
-        println!("    - {} ({}bits security)", algo.tls_name(), algo.security_level());
+        println!("    - {} ({} bits security)", algo.tls_name(), algo.security_level());
     }
     println!("  Hybrid Mode: {}", pqc_caps.hybrid_mode);
     println!("  Max Security Level: {} bits", pqc_caps.max_security_level());

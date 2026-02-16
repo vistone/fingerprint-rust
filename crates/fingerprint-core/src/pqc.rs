@@ -212,7 +212,7 @@ impl PQCCapabilities {
         let hash_hex = format!("{:x}", hash_result);
 
         format!(
-            "pqc_{:02}_{}_{}_{:.8}",
+            "pqc_{:02}_{}_{}_{}",
             self.algorithms.len(),
             if self.hybrid_mode { "h" } else { "p" },
             self.max_security_level(),
