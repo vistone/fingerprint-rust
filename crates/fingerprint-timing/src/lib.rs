@@ -1,10 +1,10 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-timing
+//! # Timing Fingerprint Module
 //!
-// ! timing攻击protectionmodule
+//! Timing 攻击防护模块
 //!
-// ! providetime戳consistencycheckandtiming侧信道protection
+//! 提供时间戳一致性检查和 timing 侧信道防护
 
 use std::time::{Duration, SystemTime};
 

@@ -1,14 +1,14 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-audio
+//! # Audio Fingerprint Module
 //!
-// ! Audio Context fingerprintrecognitionmodule
+//! Audio Context 指纹识别模块
 //!
-// ! provide Web Audio API fingerprintrecognitioncapabilities，including：
-// ! - Audio Context argumentextract
-// ! - sample raterecognition
-// ! - frequencyanalyze
-// ! - audioprocessprecisiondetect
+//! 提供 Web Audio API 指纹识别功能，包括：
+//! - Audio Context 参数提取
+//! - 采样率识别
+//! - 频率分析
+//! - 音频处理精度检测
 
 use std::collections::HashMap;
 

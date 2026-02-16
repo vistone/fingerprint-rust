@@ -1,10 +1,10 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-hardware
+//! # Hardware Fingerprint Module
 //!
-// ! 硬件fingerprintrecognitionmodule
+//! 硬件指纹识别模块
 //!
-// ! provide GPU、CPU、memory等硬件recognitioncapabilities
+//! 提供 GPU、CPU、内存等硬件识别功能
 
 // / 硬件fingerprint
 #[derive(Debug, Clone)]
