@@ -12,31 +12,31 @@
 
 use std::collections::HashSet;
 
-// / fontfingerprint
+/// fontfingerprint
 #[derive(Debug, Clone)]
 pub struct FontFingerprint {
-    // / detect到ofsystemfontlist
+    /// detect到ofsystemfontlist
     pub system_fonts: Vec<String>,
-    // / fontloadtime (ms)
+    /// fontloadtime (ms)
     pub loading_times: Vec<u64>,
-    // / uniquefontfingerprinthash
+    /// uniquefontfingerprinthash
     pub unique_hash: String,
-    // / fontcount
+    /// fontcount
     pub font_count: usize,
-    // / supportofsubset
+    /// supportofsubset
     pub supported_subsets: Vec<String>,
-    // / renderingfeatures
+    /// renderingfeatures
     pub rendering_features: Vec<String>,
 }
 
-// / fonterrortype
+/// fonterrortype
 #[derive(Debug)]
 pub enum FontError {
-    // / invaliddata
+    /// invaliddata
     InvalidData,
-    // / enumerationfailure
+    /// enumerationfailure
     EnumerationFailed(String),
-    // / othererror
+    /// othererror
     Other(String),
 }
 
@@ -52,11 +52,11 @@ impl std::fmt::Display for FontError {
 
 impl std::error::Error for FontError {}
 
-// / fontanalyzer
+/// fontanalyzer
 pub struct FontAnalyzer;
 
 impl FontAnalyzer {
-    // / analyzesystemfont
+    /// analyzesystemfont
     pub fn analyze(system_fonts: &[&str]) -> Result<FontFingerprint, FontError> {
         if system_fonts.is_empty() {
             return Err(FontError::InvalidData);
@@ -87,7 +87,7 @@ impl FontAnalyzer {
         })
     }
 
-    // / calculatefontloadtime
+    /// calculatefontloadtime
     fn calculate_loading_times(fonts: &[String]) -> Vec<u64> {
         // based onfontnamelengthandfeaturesofsimulatedtime
         fonts
@@ -100,7 +100,7 @@ impl FontAnalyzer {
             .collect()
     }
 
-    // / generatefonthash
+    /// generatefonthash
     fn generate_font_hash(fonts: &[String]) -> String {
         let hash_input = fonts.join(":");
         let hash_value = hash_input
@@ -109,7 +109,7 @@ impl FontAnalyzer {
         format!("{:x}", hash_value)
     }
 
-    // / detectsupportofsubset
+    /// detectsupportofsubset
     fn detect_subsets(fonts: &[String]) -> Vec<String> {
         let mut subsets = HashSet::new();
 
@@ -136,7 +136,7 @@ impl FontAnalyzer {
         subsets.into_iter().collect()
     }
 
-    // / getrenderingfeatures
+    /// getrenderingfeatures
     fn get_rendering_features(_fonts: &[String]) -> Vec<String> {
         vec![
             "anti-aliasing".to_string(),
@@ -147,11 +147,11 @@ impl FontAnalyzer {
     }
 }
 
-// / fontsystemdetector
+/// fontsystemdetector
 pub struct FontSystemDetector;
 
 impl FontSystemDetector {
-    // / detectoperating systemfont
+    /// detectoperating systemfont
     pub fn detect_system() -> FontFingerprint {
         let default_fonts = vec![
             "Arial",

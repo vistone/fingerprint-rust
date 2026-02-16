@@ -203,7 +203,7 @@ impl RedisRateLimitBackend {
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
         //
-        // // Set expiration on first increment
+        //// Set expiration on first increment
         // if count == 1 {
         //     let _: () = redis::cmd("EXPIRE")
         //         .arg(&key)
@@ -242,7 +242,7 @@ impl RedisRateLimitBackend {
         //     .await
         //     .map_err(|e| RedisBackendError::CommandError(e.to_string()))?;
         //
-        // // Trim list to max_entries
+        //// Trim list to max_entries
         // redis::cmd("LTRIM")
         //     .arg(&key)
         //     .arg(0)

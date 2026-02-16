@@ -109,7 +109,7 @@ fn load_from_toml(path: &Path) -> Result<DomainIPs, DNSError> {
 }
 
 /// originalchildpropertywritefile
-// / 先writetemporaryfile, thenrename, ensurecountdatasecurity
+/// 先writetemporaryfile, thenrename, ensurecountdatasecurity
 fn atomic_write(path: &Path, content: &[u8]) -> Result<(), DNSError> {
     let parent = path.parent().ok_or_else(|| {
         DNSError::IO(std::io::Error::new(

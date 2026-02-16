@@ -1,13 +1,13 @@
-// ! performancetesting套件
+//! performancetesting套件
 //!
-// ! testingallprotocolofperformance表现，including响应time、throughput等指标
+//! testingallprotocolofperformance表现，including响应time、throughput等指标
 //!
-// ! run方式:
+//! run方式:
 //! ```bash
-// ! # runallperformancetesting
+//! # runallperformancetesting
 //! cargo test --test performance_test --features rustls-tls,http2,http3 -- --ignored --nocapture
 //!
-// ! # run特定protocoltesting
+//! # run特定protocoltesting
 //! cargo test --test performance_test benchmark_http1 --features rustls-tls -- --ignored
 //! cargo test --test performance_test benchmark_http2 --features rustls-tls,http2 -- --ignored
 //! cargo test --test performance_test benchmark_http3 --features rustls-tls,http3 -- --ignored

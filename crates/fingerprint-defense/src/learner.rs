@@ -1,7 +1,7 @@
-// ! fingerprint self-learning module
+//! fingerprint self-learning module
 //!
 //! automatically learns and updates fingerprint signatures from observed traffic.
-// ! implements complete fingerprint self-learning mechanism, automatically recognizing and recording unknown stable fingerprint features for combating 0-day bots
+//! implements complete fingerprint self-learning mechanism, automatically recognizing and recording unknown stable fingerprint features for combating 0-day bots
 
 use crate::database::FingerprintDatabase;
 use crate::passive::PassiveAnalysisResult;
@@ -12,7 +12,7 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 use fingerprint_core::fingerprint::Fingerprint;
 use serde::{Deserialize, Serialize};
 
-// / get当前 Unix time戳（秒）
+/// get当前 Unix time戳（秒）
 fn current_unix_timestamp() -> u64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
@@ -20,41 +20,41 @@ fn current_unix_timestamp() -> u64 {
         .as_secs()
 }
 
-// / calculatetime戳差（秒）
+/// calculatetime戳差（秒）
 fn timestamp_duration(from: u64, to: u64) -> Duration {
     Duration::from_secs(to.saturating_sub(from))
 }
 
-// / unknownfingerprint观察record
+/// unknownfingerprint观察record
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UnknownFingerprintObservation {
-    // / fingerprintID
+    /// fingerprintID
     pub fingerprint_id: String,
-    // / fingerprinttype (tls/http/tcp)
+    /// fingerprinttype (tls/http/tcp)
     pub fingerprint_type: String,
-    // / 首次观察time（Unix time戳，秒）
+    /// 首次观察time（Unix time戳，秒）
     pub first_seen: u64,
-    // / 最后观察time（Unix time戳，秒）
+    /// 最后观察time（Unix time戳，秒）
     pub last_seen: u64,
-    // / 观察次数
+    /// 观察次数
     pub observation_count: u64,
-    // / stable性得分 (0.0-1.0)
+    /// stable性得分 (0.0-1.0)
     pub stability_score: f64,
-    // / 相关featuresdata
+    /// 相关featuresdata
     pub features: serde_json::Value,
 }
 
-// / 自learnanalysiser
+/// 自learnanalysiser
 pub struct SelfLearningAnalyzer {
     #[allow(dead_code)] // will be used to store learned fingerprints
     db: Arc<FingerprintDatabase>,
-    // / unknownfingerprint观察record (fp_id -> observation)
+    /// unknownfingerprint观察record (fp_id -> observation)
     observations: DashMap<String, UnknownFingerprintObservation>,
-    // / learning threshold (how many observations before entering database)
+    /// learning threshold (how many observations before entering database)
     learning_threshold: u64,
-    // / stability time window (default 24 hours)
+    /// stability time window (default 24 hours)
     stability_window: Duration,
-    // / minimum stability score threshold
+    /// minimum stability score threshold
     min_stability_score: f64,
 }
 
@@ -70,7 +70,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    // / processanalysisresult并learn
+    /// processanalysisresult并learn
     pub fn process_result(&self, result: &PassiveAnalysisResult) {
         // 分别process各层fingerprint
         if let Some(tls) = &result.tls {
@@ -119,7 +119,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    // / 观察unknownfingerprint并calculatestable性
+    /// 观察unknownfingerprint并calculatestable性
     fn observe_unknown_fingerprint(
         &self,
         fp_id: String,
@@ -185,7 +185,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    // / learningnewstablefingerprint
+    /// learningnewstablefingerprint
     fn learn_new_fingerprint(&self, observation: &UnknownFingerprintObservation) {
         log::info!(
             "[Learner] 🎯 Detected stable unknown fingerprint: {}:{} (count: {}, stability: {:.2})",
@@ -218,22 +218,22 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    // / setlearning阈值
+    /// setlearning阈值
     pub fn set_threshold(&mut self, threshold: u64) {
         self.learning_threshold = threshold;
     }
 
-    // / setstable性窗口
+    /// setstable性窗口
     pub fn set_stability_window(&mut self, duration: Duration) {
         self.stability_window = duration;
     }
 
-    // / set最小stable性得分
+    /// set最小stable性得分
     pub fn set_min_stability_score(&mut self, score: f64) {
         self.min_stability_score = score.clamp(0.0, 1.0);
     }
 
-    // / get current observation statistics
+    /// get current observation statistics
     pub fn get_observation_stats(&self) -> ObservationStats {
         let total_observations = self.observations.len() as u64;
         let stable_candidates = self
@@ -253,7 +253,7 @@ impl SelfLearningAnalyzer {
         }
     }
 
-    // / cleanup expired observation records
+    /// cleanup expired observation records
     pub fn cleanup_expired_observations(&self) {
         let now = current_unix_timestamp();
         let expired_keys: Vec<String> = self
@@ -271,7 +271,7 @@ impl SelfLearningAnalyzer {
     }
 }
 
-// / 观察statisticsinfo
+/// 观察statisticsinfo
 #[derive(Debug, Clone)]
 pub struct ObservationStats {
     pub total_observations: u64,

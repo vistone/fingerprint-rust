@@ -44,7 +44,7 @@ pub fn apply_tcp_profile(socket: &Socket, tcp_profile: &TcpProfile) -> io::Resul
     Ok(())
 }
 
-// / Createbring有 TCP Profile TCP socket
+/// Createbring有 TCP Profile TCP socket
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -74,7 +74,7 @@ pub fn create_tcp_socket_with_profile(
     Ok(socket)
 }
 
-// / Createbring有 TCP Profile TcpStream (async)
+/// Createbring有 TCP Profile TcpStream (async)
 ///
 /// # Parameters
 /// - `addr`: targetaddress
@@ -124,7 +124,7 @@ pub async fn connect_tcp_with_profile(
     }
 }
 
-// / Createbring有 TCP Profile TcpStream (sync)
+/// Createbring有 TCP Profile TcpStream (sync)
 ///
 /// # Parameters
 /// - `addr`: targetaddress

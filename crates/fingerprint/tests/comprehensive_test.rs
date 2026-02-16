@@ -1,20 +1,20 @@
-// ! 全面testing套件
+//! 全面testing套件
 //!
-// ! testing fingerprint-rust libraryofall核心 functionality：
-// ! - TLS fingerprintgenerateandvalidate
-// ! - HTTP client（H1/H2/H3）
-// ! - 浏览器fingerprintconfigure
-// ! - User-Agent and Headers generate
-// ! - Cookie 管理
-// ! - proxysupport
-// ! - connect池
+//! testing fingerprint-rust libraryofall核心 functionality：
+//! - TLS fingerprintgenerateandvalidate
+//! - HTTP client（H1/H2/H3）
+//! - 浏览器fingerprintconfigure
+//! - User-Agent and Headers generate
+//! - Cookie 管理
+//! - proxysupport
+//! - connect池
 //!
-// ! run方式：
+//! run方式：
 //! ```bash
-// ! # localtesting（不requirenetwork）
+//! # localtesting（不requirenetwork）
 //! cargo test --test comprehensive_test
 //!
-// ! # networktesting（requirenetworkconnect）
+//! # networktesting（requirenetworkconnect）
 //! cargo test --test comprehensive_test -- --ignored --nocapture
 //! ```
 

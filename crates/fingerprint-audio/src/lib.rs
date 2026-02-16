@@ -12,35 +12,35 @@
 
 use std::collections::HashMap;
 
-// / Audio Context fingerprint
+/// Audio Context fingerprint
 #[derive(Debug, Clone)]
 pub struct AudioFingerprint {
-    // / sample rate (Hz)
+    /// sample rate (Hz)
     pub sample_rate: u32,
-    // / channel数
+    /// channel数
     pub channel_count: u32,
-    // / targetchannel数
+    /// targetchannel数
     pub destination_channels: u32,
-    // / FFT size
+    /// FFT size
     pub fft_size: u32,
-    // / frequencyanalyzedata
+    /// frequencyanalyzedata
     pub frequency_data: Vec<f32>,
-    // / audioprocessprecision
+    /// audioprocessprecision
     pub audio_processing_precision: String,
-    // / oscillatortype
+    /// oscillatortype
     pub oscillator_types: Vec<String>,
-    // / blendingmode
+    /// blendingmode
     pub blend_modes: Vec<String>,
 }
 
-// / Audio fingerprinterrortype
+/// Audio fingerprinterrortype
 #[derive(Debug)]
 pub enum AudioError {
-    // / invaliddata
+    /// invaliddata
     InvalidData,
-    // / analyzefailure
+    /// analyzefailure
     AnalysisFailed(String),
-    // / othererror
+    /// othererror
     Other(String),
 }
 
@@ -56,20 +56,20 @@ impl std::fmt::Display for AudioError {
 
 impl std::error::Error for AudioError {}
 
-// / Audio Context analyzer
+/// Audio Context analyzer
 pub struct AudioAnalyzer {
     profile_library: AudioProfileLibrary,
 }
 
 impl AudioAnalyzer {
-    // / createnewanalyzer
+    /// createnewanalyzer
     pub fn new() -> Self {
         AudioAnalyzer {
             profile_library: AudioProfileLibrary::new(),
         }
     }
 
-    // / analyze Audio Context data
+    /// analyze Audio Context data
     pub fn analyze(
         &self,
         sample_rate: u32,
@@ -105,7 +105,7 @@ impl AudioAnalyzer {
         })
     }
 
-    // / standard化frequencydata
+    /// standard化frequencydata
     fn normalize_frequency_data(&self, data: &[f32]) -> Vec<f32> {
         let max = data.iter().cloned().fold(0.0, f32::max);
         if max > 0.0 {
@@ -115,7 +115,7 @@ impl AudioAnalyzer {
         }
     }
 
-    // / detectoscillatortype
+    /// detectoscillatortype
     fn detect_oscillator_types(&self, frequency_data: &[f32]) -> Vec<String> {
         vec![
             "sine".to_string(),
@@ -125,7 +125,7 @@ impl AudioAnalyzer {
         ]
     }
 
-    // / detectblendingmode
+    /// detectblendingmode
     fn detect_blend_modes(&self) -> Vec<String> {
         vec![
             "source-over".to_string(),
@@ -134,7 +134,7 @@ impl AudioAnalyzer {
         ]
     }
 
-    // / detectaudioprecision
+    /// detectaudioprecision
     fn detect_audio_precision(&self, sample_rate: u32) -> String {
         match sample_rate {
             44100 | 48000 => "standard".to_string(),
@@ -150,7 +150,7 @@ impl Default for AudioAnalyzer {
     }
 }
 
-// / Audio configurefilelibrary
+/// Audio configurefilelibrary
 pub struct AudioProfileLibrary {
     profiles: HashMap<String, AudioProfile>,
 }
@@ -162,7 +162,7 @@ struct AudioProfile {
 }
 
 impl AudioProfileLibrary {
-    // / createnewlibrary
+    /// createnewlibrary
     pub fn new() -> Self {
         let mut profiles = HashMap::new();
 
@@ -186,7 +186,7 @@ impl AudioProfileLibrary {
         AudioProfileLibrary { profiles }
     }
 
-    // / getconfigure数
+    /// getconfigure数
     pub fn profile_count(&self) -> usize {
         self.profiles.len()
     }

@@ -2,7 +2,7 @@
 //!
 //! architectureexplain：
 //! - HTTP/2 adoptsessionpool (H2SessionPool)implementtrue multiplexreuse
-// ! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
+//! - pool化pair象：h2::client::SendRequest handle (alreadyhandshakecompletesession)
 //! - reusemethod：concurrentmultiplereuse (ansessioncan when processmultiplerequest)
 //! - netconnpool role：only in Createnewsession when asbottomlayer TCP connectionsource (accelerateconnectionestablish)
 //! - sessionestablishback, connectionlifecycleby H2Session backbackground task (Driver)manage

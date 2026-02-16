@@ -1,4 +1,4 @@
-// / WebGL argument噪声
+/// WebGL argument噪声
 pub struct WebGLNoiseInjector {
     seed: u64,
 }
@@ -15,12 +15,12 @@ impl WebGLNoiseInjector {
         Self::with_seed(0)
     }
 
-    // / use指定种子create WebGL 噪声注入器
+    /// use指定种子create WebGL 噪声注入器
     pub fn with_seed(seed: u64) -> Self {
         Self { seed }
     }
 
-    // / to WebGL argument添加噪声
+    /// to WebGL argument添加噪声
     pub fn add_webgl_noise(&self, params: &WebGLParams) -> WebGLParams {
         let mut result = params.clone();
 

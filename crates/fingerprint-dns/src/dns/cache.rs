@@ -1,47 +1,46 @@
-// ! DNS cachemodule
-//! DNS cache utilities.
-#![allow(clippy::empty_docs)]
-// ! providememorycache functionality，减少重复 DNS parse，improveperformance
+//! DNS cache module
+//!
+//! Provides memory cache functionality to reduce redundant DNS lookups and improve performance
 
 use crate::dns::types::{DNSError, DomainIPs};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
-// / DNS cache条目
+/// DNS cache entry
 #[derive(Debug, Clone)]
 struct CacheEntry {
-    // / cacheof IP info
+    /// Cached IP information
     ips: DomainIPs,
-    // / cachecreatetime
+    /// Cache creation time
     cached_at: Instant,
-    // / cache TTL (生存time)
+    /// Cache TTL (time to live)
     ttl: Duration,
 }
 
 impl CacheEntry {
-    // / checkcache是否过期
+    /// Check if cache entry is expired
     fn is_expired(&self) -> bool {
         self.cached_at.elapsed() > self.ttl
     }
 }
 
-// / DNS cache
+/// DNS cache
+///
 /// Thread-safe DNS cache with TTL and automatic cleanup.
-// / providethreadsecurityof DNS parse结果cache，support TTL andautomatic过期cleanup
 #[derive(Debug, Clone)]
 pub struct DNSCache {
-    // / cachestore (domain -> CacheEntry)
+    /// Cache storage (domain -> CacheEntry)
     cache: Arc<RwLock<HashMap<String, CacheEntry>>>,
-    // / default TTL
+    /// Default TTL
     default_ttl: Duration,
 }
 
 impl DNSCache {
-    // / createnew DNS cache
+    /// Create a new DNS cache
     ///
     /// # Arguments
-    // / * `default_ttl` - default TTL，推荐 300 秒（5 分钟）
+    /// * `default_ttl` - Default TTL, recommended 300 seconds (5 minutes)
     pub fn new(default_ttl: Duration) -> Self {
         Self {
             cache: Arc::new(RwLock::new(HashMap::new())),
@@ -49,14 +48,14 @@ impl DNSCache {
         }
     }
 
-    // / 从cachegetdomainof IP info
+    /// Get domain IP information from cache
     ///
     /// # Arguments
-    // / * `domain` - domain
+    /// * `domain` - Domain name
     ///
     /// # Returns
-    // / * `Some(DomainIPs)` - 如果cache命中且未过期
-    // / * `None` - 如果cache未命中或已过期
+    /// * `Some(DomainIPs)` - If cache hit and not expired
+    /// * `None` - If cache miss or expired
     pub fn get(&self, domain: &str) -> Option<DomainIPs> {
         let cache = self.cache.read().ok()?;
 
@@ -68,21 +67,21 @@ impl DNSCache {
         None
     }
 
-    // / 将domainof IP info存入cache
+    /// Store domain IP information into cache
     ///
     /// # Arguments
-    // / * `domain` - domain
-    // / * `ips` - IP info
+    /// * `domain` - Domain name
+    /// * `ips` - IP information
     pub fn put(&self, domain: &str, ips: DomainIPs) {
         self.put_with_ttl(domain, ips, self.default_ttl);
     }
 
-    // / 将domainof IP info存入cache，并指定 TTL
+    /// Store domain IP information into cache with specified TTL
     ///
     /// # Arguments
-    // / * `domain` - domain
-    // / * `ips` - IP info
-    // / * `ttl` - cache生存time
+    /// * `domain` - Domain name
+    /// * `ips` - IP information
+    /// * `ttl` - Cache time to live
     pub fn put_with_ttl(&self, domain: &str, ips: DomainIPs, ttl: Duration) {
         if let Ok(mut cache) = self.cache.write() {
             let entry = CacheEntry {
@@ -94,20 +93,20 @@ impl DNSCache {
         }
     }
 
-    // / 使cache失效（delete）
+    /// Invalidate cache entry (delete)
     ///
     /// # Arguments
-    // / * `domain` - domain
+    /// * `domain` - Domain name
     pub fn invalidate(&self, domain: &str) {
         if let Ok(mut cache) = self.cache.write() {
             cache.remove(domain);
         }
     }
 
-    // / cleanupall过期ofcache条目
+    /// Cleanup all expired cache entries
     ///
     /// # Returns
-    // / cleanupof条目count
+    /// Number of cleaned up entries
     pub fn cleanup_expired(&self) -> usize {
         if let Ok(mut cache) = self.cache.write() {
             let before_count = cache.len();
@@ -119,14 +118,14 @@ impl DNSCache {
         }
     }
 
-    // / 清空allcache
+    /// Clear all cache
     pub fn clear(&self) {
         if let Ok(mut cache) = self.cache.write() {
             cache.clear();
         }
     }
 
-    // / getcachestatisticsinfo
+    /// Get cache statistics information
     ///
     /// # Returns
     /// (total_entries, expired_entries)
@@ -143,36 +142,36 @@ impl DNSCache {
 
 impl Default for DNSCache {
     fn default() -> Self {
-        Self::new(Duration::from_secs(300)) // default 5 分钟 TTL
+        Self::new(Duration::from_secs(300)) // Default 5 minutes TTL
     }
 }
 
-// / 带cacheof DNS parse器wrap器
+/// Cached DNS resolver wrapper
 ///
-// / 在原有 DNS parse器of基础上添加cache functionality
+/// Adds cache functionality on top of existing DNS resolver
 pub struct CachedDNSResolver<R> {
-    // / 底层parse器
+    /// Underlying resolver
     resolver: R,
-    // / DNS cache
+    /// DNS cache
     cache: DNSCache,
 }
 
 impl<R> CachedDNSResolver<R> {
-    // / create带cacheof DNS parse器
+    /// Create a cached DNS resolver
     ///
     /// # Arguments
-    // / * `resolver` - 底层 DNS parse器
-    // / * `cache` - DNS cache实例
+    /// * `resolver` - Underlying DNS resolver
+    /// * `cache` - DNS cache instance
     pub fn new(resolver: R, cache: DNSCache) -> Self {
         Self { resolver, cache }
     }
 
-    // / getcache引用
+    /// Get cache reference
     pub fn cache(&self) -> &DNSCache {
         &self.cache
     }
 
-    // / get底层parse器引用
+    /// Get underlying resolver reference
     pub fn resolver(&self) -> &R {
         &self.resolver
     }
@@ -182,15 +181,15 @@ impl<R> CachedDNSResolver<R>
 where
     R: crate::dns::resolver::DNSResolverTrait,
 {
-    // / parsedomain（automaticusecache）
+    /// Resolve domain (automatically using cache)
     ///
     /// # Arguments
-    // / * `domain` - domain
+    /// * `domain` - Domain name
     ///
     /// # Returns
-    // / parse结果，include IPv4 and IPv6 address
+    /// Resolution result including IPv4 and IPv6 addresses
     pub async fn resolve(&self, domain: &str) -> Result<crate::dns::types::DNSResult, DNSError> {
-        // 先尝试从cacheget
+        // First try to get from cache
         if let Some(cached_ips) = self.cache.get(domain) {
             return Ok(crate::dns::types::DNSResult {
                 domain: domain.to_string(),
@@ -198,10 +197,10 @@ where
             });
         }
 
-        // cache未命中，执行实际parse
+        // Cache miss, perform actual resolution
         let result = self.resolver.resolve(domain).await?;
 
-        // 将结果存入cache
+        // Store result in cache
         self.cache.put(domain, result.ips.clone());
 
         Ok(result)
@@ -217,22 +216,22 @@ mod tests {
         let cache = DNSCache::new(Duration::from_secs(60));
         let domain = "example.com";
 
-        // 初始state：cache未命中
+        // Initial state: cache miss
         assert!(cache.get(domain).is_none());
 
-        // 存入cache
+        // Store in cache
         let mut ips = DomainIPs::new();
         ips.ipv4
             .push(crate::dns::types::IPInfo::new("93.184.216.34".to_string()));
         cache.put(domain, ips.clone());
 
-        // cache命中
+        // Cache hit
         assert!(cache.get(domain).is_some());
         let cached = cache.get(domain).unwrap();
         assert_eq!(cached.ipv4.len(), 1);
         assert_eq!(cached.ipv4[0].ip, "93.184.216.34");
 
-        // 使cache失效
+        // Invalidate cache
         cache.invalidate(domain);
         assert!(cache.get(domain).is_none());
     }
@@ -247,13 +246,13 @@ mod tests {
             .push(crate::dns::types::IPInfo::new("93.184.216.34".to_string()));
         cache.put(domain, ips);
 
-        // 立即访问：应该命中
+        // Immediate access: should hit
         assert!(cache.get(domain).is_some());
 
-        // 等待过期
+        // Wait for expiration
         std::thread::sleep(Duration::from_millis(150));
 
-        // 访问：应该未命中（已过期）
+        // Access: should miss (expired)
         assert!(cache.get(domain).is_none());
     }
 
@@ -261,7 +260,7 @@ mod tests {
     fn test_cache_cleanup() {
         let cache = DNSCache::new(Duration::from_millis(100));
 
-        // 添加两个domain
+        // Add two domains
         let mut ips1 = DomainIPs::new();
         ips1.ipv4
             .push(crate::dns::types::IPInfo::new("1.1.1.1".to_string()));
@@ -272,24 +271,24 @@ mod tests {
             .push(crate::dns::types::IPInfo::new("2.2.2.2".to_string()));
         cache.put("domain2.com", ips2);
 
-        // validatestatistics
+        // Verify statistics
         let (total, expired) = cache.stats();
         assert_eq!(total, 2);
         assert_eq!(expired, 0);
 
-        // 等待过期
+        // Wait for expiration
         std::thread::sleep(Duration::from_millis(150));
 
-        // cleanup前statistics
+        // Statistics before cleanup
         let (total, expired) = cache.stats();
         assert_eq!(total, 2);
         assert_eq!(expired, 2);
 
-        // cleanup过期条目
+        // Cleanup expired entries
         let cleaned = cache.cleanup_expired();
         assert_eq!(cleaned, 2);
 
-        // cleanup后statistics
+        // Statistics after cleanup
         let (total, _) = cache.stats();
         assert_eq!(total, 0);
     }
@@ -298,12 +297,12 @@ mod tests {
     fn test_cache_stats() {
         let cache = DNSCache::default();
 
-        // 初始state
+        // Initial state
         let (total, expired) = cache.stats();
         assert_eq!(total, 0);
         assert_eq!(expired, 0);
 
-        // 添加一个条目
+        // Add an entry
         let mut ips = DomainIPs::new();
         ips.ipv4
             .push(crate::dns::types::IPInfo::new("1.1.1.1".to_string()));

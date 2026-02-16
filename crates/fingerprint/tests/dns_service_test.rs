@@ -1,4 +1,4 @@
-// ! DNS Service testing
+//! DNS Service testing
 //! DNS service start/stop tests.
 
 #![cfg(feature = "dns")]

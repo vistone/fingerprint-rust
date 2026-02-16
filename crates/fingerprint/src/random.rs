@@ -109,7 +109,7 @@ pub fn get_random_fingerprint_by_browser(
     get_random_fingerprint_by_browser_with_os(browser_type, None)
 }
 
-// / Based on browser type randomly get fingerprint and User-Agent, 并specified operating system
+/// Based on browser type randomly get fingerprint and User-Agent, 并specified operating system
 pub fn get_random_fingerprint_by_browser_with_os(
     browser_type: &str,
     os: Option<OperatingSystem>,

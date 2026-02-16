@@ -26,7 +26,7 @@ pub struct ProxyConfig {
     pub host: String,
     /// proxyserverport
     pub port: u16,
-    // / user名 (optional)
+    /// user名 (optional)
     pub username: Option<String>,
     /// cipher (optional)
     pub password: Option<String>,

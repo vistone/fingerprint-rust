@@ -1,6 +1,6 @@
-// ! 集成testing套件
+//! 集成testing套件
 //! Integration tests for fingerprint library.
-// ! 全面testing fingerprint libraryof各项 functionality
+//! 全面testing fingerprint libraryof各项 functionality
 
 use fingerprint::generate_headers;
 use fingerprint::types::OPERATING_SYSTEMS;

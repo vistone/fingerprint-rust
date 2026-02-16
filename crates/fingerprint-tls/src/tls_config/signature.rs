@@ -72,7 +72,7 @@ impl ClientHelloSignature {
     /// compare twosignaturewhethersimilar (ignore GREASE value)
     ///
     /// # Parameters
-    // / * `other` - needcompare另ansignature
+    /// * `other` - needcompare另ansignature
     ///
     /// # Returns
     /// * `true` if signaturesimilar (ignore GREASE backsame), `false` otherwise

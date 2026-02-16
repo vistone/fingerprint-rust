@@ -1,7 +1,7 @@
-// ! custom TLS fingerprinttesting
+//! custom TLS fingerprinttesting
 //! Custom TLS fingerprint tests.
-// ! validate我们真正use了自己of TLS fingerprintlibrary
-// ! 不依赖 rustls/native-tls
+//! validate我们真正use了自己of TLS fingerprintlibrary
+//! 不依赖 rustls/native-tls
 
 use fingerprint::{mapped_tls_clients, tls_handshake::TLSHandshakeBuilder};
 use std::io::{Read, Write};

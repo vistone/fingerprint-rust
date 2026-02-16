@@ -1,48 +1,45 @@
 //! fingerprintconsistencyChecker
 //!
-// ! crossValidate TCP, TLS and HTTP layercountdata, detectdeceivebehavior and abnormal机er人.
-// ! implementation完整of跨层consistency审计，detectUser-Agent与底层TCPstack、TLSversionofconsistency
+//! crossValidate TCP, TLS and HTTP layercountdata, detectdeceivebehavior and abnormal机er人.
+//! implementation完整of跨层consistency审计，detectUser-Agent与底层TCPstack、TLSversionofconsistency
 
 use fingerprint_core::fingerprint::FingerprintType;
 use fingerprint_core::ja4::ConsistencyReport;
 use fingerprint_core::system::NetworkFlow;
 use std::collections::HashMap;
 
-// / consistency违规type
+/// consistency违规type
 #[derive(Debug, Clone, PartialEq)]
 pub enum ConsistencyViolation {
-    // / TCPstack与User-Agent不匹配
+    /// TCPstack与User-Agent不匹配
     TcpStackMismatch {
         tcp_detected: String,
         ua_claimed: String,
     },
-    // / TLSversion与浏览器version不匹配
+    /// TLSversion与浏览器version不匹配
     TlsVersionMismatch {
         tls_version: String,
         browser_version: String,
     },
-    // / HTTP/2set与浏览器fingerprint不匹配
+    /// HTTP/2set与浏览器fingerprint不匹配
     Http2SettingsMismatch {
         expected: Vec<(u16, u32)>,
         actual: Vec<(u16, u32)>,
     },
-    // / JA4fingerprint与HTTP头不一致
-    Ja4HttpInconsistency {
-        ja4: String,
-        http_features: String,
-    },
-    // / time戳exception（可能of重放攻击）
+    /// JA4fingerprint与HTTP头不一致
+    Ja4HttpInconsistency { ja4: String, http_features: String },
+    /// time戳exception（可能of重放攻击）
     TimestampAnomaly {
         expected_range: (u64, u64),
         actual: u64,
     },
 }
 
-// / consistencyanalyze引擎
+/// consistencyanalyze引擎
 pub struct ConsistencyAnalyzer {
-    // / 已知of浏览器-TCPstackmap
+    /// 已知of浏览器-TCPstackmap
     browser_tcp_mapping: HashMap<String, Vec<String>>,
-    // / 浏览器-TLSversioncompatibility表
+    /// 浏览器-TLSversioncompatibility表
     browser_tls_compatibility: HashMap<String, Vec<String>>,
 }
 
@@ -66,7 +63,7 @@ impl ConsistencyAnalyzer {
         analyzer
     }
 
-    // / initialization浏览器-TCPstackmap
+    /// initialization浏览器-TCPstackmap
     fn init_browser_tcp_mappings(&mut self) {
         // Windows浏览器通常useWindows TCPstack
         self.browser_tcp_mapping.insert(
@@ -107,7 +104,7 @@ impl ConsistencyAnalyzer {
         );
     }
 
-    // / initialization浏览器-TLSversioncompatibility
+    /// initialization浏览器-TLSversioncompatibility
     fn init_browser_tls_compatibility(&mut self) {
         // 现代浏览器supportTLS 1.2/1.3
         let modern_browsers = vec!["chrome", "firefox", "safari", "edge", "opera"];
@@ -131,7 +128,7 @@ impl ConsistencyAnalyzer {
 }
 
 impl ConsistencyAnalyzer {
-    // / analyze流量of多层consistency
+    /// analyze流量of多层consistency
     pub fn analyze_flow(&self, flow: &NetworkFlow) -> ConsistencyReport {
         let mut report = ConsistencyReport::new();
 
@@ -158,7 +155,7 @@ impl ConsistencyAnalyzer {
         report
     }
 
-    // / checkTCPandHTTPconsistency
+    /// checkTCPandHTTPconsistency
     fn check_tcp_http_consistency(
         &self,
         tcp_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
@@ -194,7 +191,7 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    // / checkTLSandHTTPconsistency
+    /// checkTLSandHTTPconsistency
     fn check_tls_http_consistency(
         &self,
         tls_fp: &&dyn fingerprint_core::fingerprint::Fingerprint,
@@ -238,7 +235,7 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    // / checkJA4+全stackconsistency
+    /// checkJA4+全stackconsistency
     fn check_ja4_plus_consistency(&self, flow: &NetworkFlow, report: &mut ConsistencyReport) {
         // getallJA4fingerprint
         let ja4_fingerprints: Vec<_> = flow
@@ -303,7 +300,7 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    // / 从JA4fingerprintextractclientinfo
+    /// 从JA4fingerprintextractclientinfo
     fn extract_client_from_ja4(&self, ja4: &str) -> Option<BrowserInfo> {
         // JA4格式: t13d1516h2_8daaf6152771_000a
         let parts: Vec<&str> = ja4.split('_').collect();
@@ -337,7 +334,7 @@ impl ConsistencyAnalyzer {
         Some(browser)
     }
 
-    // / 从JA4Hfingerprintextractclientinfo
+    /// 从JA4Hfingerprintextractclientinfo
     fn extract_client_from_ja4h(&self, ja4h: &str) -> Option<BrowserInfo> {
         // JA4H格式类似JA4，但includeHTTPfeatures
         // 这里simplifyprocess，实际应该parseJA4Hof特定字段
@@ -368,7 +365,7 @@ impl ConsistencyAnalyzer {
         Some(browser)
     }
 
-    // / checkclientfingerprint是否一致
+    /// checkclientfingerprint是否一致
     fn is_client_fingerprint_consistent(
         &self,
         tls_client: &BrowserInfo,
@@ -384,7 +381,7 @@ impl ConsistencyAnalyzer {
         true
     }
 
-    // / 从TCPfingerprint推断operating system
+    /// 从TCPfingerprint推断operating system
     fn extract_os_from_tcp_fingerprint(&self, tcp_fp: &str) -> Option<String> {
         // TCPfingerprint通常includeTTL、窗口size等info
         // simplifyof推断逻辑
@@ -399,7 +396,7 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    // / checkoperating systemandclient是否一致
+    /// checkoperating systemandclient是否一致
     fn is_os_client_consistent(&self, os: &str, client: &BrowserInfo) -> bool {
         // checkoperating systemand浏览器of合理性
         // 例如：Windows上ofSafari是不合理of
@@ -420,7 +417,7 @@ impl ConsistencyAnalyzer {
         true
     }
 
-    // / checktime戳consistency
+    /// checktime戳consistency
     fn check_timestamp_consistency(&self, flow: &NetworkFlow, report: &mut ConsistencyReport) {
         use chrono::Utc;
 
@@ -453,7 +450,7 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    // / checkoperating systemconsistency
+    /// checkoperating systemconsistency
     fn is_os_consistent(&self, tcp_os: &str, ua: &str) -> bool {
         for (ua_keyword, compatible_tcp_os_list) in &self.browser_tcp_mapping {
             if ua.contains(ua_keyword) {
@@ -466,7 +463,7 @@ impl ConsistencyAnalyzer {
         true // default认to一致，避免误报
     }
 
-    // / 从JA4fingerprintextractTLSversion
+    /// 从JA4fingerprintextractTLSversion
     fn extract_tls_version_from_ja4(&self, ja4: &str) -> Option<String> {
         // JA4格式: <TLSVersion>_<Ciphers>_<Extensions>_<Curves>_<SigAlgs>
         if let Some(version_part) = ja4.split('_').next() {
@@ -515,7 +512,7 @@ impl ConsistencyAnalyzer {
         }
     }
 
-    // / checkTLSversioncompatibility
+    /// checkTLSversioncompatibility
     fn is_tls_version_compatible(&self, browser: &str, tls_version: &str) -> bool {
         if let Some(compatible_versions) = self.browser_tls_compatibility.get(browser) {
             compatible_versions.contains(&tls_version.to_string())
@@ -525,7 +522,7 @@ impl ConsistencyAnalyzer {
     }
 }
 
-// / 浏览器infostructure
+/// 浏览器infostructure
 #[derive(Debug)]
 struct BrowserInfo {
     name: String,

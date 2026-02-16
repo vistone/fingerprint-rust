@@ -1,8 +1,8 @@
-// ! TCP Profile 实际applytesting
+//! TCP Profile 实际applytesting
 //!
-// ! createservice端andclient，validate TCP Profile 是否真正apply到 TCP connect上
+//! createservice端andclient，validate TCP Profile 是否真正apply到 TCP connect上
 //!
-// ! run方式：
+//! run方式：
 //! ```bash
 //! cargo test --test tcp_server_test -- --nocapture
 //! ```
@@ -14,7 +14,7 @@ use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
 
-// / TCP service器：receiveconnect并detect TCP argument
+/// TCP service器：receiveconnect并detect TCP argument
 fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()> {
     let listener = TcpListener::bind(format!("127.0.0.1:{}", port))?;
     println!("✅ TCP 服务器启动在端口 {}", port);
@@ -99,7 +99,7 @@ fn start_tcp_server(port: u16, stop_flag: Arc<AtomicBool>) -> std::io::Result<()
     Ok(())
 }
 
-// / client：use TCP Profile connect到service器
+/// client：use TCP Profile connect到service器
 fn test_tcp_client_with_profile(
     port: u16,
     tcp_profile: &fingerprint_core::tcp::TcpProfile,

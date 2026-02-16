@@ -1,6 +1,6 @@
 //! # fingerprint-tls
 //!
-//! TLS configuration, extension and handshakemodule
+//! TLS configuration, extension and handshake module
 
 pub mod tls_config;
 pub mod tls_extensions;

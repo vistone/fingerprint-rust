@@ -19,7 +19,7 @@ pub struct HttpFingerprint {
     /// HTTP header
     pub headers: HashMap<String, String>,
 
-    // / HTTP/2 settings ( if 有)
+    /// HTTP/2 settings ( if 有)
     pub http2_settings: Option<Http2Settings>,
 
     /// metadata

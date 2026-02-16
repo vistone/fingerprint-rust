@@ -149,7 +149,7 @@ impl CookieStore {
     /// Getspecifieddomainallvalid Cookie
     ///
     /// Based on RFC 6265 specificationperformdomainmatch：
-    // / - Cookie domain property (如 `.example.com`)shouldmatch `example.com` and其allchilddomain
+    /// - Cookie domain property (如 `.example.com`)shouldmatch `example.com` and其allchilddomain
     /// - `example.com` Cookie shouldmatch `example.com` and `*.example.com`
     pub fn get_cookies_for_domain(&self, domain: &str) -> Vec<Cookie> {
         let cookies = match self.cookies.lock() {

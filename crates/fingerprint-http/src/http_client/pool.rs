@@ -39,7 +39,7 @@ impl Default for ConnectionPoolManager {
     }
 }
 
-// / connection poolmanageer (noneconnection poolFeatures when 占bit)
+/// connection poolmanageer (noneconnection poolFeatures when 占bit)
 #[cfg(not(feature = "connection-pool"))]
 pub struct ConnectionPoolManager {
     #[allow(dead_code)]
@@ -58,11 +58,11 @@ impl Default for ConnectionPoolManager {
 pub struct PoolManagerConfig {
     /// maximumconnectioncount
     pub max_connections: usize,
-    // / minimumempty闲connectioncount
+    /// minimumempty闲connectioncount
     pub min_idle: usize,
     /// connectiontimeout
     pub connect_timeout: Duration,
-    // / empty闲timeout
+    /// empty闲timeout
     pub idle_timeout: Duration,
     /// maximumlifecycle
     pub max_lifetime: Duration,
@@ -258,7 +258,7 @@ impl ConnectionPoolManager {
         vec![]
     }
 
-    // / cleanupempty闲connection
+    /// cleanupempty闲connection
     #[cfg(feature = "connection-pool")]
     pub fn cleanup_idle(&self) {
         // netconnpool willautomaticcleanup, hereonly is provideinterface
@@ -299,7 +299,7 @@ pub struct PoolStats {
 }
 
 impl PoolStats {
-    // / Getsuccess率
+    /// Getsuccess率
     pub fn success_rate(&self) -> f64 {
         if self.total_requests == 0 {
             return 0.0;

@@ -6,7 +6,7 @@
 use std::fmt;
 
 /// TLS versionenum
-// / includetraditional SSL versionending withsupportcomplete JA4 specificationcompatibleproperty
+/// includetraditional SSL versionending withsupportcomplete JA4 specificationcompatibleproperty
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum TlsVersion {
     /// TLS 1.3
@@ -19,9 +19,9 @@ pub enum TlsVersion {
     V1_0,
     /// SSL 3.0
     Ssl3_0,
-    // / SSL 2.0 (不support, butpreserveenumvalue)
+    /// SSL 2.0 (不support, butpreserveenumvalue)
     Ssl2_0,
-    // / not知version
+    /// not知version
     Unknown(u16),
 }
 

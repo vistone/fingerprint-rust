@@ -1,6 +1,6 @@
-// ! TCP fingerprintsynctesting
+//! TCP fingerprintsynctesting
 //! TCP fingerprint sync tests.
-// ! validate每次选择浏览器fingerprint时，TCP fingerprint都会与 User-Agent sync
+//! validate每次选择浏览器fingerprint时，TCP fingerprint都会与 User-Agent sync
 
 use fingerprint::*;
 

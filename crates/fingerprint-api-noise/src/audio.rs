@@ -1,4 +1,4 @@
-// / AudioContext fingerprint噪声
+/// AudioContext fingerprint噪声
 pub struct AudioNoiseInjector {
     seed: u64,
 }
@@ -8,7 +8,7 @@ impl AudioNoiseInjector {
         Self { seed }
     }
 
-    // / toaudiodata添加噪声
+    /// toaudiodata添加噪声
     pub fn add_audio_noise(&self, samples: &[f32]) -> Vec<f32> {
         use rand::{Rng, SeedableRng};
         use rand_chacha::ChaCha8Rng;
@@ -25,7 +25,7 @@ impl AudioNoiseInjector {
         result
     }
 
-    // / generate Audio fingerprint（带噪声）
+    /// generate Audio fingerprint（带噪声）
     pub fn audio_fingerprint(&self, samples: &[f32]) -> Vec<u8> {
         let noisy_samples = self.add_audio_noise(samples);
 

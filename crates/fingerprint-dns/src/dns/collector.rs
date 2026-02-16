@@ -87,8 +87,8 @@ impl ServerCollector {
         ServerPool::default()
     }
 
-    // / Validate並Updateexistingfile in DNS server
-    // / from fileloadallserver, performhealthCheck, onlypreserveavailableserver並save回file
+    /// Validate並Updateexistingfile in DNS server
+    /// from fileloadallserver, performhealthCheck, onlypreserveavailableserver並save回file
     ///
     /// # Parameters
     /// - `test_domain`: for testdomain, default as "google.com"
@@ -177,7 +177,7 @@ impl ServerCollector {
     }
 
     /// collectallavailable DNS server (pairshould Go BootstrapPoolInternal)
-    // / from multiplesourcecollect, 并 in savefrontperformhealthCheck, onlypreserveavailableserver
+    /// from multiplesourcecollect, 并 in savefrontperformhealthCheck, onlypreserveavailableserver
     pub async fn collect_all(timeout: Option<Duration>) -> ServerPool {
         // 先try from .localfileload (pairshould Go loadDefault)
         let pool = ServerPool::load_default();

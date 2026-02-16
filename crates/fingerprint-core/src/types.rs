@@ -1,6 +1,6 @@
 //! type definitionsmodule
 //!
-// ! define了browsertype, operating systemtype etc.coretype
+//! define了browsertype, operating systemtype etc.coretype
 
 /// browsertype
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -15,7 +15,7 @@ pub enum BrowserType {
 impl BrowserType {
     /// from stringconvert tobrowsertype
     ///
-    // / Note: 此methodname and standardlibrary `FromStr::from_str` different, ending withavoidnamingconflict
+    /// Note: 此methodname and standardlibrary `FromStr::from_str` different, ending withavoidnamingconflict
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(s: &str) -> Option<Self> {
         match s.to_lowercase().as_str() {

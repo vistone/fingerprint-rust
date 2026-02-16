@@ -1,29 +1,29 @@
-// ! DNS parse辅助module
+//! DNS parse辅助module
 //! DNS helper utilities for the HTTP client.
-// ! provide DNS 预parseandcache functionality集成到 HTTP client
+//! provide DNS 预parseandcache functionality集成到 HTTP client
 
 use std::net::{IpAddr, SocketAddr, ToSocketAddrs};
 use std::sync::Arc;
 use std::time::Duration;
 
-// / DNS parse辅助器
+/// DNS parse辅助器
 /// DNS resolution helper with caching.
-// / provide带cacheof DNS parse functionality，optional择性地集成到 HTTP client
+/// provide带cacheof DNS parse functionality，optional择性地集成到 HTTP client
 #[derive(Clone, Debug)]
 pub struct DNSHelper {
-    // / cacheofdomain到 IP addressmap
+    /// cacheofdomain到 IP addressmap
     cache: Arc<std::sync::RwLock<std::collections::HashMap<String, Vec<IpAddr>>>>,
-    // / cache TTL
+    /// cache TTL
     ttl: Duration,
-    // / cachetime戳
+    /// cachetime戳
     cache_time: Arc<std::sync::RwLock<std::collections::HashMap<String, std::time::Instant>>>,
 }
 
 impl DNSHelper {
-    // / createnew DNS 辅助器
+    /// createnew DNS 辅助器
     ///
     /// # Arguments
-    // / * `ttl` - cache TTL，default 300 秒（5 分钟）
+    /// * `ttl` - cache TTL，default 300 秒（5 分钟）
     pub fn new(ttl: Duration) -> Self {
         Self {
             cache: Arc::new(std::sync::RwLock::new(std::collections::HashMap::new())),
@@ -32,14 +32,14 @@ impl DNSHelper {
         }
     }
 
-    // / parsedomain到 IP address（带cache）
+    /// parsedomain到 IP address（带cache）
     ///
     /// # Arguments
-    // / * `host` - host名或domain
-    // / * `port` - port号
+    /// * `host` - host名或domain
+    /// * `port` - port号
     ///
     /// # Returns
-    // / parse后of SocketAddr list
+    /// parse后of SocketAddr list
     pub fn resolve(&self, host: &str, port: u16) -> std::io::Result<Vec<SocketAddr>> {
         // 如果是 IP address，直接return
         if let Ok(ip) = host.parse::<IpAddr>() {
@@ -65,7 +65,7 @@ impl DNSHelper {
         Ok(addrs)
     }
 
-    // / 从cacheget IP address
+    /// 从cacheget IP address
     fn get_cached(&self, host: &str) -> Option<Vec<IpAddr>> {
         // checkcache是否过期
         if let Ok(cache_time) = self.cache_time.read() {
@@ -87,7 +87,7 @@ impl DNSHelper {
         }
     }
 
-    // / 将 IP address存入cache
+    /// 将 IP address存入cache
     fn put_cache(&self, host: &str, ips: Vec<IpAddr>) {
         if let Ok(mut cache) = self.cache.write() {
             cache.insert(host.to_string(), ips);
@@ -97,17 +97,17 @@ impl DNSHelper {
         }
     }
 
-    // / warm upcache（预先parse一组domain）
+    /// warm upcache（预先parse一组domain）
     ///
     /// # Arguments
-    // / * `domains` - domainlist
+    /// * `domains` - domainlist
     pub fn warmup(&self, domains: &[&str]) {
         for domain in domains {
             let _ = self.resolve(domain, 443); // defaultuse HTTPS port
         }
     }
 
-    // / 清除cache
+    /// 清除cache
     pub fn clear_cache(&self) {
         if let Ok(mut cache) = self.cache.write() {
             cache.clear();
@@ -117,7 +117,7 @@ impl DNSHelper {
         }
     }
 
-    // / 使特定domainofcache失效
+    /// 使特定domainofcache失效
     pub fn invalidate(&self, host: &str) {
         if let Ok(mut cache) = self.cache.write() {
             cache.remove(host);
@@ -127,7 +127,7 @@ impl DNSHelper {
         }
     }
 
-    // / getcachestatisticsinfo
+    /// getcachestatisticsinfo
     ///
     /// # Returns
     /// (cached_domains, expired_domains)
@@ -150,10 +150,10 @@ impl DNSHelper {
         (total, expired)
     }
 
-    // / cleanup过期ofcache条目
+    /// cleanup过期ofcache条目
     ///
     /// # Returns
-    // / cleanupof条目count
+    /// cleanupof条目count
     pub fn cleanup_expired(&self) -> usize {
         let mut expired_keys = Vec::new();
 

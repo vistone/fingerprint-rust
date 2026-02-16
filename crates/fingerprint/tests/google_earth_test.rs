@@ -1,14 +1,14 @@
-// ! Google Earth API 完整testing
+//! Google Earth API 完整testing
 //!
-// ! testingaddress: https://kh.google.com/rt/earth/PlanetoidMetadata
-// ! testingall浏览器fingerprintandallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
+//! testingaddress: https://kh.google.com/rt/earth/PlanetoidMetadata
+//! testingall浏览器fingerprintandallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
 //!
-// ! run方式:
+//! run方式:
 //! ```bash
-// ! # testingall浏览器fingerprintandprotocol
+//! # testingall浏览器fingerprintandprotocol
 //! cargo test --test google_earth_test --features rustls-tls,http2,http3 -- --ignored --nocapture
 //!
-// ! # testing特定protocol
+//! # testing特定protocol
 //! cargo test --test google_earth_test test_google_earth_http1 --features rustls-tls -- --ignored
 //! cargo test --test google_earth_test test_google_earth_http2 --features rustls-tls,http2 -- --ignored
 //! cargo test --test google_earth_test test_google_earth_http3 --features rustls-tls,http3 -- --ignored
@@ -23,7 +23,7 @@ const TEST_URL: &str = "https://kh.google.com/rt/earth/PlanetoidMetadata";
 // 1. 单protocoltesting
 // ============================================================================
 
-// / testing HTTP/1.1
+/// testing HTTP/1.1
 #[test]
 #[ignore] // requirenetworkconnect
 fn test_google_earth_http1() {
@@ -60,7 +60,7 @@ fn test_google_earth_http1() {
     }
 }
 
-// / testing HTTP/2
+/// testing HTTP/2
 #[test]
 #[cfg(feature = "http2")]
 #[ignore] // requirenetworkconnect
@@ -103,7 +103,7 @@ fn test_google_earth_http2() {
     }
 }
 
-// / testing HTTP/3
+/// testing HTTP/3
 #[test]
 #[cfg(feature = "http3")]
 #[ignore] // requirenetworkconnect
@@ -152,7 +152,7 @@ fn test_google_earth_http3() {
 // 2. allprotocoltesting
 // ============================================================================
 
-// / testingallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
+/// testingallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
 #[test]
 #[ignore] // requirenetworkconnect
 fn test_google_earth_all_protocols() {
@@ -273,7 +273,7 @@ fn test_google_earth_all_protocols() {
 // 3. all浏览器fingerprinttesting
 // ============================================================================
 
-// / testingall浏览器fingerprint（核心浏览器）
+/// testingall浏览器fingerprint（核心浏览器）
 #[test]
 #[ignore] // requirenetworkconnect
 fn test_google_earth_all_browsers() {

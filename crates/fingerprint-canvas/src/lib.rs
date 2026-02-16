@@ -14,48 +14,48 @@ use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 
-// / Canvas 2D fingerprintinfo
+/// Canvas 2D fingerprintinfo
 #[derive(Debug, Clone, PartialEq)]
 pub struct CanvasFingerprint {
-    // / 像素data (Base64)
+    /// 像素data (Base64)
     pub pixel_data: String,
-    // / fingerprinthash值
+    /// fingerprinthash值
     pub hash: String,
-    // / 复杂度score (0.0-1.0)
+    /// 复杂度score (0.0-1.0)
     pub complexity: f32,
-    // / rendering层级
+    /// rendering层级
     pub rendering_level: RenderingLevel,
-    // / 硬件加速state
+    /// 硬件加速state
     pub hardware_accelerated: bool,
-    // / detect到of浏览器version (如果可能)
+    /// detect到of浏览器version (如果可能)
     pub detected_browser: Option<String>,
-    // / 匹配可信度 (0.0-1.0)
+    /// 匹配可信度 (0.0-1.0)
     pub confidence: f32,
 }
 
-// / rendering层级
+/// rendering层级
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum RenderingLevel {
-    // / 软件rendering
+    /// 软件rendering
     Software,
-    // / 硬件加速
+    /// 硬件加速
     Hardware,
-    // / WebGL 加速
+    /// WebGL 加速
     WebGL,
-    // / unknown
+    /// unknown
     Unknown,
 }
 
-// / Canvas fingerprinterrortype
+/// Canvas fingerprinterrortype
 #[derive(Debug)]
 pub enum CanvasError {
-    // / invalidof Canvas data
+    /// invalidof Canvas data
     InvalidCanvasData,
-    // / fingerprintgeneratefailure
+    /// fingerprintgeneratefailure
     FingerprintGenerationFailed(String),
-    // / libraryqueryfailure
+    /// libraryqueryfailure
     LibraryQueryFailed(String),
-    // / othererror
+    /// othererror
     Other(String),
 }
 
@@ -74,20 +74,20 @@ impl std::fmt::Display for CanvasError {
 
 impl std::error::Error for CanvasError {}
 
-// / Canvas fingerprintrecognition器
+/// Canvas fingerprintrecognition器
 pub struct CanvasAnalyzer {
     profile_library: CanvasProfileLibrary,
 }
 
 impl CanvasAnalyzer {
-    // / createnew Canvas analyzer
+    /// createnew Canvas analyzer
     pub fn new() -> Self {
         CanvasAnalyzer {
             profile_library: CanvasProfileLibrary::new(),
         }
     }
 
-    // / analyze Canvas data并generatefingerprint
+    /// analyze Canvas data并generatefingerprint
     pub fn analyze(&self, canvas_data: &str) -> Result<CanvasFingerprint, CanvasError> {
         if canvas_data.is_empty() {
             return Err(CanvasError::InvalidCanvasData);
@@ -110,7 +110,7 @@ impl CanvasAnalyzer {
         })
     }
 
-    // / calculatefingerprinthash
+    /// calculatefingerprinthash
     fn compute_hash(&self, canvas_data: &str) -> Result<String, CanvasError> {
         let mut hasher = DefaultHasher::new();
         canvas_data.hash(&mut hasher);
@@ -118,12 +118,12 @@ impl CanvasAnalyzer {
         Ok(format!("{:x}", hash_value))
     }
 
-    // / 从fingerprintlibrary中detect浏览器version
+    /// 从fingerprintlibrary中detect浏览器version
     fn detect_browser(&self, hash: &str) -> (Option<String>, f32) {
         self.profile_library.find_match(hash)
     }
 
-    // / 评估 Canvas 复杂度
+    /// 评估 Canvas 复杂度
     fn evaluate_complexity(&self, canvas_data: &str) -> f32 {
         let length = canvas_data.len() as f32;
         let max_length = 100000.0;
@@ -136,7 +136,7 @@ impl CanvasAnalyzer {
         (base_complexity * 0.6 + diversity * 0.4).min(1.0)
     }
 
-    // / detectrendering层级
+    /// detectrendering层级
     fn detect_rendering_level(&self, canvas_data: &str) -> RenderingLevel {
         if canvas_data.contains("webgl") || canvas_data.len() > 50000 {
             RenderingLevel::Hardware
@@ -147,7 +147,7 @@ impl CanvasAnalyzer {
         }
     }
 
-    // / detect硬件加速state
+    /// detect硬件加速state
     fn detect_hardware_acceleration(&self, canvas_data: &str) -> bool {
         canvas_data.len() > 30000
     }
@@ -159,12 +159,12 @@ impl Default for CanvasAnalyzer {
     }
 }
 
-// / Canvas fingerprintconfigurefilelibrary
+/// Canvas fingerprintconfigurefilelibrary
 pub struct CanvasProfileLibrary {
     profiles: HashMap<String, CanvasProfile>,
 }
 
-// / Canvas configurefile
+/// Canvas configurefile
 #[derive(Debug, Clone)]
 struct CanvasProfile {
     browser: String,
@@ -175,14 +175,14 @@ struct CanvasProfile {
 }
 
 impl CanvasProfileLibrary {
-    // / createnewconfigurefilelibrary
+    /// createnewconfigurefilelibrary
     pub fn new() -> Self {
         let mut profiles = HashMap::new();
         Self::load_builtin_profiles(&mut profiles);
         CanvasProfileLibrary { profiles }
     }
 
-    // / 从fingerprintlibrary中查找匹配
+    /// 从fingerprintlibrary中查找匹配
     fn find_match(&self, hash: &str) -> (Option<String>, f32) {
         if let Some(profile) = self.profiles.get(hash) {
             return (
@@ -209,7 +209,7 @@ impl CanvasProfileLibrary {
         }
     }
 
-    // / calculate两个hash值之间ofsimilarity
+    /// calculate两个hash值之间ofsimilarity
     fn calculate_similarity(hash1: &str, hash2: &str) -> f32 {
         if hash1 == hash2 {
             return 1.0;
@@ -225,7 +225,7 @@ impl CanvasProfileLibrary {
         matches as f32 / max_len as f32
     }
 
-    // / load内置of浏览器configure
+    /// load内置of浏览器configure
     fn load_builtin_profiles(profiles: &mut HashMap<String, CanvasProfile>) {
         profiles.insert(
             "a1b2c3d4e5f6g7h8".to_string(),
@@ -268,7 +268,7 @@ impl CanvasProfileLibrary {
         );
     }
 
-    // / 添加customconfigurefile
+    /// 添加customconfigurefile
     pub fn add_profile(&mut self, hash: String, browser: String, version: String) {
         self.profiles.insert(
             hash.clone(),
@@ -281,7 +281,7 @@ impl CanvasProfileLibrary {
         );
     }
 
-    // / getconfigurefilecount
+    /// getconfigurefilecount
     pub fn profile_count(&self) -> usize {
         self.profiles.len()
     }
@@ -293,11 +293,11 @@ impl Default for CanvasProfileLibrary {
     }
 }
 
-// / Canvas 混淆器
+/// Canvas 混淆器
 pub struct CanvasObfuscator;
 
 impl CanvasObfuscator {
-    // / 对 Canvas data进行混淆
+    /// 对 Canvas data进行混淆
     pub fn obfuscate(canvas_data: &str, noise_level: f32) -> String {
         if noise_level <= 0.0 {
             return canvas_data.to_string();

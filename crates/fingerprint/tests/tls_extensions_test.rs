@@ -1,6 +1,6 @@
-// ! TLS extensionmoduletesting
+//! TLS extensionmoduletesting
 //! TLS extensions tests.
-// ! testing各种 TLS extensionof functionality
+//! testing各种 TLS extensionof functionality
 
 use fingerprint::is_grease_value;
 use fingerprint::tls_extensions::*;

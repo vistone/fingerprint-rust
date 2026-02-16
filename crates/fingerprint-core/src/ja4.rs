@@ -1,7 +1,7 @@
 //! JA4+ fingerprintseriesimplement
 //!
 //! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) etc.algorithmabstract and Calculatelogic.
-// ! reference自 FoxIO JA4+ specification.
+//! reference自 FoxIO JA4+ specification.
 
 use serde::{Deserialize, Serialize};
 
@@ -23,7 +23,7 @@ pub struct JA4 {
     pub transport: char,
     /// TLS version
     pub version: String,
-    // / whether有 SNI (d=domain, i=ip)
+    /// whether有 SNI (d=domain, i=ip)
     pub destination: char,
     /// cipher suitecount
     pub cipher_count: usize,
@@ -263,7 +263,7 @@ pub struct JA4S {
     pub cipher_count: usize,
     /// extensioncount
     pub extension_count: usize,
-    // / first ALPN ( if 有)
+    /// first ALPN ( if 有)
     pub alpn: String,
     /// select's cipher suites (hexadecimal)
     pub cipher: u16,
@@ -365,9 +365,9 @@ impl std::fmt::Display for JA4S {
 pub struct ConsistencyReport {
     /// overallscore (0-100)
     pub score: u8,
-    // / discover不consistentitem
+    /// discover不consistentitem
     pub discrepancies: Vec<String>,
-    // / whethersuspected machineer人
+    /// whethersuspected machineer人
     pub bot_detected: bool,
 }
 
@@ -471,7 +471,7 @@ mod ja4s_tests {
 
 /// JA4L - lightweightlevelfingerprint (Light Version)
 ///
-// / simplify版 JA4, suitable for 资source受limitenvironment
+/// simplify版 JA4, suitable for 资source受limitenvironment
 /// - usemorefasthashalgorithm
 /// - decreaseCalculatecomplexdegree
 /// - moresmallinsidesaveusage
@@ -499,7 +499,7 @@ pub struct JA4L {
     /// TLS version
     pub version: String,
 
-    // / whether有 SNI (d=domain, i=ip)
+    /// whether有 SNI (d=domain, i=ip)
     pub destination: char,
 
     /// cipher suitecount
@@ -622,7 +622,7 @@ impl JA4L {
     }
 
     /// estimatefingerprintCalculatebecomethis (mutualpairvalue)
-    // / returnvalue：1-10, 1 as mostlightweight, 10 as most重
+    /// returnvalue：1-10, 1 as mostlightweight, 10 as most重
     pub fn computational_cost() -> u8 {
         2 // JA4L is lightweightlevelof，成本score as 2/10
     }
