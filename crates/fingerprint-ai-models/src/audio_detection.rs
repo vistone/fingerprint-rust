@@ -17,28 +17,28 @@ use std::collections::HashMap;
 pub struct AudioFingerprint {
     /// Whether audio is likely AI-generated
     pub is_ai_generated: bool,
-    
+
     /// Confidence score (0.0 - 1.0)
     pub confidence: f32,
-    
+
     /// Spectral consistency score (lower = more AI-like)
     pub spectral_consistency: f32,
-    
+
     /// Micro-frequency analysis score
     pub micro_frequency_score: f32,
-    
+
     /// Vocoder artifact detection score
     pub vocoder_artifacts: f32,
-    
+
     /// Natural breathing/pause patterns (higher = more human-like)
     pub natural_patterns: f32,
-    
+
     /// Model attribution probabilities
     pub model_probabilities: HashMap<String, f32>,
-    
+
     /// Detected patterns
     pub patterns: Vec<AudioPattern>,
-    
+
     /// Analysis metadata
     pub metadata: AudioMetadata,
 }
@@ -48,13 +48,13 @@ pub struct AudioFingerprint {
 pub struct AudioPattern {
     /// Pattern type
     pub pattern_type: AudioPatternType,
-    
+
     /// Pattern description
     pub description: String,
-    
+
     /// Confidence this pattern indicates AI
     pub confidence: f32,
-    
+
     /// Time range in seconds (start, end)
     pub time_range: Option<(f32, f32)>,
 }
@@ -64,25 +64,25 @@ pub struct AudioPattern {
 pub enum AudioPatternType {
     /// Vocoder artifacts (GAN/neural vocoder traces)
     VocoderArtifacts,
-    
+
     /// Unnaturally consistent pitch
     UniformPitch,
-    
+
     /// Missing micro-frequency details
     MissingMicroFrequency,
-    
+
     /// Artificial breathing patterns
     ArtificialBreathing,
-    
+
     /// Unnaturally smooth transitions
     SmoothTransitions,
-    
+
     /// Robotic prosody
     RoboticProsody,
-    
+
     /// Phase inconsistencies
     PhaseInconsistencies,
-    
+
     /// Spectral holes (frequency gaps)
     SpectralHoles,
 }
@@ -92,19 +92,19 @@ pub enum AudioPatternType {
 pub struct AudioMetadata {
     /// Audio duration in seconds
     pub duration_seconds: f32,
-    
+
     /// Sample rate (Hz)
     pub sample_rate: Option<u32>,
-    
+
     /// Number of channels
     pub channels: Option<u8>,
-    
+
     /// Bit depth
     pub bit_depth: Option<u8>,
-    
+
     /// Detected language (if speech)
     pub language: Option<String>,
-    
+
     /// Analysis timestamp
     pub analyzed_at: Option<u64>,
 }
@@ -114,28 +114,28 @@ pub struct AudioMetadata {
 pub enum VoiceProvider {
     /// ElevenLabs
     ElevenLabs,
-    
+
     /// Azure Text-to-Speech
     AzureTTS,
-    
+
     /// Google Cloud TTS
     GoogleTTS,
-    
+
     /// Amazon Polly
     AmazonPolly,
-    
+
     /// Play.ht
     PlayHT,
-    
+
     /// Resemble AI
     ResembleAI,
-    
+
     /// Murf.ai
     MurfAI,
-    
+
     /// OpenAI TTS
     OpenAITTS,
-    
+
     /// Generic/Unknown
     Unknown,
 }
@@ -184,9 +184,9 @@ impl VoiceProvider {
 ///     10.5,         // Duration
 ///     false         // No natural pauses
 /// );
-/// 
+///
 /// if result.is_ai_generated {
-///     println!("Detected AI-generated audio with {:.2}% confidence", 
+///     println!("Detected AI-generated audio with {:.2}% confidence",
 ///              result.confidence * 100.0);
 /// }
 /// ```
@@ -204,23 +204,19 @@ pub fn detect_ai_audio_from_metadata(
         language: None,
         analyzed_at: None,
     };
-    
+
     // Analyze patterns
     let patterns = detect_metadata_patterns(&metadata, has_natural_pauses);
-    
+
     // Calculate scores
     let spectral_consistency = calculate_spectral_score(&metadata, has_natural_pauses);
     let micro_frequency_score = calculate_micro_frequency_score(&metadata);
     let vocoder_artifacts = detect_vocoder_artifacts(&metadata, has_natural_pauses);
     let natural_patterns = if has_natural_pauses { 0.8 } else { 0.2 };
-    
+
     // Model attribution
-    let model_probs = attribute_to_voice_models(
-        spectral_consistency,
-        vocoder_artifacts,
-        &patterns,
-    );
-    
+    let model_probs = attribute_to_voice_models(spectral_consistency, vocoder_artifacts, &patterns);
+
     // Calculate overall AI likelihood
     let ai_score = calculate_audio_ai_score(
         spectral_consistency,
@@ -229,7 +225,7 @@ pub fn detect_ai_audio_from_metadata(
         natural_patterns,
         &patterns,
     );
-    
+
     AudioFingerprint {
         is_ai_generated: ai_score > 0.65,
         confidence: ai_score,
@@ -244,9 +240,12 @@ pub fn detect_ai_audio_from_metadata(
 }
 
 /// Detect patterns from metadata
-fn detect_metadata_patterns(metadata: &AudioMetadata, has_natural_pauses: bool) -> Vec<AudioPattern> {
+fn detect_metadata_patterns(
+    metadata: &AudioMetadata,
+    has_natural_pauses: bool,
+) -> Vec<AudioPattern> {
     let mut patterns = Vec::new();
-    
+
     // Check for unnaturally low sample rates (TTS often uses 22050 Hz or 24000 Hz)
     if let Some(sr) = metadata.sample_rate {
         if sr == 22050 || sr == 24000 {
@@ -258,7 +257,7 @@ fn detect_metadata_patterns(metadata: &AudioMetadata, has_natural_pauses: bool) 
             });
         }
     }
-    
+
     // Check for lack of natural pauses
     if !has_natural_pauses {
         patterns.push(AudioPattern {
@@ -268,7 +267,7 @@ fn detect_metadata_patterns(metadata: &AudioMetadata, has_natural_pauses: bool) 
             time_range: None,
         });
     }
-    
+
     // Check duration patterns (very short or very uniform segments)
     if metadata.duration_seconds < 2.0 || (metadata.duration_seconds % 1.0).abs() < 0.1 {
         patterns.push(AudioPattern {
@@ -278,14 +277,14 @@ fn detect_metadata_patterns(metadata: &AudioMetadata, has_natural_pauses: bool) 
             time_range: None,
         });
     }
-    
+
     patterns
 }
 
 /// Calculate spectral consistency score
 fn calculate_spectral_score(metadata: &AudioMetadata, has_natural_pauses: bool) -> f32 {
     let mut score: f32 = 0.5;
-    
+
     // Lower sample rates often indicate synthetic audio
     if let Some(sr) = metadata.sample_rate {
         if sr < 24000 {
@@ -294,12 +293,12 @@ fn calculate_spectral_score(metadata: &AudioMetadata, has_natural_pauses: bool) 
             score = 0.7; // Higher variation = more human-like
         }
     }
-    
+
     // Lack of natural pauses indicates high consistency
     if !has_natural_pauses {
         score *= 0.8;
     }
-    
+
     score.clamp(0.0, 1.0)
 }
 
@@ -320,19 +319,19 @@ fn calculate_micro_frequency_score(metadata: &AudioMetadata) -> f32 {
 /// Detect vocoder artifacts
 fn detect_vocoder_artifacts(metadata: &AudioMetadata, has_natural_pauses: bool) -> f32 {
     let mut artifact_score: f32 = 0.3;
-    
+
     // TTS systems often use specific sample rates
     if let Some(sr) = metadata.sample_rate {
         if sr == 22050 || sr == 24000 {
             artifact_score = 0.7; // High likelihood of vocoder artifacts
         }
     }
-    
+
     // Lack of natural pauses suggests synthetic generation
     if !has_natural_pauses {
         artifact_score += 0.2;
     }
-    
+
     artifact_score.clamp(0.0, 1.0)
 }
 
@@ -343,7 +342,7 @@ fn attribute_to_voice_models(
     patterns: &[AudioPattern],
 ) -> HashMap<String, f32> {
     let mut probabilities = HashMap::new();
-    
+
     // ElevenLabs: High quality, but detectable artifacts
     let elevenlabs_score = if vocoder_artifacts > 0.6 {
         0.35 + spectral_consistency * 0.15
@@ -351,23 +350,29 @@ fn attribute_to_voice_models(
         spectral_consistency * 0.25
     };
     probabilities.insert("elevenlabs".to_string(), elevenlabs_score.clamp(0.0, 1.0));
-    
+
     // Azure TTS: More robotic, uniform patterns
-    let azure_score = if patterns.iter().any(|p| p.pattern_type == AudioPatternType::RoboticProsody) {
+    let azure_score = if patterns
+        .iter()
+        .any(|p| p.pattern_type == AudioPatternType::RoboticProsody)
+    {
         0.4 + (1.0 - spectral_consistency) * 0.2
     } else {
         (1.0 - spectral_consistency) * 0.3
     };
     probabilities.insert("azure_tts".to_string(), azure_score.clamp(0.0, 1.0));
-    
+
     // Google TTS: Natural sounding but with spectral holes
-    let google_score = if patterns.iter().any(|p| p.pattern_type == AudioPatternType::SpectralHoles) {
+    let google_score = if patterns
+        .iter()
+        .any(|p| p.pattern_type == AudioPatternType::SpectralHoles)
+    {
         0.3 + vocoder_artifacts * 0.2
     } else {
         vocoder_artifacts * 0.25
     };
     probabilities.insert("google_tts".to_string(), google_score.clamp(0.0, 1.0));
-    
+
     // OpenAI TTS: Recent, high quality
     let openai_score = if vocoder_artifacts < 0.4 && spectral_consistency > 0.3 {
         0.35 + spectral_consistency * 0.15
@@ -375,7 +380,7 @@ fn attribute_to_voice_models(
         spectral_consistency * 0.2
     };
     probabilities.insert("openai_tts".to_string(), openai_score.clamp(0.0, 1.0));
-    
+
     // Normalize probabilities
     let total: f32 = probabilities.values().sum();
     if total > 0.0 {
@@ -383,7 +388,7 @@ fn attribute_to_voice_models(
             *value /= total;
         }
     }
-    
+
     probabilities
 }
 
@@ -400,24 +405,24 @@ fn calculate_audio_ai_score(
     let micro_freq_weight = 0.25;
     let vocoder_weight = 0.30;
     let natural_weight = 0.20;
-    
+
     // Low spectral consistency = high AI likelihood
     let spectral_score = 1.0 - spectral_consistency;
-    
+
     // Low micro-frequency = high AI likelihood
     let micro_freq_contribution = 1.0 - micro_frequency_score;
-    
+
     // High vocoder artifacts = high AI likelihood
     let vocoder_contribution = vocoder_artifacts;
-    
+
     // Low natural patterns = high AI likelihood
     let natural_contribution = 1.0 - natural_patterns;
-    
+
     let base_score = spectral_score * spectral_weight
         + micro_freq_contribution * micro_freq_weight
         + vocoder_contribution * vocoder_weight
         + natural_contribution * natural_weight;
-    
+
     // Boost score if multiple patterns detected
     let pattern_boost = if patterns.len() >= 2 {
         0.15
@@ -426,7 +431,7 @@ fn calculate_audio_ai_score(
     } else {
         0.0
     };
-    
+
     (base_score + pattern_boost).clamp(0.0, 1.0)
 }
 
@@ -443,7 +448,7 @@ mod tests {
             5.0,
             false, // No natural pauses
         );
-        
+
         assert!(result.is_ai_generated);
         assert!(result.confidence > 0.6);
         assert!(!result.patterns.is_empty());
@@ -458,7 +463,7 @@ mod tests {
             5.0,
             true, // Has natural pauses
         );
-        
+
         // Should have lower AI confidence
         assert!(result.confidence < 0.7);
     }
@@ -473,28 +478,26 @@ mod tests {
             language: None,
             analyzed_at: None,
         };
-        
+
         let artifact_score = detect_vocoder_artifacts(&metadata, false);
         assert!(artifact_score > 0.5);
     }
 
     #[test]
     fn test_model_attribution() {
-        let patterns = vec![
-            AudioPattern {
-                pattern_type: AudioPatternType::VocoderArtifacts,
-                description: "Test".to_string(),
-                confidence: 0.7,
-                time_range: None,
-            },
-        ];
-        
+        let patterns = vec![AudioPattern {
+            pattern_type: AudioPatternType::VocoderArtifacts,
+            description: "Test".to_string(),
+            confidence: 0.7,
+            time_range: None,
+        }];
+
         let probs = attribute_to_voice_models(0.3, 0.7, &patterns);
-        
+
         assert!(probs.contains_key("elevenlabs"));
         assert!(probs.contains_key("azure_tts"));
         assert!(probs.contains_key("google_tts"));
-        
+
         // Should have non-zero probabilities
         assert!(probs.values().all(|&v| v > 0.0));
     }
@@ -509,12 +512,14 @@ mod tests {
             language: None,
             analyzed_at: None,
         };
-        
+
         let patterns = detect_metadata_patterns(&metadata, false);
-        
+
         // Should detect multiple patterns
         assert!(!patterns.is_empty());
-        assert!(patterns.iter().any(|p| p.pattern_type == AudioPatternType::VocoderArtifacts));
+        assert!(patterns
+            .iter()
+            .any(|p| p.pattern_type == AudioPatternType::VocoderArtifacts));
     }
 
     #[test]
@@ -527,7 +532,7 @@ mod tests {
             language: None,
             analyzed_at: None,
         };
-        
+
         let metadata_high_sr = AudioMetadata {
             duration_seconds: 5.0,
             sample_rate: Some(48000),
@@ -536,10 +541,10 @@ mod tests {
             language: None,
             analyzed_at: None,
         };
-        
+
         let score_low = calculate_spectral_score(&metadata_low_sr, false);
         let score_high = calculate_spectral_score(&metadata_high_sr, true);
-        
+
         // Low sample rate should have lower spectral consistency
         assert!(score_low < score_high);
     }

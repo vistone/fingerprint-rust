@@ -7,25 +7,37 @@ use std::collections::HashMap;
 #[allow(dead_code)]
 static SDK_PATTERNS: Lazy<HashMap<&'static str, &'static str>> = Lazy::new(|| {
     let mut m = HashMap::new();
-    
+
     // OpenAI SDKs
     m.insert("openai-python", r"openai-python/(\d+\.\d+\.\d+)");
     m.insert("openai-node", r"openai-node/(\d+\.\d+\.\d+)");
     m.insert("openai-java", r"openai-java/(\d+\.\d+\.\d+)");
     m.insert("openai-dotnet", r"openai-dotnet/(\d+\.\d+\.\d+)");
-    
+
     // Anthropic SDKs
-    m.insert("anthropic-sdk-python", r"anthropic-sdk-python/(\d+\.\d+\.\d+)");
-    m.insert("anthropic-sdk-typescript", r"@anthropic-ai/sdk/(\d+\.\d+\.\d+)");
-    
+    m.insert(
+        "anthropic-sdk-python",
+        r"anthropic-sdk-python/(\d+\.\d+\.\d+)",
+    );
+    m.insert(
+        "anthropic-sdk-typescript",
+        r"@anthropic-ai/sdk/(\d+\.\d+\.\d+)",
+    );
+
     // Google SDKs
-    m.insert("google-cloud-aiplatform", r"google-cloud-aiplatform/(\d+\.\d+\.\d+)");
-    m.insert("google-generativeai", r"google-generativeai/(\d+\.\d+\.\d+)");
-    
+    m.insert(
+        "google-cloud-aiplatform",
+        r"google-cloud-aiplatform/(\d+\.\d+\.\d+)",
+    );
+    m.insert(
+        "google-generativeai",
+        r"google-generativeai/(\d+\.\d+\.\d+)",
+    );
+
     // Generic patterns
     m.insert("langchain", r"langchain/(\d+\.\d+\.\d+)");
     m.insert("llamaindex", r"llama-index/(\d+\.\d+\.\d+)");
-    
+
     m
 });
 
@@ -40,7 +52,8 @@ pub fn detect_sdk_from_user_agent(user_agent: &str) -> Option<(String, Option<St
     }
 
     // Check for LlamaIndex (may contain other SDK names)
-    if ua_lower.contains("llama") && (ua_lower.contains("index") || ua_lower.contains("llamaindex")) {
+    if ua_lower.contains("llama") && (ua_lower.contains("index") || ua_lower.contains("llamaindex"))
+    {
         let version = extract_version(&ua_lower, "llama-index/")
             .or_else(|| extract_version(&ua_lower, "llamaindex/"));
         return Some(("llama-index".to_string(), version));
@@ -113,25 +126,25 @@ fn extract_version(text: &str, prefix: &str) -> Option<String> {
     if let Some(start_idx) = text.find(prefix) {
         let version_start = start_idx + prefix.len();
         let remaining = &text[version_start..];
-        
+
         // Extract version number (digits and dots)
         let version: String = remaining
             .chars()
             .take_while(|c| c.is_ascii_digit() || *c == '.')
             .collect();
-        
+
         if !version.is_empty() {
             return Some(version);
         }
     }
-    
+
     None
 }
 
 /// Analyze SDK version for security vulnerabilities
 pub fn check_sdk_version_security(sdk: &str, version: &str) -> SecurityLevel {
     // This is a simplified example - in practice, you'd query a vulnerability database
-    
+
     match sdk {
         "openai-python" => {
             // Example: versions < 1.0.0 had security issues
@@ -178,11 +191,7 @@ fn version_less_than(version: &str, threshold: &str) -> bool {
                 parts[2].parse().ok()?,
             ))
         } else if parts.len() == 2 {
-            Some((
-                parts[0].parse().ok()?,
-                parts[1].parse().ok()?,
-                0,
-            ))
+            Some((parts[0].parse().ok()?, parts[1].parse().ok()?, 0))
         } else {
             None
         }
@@ -203,7 +212,7 @@ mod tests {
     fn test_detect_openai_python_sdk() {
         let ua = "openai-python/1.3.5 Python/3.9";
         let result = detect_sdk_from_user_agent(ua);
-        
+
         assert!(result.is_some());
         let (sdk, version) = result.unwrap();
         assert_eq!(sdk, "openai-python");
@@ -214,7 +223,7 @@ mod tests {
     fn test_detect_openai_node_sdk() {
         let ua = "openai-node/4.20.0 node/18.0.0";
         let result = detect_sdk_from_user_agent(ua);
-        
+
         assert!(result.is_some());
         let (sdk, version) = result.unwrap();
         assert_eq!(sdk, "openai-node");
@@ -225,7 +234,7 @@ mod tests {
     fn test_detect_anthropic_sdk() {
         let ua = "anthropic-sdk-python/0.7.0 Python/3.11";
         let result = detect_sdk_from_user_agent(ua);
-        
+
         assert!(result.is_some());
         let (sdk, _) = result.unwrap();
         assert_eq!(sdk, "anthropic-sdk-python");
@@ -235,7 +244,7 @@ mod tests {
     fn test_detect_langchain() {
         let ua = "langchain/0.1.0 openai-python/1.0.0";
         let result = detect_sdk_from_user_agent(ua);
-        
+
         assert!(result.is_some());
         let (sdk, _) = result.unwrap();
         assert_eq!(sdk, "langchain");
@@ -243,8 +252,14 @@ mod tests {
 
     #[test]
     fn test_extract_version() {
-        assert_eq!(extract_version("openai-python/1.2.3 other", "openai-python/"), Some("1.2.3".to_string()));
-        assert_eq!(extract_version("node/18.0.0", "node/"), Some("18.0.0".to_string()));
+        assert_eq!(
+            extract_version("openai-python/1.2.3 other", "openai-python/"),
+            Some("1.2.3".to_string())
+        );
+        assert_eq!(
+            extract_version("node/18.0.0", "node/"),
+            Some("18.0.0".to_string())
+        );
         assert_eq!(extract_version("no-version-here", "test/"), None);
     }
 

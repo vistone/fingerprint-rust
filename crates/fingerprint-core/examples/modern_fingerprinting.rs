@@ -7,14 +7,18 @@
 //! - Comprehensive error handling
 
 use fingerprint_core::{
-    // JA4+ fingerprints
-    JA4, JA4X, JA4L,
+    PQCBrowserSupport,
     // Post-Quantum Cryptography
-    PQCCapabilities, PQCBrowserSupport,
-    // WebAssembly
-    WasmCapabilities, WasmBrowserSupport,
+    PQCCapabilities,
     // Error handling
     Result,
+    WasmBrowserSupport,
+    // WebAssembly
+    WasmCapabilities,
+    // JA4+ fingerprints
+    JA4,
+    JA4L,
+    JA4X,
 };
 
 fn main() -> Result<()> {
@@ -45,13 +49,13 @@ fn demonstrate_ja4() -> Result<()> {
 
     // Simulate a Chrome 120 TLS ClientHello
     let ja4 = JA4::generate(
-        't',  // TCP transport
-        "1.3", // TLS 1.3
-        true,  // Has SNI
-        &[0x1301, 0x1302, 0x1303], // Cipher suites: TLS_AES_128_GCM_SHA256, etc.
+        't',                          // TCP transport
+        "1.3",                        // TLS 1.3
+        true,                         // Has SNI
+        &[0x1301, 0x1302, 0x1303],    // Cipher suites: TLS_AES_128_GCM_SHA256, etc.
         &[0, 10, 11, 13, 16, 43, 45], // Extensions: SNI, supported_groups, etc.
-        Some("h2"), // ALPN: HTTP/2
-        &[0x0403, 0x0804], // Signature algorithms
+        Some("h2"),                   // ALPN: HTTP/2
+        &[0x0403, 0x0804],            // Signature algorithms
     );
 
     println!("  Fingerprint: {}", ja4);
@@ -83,9 +87,9 @@ fn demonstrate_ja4x() -> Result<()> {
 
     // Simulate a typical web server certificate
     let ja4x = JA4X::generate(
-        "sha256_rsa",  // RSA signature with SHA-256
-        "rsa",         // RSA public key
-        2048,          // 2048-bit key
+        "sha256_rsa", // RSA signature with SHA-256
+        "rsa",        // RSA public key
+        2048,         // 2048-bit key
         &[
             "subjectAltName",
             "keyUsage",
@@ -130,10 +134,17 @@ fn demonstrate_pqc() -> Result<()> {
     println!("  PQC Support: {}", pqc_caps.supported);
     println!("  Algorithms detected: {}", pqc_caps.algorithms.len());
     for algo in &pqc_caps.algorithms {
-        println!("    - {} ({} bits security)", algo.tls_name(), algo.security_level());
+        println!(
+            "    - {} ({} bits security)",
+            algo.tls_name(),
+            algo.security_level()
+        );
     }
     println!("  Hybrid Mode: {}", pqc_caps.hybrid_mode);
-    println!("  Max Security Level: {} bits", pqc_caps.max_security_level());
+    println!(
+        "  Max Security Level: {} bits",
+        pqc_caps.max_security_level()
+    );
     println!("  Fingerprint: {}", pqc_caps.fingerprint());
     println!();
 
@@ -141,7 +152,12 @@ fn demonstrate_pqc() -> Result<()> {
     println!("  Browser PQC Support:");
     for (browser, version) in &[("chrome", 120), ("firefox", 125), ("safari", 17)] {
         let supports = PQCBrowserSupport::supports_pqc(browser, *version);
-        println!("    {} v{}: {}", browser, version, if supports { "✓" } else { "✗" });
+        println!(
+            "    {} v{}: {}",
+            browser,
+            version,
+            if supports { "✓" } else { "✗" }
+        );
     }
     println!();
 
@@ -168,7 +184,10 @@ fn demonstrate_wasm() -> Result<()> {
     for version in &wasm_caps.versions {
         println!("    - {}", version.feature_name());
     }
-    println!("  Streaming Compilation: {}", wasm_caps.streaming_compilation);
+    println!(
+        "  Streaming Compilation: {}",
+        wasm_caps.streaming_compilation
+    );
     println!("  Memory: {}", wasm_caps.memory.fingerprint());
     if let Some(speed) = wasm_caps.compilation_speed {
         println!("  Compilation Speed: {:.1} modules/sec", speed);
@@ -231,7 +250,7 @@ fn demonstrate_consistency_checking() -> Result<()> {
     // Simulate a case where features don't match
     println!();
     println!("  Example anomaly: Browser claims to be Chrome 120 but...");
-    
+
     let no_pqc = PQCCapabilities::none();
     if let Some(msg) = PQCBrowserSupport::detect_anomaly(browser, version, &no_pqc) {
         println!("    ⚠️ {}", msg);

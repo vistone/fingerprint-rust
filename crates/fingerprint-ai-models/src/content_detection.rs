@@ -11,25 +11,25 @@ use std::collections::HashMap;
 pub struct ContentFingerprint {
     /// Whether content is likely AI-generated
     pub is_ai_generated: bool,
-    
+
     /// Confidence score (0.0 - 1.0)
     pub confidence: f32,
-    
+
     /// Perplexity score (lower = more AI-like)
     pub perplexity: f32,
-    
+
     /// Burstiness score (lower = more AI-like)
     pub burstiness: f32,
-    
+
     /// Vocabulary richness score
     pub vocabulary_richness: f32,
-    
+
     /// Model attribution probabilities
     pub model_probabilities: HashMap<String, f32>,
-    
+
     /// Detected patterns
     pub patterns: Vec<DetectedPattern>,
-    
+
     /// Analysis metadata
     pub metadata: ContentMetadata,
 }
@@ -39,13 +39,13 @@ pub struct ContentFingerprint {
 pub struct DetectedPattern {
     /// Pattern type
     pub pattern_type: PatternType,
-    
+
     /// Pattern description
     pub description: String,
-    
+
     /// Confidence this pattern indicates AI
     pub confidence: f32,
-    
+
     /// Location in text (sentence indices)
     pub location: Vec<usize>,
 }
@@ -55,25 +55,25 @@ pub struct DetectedPattern {
 pub enum PatternType {
     /// Repetitive phrasing
     RepetitiveStructure,
-    
+
     /// Overly formal language
     FormalLanguage,
-    
+
     /// Consistent sentence length
     UniformSentenceLength,
-    
+
     /// Lack of personal pronouns
     ImPersonalTone,
-    
+
     /// Characteristic AI phrases
     AiPhrases,
-    
+
     /// Perfect grammar/punctuation
     PerfectGrammar,
-    
+
     /// Predictable transitions
     PredictableTransitions,
-    
+
     /// Overly coherent structure
     OverCoherence,
 }
@@ -83,19 +83,19 @@ pub enum PatternType {
 pub struct ContentMetadata {
     /// Text length in characters
     pub char_count: usize,
-    
+
     /// Number of sentences
     pub sentence_count: usize,
-    
+
     /// Number of words
     pub word_count: usize,
-    
+
     /// Average sentence length
     pub avg_sentence_length: f32,
-    
+
     /// Unique word count
     pub unique_words: usize,
-    
+
     /// Analysis timestamp
     pub analyzed_at: Option<u64>,
 }
@@ -117,30 +117,30 @@ pub struct ContentMetadata {
 ///
 /// let text = "Artificial intelligence has revolutionized numerous sectors...";
 /// let result = detect_ai_content(text);
-/// 
+///
 /// if result.is_ai_generated {
-///     println!("Detected AI-generated content with {:.2}% confidence", 
+///     println!("Detected AI-generated content with {:.2}% confidence",
 ///              result.confidence * 100.0);
 /// }
 /// ```
 pub fn detect_ai_content(text: &str) -> ContentFingerprint {
     // Extract metadata
     let metadata = analyze_metadata(text);
-    
+
     // Calculate metrics
     let perplexity = calculate_perplexity(text, &metadata);
     let burstiness = calculate_burstiness(text, &metadata);
     let vocab_richness = calculate_vocabulary_richness(text, &metadata);
-    
+
     // Detect patterns
     let patterns = detect_patterns(text, &metadata);
-    
+
     // Calculate model probabilities
     let model_probs = attribute_to_models(text, perplexity, burstiness, &patterns);
-    
+
     // Calculate overall AI likelihood
     let ai_score = calculate_ai_score(perplexity, burstiness, vocab_richness, &patterns);
-    
+
     ContentFingerprint {
         is_ai_generated: ai_score > 0.7,
         confidence: ai_score,
@@ -158,19 +158,22 @@ fn analyze_metadata(text: &str) -> ContentMetadata {
     let char_count = text.chars().count();
     let words: Vec<&str> = text.split_whitespace().collect();
     let word_count = words.len();
-    
+
     // Simple sentence detection (naive approach - can be improved)
-    let sentence_count = text.matches(|c: char| c == '.' || c == '!' || c == '?').count().max(1);
-    
+    let sentence_count = text
+        .matches(['.', '!', '?'])
+        .count()
+        .max(1);
+
     let avg_sentence_length = word_count as f32 / sentence_count as f32;
-    
+
     // Count unique words
     let mut unique_words_set = std::collections::HashSet::new();
     for word in &words {
         unique_words_set.insert(word.to_lowercase());
     }
     let unique_words = unique_words_set.len();
-    
+
     ContentMetadata {
         char_count,
         sentence_count,
@@ -186,27 +189,27 @@ fn analyze_metadata(text: &str) -> ContentMetadata {
 fn calculate_perplexity(text: &str, metadata: &ContentMetadata) -> f32 {
     // Simplified perplexity calculation based on word predictability
     let words: Vec<&str> = text.split_whitespace().collect();
-    
+
     if words.is_empty() {
         return 1.0;
     }
-    
+
     // Calculate bigram entropy (simplified)
     let mut bigram_counts: HashMap<(&str, &str), u32> = HashMap::new();
     let mut unigram_counts: HashMap<&str, u32> = HashMap::new();
-    
+
     for i in 0..words.len() {
         *unigram_counts.entry(words[i]).or_insert(0) += 1;
-        
+
         if i + 1 < words.len() {
             *bigram_counts.entry((words[i], words[i + 1])).or_insert(0) += 1;
         }
     }
-    
+
     // Normalize by unique words to get perplexity estimate
     let vocab_size = unigram_counts.len() as f32;
     let perplexity = vocab_size / (metadata.word_count as f32 + 1.0);
-    
+
     perplexity.clamp(0.0, 1.0)
 }
 
@@ -215,23 +218,23 @@ fn calculate_perplexity(text: &str, metadata: &ContentMetadata) -> f32 {
 fn calculate_burstiness(text: &str, _metadata: &ContentMetadata) -> f32 {
     // Split into sentences
     let sentences: Vec<&str> = text
-        .split(|c: char| c == '.' || c == '!' || c == '?')
+        .split(['.', '!', '?'])
         .filter(|s| !s.trim().is_empty())
         .collect();
-    
+
     if sentences.len() < 2 {
         return 0.5;
     }
-    
+
     // Calculate sentence lengths
     let lengths: Vec<usize> = sentences
         .iter()
         .map(|s| s.split_whitespace().count())
         .collect();
-    
+
     // Calculate mean
     let mean = lengths.iter().sum::<usize>() as f32 / lengths.len() as f32;
-    
+
     // Calculate variance
     let variance: f32 = lengths
         .iter()
@@ -239,18 +242,17 @@ fn calculate_burstiness(text: &str, _metadata: &ContentMetadata) -> f32 {
             let diff = l as f32 - mean;
             diff * diff
         })
-        .sum::<f32>() / lengths.len() as f32;
-    
+        .sum::<f32>()
+        / lengths.len() as f32;
+
     let std_dev = variance.sqrt();
-    
+
     // Normalize burstiness (higher variance = more bursty = more human-like)
-    let burstiness = if mean > 0.0 {
+    if mean > 0.0 {
         (std_dev / mean).min(1.0)
     } else {
         0.0
-    };
-    
-    burstiness
+    }
 }
 
 /// Calculate vocabulary richness (type-token ratio)
@@ -258,7 +260,7 @@ fn calculate_vocabulary_richness(_text: &str, metadata: &ContentMetadata) -> f32
     if metadata.word_count == 0 {
         return 0.0;
     }
-    
+
     // Type-token ratio: unique words / total words
     metadata.unique_words as f32 / metadata.word_count as f32
 }
@@ -267,7 +269,7 @@ fn calculate_vocabulary_richness(_text: &str, metadata: &ContentMetadata) -> f32
 fn detect_patterns(text: &str, _metadata: &ContentMetadata) -> Vec<DetectedPattern> {
     let mut patterns = Vec::new();
     let text_lower = text.to_lowercase();
-    
+
     // Check for AI-characteristic phrases
     let ai_phrases = [
         "it's important to note",
@@ -281,7 +283,7 @@ fn detect_patterns(text: &str, _metadata: &ContentMetadata) -> Vec<DetectedPatte
         "additionally",
         "it is essential",
     ];
-    
+
     for phrase in &ai_phrases {
         if text_lower.contains(phrase) {
             patterns.push(DetectedPattern {
@@ -292,24 +294,24 @@ fn detect_patterns(text: &str, _metadata: &ContentMetadata) -> Vec<DetectedPatte
             });
         }
     }
-    
+
     // Check for repetitive structure
     let sentences: Vec<&str> = text
-        .split(|c: char| c == '.' || c == '!' || c == '?')
+        .split(['.', '!', '?'])
         .filter(|s| !s.trim().is_empty())
         .collect();
-    
+
     if sentences.len() >= 3 {
         let mut similar_starts = 0;
         for i in 0..sentences.len() - 1 {
-            let s1_words: Vec<&str> = sentences[i].trim().split_whitespace().take(3).collect();
-            let s2_words: Vec<&str> = sentences[i + 1].trim().split_whitespace().take(3).collect();
-            
+            let s1_words: Vec<&str> = sentences[i].split_whitespace().take(3).collect();
+            let s2_words: Vec<&str> = sentences[i + 1].split_whitespace().take(3).collect();
+
             if s1_words.len() >= 2 && s2_words.len() >= 2 && s1_words[0] == s2_words[0] {
                 similar_starts += 1;
             }
         }
-        
+
         if similar_starts > sentences.len() / 3 {
             patterns.push(DetectedPattern {
                 pattern_type: PatternType::RepetitiveStructure,
@@ -319,13 +321,13 @@ fn detect_patterns(text: &str, _metadata: &ContentMetadata) -> Vec<DetectedPatte
             });
         }
     }
-    
+
     // Check for overly formal language
     let formal_indicators = text_lower.matches("therefore").count()
         + text_lower.matches("thus").count()
         + text_lower.matches("consequently").count()
         + text_lower.matches("furthermore").count();
-    
+
     if formal_indicators > text.len() / 500 {
         patterns.push(DetectedPattern {
             pattern_type: PatternType::FormalLanguage,
@@ -334,7 +336,7 @@ fn detect_patterns(text: &str, _metadata: &ContentMetadata) -> Vec<DetectedPatte
             location: vec![],
         });
     }
-    
+
     patterns
 }
 
@@ -346,25 +348,29 @@ fn attribute_to_models(
     patterns: &[DetectedPattern],
 ) -> HashMap<String, f32> {
     let mut probabilities = HashMap::new();
-    
+
     let text_lower = text.to_lowercase();
-    
+
     // GPT models tend to be more verbose and use certain phrases
-    let gpt_score = if text_lower.contains("delve into") || text_lower.contains("it's important to note") {
-        0.4 + (1.0 - perplexity) * 0.3
-    } else {
-        (1.0 - perplexity) * 0.3
-    };
+    let gpt_score =
+        if text_lower.contains("delve into") || text_lower.contains("it's important to note") {
+            0.4 + (1.0 - perplexity) * 0.3
+        } else {
+            (1.0 - perplexity) * 0.3
+        };
     probabilities.insert("gpt".to_string(), gpt_score.clamp(0.0, 1.0));
-    
+
     // Claude tends to be more structured and formal
-    let claude_score = if patterns.iter().any(|p| p.pattern_type == PatternType::FormalLanguage) {
+    let claude_score = if patterns
+        .iter()
+        .any(|p| p.pattern_type == PatternType::FormalLanguage)
+    {
         0.35 + (1.0 - burstiness) * 0.25
     } else {
         (1.0 - burstiness) * 0.25
     };
     probabilities.insert("claude".to_string(), claude_score.clamp(0.0, 1.0));
-    
+
     // Gemini tends to be more concise
     let gemini_score = if text.len() < 500 && perplexity < 0.3 {
         0.3 + (1.0 - perplexity) * 0.2
@@ -372,7 +378,7 @@ fn attribute_to_models(
         (1.0 - perplexity) * 0.2
     };
     probabilities.insert("gemini".to_string(), gemini_score.clamp(0.0, 1.0));
-    
+
     // Normalize probabilities
     let total: f32 = probabilities.values().sum();
     if total > 0.0 {
@@ -380,7 +386,7 @@ fn attribute_to_models(
             *value /= total;
         }
     }
-    
+
     probabilities
 }
 
@@ -396,33 +402,34 @@ fn calculate_ai_score(
     let burstiness_weight = 0.3;
     let vocab_weight = 0.2;
     let pattern_weight = 0.2;
-    
+
     // Low perplexity = high AI likelihood
     let perplexity_score = 1.0 - perplexity;
-    
+
     // Low burstiness = high AI likelihood
     let burstiness_score = 1.0 - burstiness;
-    
+
     // Moderate vocab richness is typical for AI
     let vocab_score = if vocab_richness > 0.3 && vocab_richness < 0.6 {
         0.7
     } else {
         0.3
     };
-    
+
     // Pattern detection score
     let pattern_score = if patterns.is_empty() {
         0.0
     } else {
-        let avg_confidence: f32 = patterns.iter().map(|p| p.confidence).sum::<f32>() / patterns.len() as f32;
+        let avg_confidence: f32 =
+            patterns.iter().map(|p| p.confidence).sum::<f32>() / patterns.len() as f32;
         avg_confidence
     };
-    
+
     let total_score = perplexity_score * perplexity_weight
         + burstiness_score * burstiness_weight
         + vocab_score * vocab_weight
         + pattern_score * pattern_weight;
-    
+
     total_score.clamp(0.0, 1.0)
 }
 
@@ -434,7 +441,7 @@ mod tests {
     fn test_analyze_metadata() {
         let text = "This is a test. It has multiple sentences. Testing metadata analysis.";
         let metadata = analyze_metadata(text);
-        
+
         assert_eq!(metadata.sentence_count, 3);
         assert!(metadata.word_count > 0);
         assert!(metadata.avg_sentence_length > 0.0);
@@ -445,7 +452,7 @@ mod tests {
         let text = "The quick brown fox jumps over the lazy dog. The lazy dog sleeps.";
         let metadata = analyze_metadata(text);
         let perplexity = calculate_perplexity(text, &metadata);
-        
+
         assert!(perplexity >= 0.0 && perplexity <= 1.0);
     }
 
@@ -455,7 +462,7 @@ mod tests {
         let text = "This is short. This is short. This is short.";
         let metadata = analyze_metadata(text);
         let burstiness = calculate_burstiness(text, &metadata);
-        
+
         // Should have low burstiness (more AI-like)
         assert!(burstiness < 0.3);
     }
@@ -466,7 +473,7 @@ mod tests {
         let text = "Short. This is a much longer sentence with many words. Medium length here.";
         let metadata = analyze_metadata(text);
         let burstiness = calculate_burstiness(text, &metadata);
-        
+
         // Should have higher burstiness (more human-like)
         assert!(burstiness > 0.3);
     }
@@ -476,7 +483,7 @@ mod tests {
         let text = "The cat sat on the mat. The dog ran in the park.";
         let metadata = analyze_metadata(text);
         let richness = calculate_vocabulary_richness(text, &metadata);
-        
+
         assert!(richness > 0.0 && richness <= 1.0);
     }
 
@@ -485,16 +492,18 @@ mod tests {
         let text = "It's important to note that artificial intelligence has transformed the industry. Furthermore, we should delve into the implications.";
         let metadata = analyze_metadata(text);
         let patterns = detect_patterns(text, &metadata);
-        
+
         assert!(!patterns.is_empty());
-        assert!(patterns.iter().any(|p| p.pattern_type == PatternType::AiPhrases));
+        assert!(patterns
+            .iter()
+            .any(|p| p.pattern_type == PatternType::AiPhrases));
     }
 
     #[test]
     fn test_detect_ai_content_human_text() {
         let text = "Hey! So I was thinking... maybe we could grab coffee? I dunno, just a thought. What do you think?";
         let result = detect_ai_content(text);
-        
+
         // Human text should have low AI score
         assert!(result.confidence < 0.5);
     }
@@ -503,7 +512,7 @@ mod tests {
     fn test_detect_ai_content_ai_like_text() {
         let text = "Artificial intelligence has revolutionized numerous sectors. It's important to note that machine learning algorithms continue to advance. Furthermore, the implications for society are significant.";
         let result = detect_ai_content(text);
-        
+
         // AI-like text should have higher AI score
         assert!(result.confidence > 0.3);
     }
@@ -515,13 +524,13 @@ mod tests {
         let perplexity = calculate_perplexity(text, &metadata);
         let burstiness = calculate_burstiness(text, &metadata);
         let patterns = detect_patterns(text, &metadata);
-        
+
         let probs = attribute_to_models(text, perplexity, burstiness, &patterns);
-        
+
         assert!(probs.contains_key("gpt"));
         assert!(probs.contains_key("claude"));
         assert!(probs.contains_key("gemini"));
-        
+
         // GPT should have higher probability due to characteristic phrases
         assert!(probs["gpt"] > 0.0);
     }

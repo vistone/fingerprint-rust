@@ -72,7 +72,7 @@ pub mod wasm; // WebAssembly fingerprinting detection
 // Error types
 pub use error::{
     CacheError, ConfigError, DatabaseError, DnsError, FingerprintError, HttpError, ParseError,
-    RateLimitError, TcpError, TlsError, ValidationError, Result,
+    RateLimitError, Result, TcpError, TlsError, ValidationError,
 };
 
 // fingerprint abstractions
@@ -97,7 +97,9 @@ pub use version::TlsVersion;
 pub use pqc::{PQCAlgorithm, PQCBrowserSupport, PQCCapabilities};
 
 // WebAssembly fingerprinting
-pub use wasm::{WasmBrowserSupport, WasmCapabilities, WasmMemoryFingerprint, WasmTableFingerprint, WasmVersion};
+pub use wasm::{
+    WasmBrowserSupport, WasmCapabilities, WasmMemoryFingerprint, WasmTableFingerprint, WasmVersion,
+};
 
 // HTTP related
 pub use hpack::{
@@ -138,8 +140,8 @@ pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics,
 
 // rate limiting service (Phase 9.4)
 pub use rate_limiting::{
-    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier,
-    RateLimitResponse, RateLimiter, UserQuota,
+    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitResponse,
+    RateLimiter, UserQuota,
 };
 
 // rate limiting Redis backend
@@ -151,9 +153,7 @@ pub use rate_limiting_redis::{
 pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // cache (Phase 9.3)
-pub use cache::{
-    Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard,
-};
+pub use cache::{Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard};
 
 // Redis cache (optional, requires redis-cache feature)
 pub use cache_redis::RedisCacheConfig;

@@ -229,9 +229,9 @@ impl PQCBrowserSupport {
     pub fn supports_pqc(browser: &str, version: u32) -> bool {
         match browser.to_lowercase().as_str() {
             "chrome" | "chromium" => version >= 116, // Chrome 116+ experimental PQC
-            "firefox" => version >= 120,              // Firefox 120+ with flags
-            "safari" => version >= 17,                // Safari 17+ limited support
-            "edge" => version >= 116,                 // Edge follows Chrome
+            "firefox" => version >= 120,             // Firefox 120+ with flags
+            "safari" => version >= 17,               // Safari 17+ limited support
+            "edge" => version >= 116,                // Edge follows Chrome
             _ => false,
         }
     }
@@ -244,10 +244,7 @@ impl PQCBrowserSupport {
 
         match browser.to_lowercase().as_str() {
             "chrome" | "chromium" | "edge" => {
-                vec![
-                    PQCAlgorithm::HybridKyber768X25519,
-                    PQCAlgorithm::Kyber768,
-                ]
+                vec![PQCAlgorithm::HybridKyber768X25519, PQCAlgorithm::Kyber768]
             }
             "firefox" => {
                 vec![PQCAlgorithm::Kyber768, PQCAlgorithm::Kyber1024]

@@ -29,15 +29,15 @@
 //! assert!(result.is_some());
 //! ```
 
-pub mod providers;
+pub mod audio_detection;
+pub mod content_detection;
 pub mod headers;
+pub mod image_detection;
 pub mod patterns;
+pub mod providers;
 pub mod sdk;
 pub mod tls;
-pub mod content_detection;
-pub mod audio_detection;
 pub mod video_detection;
-pub mod image_detection;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -74,7 +74,7 @@ pub enum AiProvider {
     StabilityAI,
     /// AI21 Labs
     AI21Labs,
-    
+
     // Chinese Providers
     /// Alibaba Cloud - Qwen/Tongyi Qianwen (通义千问)
     AlibabaQwen,
@@ -100,11 +100,11 @@ pub enum AiProvider {
     ZeroOneAI,
     /// Baichuan (百川)
     Baichuan,
-    
+
     // Other Global Providers
     /// Reka AI (Singapore)
     RekaAI,
-    
+
     /// Other/Unknown provider
     Other(String),
 }
@@ -153,25 +153,25 @@ impl AiProvider {
 pub struct AiProviderFingerprint {
     /// Detected provider
     pub provider: AiProvider,
-    
+
     /// Confidence score (0.0 - 1.0)
     pub confidence: f32,
-    
+
     /// Detected model name (e.g., "gpt-4", "claude-3-opus")
     pub model: Option<String>,
-    
+
     /// SDK type if detected
     pub sdk: Option<String>,
-    
+
     /// SDK version if detected
     pub sdk_version: Option<String>,
-    
+
     /// Authentication method detected
     pub auth_method: Option<String>,
-    
+
     /// API endpoint detected
     pub endpoint: Option<String>,
-    
+
     /// Additional metadata
     pub metadata: HashMap<String, String>,
 }
@@ -337,7 +337,7 @@ mod tests {
 
         let result = detect_ai_provider(&headers, "/v1/chat/completions", None);
         assert!(result.is_some());
-        
+
         if let Some(fp) = result {
             assert_eq!(fp.provider, AiProvider::OpenAI);
             assert!(fp.confidence > 0.8);
@@ -353,7 +353,7 @@ mod tests {
 
         let result = detect_ai_provider(&headers, "/v1/messages", None);
         assert!(result.is_some());
-        
+
         if let Some(fp) = result {
             assert_eq!(fp.provider, AiProvider::Anthropic);
             assert!(fp.confidence > 0.8);

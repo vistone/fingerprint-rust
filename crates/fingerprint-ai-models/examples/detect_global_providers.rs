@@ -19,7 +19,11 @@ fn main() {
         ("Authorization".to_string(), "Bearer sk-xxx".to_string()),
         ("X-DashScope-API-Key".to_string(), "sk-xxx".to_string()),
     ];
-    if let Some(result) = detect_ai_provider(&headers, "/v1/services/aigc/text-generation/generation", None) {
+    if let Some(result) = detect_ai_provider(
+        &headers,
+        "/v1/services/aigc/text-generation/generation",
+        None,
+    ) {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -31,10 +35,12 @@ fn main() {
     // Example 2: Baidu ERNIE (文心一言)
     println!("Example 2: Baidu ERNIE Bot Detection");
     println!("------------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer xxx".to_string()),
-    ];
-    if let Some(result) = detect_ai_provider(&headers, "/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-bot", Some("ernie-3.5-8k")) {
+    let headers = vec![("Authorization".to_string(), "Bearer xxx".to_string())];
+    if let Some(result) = detect_ai_provider(
+        &headers,
+        "/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-bot",
+        Some("ernie-3.5-8k"),
+    ) {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -50,7 +56,9 @@ fn main() {
         ("Authorization".to_string(), "Bearer xxx".to_string()),
         ("X-TC-Action".to_string(), "ChatCompletions".to_string()),
     ];
-    if let Some(result) = detect_ai_provider(&headers, "/hyllm/v1/chat/completions", Some("hunyuan-pro")) {
+    if let Some(result) =
+        detect_ai_provider(&headers, "/hyllm/v1/chat/completions", Some("hunyuan-pro"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -66,7 +74,9 @@ fn main() {
         ("Authorization".to_string(), "Bearer xxx".to_string()),
         ("X-TT-LogId".to_string(), "xxx".to_string()),
     ];
-    if let Some(result) = detect_ai_provider(&headers, "/api/v3/chat/completions", Some("doubao-pro")) {
+    if let Some(result) =
+        detect_ai_provider(&headers, "/api/v3/chat/completions", Some("doubao-pro"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -78,10 +88,10 @@ fn main() {
     // Example 5: Zhipu GLM (智谱)
     println!("Example 5: Zhipu AI ChatGLM Detection");
     println!("--------------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer xxx".to_string()),
-    ];
-    if let Some(result) = detect_ai_provider(&headers, "/api/paas/v4/chat/completions", Some("glm-4")) {
+    let headers = vec![("Authorization".to_string(), "Bearer xxx".to_string())];
+    if let Some(result) =
+        detect_ai_provider(&headers, "/api/paas/v4/chat/completions", Some("glm-4"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -93,10 +103,10 @@ fn main() {
     // Example 6: Moonshot Kimi (月之暗面)
     println!("Example 6: Moonshot AI Kimi Detection");
     println!("--------------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer sk-xxx".to_string()),
-    ];
-    if let Some(result) = detect_ai_provider(&headers, "/v1/chat/completions", Some("moonshot-v1-8k")) {
+    let headers = vec![("Authorization".to_string(), "Bearer sk-xxx".to_string())];
+    if let Some(result) =
+        detect_ai_provider(&headers, "/v1/chat/completions", Some("moonshot-v1-8k"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -108,10 +118,10 @@ fn main() {
     // Example 7: DeepSeek
     println!("Example 7: DeepSeek Detection");
     println!("-----------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer sk-xxx".to_string()),
-    ];
-    if let Some(result) = detect_ai_provider(&headers, "/v1/chat/completions", Some("deepseek-chat")) {
+    let headers = vec![("Authorization".to_string(), "Bearer sk-xxx".to_string())];
+    if let Some(result) =
+        detect_ai_provider(&headers, "/v1/chat/completions", Some("deepseek-chat"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -127,7 +137,9 @@ fn main() {
         ("Authorization".to_string(), "Bearer xxx".to_string()),
         ("Group-ID".to_string(), "xxx".to_string()),
     ];
-    if let Some(result) = detect_ai_provider(&headers, "/v1/text/chatcompletion_v2", Some("abab6-chat")) {
+    if let Some(result) =
+        detect_ai_provider(&headers, "/v1/text/chatcompletion_v2", Some("abab6-chat"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -139,9 +151,7 @@ fn main() {
     // Example 9: iFlytek Spark (科大讯飞/星火)
     println!("Example 9: iFlytek Spark Detection");
     println!("-----------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer xxx".to_string()),
-    ];
+    let headers = vec![("Authorization".to_string(), "Bearer xxx".to_string())];
     if let Some(result) = detect_ai_provider(&headers, "/v3.5/chat", Some("spark-v3.5")) {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
@@ -154,9 +164,7 @@ fn main() {
     // Example 10: 01.AI Yi (零一万物)
     println!("Example 10: 01.AI Yi Detection");
     println!("-------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer xxx".to_string()),
-    ];
+    let headers = vec![("Authorization".to_string(), "Bearer xxx".to_string())];
     if let Some(result) = detect_ai_provider(&headers, "/v1/chat/completions", Some("yi-large")) {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
@@ -173,10 +181,9 @@ fn main() {
     // Example 11: Perplexity AI
     println!("Example 11: Perplexity AI Detection");
     println!("-----------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer pplx-xxx".to_string()),
-    ];
-    if let Some(result) = detect_ai_provider(&headers, "/chat/completions", Some("pplx-70b-online")) {
+    let headers = vec![("Authorization".to_string(), "Bearer pplx-xxx".to_string())];
+    if let Some(result) = detect_ai_provider(&headers, "/chat/completions", Some("pplx-70b-online"))
+    {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -208,7 +215,11 @@ fn main() {
         ("Authorization".to_string(), "Bearer sk-xxx".to_string()),
         ("Stability-Client-ID".to_string(), "xxx".to_string()),
     ];
-    if let Some(result) = detect_ai_provider(&headers, "/v1/generation/stable-diffusion-xl", Some("sdxl-1.0")) {
+    if let Some(result) = detect_ai_provider(
+        &headers,
+        "/v1/generation/stable-diffusion-xl",
+        Some("sdxl-1.0"),
+    ) {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -220,10 +231,12 @@ fn main() {
     // Example 14: AI21 Labs
     println!("Example 14: AI21 Labs Detection");
     println!("-------------------------------");
-    let headers = vec![
-        ("Authorization".to_string(), "Bearer xxx".to_string()),
-    ];
-    if let Some(result) = detect_ai_provider(&headers, "/studio/v1/chat/completions", Some("jamba-instruct")) {
+    let headers = vec![("Authorization".to_string(), "Bearer xxx".to_string())];
+    if let Some(result) = detect_ai_provider(
+        &headers,
+        "/studio/v1/chat/completions",
+        Some("jamba-instruct"),
+    ) {
         println!("  Provider: {}", result.provider.as_str());
         println!("  Confidence: {:.2}%", result.confidence * 100.0);
         if let Some(model) = &result.model {
@@ -235,13 +248,13 @@ fn main() {
     // Provider Count Summary
     println!("\n📊 Provider Summary\n");
     println!("═══════════════════════════════════════\n");
-    
+
     let provider_count = vec![
         ("US/Western Providers", 13),
         ("Chinese Providers", 12),
         ("Other Global Providers", 1),
     ];
-    
+
     for (category, count) in provider_count {
         println!("  {}: {}", category, count);
     }

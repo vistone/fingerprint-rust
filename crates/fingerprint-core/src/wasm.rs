@@ -74,7 +74,7 @@ impl WasmMemoryFingerprint {
     /// Create fingerprint for typical browser WASM memory
     pub fn browser_default() -> Self {
         Self {
-            initial_pages: 256,      // 16MB
+            initial_pages: 256,       // 16MB
             maximum_pages: Some(256), // 16MB max (typical browser limit)
             is_shared: false,
             growth_pattern: "linear".to_string(),
@@ -96,7 +96,9 @@ impl WasmMemoryFingerprint {
         format!(
             "wasm_mem_{}_{}_{}",
             self.initial_pages,
-            self.maximum_pages.map(|m| m.to_string()).unwrap_or_else(|| "unlimited".to_string()),
+            self.maximum_pages
+                .map(|m| m.to_string())
+                .unwrap_or_else(|| "unlimited".to_string()),
             if self.is_shared { "shared" } else { "private" }
         )
     }
@@ -178,7 +180,7 @@ impl WasmCapabilities {
             streaming_compilation: true,
             instantiate_streaming: true,
             max_module_size: Some(1024 * 1024 * 100), // 100MB
-            compilation_speed: Some(10.0),              // 10 modules/sec
+            compilation_speed: Some(10.0),            // 10 modules/sec
             available: true,
         }
     }
@@ -203,7 +205,7 @@ impl WasmCapabilities {
             }),
             streaming_compilation: true,
             instantiate_streaming: true,
-            max_module_size: None, // Virtually unlimited
+            max_module_size: None,         // Virtually unlimited
             compilation_speed: Some(50.0), // Much faster than browser
             available: true,
         }
@@ -227,7 +229,14 @@ impl WasmCapabilities {
         let mut hasher = Sha256::new();
         hasher.update(features.as_bytes());
         hasher.update(self.memory.fingerprint().as_bytes());
-        hasher.update(if self.streaming_compilation { "stream_yes" } else { "stream_no" }.as_bytes());
+        hasher.update(
+            if self.streaming_compilation {
+                "stream_yes"
+            } else {
+                "stream_no"
+            }
+            .as_bytes(),
+        );
 
         let hash_result = hasher.finalize();
         let hash_hex = format!("{:x}", hash_result);
@@ -241,11 +250,7 @@ impl WasmCapabilities {
     }
 
     /// Check if capabilities match expected browser behavior
-    pub fn matches_browser(
-        &self,
-        browser: &str,
-        version: u32,
-    ) -> Result<(), String> {
+    pub fn matches_browser(&self, browser: &str, version: u32) -> Result<(), String> {
         match browser.to_lowercase().as_str() {
             "chrome" | "chromium" | "edge" => {
                 if version < 69 {
@@ -257,10 +262,7 @@ impl WasmCapabilities {
                     }
                 } else {
                     if !self.available {
-                        return Err(format!(
-                            "{} v{} should have WASM support",
-                            browser, version
-                        ));
+                        return Err(format!("{} v{} should have WASM support", browser, version));
                     }
 
                     // Chrome 69+ should support threads
@@ -273,10 +275,7 @@ impl WasmCapabilities {
 
                     // Chrome 91+ should support SIMD
                     if version >= 91 && !self.versions.contains(&WasmVersion::Simd) {
-                        return Err(format!(
-                            "{} v{} should support WASM SIMD",
-                            browser, version
-                        ));
+                        return Err(format!("{} v{} should support WASM SIMD", browser, version));
                     }
                 }
             }
@@ -290,10 +289,7 @@ impl WasmCapabilities {
                     }
                 } else {
                     if !self.available {
-                        return Err(format!(
-                            "{} v{} should have WASM support",
-                            browser, version
-                        ));
+                        return Err(format!("{} v{} should have WASM support", browser, version));
                     }
 
                     // Firefox 79+ should support threads
@@ -315,10 +311,7 @@ impl WasmCapabilities {
                     }
                 } else {
                     if !self.available {
-                        return Err(format!(
-                            "{} v{} should have WASM support",
-                            browser, version
-                        ));
+                        return Err(format!("{} v{} should have WASM support", browser, version));
                     }
                 }
             }

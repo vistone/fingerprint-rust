@@ -11,7 +11,12 @@ pub fn detect_from_headers(headers: &HashMap<String, String>) -> Option<AiProvid
     }
 
     // Check for Anthropic-specific headers
-    if headers.contains_key("anthropic-version") || headers.get("x-api-key").map(|v| v.starts_with("sk-ant-")).unwrap_or(false) {
+    if headers.contains_key("anthropic-version")
+        || headers
+            .get("x-api-key")
+            .map(|v| v.starts_with("sk-ant-"))
+            .unwrap_or(false)
+    {
         return Some(detect_anthropic(headers));
     }
 
@@ -39,12 +44,15 @@ pub fn detect_from_headers(headers: &HashMap<String, String>) -> Option<AiProvid
     if let Some(auth) = headers.get("authorization") {
         if auth.starts_with("Bearer sk-") {
             // Could be OpenAI or Mistral
-            return Some(AiProviderFingerprint::new(AiProvider::OpenAI, 0.7)
-                .with_auth("Bearer".to_string()));
+            return Some(
+                AiProviderFingerprint::new(AiProvider::OpenAI, 0.7).with_auth("Bearer".to_string()),
+            );
         } else if auth.starts_with("Bearer ey") {
             // Likely JWT token - could be Google or others
-            return Some(AiProviderFingerprint::new(AiProvider::Other("jwt_auth".to_string()), 0.5)
-                .with_auth("Bearer JWT".to_string()));
+            return Some(
+                AiProviderFingerprint::new(AiProvider::Other("jwt_auth".to_string()), 0.5)
+                    .with_auth("Bearer JWT".to_string()),
+            );
         }
     }
 
@@ -53,8 +61,8 @@ pub fn detect_from_headers(headers: &HashMap<String, String>) -> Option<AiProvid
 
 /// Detect OpenAI from headers
 fn detect_openai(headers: &HashMap<String, String>) -> AiProviderFingerprint {
-    let mut fp = AiProviderFingerprint::new(AiProvider::OpenAI, 0.95)
-        .with_auth("Bearer".to_string());
+    let mut fp =
+        AiProviderFingerprint::new(AiProvider::OpenAI, 0.95).with_auth("Bearer".to_string());
 
     if let Some(org) = headers.get("openai-organization") {
         fp = fp.with_metadata("organization".to_string(), org.clone());
@@ -80,8 +88,8 @@ fn detect_openai(headers: &HashMap<String, String>) -> AiProviderFingerprint {
 
 /// Detect Anthropic Claude from headers
 fn detect_anthropic(headers: &HashMap<String, String>) -> AiProviderFingerprint {
-    let mut fp = AiProviderFingerprint::new(AiProvider::Anthropic, 0.95)
-        .with_auth("x-api-key".to_string());
+    let mut fp =
+        AiProviderFingerprint::new(AiProvider::Anthropic, 0.95).with_auth("x-api-key".to_string());
 
     if let Some(version) = headers.get("anthropic-version") {
         fp = fp.with_metadata("api_version".to_string(), version.clone());
@@ -119,8 +127,8 @@ fn detect_google(headers: &HashMap<String, String>) -> AiProviderFingerprint {
 
 /// Detect Azure OpenAI from headers
 fn detect_azure_openai(headers: &HashMap<String, String>) -> AiProviderFingerprint {
-    let mut fp = AiProviderFingerprint::new(AiProvider::AzureOpenAI, 0.9)
-        .with_auth("api-key".to_string());
+    let mut fp =
+        AiProviderFingerprint::new(AiProvider::AzureOpenAI, 0.9).with_auth("api-key".to_string());
 
     if let Some(version) = headers.get("api-version") {
         fp = fp.with_metadata("api_version".to_string(), version.clone());
@@ -131,8 +139,8 @@ fn detect_azure_openai(headers: &HashMap<String, String>) -> AiProviderFingerpri
 
 /// Detect Cohere from headers
 fn detect_cohere(headers: &HashMap<String, String>) -> AiProviderFingerprint {
-    let mut fp = AiProviderFingerprint::new(AiProvider::Cohere, 0.95)
-        .with_auth("Bearer".to_string());
+    let mut fp =
+        AiProviderFingerprint::new(AiProvider::Cohere, 0.95).with_auth("Bearer".to_string());
 
     if let Some(version) = headers.get("cohere-version") {
         fp = fp.with_metadata("api_version".to_string(), version.clone());

@@ -302,7 +302,9 @@ pub enum ConfigError {
 impl fmt::Display for ConfigError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::MissingField(field) => write!(f, "Missing required configuration field: {}", field),
+            Self::MissingField(field) => {
+                write!(f, "Missing required configuration field: {}", field)
+            }
             Self::InvalidValue { field, value } => {
                 write!(f, "Invalid value for field '{}': {}", field, value)
             }
@@ -433,7 +435,11 @@ impl fmt::Display for ValidationError {
                 write!(f, "Value {} out of range [{}, {}]", value, min, max)
             }
             Self::FormatValidation { expected, actual } => {
-                write!(f, "Format mismatch: expected '{}', got '{}'", expected, actual)
+                write!(
+                    f,
+                    "Format mismatch: expected '{}', got '{}'",
+                    expected, actual
+                )
             }
             Self::ConsistencyCheck(msg) => write!(f, "Consistency check failed: {}", msg),
         }
