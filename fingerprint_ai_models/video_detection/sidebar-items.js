@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["VideoPatternType","VideoProvider"],"fn":["detect_ai_video_from_metadata"],"struct":["VideoFingerprint","VideoMetadata","VideoPattern"]};

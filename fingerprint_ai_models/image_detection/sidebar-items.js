@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ImagePatternType","ImageProvider"],"fn":["detect_ai_image_from_metadata"],"struct":["ImageFingerprint","ImageMetadata","ImagePattern"]};

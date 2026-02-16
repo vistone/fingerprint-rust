@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["CHROME_MACOS","CHROME_WIN11","EDGE_WIN","FIREFOX_LINUX","FIREFOX_WIN","SAFARI_IOS","SAFARI_MACOS"],"fn":["get_signature"]};

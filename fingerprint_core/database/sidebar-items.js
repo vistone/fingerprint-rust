@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["FingerprintType","ThreatLevel"],"struct":["DatabaseStats","FingerprintDatabase","FingerprintEntry"]};

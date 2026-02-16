@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["extract_chrome_version","extract_os_from_user_agent","extract_platform","infer_browser_from_profile_name","is_mobile_profile","random_choice","random_choice_string"]};

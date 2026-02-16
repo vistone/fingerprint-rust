@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"mod":["profiles","version_adapter","version_detector","version_registry","version_update"]};

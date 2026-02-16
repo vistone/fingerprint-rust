@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BrowserType","OperatingSystem"],"static":["OPERATING_SYSTEMS"],"struct":["UserAgentTemplate"],"type":["OperatingSystems"]};

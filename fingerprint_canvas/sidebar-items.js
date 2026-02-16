@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["CanvasError","RenderingLevel"],"struct":["CanvasAnalyzer","CanvasFingerprint","CanvasObfuscator","CanvasProfileLibrary"]};

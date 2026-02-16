@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["BrowserType"],"struct":["VersionEntry","VersionRegistry"]};

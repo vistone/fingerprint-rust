@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AudioPatternType","VoiceProvider"],"fn":["detect_ai_audio_from_metadata"],"struct":["AudioFingerprint","AudioMetadata","AudioPattern"]};

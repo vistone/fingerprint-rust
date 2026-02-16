@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["gather_metrics","record_http_request","record_quota_usage","record_rate_limit_check","record_redis_operation","update_redis_connections"],"struct":["HTTP_REQUESTS_TOTAL","HTTP_REQUEST_DURATION_SECONDS","RATE_LIMIT_CHECKS_TOTAL","RATE_LIMIT_QUOTA_USED","REDIS_CONNECTIONS_ACTIVE","REDIS_OPERATIONS_TOTAL","RequestTimer"]};

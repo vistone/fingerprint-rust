@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["HttpMethod"],"fn":["add_cookies_to_request"],"struct":["HttpRequest"]};

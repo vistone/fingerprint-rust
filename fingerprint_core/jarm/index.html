@@ -1,0 +1,39 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="JARM: Active TLS Server Fingerprinting"><title>fingerprint_core::jarm - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-ca0dd0c4.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="fingerprint_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.93.1 (01f6ddf75 2026-02-11)" data-channel="1.93.1" data-search-js="search-9e2438ea.js" data-stringdex-js="stringdex-a3946164.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="../sidebar-items.js"></script><script defer src="../../static.files/main-a410ff4d.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc mod"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Module jarm</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../../fingerprint_core/index.html">fingerprint_<wbr>core</a><span class="version">2.1.0</span></h2></div><div class="sidebar-elems"><section id="rustdoc-toc"><h2 class="location"><a href="#">Module jarm</a></h2><h3><a href="#">Sections</a></h3><ul class="block top-toc"><li><a href="#algorithm-overview" title="Algorithm Overview">Algorithm Overview</a></li><li><a href="#format" title="Format">Format</a></li><li><a href="#references" title="References">References</a></li></ul><h3><a href="#structs">Module Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li></ul></section><div id="rustdoc-modnav"><h2 class="in-crate"><a href="../index.html">In crate fingerprint_<wbr>core</a></h2></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><div class="rustdoc-breadcrumbs"><a href="../index.html">fingerprint_core</a></div><h1>Module <span>jarm</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../../src/fingerprint_core/jarm.rs.html#1-553">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>JARM: Active TLS Server Fingerprinting</p>
+<p>JARM is an active TLS server fingerprinting technique developed by Salesforce.
+It sends 10 specific TLS Client Hello packets to a server and analyzes the responses
+to generate a unique 62-character fingerprint.</p>
+<h3 id="algorithm-overview"><a class="doc-anchor" href="#algorithm-overview">§</a>Algorithm Overview</h3>
+<ol>
+<li>Send 10 TLS Client Hello probes with different configurations:</li>
+</ol>
+<ul>
+<li>TLS 1.2/1.3 versions</li>
+<li>Different cipher suites</li>
+<li>Different TLS extensions</li>
+<li>ALPN variations</li>
+</ul>
+<ol start="2">
+<li>Parse Server Hello responses (or capture errors/timeouts)</li>
+<li>Extract key features from each response:</li>
+</ol>
+<ul>
+<li>TLS version</li>
+<li>Cipher suite selected</li>
+<li>TLS extensions present</li>
+</ul>
+<ol start="4">
+<li>Hash and combine features into 62-character fingerprint</li>
+</ol>
+<h3 id="format"><a class="doc-anchor" href="#format">§</a>Format</h3>
+<p>JARM fingerprint: 62 hexadecimal characters</p>
+<ul>
+<li>First 30 chars: Hashed cipher and version info from first 5 probes</li>
+<li>Next 30 chars: Hashed cipher and version info from last 5 probes</li>
+<li>Last 2 chars: Hashed extension info from all probes</li>
+</ul>
+<h3 id="references"><a class="doc-anchor" href="#references">§</a>References</h3>
+<ul>
+<li>Salesforce Engineering Blog: “JARM: TLS Active Transport Fingerprinting”</li>
+<li>GitHub: salesforce/jarm</li>
+</ul>
+</div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Jarm.html" title="struct fingerprint_core::jarm::Jarm">Jarm</a></dt><dd>JARM Fingerprint</dd><dt><a class="struct" href="struct.JarmProbe.html" title="struct fingerprint_core::jarm::JarmProbe">Jarm<wbr>Probe</a></dt><dd>JARM probe configuration</dd><dt><a class="struct" href="struct.JarmResponse.html" title="struct fingerprint_core::jarm::JarmResponse">Jarm<wbr>Response</a></dt><dd>JARM Server Response</dd></dl></section></div></main></body></html>

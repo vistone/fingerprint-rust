@@ -1,0 +1,332 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `crates/fingerprint-http/src/http_client/http3.rs`."><title>http3.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-ca0dd0c4.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="fingerprint_http" data-themes="" data-resource-suffix="" data-rustdoc-version="1.93.1 (01f6ddf75 2026-02-11)" data-channel="1.93.1" data-search-js="search-9e2438ea.js" data-stringdex-js="stringdex-a3946164.js" data-settings-js="settings-c38705f0.js" ><script src="../../../static.files/storage-e2aeef58.js"></script><script defer src="../../../static.files/src-script-813739b1.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-a410ff4d.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">fingerprint_http/http_client/</div>http3.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! HTTP/3 实现
+<a href=#2 id=2 data-nosnippet>2</a>//!
+<a href=#3 id=3 data-nosnippet>3</a>//! 使用 quinn + h3 实现完整的 HTTP/3 支持
+<a href=#4 id=4 data-nosnippet>4</a>//! HTTP/3 基于 QUIC 协议
+<a href=#5 id=5 data-nosnippet>5</a>
+<a href=#6 id=6 data-nosnippet>6</a></span><span class="kw">use super</span>::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, <span class="prelude-ty">Result</span>};
+<a href=#7 id=7 data-nosnippet>7</a>
+<a href=#8 id=8 data-nosnippet>8</a><span class="attr">#[cfg(feature = <span class="string">"http3"</span>)]
+<a href=#9 id=9 data-nosnippet>9</a></span><span class="kw">use </span>quinn::{ClientConfig, Endpoint, TransportConfig};
+<a href=#10 id=10 data-nosnippet>10</a>
+<a href=#11 id=11 data-nosnippet>11</a><span class="comment">// 修复：使用全局单例 Runtime 避免频繁创建
+<a href=#12 id=12 data-nosnippet>12</a></span><span class="attr">#[cfg(feature = <span class="string">"http3"</span>)]
+<a href=#13 id=13 data-nosnippet>13</a></span><span class="kw">use </span>once_cell::sync::Lazy;
+<a href=#14 id=14 data-nosnippet>14</a>
+<a href=#15 id=15 data-nosnippet>15</a><span class="attr">#[cfg(feature = <span class="string">"http3"</span>)]
+<a href=#16 id=16 data-nosnippet>16</a></span><span class="kw">static </span>RUNTIME: Lazy&lt;tokio::runtime::Runtime&gt; = Lazy::new(|| {
+<a href=#17 id=17 data-nosnippet>17</a>    tokio::runtime::Runtime::new().unwrap_or_else(|err| {
+<a href=#18 id=18 data-nosnippet>18</a>        <span class="comment">// 记录错误并创建最小化运行时作为后备
+<a href=#19 id=19 data-nosnippet>19</a>        </span><span class="macro">eprintln!</span>(<span class="string">"警告：无法创建最优 Tokio 运行时：{}。使用基础运行时。"</span>, err);
+<a href=#20 id=20 data-nosnippet>20</a>        tokio::runtime::Builder::new_current_thread()
+<a href=#21 id=21 data-nosnippet>21</a>            .enable_all()
+<a href=#22 id=22 data-nosnippet>22</a>            .build()
+<a href=#23 id=23 data-nosnippet>23</a>            .expect(<span class="string">"无法创建基础 Tokio 运行时 - 系统资源耗尽"</span>)
+<a href=#24 id=24 data-nosnippet>24</a>    })
+<a href=#25 id=25 data-nosnippet>25</a>});
+<a href=#26 id=26 data-nosnippet>26</a>
+<a href=#27 id=27 data-nosnippet>27</a><span class="doccomment">/// 发送 HTTP/3 请求
+<a href=#28 id=28 data-nosnippet>28</a></span><span class="attr">#[cfg(feature = <span class="string">"http3"</span>)]
+<a href=#29 id=29 data-nosnippet>29</a></span><span class="kw">pub fn </span>send_http3_request(
+<a href=#30 id=30 data-nosnippet>30</a>    host: <span class="kw-2">&amp;</span>str,
+<a href=#31 id=31 data-nosnippet>31</a>    port: u16,
+<a href=#32 id=32 data-nosnippet>32</a>    path: <span class="kw-2">&amp;</span>str,
+<a href=#33 id=33 data-nosnippet>33</a>    request: <span class="kw-2">&amp;</span>HttpRequest,
+<a href=#34 id=34 data-nosnippet>34</a>    config: <span class="kw-2">&amp;</span>HttpClientConfig,
+<a href=#35 id=35 data-nosnippet>35</a>) -&gt; <span class="prelude-ty">Result</span>&lt;HttpResponse&gt; {
+<a href=#36 id=36 data-nosnippet>36</a>    <span class="comment">// Fix: useglobalsingleton Runtime, avoideach timerequest都Create a newrun when
+<a href=#37 id=37 data-nosnippet>37</a>    </span>RUNTIME.block_on(<span class="kw">async </span>{ send_http3_request_async(host, port, path, request, config).<span class="kw">await </span>})
+<a href=#38 id=38 data-nosnippet>38</a>}
+<a href=#39 id=39 data-nosnippet>39</a>
+<a href=#40 id=40 data-nosnippet>40</a><span class="attr">#[cfg(feature = <span class="string">"http3"</span>)]
+<a href=#41 id=41 data-nosnippet>41</a></span><span class="kw">async fn </span>send_http3_request_async(
+<a href=#42 id=42 data-nosnippet>42</a>    host: <span class="kw-2">&amp;</span>str,
+<a href=#43 id=43 data-nosnippet>43</a>    port: u16,
+<a href=#44 id=44 data-nosnippet>44</a>    path: <span class="kw-2">&amp;</span>str,
+<a href=#45 id=45 data-nosnippet>45</a>    request: <span class="kw-2">&amp;</span>HttpRequest,
+<a href=#46 id=46 data-nosnippet>46</a>    config: <span class="kw-2">&amp;</span>HttpClientConfig,
+<a href=#47 id=47 data-nosnippet>47</a>) -&gt; <span class="prelude-ty">Result</span>&lt;HttpResponse&gt; {
+<a href=#48 id=48 data-nosnippet>48</a>    <span class="kw">use </span>std::net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, ToSocketAddrs};
+<a href=#49 id=49 data-nosnippet>49</a>    <span class="kw">use </span>std::sync::Arc;
+<a href=#50 id=50 data-nosnippet>50</a>    <span class="kw">use </span>std::time::{Duration, Instant};
+<a href=#51 id=51 data-nosnippet>51</a>
+<a href=#52 id=52 data-nosnippet>52</a>    <span class="kw">let </span>start = Instant::now();
+<a href=#53 id=53 data-nosnippet>53</a>
+<a href=#54 id=54 data-nosnippet>54</a>    <span class="comment">// 1. configuration QUIC client
+<a href=#55 id=55 data-nosnippet>55</a>    </span><span class="kw">let </span>tls_config = <span class="kw">super</span>::rustls_utils::build_client_config(
+<a href=#56 id=56 data-nosnippet>56</a>        config.verify_tls,
+<a href=#57 id=57 data-nosnippet>57</a>        <span class="macro">vec!</span>[<span class="string">b"h3"</span>.to_vec()],
+<a href=#58 id=58 data-nosnippet>58</a>        config.profile.as_ref(),
+<a href=#59 id=59 data-nosnippet>59</a>    );
+<a href=#60 id=60 data-nosnippet>60</a>
+<a href=#61 id=61 data-nosnippet>61</a>    <span class="kw">let </span><span class="kw-2">mut </span>client_config = ClientConfig::new(Arc::new(
+<a href=#62 id=62 data-nosnippet>62</a>        quinn::crypto::rustls::QuicClientConfig::try_from(tls_config).map_err(|e| {
+<a href=#63 id=63 data-nosnippet>63</a>            HttpClientError::TlsError(<span class="macro">format!</span>(<span class="string">"Failed to create QUIC config: {}"</span>, e))
+<a href=#64 id=64 data-nosnippet>64</a>        })<span class="question-mark">?</span>,
+<a href=#65 id=65 data-nosnippet>65</a>    ));
+<a href=#66 id=66 data-nosnippet>66</a>
+<a href=#67 id=67 data-nosnippet>67</a>    <span class="comment">// optimizetransferconfigurationending withimproveperformance and connectionmigratecapability
+<a href=#68 id=68 data-nosnippet>68</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>transport = TransportConfig::default();
+<a href=#69 id=69 data-nosnippet>69</a>
+<a href=#70 id=70 data-nosnippet>70</a>    <span class="comment">// connectionmigrate (Connection Migration) optimize
+<a href=#71 id=71 data-nosnippet>71</a>    // QUIC allow in IP toggle when keepconnection, thispairmobilesimulate至closeimportant
+<a href=#72 id=72 data-nosnippet>72</a>    </span>transport.initial_rtt(Duration::from_millis(<span class="number">100</span>));
+<a href=#73 id=73 data-nosnippet>73</a>    transport.max_idle_timeout(<span class="prelude-val">Some</span>(Duration::from_secs(<span class="number">60</span>).try_into().map_err(|e| {
+<a href=#74 id=74 data-nosnippet>74</a>        HttpClientError::ConnectionFailed(<span class="macro">format!</span>(<span class="string">"configurationtimeoutfailure: {}"</span>, e))
+<a href=#75 id=75 data-nosnippet>75</a>    })<span class="question-mark">?</span>));
+<a href=#76 id=76 data-nosnippet>76</a>    <span class="comment">// increasekeep-alivefrequencyending withauxiliaryconnectionmigrateidentify
+<a href=#77 id=77 data-nosnippet>77</a>    </span>transport.keep_alive_interval(<span class="prelude-val">Some</span>(Duration::from_secs(<span class="number">20</span>)));
+<a href=#78 id=78 data-nosnippet>78</a>
+<a href=#79 id=79 data-nosnippet>79</a>    <span class="comment">// allowpairendmigrate (defaultalreadyopen, hereexplicitexplain其importantproperty)
+<a href=#80 id=80 data-nosnippet>80</a>    // transport.allow_peer_migration(true);
+<a href=#81 id=81 data-nosnippet>81</a>
+<a href=#82 id=82 data-nosnippet>82</a>    // simulate Chrome streamcontrolwindow (Chrome usuallyuselargerwindowending withimprove吞吐)
+<a href=#83 id=83 data-nosnippet>83</a>    </span>transport.stream_receive_window((<span class="number">6 </span>* <span class="number">1024 </span>* <span class="number">1024u32</span>).into()); <span class="comment">// 6MB (Chrome style)
+<a href=#84 id=84 data-nosnippet>84</a>    </span>transport.receive_window((<span class="number">15 </span>* <span class="number">1024 </span>* <span class="number">1024u32</span>).into()); <span class="comment">// 15MB (Chrome style)
+<a href=#85 id=85 data-nosnippet>85</a>
+<a href=#86 id=86 data-nosnippet>86</a>    // allowmoreconcurrentstream
+<a href=#87 id=87 data-nosnippet>87</a>    </span>transport.max_concurrent_bidi_streams(<span class="number">100u32</span>.into());
+<a href=#88 id=88 data-nosnippet>88</a>    transport.max_concurrent_uni_streams(<span class="number">100u32</span>.into());
+<a href=#89 id=89 data-nosnippet>89</a>
+<a href=#90 id=90 data-nosnippet>90</a>    client_config.transport_config(Arc::new(transport));
+<a href=#91 id=91 data-nosnippet>91</a>
+<a href=#92 id=92 data-nosnippet>92</a>    <span class="comment">// 2. DNS Parse (priority IPv4, avoid IPv4 endpoint connection IPv6 remote cause invalid remote address)
+<a href=#93 id=93 data-nosnippet>93</a>    </span><span class="kw">let </span>addr_str = <span class="macro">format!</span>(<span class="string">"{}:{}"</span>, host, port);
+<a href=#94 id=94 data-nosnippet>94</a>    <span class="kw">let </span><span class="kw-2">mut </span>addrs: Vec&lt;SocketAddr&gt; = addr_str
+<a href=#95 id=95 data-nosnippet>95</a>        .to_socket_addrs()
+<a href=#96 id=96 data-nosnippet>96</a>        .map_err(|e| HttpClientError::InvalidUrl(<span class="macro">format!</span>(<span class="string">"DNS Parsefailure: {}"</span>, e)))<span class="question-mark">?
+<a href=#97 id=97 data-nosnippet>97</a>        </span>.collect();
+<a href=#98 id=98 data-nosnippet>98</a>    <span class="kw">if </span>addrs.is_empty() {
+<a href=#99 id=99 data-nosnippet>99</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpClientError::InvalidUrl(
+<a href=#100 id=100 data-nosnippet>100</a>            <span class="string">"unable toParseaddress"</span>.to_string(),
+<a href=#101 id=101 data-nosnippet>101</a>        ));
+<a href=#102 id=102 data-nosnippet>102</a>    }
+<a href=#103 id=103 data-nosnippet>103</a>    addrs.sort_by_key(|a| <span class="macro">matches!</span>(a.ip(), IpAddr::V6(<span class="kw">_</span>))); <span class="comment">// IPv4 priority
+<a href=#104 id=104 data-nosnippet>104</a>
+<a href=#105 id=105 data-nosnippet>105</a>    // 4. connection to server (Happy Eyeballs simplify版：looptryallParse to address)
+<a href=#106 id=106 data-nosnippet>106</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>connection_result = <span class="prelude-val">Err</span>(HttpClientError::ConnectionFailed(
+<a href=#107 id=107 data-nosnippet>107</a>        <span class="string">"无availableaddress"</span>.to_string(),
+<a href=#108 id=108 data-nosnippet>108</a>    ));
+<a href=#109 id=109 data-nosnippet>109</a>
+<a href=#110 id=110 data-nosnippet>110</a>    <span class="kw">for </span>remote_addr <span class="kw">in </span>addrs {
+<a href=#111 id=111 data-nosnippet>111</a>        <span class="comment">// Create QUIC endpoint ( by remote address族selectbind)
+<a href=#112 id=112 data-nosnippet>112</a>        </span><span class="kw">let </span>bind_addr = <span class="kw">match </span>remote_addr.ip() {
+<a href=#113 id=113 data-nosnippet>113</a>            IpAddr::V4(<span class="kw">_</span>) =&gt; SocketAddr::new(IpAddr::V4(Ipv4Addr::UNSPECIFIED), <span class="number">0</span>),
+<a href=#114 id=114 data-nosnippet>114</a>            IpAddr::V6(<span class="kw">_</span>) =&gt; SocketAddr::new(IpAddr::V6(Ipv6Addr::UNSPECIFIED), <span class="number">0</span>),
+<a href=#115 id=115 data-nosnippet>115</a>        };
+<a href=#116 id=116 data-nosnippet>116</a>
+<a href=#117 id=117 data-nosnippet>117</a>        <span class="kw">let </span>endpoint = <span class="kw">match </span>Endpoint::client(bind_addr) {
+<a href=#118 id=118 data-nosnippet>118</a>            <span class="prelude-val">Ok</span>(<span class="kw-2">mut </span>ep) =&gt; {
+<a href=#119 id=119 data-nosnippet>119</a>                ep.set_default_client_config(client_config.clone());
+<a href=#120 id=120 data-nosnippet>120</a>                ep
+<a href=#121 id=121 data-nosnippet>121</a>            }
+<a href=#122 id=122 data-nosnippet>122</a>            <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; <span class="kw">continue</span>,
+<a href=#123 id=123 data-nosnippet>123</a>        };
+<a href=#124 id=124 data-nosnippet>124</a>
+<a href=#125 id=125 data-nosnippet>125</a>        <span class="kw">match </span>endpoint.connect(remote_addr, host) {
+<a href=#126 id=126 data-nosnippet>126</a>            <span class="prelude-val">Ok</span>(connecting) =&gt; {
+<a href=#127 id=127 data-nosnippet>127</a>                <span class="kw">match </span>connecting.<span class="kw">await </span>{
+<a href=#128 id=128 data-nosnippet>128</a>                    <span class="prelude-val">Ok</span>(conn) =&gt; {
+<a href=#129 id=129 data-nosnippet>129</a>                        <span class="comment">// 5. establish HTTP/3 connection
+<a href=#130 id=130 data-nosnippet>130</a>                        </span><span class="kw">match </span>h3::client::new(h3_quinn::Connection::new(conn)).<span class="kw">await </span>{
+<a href=#131 id=131 data-nosnippet>131</a>                            <span class="prelude-val">Ok</span>((driver, send_request)) =&gt; {
+<a href=#132 id=132 data-nosnippet>132</a>                                connection_result = <span class="prelude-val">Ok</span>((driver, send_request));
+<a href=#133 id=133 data-nosnippet>133</a>                                <span class="kw">break</span>;
+<a href=#134 id=134 data-nosnippet>134</a>                            }
+<a href=#135 id=135 data-nosnippet>135</a>                            <span class="prelude-val">Err</span>(e) =&gt; {
+<a href=#136 id=136 data-nosnippet>136</a>                                connection_result = <span class="prelude-val">Err</span>(HttpClientError::ConnectionFailed(
+<a href=#137 id=137 data-nosnippet>137</a>                                    <span class="macro">format!</span>(<span class="string">"HTTP/3 handshakefailure: {}"</span>, e),
+<a href=#138 id=138 data-nosnippet>138</a>                                ));
+<a href=#139 id=139 data-nosnippet>139</a>                            }
+<a href=#140 id=140 data-nosnippet>140</a>                        }
+<a href=#141 id=141 data-nosnippet>141</a>                    }
+<a href=#142 id=142 data-nosnippet>142</a>                    <span class="prelude-val">Err</span>(e) =&gt; {
+<a href=#143 id=143 data-nosnippet>143</a>                        connection_result = <span class="prelude-val">Err</span>(HttpClientError::ConnectionFailed(<span class="macro">format!</span>(
+<a href=#144 id=144 data-nosnippet>144</a>                            <span class="string">"QUIC handshakefailure: {}"</span>,
+<a href=#145 id=145 data-nosnippet>145</a>                            e
+<a href=#146 id=146 data-nosnippet>146</a>                        )));
+<a href=#147 id=147 data-nosnippet>147</a>                    }
+<a href=#148 id=148 data-nosnippet>148</a>                }
+<a href=#149 id=149 data-nosnippet>149</a>            }
+<a href=#150 id=150 data-nosnippet>150</a>            <span class="prelude-val">Err</span>(e) =&gt; {
+<a href=#151 id=151 data-nosnippet>151</a>                connection_result = <span class="prelude-val">Err</span>(HttpClientError::ConnectionFailed(<span class="macro">format!</span>(
+<a href=#152 id=152 data-nosnippet>152</a>                    <span class="string">"QUIC connection发起failure: {}"</span>,
+<a href=#153 id=153 data-nosnippet>153</a>                    e
+<a href=#154 id=154 data-nosnippet>154</a>                )));
+<a href=#155 id=155 data-nosnippet>155</a>            }
+<a href=#156 id=156 data-nosnippet>156</a>        }
+<a href=#157 id=157 data-nosnippet>157</a>    }
+<a href=#158 id=158 data-nosnippet>158</a>
+<a href=#159 id=159 data-nosnippet>159</a>    <span class="kw">let </span>(driver, <span class="kw-2">mut </span>send_request) = connection_result<span class="question-mark">?</span>;
+<a href=#160 id=160 data-nosnippet>160</a>
+<a href=#161 id=161 data-nosnippet>161</a>    <span class="comment">// in backdriverconnection：h3 0.0.4 driver need被continuous poll_close
+<a href=#162 id=162 data-nosnippet>162</a>    </span>tokio::spawn(<span class="kw">async move </span>{
+<a href=#163 id=163 data-nosnippet>163</a>        <span class="kw">let </span><span class="kw-2">mut </span>driver = driver;
+<a href=#164 id=164 data-nosnippet>164</a>        <span class="kw">let _ </span>= std::future::poll_fn(|cx| driver.poll_close(cx)).<span class="kw">await</span>;
+<a href=#165 id=165 data-nosnippet>165</a>    });
+<a href=#166 id=166 data-nosnippet>166</a>
+<a href=#167 id=167 data-nosnippet>167</a>    <span class="comment">// 6. Buildrequest
+<a href=#168 id=168 data-nosnippet>168</a>    </span><span class="kw">let </span>uri = <span class="macro">format!</span>(<span class="string">"https://{}{}"</span>, host, path);
+<a href=#169 id=169 data-nosnippet>169</a>    <span class="kw">let </span><span class="kw-2">mut </span>http_request = http::Request::builder()
+<a href=#170 id=170 data-nosnippet>170</a>        .method(request.method.as_str())
+<a href=#171 id=171 data-nosnippet>171</a>        .uri(uri)
+<a href=#172 id=172 data-nosnippet>172</a>        .version(http::Version::HTTP_3);
+<a href=#173 id=173 data-nosnippet>173</a>
+<a href=#174 id=174 data-nosnippet>174</a>    <span class="comment">// Fix: Add Cookie to request ( if exists)
+<a href=#175 id=175 data-nosnippet>175</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>request_with_cookies = request.clone();
+<a href=#176 id=176 data-nosnippet>176</a>    <span class="kw">if let </span><span class="prelude-val">Some</span>(cookie_store) = <span class="kw-2">&amp;</span>config.cookie_store {
+<a href=#177 id=177 data-nosnippet>177</a>        <span class="kw">super</span>::request::add_cookies_to_request(
+<a href=#178 id=178 data-nosnippet>178</a>            <span class="kw-2">&amp;mut </span>request_with_cookies,
+<a href=#179 id=179 data-nosnippet>179</a>            cookie_store,
+<a href=#180 id=180 data-nosnippet>180</a>            host,
+<a href=#181 id=181 data-nosnippet>181</a>            path,
+<a href=#182 id=182 data-nosnippet>182</a>            <span class="bool-val">true</span>, <span class="comment">// HTTPS is securityconnection
+<a href=#183 id=183 data-nosnippet>183</a>        </span>);
+<a href=#184 id=184 data-nosnippet>184</a>    }
+<a href=#185 id=185 data-nosnippet>185</a>
+<a href=#186 id=186 data-nosnippet>186</a>    <span class="comment">// Add headers
+<a href=#187 id=187 data-nosnippet>187</a>    // Note: do notmanualAdd host header, h3 willautomatic from URI Extract
+<a href=#188 id=188 data-nosnippet>188</a>    </span>http_request = http_request.header(<span class="string">"user-agent"</span>, <span class="kw-2">&amp;</span>config.user_agent);
+<a href=#189 id=189 data-nosnippet>189</a>
+<a href=#190 id=190 data-nosnippet>190</a>    <span class="kw">for </span>(key, value) <span class="kw">in </span><span class="kw-2">&amp;</span>request_with_cookies.headers {
+<a href=#191 id=191 data-nosnippet>191</a>        <span class="comment">// skip host header ( if userpassed in)
+<a href=#192 id=192 data-nosnippet>192</a>        </span><span class="kw">if </span>key.to_lowercase() != <span class="string">"host" </span>{
+<a href=#193 id=193 data-nosnippet>193</a>            http_request = http_request.header(key, value);
+<a href=#194 id=194 data-nosnippet>194</a>        }
+<a href=#195 id=195 data-nosnippet>195</a>    }
+<a href=#196 id=196 data-nosnippet>196</a>
+<a href=#197 id=197 data-nosnippet>197</a>    <span class="comment">// Fix: Buildrequest (h3 need Request&lt;()&gt;, thenthrough stream send body)
+<a href=#198 id=198 data-nosnippet>198</a>    </span><span class="kw">let </span>http_request = http_request
+<a href=#199 id=199 data-nosnippet>199</a>        .body(())
+<a href=#200 id=200 data-nosnippet>200</a>        .map_err(|e| HttpClientError::InvalidResponse(<span class="macro">format!</span>(<span class="string">"Buildrequestfailure: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#201 id=201 data-nosnippet>201</a>
+<a href=#202 id=202 data-nosnippet>202</a>    <span class="comment">// 7. sendrequest
+<a href=#203 id=203 data-nosnippet>203</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>stream = send_request
+<a href=#204 id=204 data-nosnippet>204</a>        .send_request(http_request)
+<a href=#205 id=205 data-nosnippet>205</a>        .<span class="kw">await
+<a href=#206 id=206 data-nosnippet>206</a>        </span>.map_err(|e| HttpClientError::ConnectionFailed(<span class="macro">format!</span>(<span class="string">"sendrequestfailure: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#207 id=207 data-nosnippet>207</a>
+<a href=#208 id=208 data-nosnippet>208</a>    <span class="comment">// Fix: through stream sendrequest体 ( if exists)
+<a href=#209 id=209 data-nosnippet>209</a>    </span><span class="kw">if let </span><span class="prelude-val">Some</span>(body) = <span class="kw-2">&amp;</span>request.body {
+<a href=#210 id=210 data-nosnippet>210</a>        <span class="kw">if </span>!body.is_empty() {
+<a href=#211 id=211 data-nosnippet>211</a>            stream
+<a href=#212 id=212 data-nosnippet>212</a>                .send_data(bytes::Bytes::from(body.clone()))
+<a href=#213 id=213 data-nosnippet>213</a>                .<span class="kw">await
+<a href=#214 id=214 data-nosnippet>214</a>                </span>.map_err(|e| {
+<a href=#215 id=215 data-nosnippet>215</a>                    HttpClientError::ConnectionFailed(<span class="macro">format!</span>(<span class="string">"Failed to send request body: {}"</span>, e))
+<a href=#216 id=216 data-nosnippet>216</a>                })<span class="question-mark">?</span>;
+<a href=#217 id=217 data-nosnippet>217</a>        }
+<a href=#218 id=218 data-nosnippet>218</a>    }
+<a href=#219 id=219 data-nosnippet>219</a>
+<a href=#220 id=220 data-nosnippet>220</a>    stream
+<a href=#221 id=221 data-nosnippet>221</a>        .finish()
+<a href=#222 id=222 data-nosnippet>222</a>        .<span class="kw">await
+<a href=#223 id=223 data-nosnippet>223</a>        </span>.map_err(|e| HttpClientError::ConnectionFailed(<span class="macro">format!</span>(<span class="string">"endrequestfailure: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#224 id=224 data-nosnippet>224</a>
+<a href=#225 id=225 data-nosnippet>225</a>    <span class="comment">// 8. receiveresponse
+<a href=#226 id=226 data-nosnippet>226</a>    </span><span class="kw">let </span>response = stream
+<a href=#227 id=227 data-nosnippet>227</a>        .recv_response()
+<a href=#228 id=228 data-nosnippet>228</a>        .<span class="kw">await
+<a href=#229 id=229 data-nosnippet>229</a>        </span>.map_err(|e| HttpClientError::InvalidResponse(<span class="macro">format!</span>(<span class="string">"receiveresponsefailure: {}"</span>, e)))<span class="question-mark">?</span>;
+<a href=#230 id=230 data-nosnippet>230</a>
+<a href=#231 id=231 data-nosnippet>231</a>    <span class="kw">let </span>status_code = response.status().as_u16();
+<a href=#232 id=232 data-nosnippet>232</a>    <span class="kw">let </span>headers = response.headers().clone();
+<a href=#233 id=233 data-nosnippet>233</a>
+<a href=#234 id=234 data-nosnippet>234</a>    <span class="comment">// securityFix: Check HTTP/3 responseheadersize, prevent QPACK compressionbombattack
+<a href=#235 id=235 data-nosnippet>235</a>    // h3 crate 0.0.4 defaultlimitusuallylarger, weAdd额outsideCheck
+<a href=#236 id=236 data-nosnippet>236</a>    </span><span class="kw">const </span>MAX_HTTP3_HEADER_SIZE: usize = <span class="number">64 </span>* <span class="number">1024</span>; <span class="comment">// 64KB (RFC 9114 suggestminimumvalue)
+<a href=#237 id=237 data-nosnippet>237</a>    </span><span class="kw">let </span>total_header_size: usize = headers
+<a href=#238 id=238 data-nosnippet>238</a>        .iter()
+<a href=#239 id=239 data-nosnippet>239</a>        .map(|(k, v)| k.as_str().len() + v.len())
+<a href=#240 id=240 data-nosnippet>240</a>        .sum();
+<a href=#241 id=241 data-nosnippet>241</a>    <span class="kw">if </span>total_header_size &gt; MAX_HTTP3_HEADER_SIZE {
+<a href=#242 id=242 data-nosnippet>242</a>        <span class="kw">return </span><span class="prelude-val">Err</span>(HttpClientError::InvalidResponse(<span class="macro">format!</span>(
+<a href=#243 id=243 data-nosnippet>243</a>            <span class="string">"HTTP/3 responseheadertoo large (&gt;{} bytes)"</span>,
+<a href=#244 id=244 data-nosnippet>244</a>            MAX_HTTP3_HEADER_SIZE
+<a href=#245 id=245 data-nosnippet>245</a>        )));
+<a href=#246 id=246 data-nosnippet>246</a>    }
+<a href=#247 id=247 data-nosnippet>247</a>
+<a href=#248 id=248 data-nosnippet>248</a>    <span class="comment">// receive body
+<a href=#249 id=249 data-nosnippet>249</a>    </span><span class="kw">use </span>bytes::Buf;
+<a href=#250 id=250 data-nosnippet>250</a>    <span class="kw">let </span><span class="kw-2">mut </span>body_data = Vec::new();
+<a href=#251 id=251 data-nosnippet>251</a>
+<a href=#252 id=252 data-nosnippet>252</a>    <span class="comment">// securitylimit：prevent HTTP/3 responsebody too largecauseinsidememory exhausted
+<a href=#253 id=253 data-nosnippet>253</a>    </span><span class="kw">const </span>MAX_HTTP3_BODY_SIZE: usize = <span class="number">100 </span>* <span class="number">1024 </span>* <span class="number">1024</span>; <span class="comment">// 100MB
+<a href=#254 id=254 data-nosnippet>254</a>
+<a href=#255 id=255 data-nosnippet>255</a>    </span><span class="kw">while let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>chunk) = stream.recv_data().<span class="kw">await</span>.map_err(|e| {
+<a href=#256 id=256 data-nosnippet>256</a>        HttpClientError::Io(std::io::Error::other(<span class="macro">format!</span>(<span class="string">"read body failure: {}"</span>, e)))
+<a href=#257 id=257 data-nosnippet>257</a>    })<span class="question-mark">? </span>{
+<a href=#258 id=258 data-nosnippet>258</a>        <span class="comment">// use Buf trait readcountdata
+<a href=#259 id=259 data-nosnippet>259</a>        </span><span class="kw">let </span>chunk_len = chunk.remaining();
+<a href=#260 id=260 data-nosnippet>260</a>
+<a href=#261 id=261 data-nosnippet>261</a>        <span class="comment">// securityCheck：preventresponsebody too large
+<a href=#262 id=262 data-nosnippet>262</a>        </span><span class="kw">if </span>body_data.len().saturating_add(chunk_len) &gt; MAX_HTTP3_BODY_SIZE {
+<a href=#263 id=263 data-nosnippet>263</a>            <span class="kw">return </span><span class="prelude-val">Err</span>(HttpClientError::InvalidResponse(<span class="macro">format!</span>(
+<a href=#264 id=264 data-nosnippet>264</a>                <span class="string">"HTTP/3 responsebody too large (&gt;{} bytes)"</span>,
+<a href=#265 id=265 data-nosnippet>265</a>                MAX_HTTP3_BODY_SIZE
+<a href=#266 id=266 data-nosnippet>266</a>            )));
+<a href=#267 id=267 data-nosnippet>267</a>        }
+<a href=#268 id=268 data-nosnippet>268</a>
+<a href=#269 id=269 data-nosnippet>269</a>        <span class="kw">let </span><span class="kw-2">mut </span>chunk_bytes = <span class="macro">vec!</span>[<span class="number">0u8</span>; chunk_len];
+<a href=#270 id=270 data-nosnippet>270</a>        chunk.copy_to_slice(<span class="kw-2">&amp;mut </span>chunk_bytes);
+<a href=#271 id=271 data-nosnippet>271</a>        body_data.extend_from_slice(<span class="kw-2">&amp;</span>chunk_bytes);
+<a href=#272 id=272 data-nosnippet>272</a>    }
+<a href=#273 id=273 data-nosnippet>273</a>
+<a href=#274 id=274 data-nosnippet>274</a>    <span class="kw">let </span>elapsed = start.elapsed().as_millis() <span class="kw">as </span>u64;
+<a href=#275 id=275 data-nosnippet>275</a>
+<a href=#276 id=276 data-nosnippet>276</a>    <span class="comment">// 9. Buildresponse
+<a href=#277 id=277 data-nosnippet>277</a>    </span><span class="kw">let </span><span class="kw-2">mut </span>response_headers = std::collections::HashMap::new();
+<a href=#278 id=278 data-nosnippet>278</a>    <span class="kw">for </span>(key, value) <span class="kw">in </span>headers.iter() {
+<a href=#279 id=279 data-nosnippet>279</a>        <span class="kw">if let </span><span class="prelude-val">Ok</span>(value_str) = value.to_str() {
+<a href=#280 id=280 data-nosnippet>280</a>            response_headers.insert(key.as_str().to_lowercase(), value_str.to_string());
+<a href=#281 id=281 data-nosnippet>281</a>        }
+<a href=#282 id=282 data-nosnippet>282</a>    }
+<a href=#283 id=283 data-nosnippet>283</a>
+<a href=#284 id=284 data-nosnippet>284</a>    <span class="prelude-val">Ok</span>(HttpResponse {
+<a href=#285 id=285 data-nosnippet>285</a>        status_code,
+<a href=#286 id=286 data-nosnippet>286</a>        status_text: http::StatusCode::from_u16(status_code)
+<a href=#287 id=287 data-nosnippet>287</a>            .map(|s| s.canonical_reason().unwrap_or(<span class="string">"Unknown"</span>).to_string())
+<a href=#288 id=288 data-nosnippet>288</a>            .unwrap_or_else(|<span class="kw">_</span>| <span class="string">"Unknown"</span>.to_string()),
+<a href=#289 id=289 data-nosnippet>289</a>        headers: response_headers,
+<a href=#290 id=290 data-nosnippet>290</a>        body: body_data,
+<a href=#291 id=291 data-nosnippet>291</a>        http_version: <span class="string">"HTTP/3"</span>.to_string(),
+<a href=#292 id=292 data-nosnippet>292</a>        response_time_ms: elapsed,
+<a href=#293 id=293 data-nosnippet>293</a>    })
+<a href=#294 id=294 data-nosnippet>294</a>}
+<a href=#295 id=295 data-nosnippet>295</a>
+<a href=#296 id=296 data-nosnippet>296</a><span class="attr">#[cfg(not(feature = <span class="string">"http3"</span>))]
+<a href=#297 id=297 data-nosnippet>297</a></span><span class="kw">pub fn </span>send_http3_request(
+<a href=#298 id=298 data-nosnippet>298</a>    _host: <span class="kw-2">&amp;</span>str,
+<a href=#299 id=299 data-nosnippet>299</a>    _port: u16,
+<a href=#300 id=300 data-nosnippet>300</a>    _path: <span class="kw-2">&amp;</span>str,
+<a href=#301 id=301 data-nosnippet>301</a>    _request: <span class="kw-2">&amp;</span>HttpRequest,
+<a href=#302 id=302 data-nosnippet>302</a>    _config: <span class="kw-2">&amp;</span>HttpClientConfig,
+<a href=#303 id=303 data-nosnippet>303</a>) -&gt; <span class="prelude-ty">Result</span>&lt;HttpResponse&gt; {
+<a href=#304 id=304 data-nosnippet>304</a>    <span class="prelude-val">Err</span>(HttpClientError::InvalidResponse(
+<a href=#305 id=305 data-nosnippet>305</a>        <span class="string">"HTTP/3 supportnotenabled，请use --features http3 compile"</span>.to_string(),
+<a href=#306 id=306 data-nosnippet>306</a>    ))
+<a href=#307 id=307 data-nosnippet>307</a>}
+<a href=#308 id=308 data-nosnippet>308</a>
+<a href=#309 id=309 data-nosnippet>309</a><span class="attr">#[cfg(all(test, feature = <span class="string">"http3"</span>))]
+<a href=#310 id=310 data-nosnippet>310</a></span><span class="kw">mod </span>tests {
+<a href=#311 id=311 data-nosnippet>311</a>    <span class="attr">#[allow(unused_imports)]
+<a href=#312 id=312 data-nosnippet>312</a>    </span><span class="kw">use super</span>::<span class="kw-2">*</span>;
+<a href=#313 id=313 data-nosnippet>313</a>
+<a href=#314 id=314 data-nosnippet>314</a>    <span class="attr">#[test]
+<a href=#315 id=315 data-nosnippet>315</a>    #[ignore]
+<a href=#316 id=316 data-nosnippet>316</a>    </span><span class="kw">fn </span>test_http3_request() {
+<a href=#317 id=317 data-nosnippet>317</a>        <span class="kw">let </span>request = HttpRequest::new(
+<a href=#318 id=318 data-nosnippet>318</a>            <span class="kw">crate</span>::http_client::request::HttpMethod::Get,
+<a href=#319 id=319 data-nosnippet>319</a>            <span class="string">"https://quic.aiortc.org:443/"</span>,
+<a href=#320 id=320 data-nosnippet>320</a>        );
+<a href=#321 id=321 data-nosnippet>321</a>
+<a href=#322 id=322 data-nosnippet>322</a>        <span class="kw">let </span>config = HttpClientConfig::default();
+<a href=#323 id=323 data-nosnippet>323</a>
+<a href=#324 id=324 data-nosnippet>324</a>        <span class="kw">let </span>result = send_http3_request(<span class="string">"quic.aiortc.org"</span>, <span class="number">443</span>, <span class="string">"/"</span>, <span class="kw-2">&amp;</span>request, <span class="kw-2">&amp;</span>config);
+<a href=#325 id=325 data-nosnippet>325</a>        <span class="macro">assert!</span>(result.is_ok());
+<a href=#326 id=326 data-nosnippet>326</a>
+<a href=#327 id=327 data-nosnippet>327</a>        <span class="kw">let </span>response = result.unwrap();
+<a href=#328 id=328 data-nosnippet>328</a>        <span class="macro">assert_eq!</span>(response.http_version, <span class="string">"HTTP/3"</span>);
+<a href=#329 id=329 data-nosnippet>329</a>        <span class="macro">assert!</span>(response.is_success());
+<a href=#330 id=330 data-nosnippet>330</a>    }
+<a href=#331 id=331 data-nosnippet>331</a>}
+</code></pre></div></section></main></body></html>

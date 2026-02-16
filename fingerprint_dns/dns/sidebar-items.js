@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DNSError"],"fn":["load_config","load_domain_ips","save_domain_ips"],"struct":["CachedDNSResolver","DNSCache","DNSConfig","DNSResolver","DNSResult","DomainIPs","IPInfo","IPInfoClient","ServerCollector","ServerPool","Service"],"trait":["DNSResolverTrait"]};

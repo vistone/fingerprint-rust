@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DeviceType","HardwareError"],"struct":["HardwareDetector","HardwareFingerprint","HardwareProfileMatcher"]};

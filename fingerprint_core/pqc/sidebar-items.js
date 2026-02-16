@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["PQCAlgorithm"],"struct":["PQCBrowserSupport","PQCCapabilities"]};

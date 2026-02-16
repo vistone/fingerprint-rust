@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["check_rate_limit","configure","get_status","health","metrics","reset_rate_limit"]};

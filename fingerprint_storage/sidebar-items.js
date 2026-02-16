@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["StorageError"],"struct":["CookieInfo","StorageAnalyzer","StorageAvailability","StorageChanges","StorageFingerprint"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["AiProvider"],"fn":["detect_ai_provider","detect_from_ja3","detect_sdk"],"mod":["advanced_detection","audio_detection","content_detection","headers","image_detection","model_fingerprints","patterns","providers","real_detection","real_video_detection","sdk","tls","video_detection"],"struct":["AiProviderFingerprint"]};

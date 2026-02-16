@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ReportFormat"],"struct":["ReportSection","ReportSummary","ValidationReport"]};

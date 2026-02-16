@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["HTTP2_PREFACE"],"enum":["BrowserType","Http2FrameType","Http2ParseError"],"fn":["find_settings_frame","is_http2_connection"],"struct":["Http2FrameHeader","Http2SettingsFrame","Http2SettingsMatcher"]};

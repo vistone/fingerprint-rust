@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["ConfigError","DatabaseError","DnsError","FingerprintError","HttpError","ParseError","RateLimitError","TcpError","TlsError","ValidationError"],"type":["Result"]};

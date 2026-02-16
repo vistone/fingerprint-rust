@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["send_https_request","send_https_request_with_pool"],"struct":["TlsConnector"]};
