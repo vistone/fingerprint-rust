@@ -1,0 +1,26 @@
+[package]
+name = "fingerprint-ai-models"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }
+once_cell = { workspace = true }
+sha2 = { workspace = true }
+hex = { workspace = true }
+image = "0.24"
+chrono = "0.4"
+
+# Video processing (note: requires ffmpeg to be installed on system)
+# For production: would use ffmpeg-next or opencv bindings
+# For now: we'll implement frame-based analysis that can work with extracted frames
+
+[dev-dependencies]

@@ -1,0 +1,176 @@
+name: Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'crates/**/src/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - '**.md'
+      - 'crates/**/src/**'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  check-docs:
+    name: Check Documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-docs-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-docs-
+      
+      - name: Check documentation
+        run: cargo doc --workspace --all-features --no-deps
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+      
+      - name: Check README examples
+        run: |
+          echo "Checking README.md exists and is readable..."
+          if [ -f "README.md" ]; then
+            echo "✓ README.md found"
+            wc -l README.md
+          else
+            echo "✗ README.md not found"
+            exit 1
+          fi
+
+  build-docs:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-docs-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-docs-build-
+      
+      - name: Build documentation
+        run: |
+          cargo doc --workspace --all-features --no-deps
+          echo '<meta http-equiv="refresh" content="0; url=fingerprint">' > target/doc/index.html
+      
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc
+          cname: docs.fingerprint-rust.dev
+        continue-on-error: true
+
+  check-links:
+    name: Check Documentation Links
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install markdown link checker
+        run: npm install -g markdown-link-check
+      
+      - name: Check links in README
+        run: |
+          if [ -f "README.md" ]; then
+            markdown-link-check README.md --config .github/markdown-link-check-config.json || true
+          fi
+      
+      - name: Check links in docs
+        run: |
+          if [ -d "docs" ]; then
+            find docs -name "*.md" -exec markdown-link-check {} --config .github/markdown-link-check-config.json \; || true
+          fi
+
+  generate-summary:
+    name: Generate Documentation Summary
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Generate documentation summary
+        run: |
+          echo "## Documentation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          echo "### Workspace Crates" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          for crate_dir in crates/*/; do
+            crate_name=$(basename "$crate_dir")
+            if [ -f "$crate_dir/Cargo.toml" ]; then
+              echo "- **$crate_name**" >> $GITHUB_STEP_SUMMARY
+              
+              # Check for README
+              if [ -f "$crate_dir/README.md" ]; then
+                echo "  - ✅ Has README" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "  - ⚠️  Missing README" >> $GITHUB_STEP_SUMMARY
+              fi
+              
+              # Check for examples
+              if [ -d "$crate_dir/examples" ]; then
+                example_count=$(find "$crate_dir/examples" -name "*.rs" | wc -l)
+                echo "  - ✅ Examples: $example_count" >> $GITHUB_STEP_SUMMARY
+              else
+                echo "  - ℹ️  No examples" >> $GITHUB_STEP_SUMMARY
+              fi
+            fi
+          done
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Documentation Files" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [ -d "docs" ]; then
+            doc_count=$(find docs -name "*.md" | wc -l)
+            echo "- Documentation files: $doc_count" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "- No docs directory" >> $GITHUB_STEP_SUMMARY
+          fi

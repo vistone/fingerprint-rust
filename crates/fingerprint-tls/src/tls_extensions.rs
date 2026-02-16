@@ -2,7 +2,7 @@
 //!
 //! implementeach种 TLS extension, Corresponds to Go version's tls.TLSExtension
 //!
-//! reference：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
+//! reference：<https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go>
 
 use fingerprint_core::dicttls::extensions::*;
 use fingerprint_core::dicttls::signature_schemes::SignatureScheme;

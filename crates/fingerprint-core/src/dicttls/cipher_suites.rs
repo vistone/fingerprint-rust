@@ -1,6 +1,6 @@
 //! TLS cipher suiteconstant
 //!
-//! fromsource：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4
+//! fromsource：<https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4>
 //! finallyUpdate：March 2023
 
 /// TLS cipher suiteconstant

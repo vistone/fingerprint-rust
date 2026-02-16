@@ -1,0 +1,222 @@
+name: Required Checks
+
+on:
+  pull_request:
+    branches: [ main, master, develop ]
+  push:
+    branches: [ main, master, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+# This workflow contains all checks that MUST pass before merge
+# Configure these as required status checks in branch protection rules
+
+jobs:
+  # Critical: All tests must pass
+  all-tests:
+    name: All Tests (Required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+      
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-required-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Run all workspace tests
+        run: |
+          echo "::group::Running all tests..."
+          cargo nextest run --workspace --all-features --no-fail-fast
+          echo "::endgroup::"
+      
+      - name: Run doc tests
+        run: |
+          echo "::group::Running doc tests..."
+          cargo test --workspace --all-features --doc
+          echo "::endgroup::"
+      
+      - name: Test AI models crate specifically
+        working-directory: crates/fingerprint-ai-models
+        run: |
+          echo "::group::Testing AI models..."
+          cargo nextest run --all-features
+          echo "::endgroup::"
+      
+      - name: Generate test summary
+        if: always()
+        run: |
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All tests must pass for merge approval" >> $GITHUB_STEP_SUMMARY
+
+  # Critical: Code must be properly formatted
+  format-check:
+    name: Format Check (Required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+      
+      - name: Check code formatting
+        run: |
+          echo "::group::Checking formatting..."
+          cargo fmt --all -- --check
+          echo "::endgroup::"
+      
+      - name: Generate format summary
+        if: always()
+        run: |
+          echo "## Format Check" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Code must be formatted with 'cargo fmt'" >> $GITHUB_STEP_SUMMARY
+
+  # Critical: No clippy warnings allowed
+  clippy-check:
+    name: Clippy Check (Required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+      
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Run clippy
+        run: |
+          echo "::group::Running clippy..."
+          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          echo "::endgroup::"
+      
+      - name: Generate clippy summary
+        if: always()
+        run: |
+          echo "## Clippy Check" >> $GITHUB_STEP_SUMMARY
+          echo "✅ No clippy warnings allowed (using -D warnings)" >> $GITHUB_STEP_SUMMARY
+
+  # Critical: Project must build successfully
+  build-check:
+    name: Build Check (Required)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true  # Stop immediately if any build fails
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+      
+      - name: Build all workspace crates
+        run: |
+          echo "::group::Building workspace on ${{ matrix.os }}..."
+          cargo build --workspace --all-features
+          echo "::endgroup::"
+      
+      - name: Generate build summary
+        if: always()
+        run: |
+          echo "## Build Check (${{ matrix.os }})" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Build must succeed on all platforms" >> $GITHUB_STEP_SUMMARY
+
+  # Required: Security audit must pass
+  security-check:
+    name: Security Audit (Required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-deny (latest version)
+        run: |
+          cargo install cargo-deny --locked
+      
+      - name: Run cargo-deny
+        run: |
+          cargo deny check advisories
+      
+      - name: Generate security summary
+        if: always()
+        run: |
+          echo "## Security Audit" >> $GITHUB_STEP_SUMMARY
+          echo "✅ No security vulnerabilities allowed" >> $GITHUB_STEP_SUMMARY
+
+  # Summary job that depends on all required checks
+  required-checks-passed:
+    name: ✅ All Required Checks Passed
+    runs-on: ubuntu-latest
+    needs: [all-tests, format-check, clippy-check, build-check, security-check]
+    if: always()
+    steps:
+      - name: Check if all required checks passed
+        run: |
+          if [[ "${{ needs.all-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.format-check.result }}" != "success" ]] || \
+             [[ "${{ needs.clippy-check.result }}" != "success" ]] || \
+             [[ "${{ needs.build-check.result }}" != "success" ]] || \
+             [[ "${{ needs.security-check.result }}" != "success" ]]; then
+            echo "::error::One or more required checks failed!"
+            echo "## ❌ Required Checks Failed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- All tests: ${{ needs.all-tests.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Format check: ${{ needs.format-check.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Clippy check: ${{ needs.clippy-check.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Build check: ${{ needs.build-check.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "- Security check: ${{ needs.security-check.result }}" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**Cannot merge until all checks pass!**" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi
+          
+          echo "## ✅ All Required Checks Passed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "All mandatory quality gates have been satisfied:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ All tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code is properly formatted" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ No clippy warnings" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Builds successfully on all platforms" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ No security vulnerabilities" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Ready for merge! 🎉**" >> $GITHUB_STEP_SUMMARY

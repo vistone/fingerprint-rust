@@ -1,6 +1,6 @@
 //! TLS supportgroup (elliptic curve)constant
 //!
-//! fromsource：https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8
+//! fromsource：<https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-8>
 //! finallyUpdate：March 2023
 
 /// TLS supportgroupconstant

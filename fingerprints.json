@@ -1,0 +1,169 @@
+{
+  "fingerprints": {
+    "gpt4": {
+      "model_name": "gpt4",
+      "model_type": "text",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.32,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.32,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 0.96875,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.0,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.0,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.0,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [
+        "delve into",
+        "furthermore",
+        "it's important to note",
+        "moreover"
+      ],
+      "learned_at": "2026-02-16T13:44:10.446635497+00:00"
+    },
+    "gemini": {
+      "model_name": "gemini",
+      "model_type": "text",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.16,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.16,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 1.0,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.0,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.0,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.0,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [],
+      "learned_at": "2026-02-16T13:44:10.446651487+00:00"
+    },
+    "stable-diffusion": {
+      "model_name": "stable-diffusion",
+      "model_type": "image",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.0,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.0,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 0.0,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.03,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.7,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.6,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [
+        "lossless_format"
+      ],
+      "learned_at": "2026-02-16T13:44:10.446652969+00:00"
+    },
+    "qwen": {
+      "model_name": "qwen",
+      "model_type": "text",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.01,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.05,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 1.0,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.0,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.0,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.0,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [],
+      "learned_at": "2026-02-16T13:44:10.446643912+00:00"
+    },
+    "claude3": {
+      "model_name": "claude3",
+      "model_type": "text",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.31,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.3875,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 1.0,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.0,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.0,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.0,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [
+        "consequently"
+      ],
+      "learned_at": "2026-02-16T13:44:10.446648261+00:00"
+    },
+    "dall-e": {
+      "model_name": "dall-e",
+      "model_type": "image",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.0,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.0,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 0.0,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.03,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.7,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.6,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [
+        "lossless_format"
+      ],
+      "learned_at": "2026-02-16T13:44:10.446642069+00:00"
+    },
+    "midjourney": {
+      "model_name": "midjourney",
+      "model_type": "image",
+      "sample_count": 1,
+      "statistical_signature": {
+        "perplexity_mean": 0.0,
+        "perplexity_std": 0.0,
+        "burstiness_mean": 0.0,
+        "burstiness_std": 0.0,
+        "vocabulary_richness_mean": 0.0,
+        "vocabulary_richness_std": 0.0,
+        "noise_pattern_mean": 0.03,
+        "noise_pattern_std": 0.0,
+        "texture_regularity_mean": 0.7,
+        "texture_regularity_std": 0.0,
+        "color_distribution_mean": 0.6,
+        "color_distribution_std": 0.0
+      },
+      "characteristic_patterns": [
+        "lossless_format"
+      ],
+      "learned_at": "2026-02-16T13:44:10.446649814+00:00"
+    }
+  },
+  "metadata": {
+    "version": "1.0.0",
+    "fingerprint_count": 7,
+    "last_updated": "2026-02-16T13:44:10.446804162+00:00"
+  }
+}

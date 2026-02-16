@@ -39,6 +39,7 @@ pub mod cache; // Multi-tier caching (L1/L2/L3)
 pub mod cache_redis; // Redis-backed cache implementation
 pub mod database;
 pub mod dicttls;
+pub mod error; // Comprehensive error types
 pub mod fingerprint;
 pub mod grease;
 pub mod hassh;
@@ -52,6 +53,7 @@ pub mod jarm;
 pub mod metadata;
 pub mod packet_capture;
 pub mod pcap_generator;
+pub mod pqc; // Post-Quantum Cryptography detection
 pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
 pub mod rate_limiting_metrics; // Prometheus metrics for rate limiting
 pub mod rate_limiting_redis; // Redis integration for rate limiting
@@ -63,8 +65,18 @@ pub mod tls_parser;
 pub mod types;
 pub mod utils;
 pub mod version; // Performance benchmarking utilities
+pub mod wasm; // WebAssembly fingerprinting detection
 
 // Re-export public API
+
+// Error types
+pub use error::{
+    ConfigError, DatabaseError, DnsError, FingerprintError, HttpError, ParseError, RateLimitError,
+    Result, TcpError, TlsError, ValidationError,
+};
+
+// Cache error from cache module
+pub use cache::CacheError;
 
 // fingerprint abstractions
 pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison, FingerprintType};
@@ -80,9 +92,17 @@ pub use grease::{
 };
 pub use hassh::{HASSHServer, SSHKexInit, HASSH, JA4SSH};
 pub use ja3::{JA3, JA3S};
-pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T};
+pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T, JA4X};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
+
+// Post-Quantum Cryptography
+pub use pqc::{PQCAlgorithm, PQCBrowserSupport, PQCCapabilities};
+
+// WebAssembly fingerprinting
+pub use wasm::{
+    WasmBrowserSupport, WasmCapabilities, WasmMemoryFingerprint, WasmTableFingerprint, WasmVersion,
+};
 
 // HTTP related
 pub use hpack::{
@@ -123,8 +143,8 @@ pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics,
 
 // rate limiting service (Phase 9.4)
 pub use rate_limiting::{
-    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitError,
-    RateLimitResponse, RateLimiter, UserQuota,
+    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitResponse,
+    RateLimiter, UserQuota,
 };
 
 // rate limiting Redis backend
@@ -136,9 +156,7 @@ pub use rate_limiting_redis::{
 pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // cache (Phase 9.3)
-pub use cache::{
-    Cache, CacheError, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard,
-};
+pub use cache::{Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard};
 
 // Redis cache (optional, requires redis-cache feature)
 pub use cache_redis::RedisCacheConfig;

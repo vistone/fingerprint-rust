@@ -157,7 +157,7 @@ impl std::fmt::Display for JA4 {
 }
 
 /// JA4H HTTP fingerprint
-/// format: [Method][Version][Cookie][Referer][HeaderCount][HeaderOrderHash][HeaderValueHash]
+/// format: \[Method\]\[Version\]\[Cookie\]\[Referer\]\[HeaderCount\]\[HeaderOrderHash\]\[HeaderValueHash\]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4H {
     pub method: String,
@@ -209,7 +209,7 @@ impl JA4H {
 }
 
 /// JA4T TCP fingerprint
-/// format: [WindowSize]_[TCP_Options]_[MSS]_[TTL]
+/// format: \[WindowSize\]_\[TCP_Options\]_\[MSS\]_\[TTL\]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4T {
     pub window_size: u16,
@@ -639,6 +639,319 @@ impl JA4L {
 impl std::fmt::Display for JA4L {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+/// JA4X - X.509 Certificate Fingerprinting
+///
+/// Provides fingerprinting for X.509 certificates based on certificate attributes
+/// format: {sig_algo}_{key_algo}_{key_size}_{ext_count}_{ext_hash}
+///
+/// ## Examples
+/// ```
+/// use fingerprint_core::ja4::JA4X;
+///
+/// let ja4x = JA4X::generate(
+///     "sha256_rsa",
+///     "rsa",
+///     2048,
+///     &["subjectAltName", "keyUsage", "basicConstraints"],
+/// );
+/// assert!(!ja4x.fingerprint_string().is_empty());
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct JA4X {
+    /// Signature algorithm (e.g., "sha256_rsa", "sha256_ecdsa")
+    pub signature_algorithm: String,
+
+    /// Public key algorithm (e.g., "rsa", "ecdsa", "ed25519")
+    pub key_algorithm: String,
+
+    /// Key size in bits
+    pub key_size: u16,
+
+    /// Number of X.509 extensions
+    pub extension_count: usize,
+
+    /// Hash of sorted extension OIDs
+    pub extension_hash: String,
+}
+
+impl JA4X {
+    /// Generate JA4X certificate fingerprint
+    ///
+    /// # Parameters
+    /// - `signature_algorithm`: Certificate signature algorithm
+    /// - `key_algorithm`: Public key algorithm
+    /// - `key_size`: Public key size in bits
+    /// - `extensions`: List of X.509 extension names/OIDs
+    pub fn generate(
+        signature_algorithm: &str,
+        key_algorithm: &str,
+        key_size: u16,
+        extensions: &[&str],
+    ) -> Self {
+        use sha2::{Digest, Sha256};
+
+        let ext_count = extensions.len().min(99);
+
+        // Sort and hash extensions
+        let mut sorted_ext: Vec<&str> = extensions.to_vec();
+        sorted_ext.sort_unstable();
+
+        let ext_string = sorted_ext.join(",");
+        let mut hasher = Sha256::new();
+        hasher.update(ext_string.as_bytes());
+        let hash_result = hasher.finalize();
+        let hash_hex = format!("{:x}", hash_result);
+        let extension_hash = hash_hex[0..12].to_string();
+
+        Self {
+            signature_algorithm: signature_algorithm.to_string(),
+            key_algorithm: key_algorithm.to_string(),
+            key_size,
+            extension_count: ext_count,
+            extension_hash,
+        }
+    }
+
+    /// Convert to standard JA4X fingerprint string
+    /// format: {sig_algo}_{key_algo}_{key_size}_{ext_count:02}_{ext_hash}
+    pub fn fingerprint_string(&self) -> String {
+        format!(
+            "{}_{}_{}_{:02}_{}",
+            self.signature_algorithm,
+            self.key_algorithm,
+            self.key_size,
+            self.extension_count,
+            self.extension_hash
+        )
+    }
+}
+
+impl std::fmt::Display for JA4X {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+/// JA4SSH - SSH Protocol Fingerprinting
+///
+/// Fingerprints SSH client/server based on protocol specifics
+/// format: {version}_{kex_count:02}_{cipher_count:02}_{mac_count:02}_{comp_count:02}_{kex_hash}_{cipher_hash}
+///
+/// ## Examples
+/// ```
+/// use fingerprint_core::ja4::JA4SSH;
+///
+/// let ja4ssh = JA4SSH::generate(
+///     "2.0",
+///     &["diffie-hellman-group14-sha256", "ecdh-sha2-nistp256"],
+///     &["aes128-ctr", "aes256-ctr"],
+///     &["hmac-sha2-256", "hmac-sha2-512"],
+///     &["none", "zlib"],
+/// );
+/// assert!(!ja4ssh.fingerprint_string().is_empty());
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct JA4SSH {
+    /// SSH protocol version
+    pub version: String,
+
+    /// Number of key exchange algorithms
+    pub kex_count: usize,
+
+    /// Number of encryption algorithms
+    pub cipher_count: usize,
+
+    /// Number of MAC algorithms
+    pub mac_count: usize,
+
+    /// Number of compression algorithms
+    pub compression_count: usize,
+
+    /// Hash of key exchange algorithms
+    pub kex_hash: String,
+
+    /// Hash of cipher algorithms
+    pub cipher_hash: String,
+
+    /// Hash of MAC algorithms
+    pub mac_hash: String,
+}
+
+impl JA4SSH {
+    /// Generate JA4SSH fingerprint
+    ///
+    /// # Parameters
+    /// - `version`: SSH protocol version (e.g., "2.0")
+    /// - `kex_algorithms`: Key exchange algorithms
+    /// - `ciphers`: Encryption algorithms
+    /// - `macs`: MAC algorithms
+    /// - `compressions`: Compression algorithms
+    pub fn generate(
+        version: &str,
+        kex_algorithms: &[&str],
+        ciphers: &[&str],
+        macs: &[&str],
+        compressions: &[&str],
+    ) -> Self {
+        use sha2::{Digest, Sha256};
+
+        // Calculate hash for each algorithm list
+        let hash_list = |items: &[&str]| -> String {
+            let sorted_items = items.join(",");
+            let mut hasher = Sha256::new();
+            hasher.update(sorted_items.as_bytes());
+            let hash_result = hasher.finalize();
+            let hash_hex = format!("{:x}", hash_result);
+            hash_hex[0..8].to_string()
+        };
+
+        Self {
+            version: version.to_string(),
+            kex_count: kex_algorithms.len().min(99),
+            cipher_count: ciphers.len().min(99),
+            mac_count: macs.len().min(99),
+            compression_count: compressions.len().min(99),
+            kex_hash: hash_list(kex_algorithms),
+            cipher_hash: hash_list(ciphers),
+            mac_hash: hash_list(macs),
+        }
+    }
+
+    /// Convert to standard JA4SSH fingerprint string
+    /// format: {version}_{kex_count:02}_{cipher_count:02}_{mac_count:02}_{comp_count:02}_{kex_hash}_{cipher_hash}_{mac_hash}
+    pub fn fingerprint_string(&self) -> String {
+        format!(
+            "{}_{:02}_{:02}_{:02}_{:02}_{}_{}_{}",
+            self.version,
+            self.kex_count,
+            self.cipher_count,
+            self.mac_count,
+            self.compression_count,
+            self.kex_hash,
+            self.cipher_hash,
+            self.mac_hash
+        )
+    }
+}
+
+impl std::fmt::Display for JA4SSH {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+#[cfg(test)]
+mod ja4x_tests {
+    use super::*;
+
+    #[test]
+    fn test_ja4x_generation() {
+        let ja4x = JA4X::generate(
+            "sha256_rsa",
+            "rsa",
+            2048,
+            &["subjectAltName", "keyUsage", "basicConstraints"],
+        );
+
+        assert_eq!(ja4x.signature_algorithm, "sha256_rsa");
+        assert_eq!(ja4x.key_algorithm, "rsa");
+        assert_eq!(ja4x.key_size, 2048);
+        assert_eq!(ja4x.extension_count, 3);
+        assert_eq!(ja4x.extension_hash.len(), 12);
+    }
+
+    #[test]
+    fn test_ja4x_fingerprint_string() {
+        let ja4x = JA4X::generate("sha256_ecdsa", "ecdsa", 256, &["keyUsage"]);
+
+        let fp = ja4x.fingerprint_string();
+        assert!(fp.contains("sha256_ecdsa"));
+        assert!(fp.contains("ecdsa"));
+        assert!(fp.contains("256"));
+    }
+
+    #[test]
+    fn test_ja4x_extension_sorting() {
+        // Test that extension order doesn't affect hash
+        let ja4x1 = JA4X::generate("sha256_rsa", "rsa", 2048, &["a", "b", "c"]);
+        let ja4x2 = JA4X::generate("sha256_rsa", "rsa", 2048, &["c", "b", "a"]);
+
+        assert_eq!(ja4x1.extension_hash, ja4x2.extension_hash);
+    }
+
+    #[test]
+    fn test_ja4x_display() {
+        let ja4x = JA4X::generate("sha256_rsa", "rsa", 4096, &["keyUsage"]);
+
+        let displayed = format!("{}", ja4x);
+        assert_eq!(displayed, ja4x.fingerprint_string());
+    }
+}
+
+#[cfg(test)]
+mod ja4ssh_tests {
+    use super::*;
+
+    #[test]
+    fn test_ja4ssh_generation() {
+        let ja4ssh = JA4SSH::generate(
+            "2.0",
+            &["diffie-hellman-group14-sha256", "ecdh-sha2-nistp256"],
+            &["aes128-ctr", "aes256-ctr"],
+            &["hmac-sha2-256", "hmac-sha2-512"],
+            &["none"],
+        );
+
+        assert_eq!(ja4ssh.version, "2.0");
+        assert_eq!(ja4ssh.kex_count, 2);
+        assert_eq!(ja4ssh.cipher_count, 2);
+        assert_eq!(ja4ssh.mac_count, 2);
+        assert_eq!(ja4ssh.compression_count, 1);
+        assert_eq!(ja4ssh.kex_hash.len(), 8);
+        assert_eq!(ja4ssh.cipher_hash.len(), 8);
+        assert_eq!(ja4ssh.mac_hash.len(), 8);
+    }
+
+    #[test]
+    fn test_ja4ssh_fingerprint_string() {
+        let ja4ssh = JA4SSH::generate(
+            "2.0",
+            &["diffie-hellman-group14-sha256"],
+            &["aes128-ctr"],
+            &["hmac-sha2-256"],
+            &["none"],
+        );
+
+        let fp = ja4ssh.fingerprint_string();
+        assert!(fp.starts_with("2.0_"));
+        assert!(fp.contains('_'));
+    }
+
+    #[test]
+    fn test_ja4ssh_display() {
+        let ja4ssh = JA4SSH::generate(
+            "2.0",
+            &["ecdh-sha2-nistp256"],
+            &["aes256-ctr"],
+            &["hmac-sha2-512"],
+            &["none"],
+        );
+
+        let displayed = format!("{}", ja4ssh);
+        assert_eq!(displayed, ja4ssh.fingerprint_string());
+    }
+
+    #[test]
+    fn test_ja4ssh_empty_algorithms() {
+        let ja4ssh = JA4SSH::generate("2.0", &[], &[], &[], &[]);
+
+        assert_eq!(ja4ssh.kex_count, 0);
+        assert_eq!(ja4ssh.cipher_count, 0);
+        assert_eq!(ja4ssh.mac_count, 0);
+        assert_eq!(ja4ssh.compression_count, 0);
     }
 }
 

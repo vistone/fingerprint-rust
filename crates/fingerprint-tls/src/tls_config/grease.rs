@@ -1,6 +1,6 @@
 //! GREASE valueprocessmodule
 //!
-//! reference：https://datatracker.ietf.org/doc/html/draft-davidben-tls-grease-01
+//! reference：<https://datatracker.ietf.org/doc/html/draft-davidben-tls-grease-01>
 //! reference：Huginn Net GREASE processimplement
 
 /// TLS GREASE valueconstant
@@ -36,7 +36,7 @@ pub fn is_grease_value(value: u16) -> bool {
 /// * `values` - needfilter u16 valuelist
 ///
 /// # Returns
-/// * filterback Vec<u16>, excluding GREASE value
+/// * filterback `Vec<u16>`, excluding GREASE value
 ///
 /// # Examples
 /// ```

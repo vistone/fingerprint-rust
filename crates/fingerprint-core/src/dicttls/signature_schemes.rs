@@ -1,6 +1,6 @@
 //! TLS signaturesolutionconstant
 //!
-//! fromsource：https://www.iana.org/assignments/tls-parameters/tls-signaturescheme.csv
+//! fromsource：<https://www.iana.org/assignments/tls-parameters/tls-signaturescheme.csv>
 //! finallyUpdate：March 2023
 
 /// TLS signaturesolutionconstant

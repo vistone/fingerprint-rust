@@ -5,7 +5,7 @@
 //!
 //! ## reference
 //! - paper: "HASSH - Profiling Method for SSH Clients and Servers" (Salesforce, 2018)
-//! - GitHub: https://github.com/salesforce/hassh
+//! - GitHub: <https://github.com/salesforce/hassh>
 //!
 //! ## algorithm
 //! HASSH = MD5(Client KEX Algorithms;Encryption Algorithms;MAC Algorithms;Compression Algorithms)

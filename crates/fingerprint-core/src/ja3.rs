@@ -5,7 +5,7 @@
 //!
 //! ## reference
 //! - paper: "TLS Fingerprinting with JA3 and JA3S" (Salesforce, 2017)
-//! - GitHub: https://github.com/salesforce/ja3
+//! - GitHub: <https://github.com/salesforce/ja3>
 
 use serde::{Deserialize, Serialize};
 

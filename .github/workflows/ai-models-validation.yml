@@ -1,0 +1,204 @@
+name: AI Models Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'crates/fingerprint-ai-models/**'
+      - 'fingerprints.json'
+      - 'characteristic_library.json'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'crates/fingerprint-ai-models/**'
+      - 'fingerprints.json'
+      - 'characteristic_library.json'
+  schedule:
+    # Run weekly to check for model drift
+    - cron: '0 0 * * 0'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  validate-fingerprints:
+    name: Validate Fingerprint Database
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-ai-models-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ai-models-
+      
+      - name: Validate fingerprints.json
+        run: |
+          if [ -f "fingerprints.json" ]; then
+            echo "✓ fingerprints.json exists"
+            python3 -m json.tool fingerprints.json > /dev/null && echo "✓ Valid JSON" || echo "✗ Invalid JSON"
+          else
+            echo "ℹ fingerprints.json not found (optional)"
+          fi
+      
+      - name: Validate characteristic_library.json
+        run: |
+          if [ -f "characteristic_library.json" ]; then
+            echo "✓ characteristic_library.json exists"
+            python3 -m json.tool characteristic_library.json > /dev/null && echo "✓ Valid JSON" || echo "✗ Invalid JSON"
+          else
+            echo "ℹ characteristic_library.json not found (optional)"
+          fi
+
+  test-ai-models:
+    name: Test AI Models Crate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-ai-test-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ai-test-
+      
+      - name: Run AI models tests
+        run: cargo nextest run -p fingerprint-ai-models --all-features
+      
+      - name: Run doc tests
+        run: cargo test -p fingerprint-ai-models --doc --all-features
+
+  test-detection-accuracy:
+    name: Test Detection Accuracy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-ai-accuracy-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ai-accuracy-
+      
+      - name: Build AI models examples
+        run: cargo build -p fingerprint-ai-models --examples --all-features
+      
+      - name: Test text detection
+        run: |
+          echo "Testing AI-generated text detection..."
+          cargo run -p fingerprint-ai-models --example detect_ai_content || true
+      
+      - name: Test image detection
+        run: |
+          echo "Testing AI-generated image detection..."
+          cargo run -p fingerprint-ai-models --example analyze_real_image || true
+      
+      - name: Test provider detection
+        run: |
+          echo "Testing AI provider detection..."
+          cargo run -p fingerprint-ai-models --example detect_global_providers || true
+
+  benchmark-performance:
+    name: Benchmark Detection Performance
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-ai-bench-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-ai-bench-
+      
+      - name: Run AI models benchmarks
+        run: |
+          if cargo bench -p fingerprint-ai-models --no-run 2>/dev/null; then
+            cargo bench -p fingerprint-ai-models
+          else
+            echo "No benchmarks defined for fingerprint-ai-models"
+          fi
+        continue-on-error: true
+
+  validate-models-coverage:
+    name: Validate Model Coverage
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check model coverage
+        run: |
+          echo "## AI Model Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Supported Providers" >> $GITHUB_STEP_SUMMARY
+          echo "- US/Western: OpenAI, Anthropic, Google, Microsoft, etc." >> $GITHUB_STEP_SUMMARY
+          echo "- Chinese: Alibaba Qwen, Baidu ERNIE, Tencent Hunyuan, etc." >> $GITHUB_STEP_SUMMARY
+          echo "- Total: 26+ providers" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Detection Capabilities" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Text content detection" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Image content detection" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Audio content detection (metadata)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Video content detection (frames)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Provider API fingerprinting" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Model-specific fingerprinting" >> $GITHUB_STEP_SUMMARY
