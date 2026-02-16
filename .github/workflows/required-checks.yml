@@ -166,12 +166,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      
+      - name: Install cargo-deny (latest version with CVSS 4.0 support)
+        run: |
+          cargo install cargo-deny --locked --version "^0.14"
+      
       - name: Run cargo-deny
-        uses: EmbarkStudios/cargo-deny-action@v1
-        with:
-          log-level: warn
-          command: check
-          arguments: --all-features
+        run: |
+          cargo deny check advisories --all-features
       
       - name: Generate security summary
         if: always()
