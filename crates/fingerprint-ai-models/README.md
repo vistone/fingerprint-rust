@@ -1,12 +1,18 @@
 # fingerprint-ai-models
 
-AI Model Provider Fingerprinting Library
+AI Model Provider Fingerprinting and Content Detection Library
 
 ## Overview
 
-`fingerprint-ai-models` provides comprehensive fingerprinting capabilities for detecting and identifying requests to various generative AI model providers. Based on the latest research and patterns from 2025-2026, this library can identify AI API usage from OpenAI, Anthropic Claude, Google Gemini, Azure OpenAI, and many other providers.
+`fingerprint-ai-models` provides comprehensive fingerprinting capabilities for:
+1. **API Fingerprinting**: Detecting and identifying requests to various generative AI model providers
+2. **Content Fingerprinting**: Detecting and analyzing AI-generated text content
+
+Based on the latest research and patterns from 2025-2026, this library can identify AI API usage from OpenAI, Anthropic Claude, Google Gemini, Azure OpenAI, and many other providers, as well as detect whether content was AI-generated and which model likely produced it.
 
 ## Features
+
+### API Fingerprinting
 
 - **Provider Detection**: Identify major AI providers (OpenAI, Anthropic, Google, Azure, Mistral, Cohere, etc.)
 - **HTTP Header Analysis**: Detect provider-specific authentication and versioning headers
@@ -15,6 +21,16 @@ AI Model Provider Fingerprinting Library
 - **API Pattern Analysis**: Recognize endpoint structures and request patterns
 - **Model Version Detection**: Identify specific AI models (GPT-4, Claude 3, Gemini, etc.)
 - **Bot Detection**: Analyze request patterns to identify automated AI API usage
+
+### Content Fingerprinting (NEW!)
+
+- **AI Detection**: Determine if text content was AI-generated
+- **Perplexity Analysis**: Measure text predictability (lower = more AI-like)
+- **Burstiness Metrics**: Analyze sentence length variance (lower = more AI-like)
+- **Vocabulary Analysis**: Type-token ratio and richness metrics
+- **Pattern Detection**: Identify AI-characteristic phrases and structures
+- **Model Attribution**: Probabilistically identify which AI model generated content (GPT, Claude, Gemini)
+- **Confidence Scoring**: Multi-factor confidence calculation
 
 ## Supported Providers
 
@@ -88,6 +104,39 @@ Matches TLS/JA3 patterns for:
 - Bot vs. human distinction
 - Automation detection
 
+### 6. Content Detection Methods
+
+Analyzes text content through multiple signals:
+
+#### Perplexity Analysis
+Measures how predictable the text is:
+- Low perplexity (< 0.3) = highly predictable = AI-like
+- High perplexity (> 0.7) = less predictable = human-like
+
+#### Burstiness Metrics
+Analyzes sentence length variance:
+- Low burstiness (< 0.3) = uniform lengths = AI-like
+- High burstiness (> 0.6) = varied lengths = human-like
+
+#### Vocabulary Richness
+Type-token ratio (unique words / total words):
+- AI typically shows moderate richness (0.3-0.6)
+- Very high or very low suggests human writing
+
+#### Pattern Detection
+Identifies AI-characteristic elements:
+- Repetitive sentence structures
+- Formal language overuse ("furthermore", "moreover")
+- Characteristic AI phrases ("it's important to note", "delve into")
+- Perfect grammar and punctuation
+- Predictable transitions
+
+#### Model Attribution
+Probabilistically identifies the source model:
+- **GPT models**: Verbose, uses specific phrases ("delve into", "it's important to note")
+- **Claude**: More structured and formal, consistent formatting
+- **Gemini**: Tends to be more concise and direct
+
 ## Bot Detection Features
 
 The library includes patterns for detecting automated AI API usage:
@@ -101,10 +150,18 @@ The library includes patterns for detecting automated AI API usage:
 
 ## Examples
 
-See `examples/detect_ai_providers.rs` for comprehensive usage examples:
+### API Detection
+See `examples/detect_ai_providers.rs` for comprehensive API detection examples:
 
 ```bash
 cargo run --package fingerprint-ai-models --example detect_ai_providers
+```
+
+### Content Detection
+See `examples/detect_ai_content.rs` for content analysis examples:
+
+```bash
+cargo run --package fingerprint-ai-models --example detect_ai_content
 ```
 
 ## Testing
@@ -120,7 +177,24 @@ All tests include comprehensive coverage of:
 - Header parsing
 - SDK version extraction
 - Pattern matching
+- Content analysis (perplexity, burstiness, patterns)
+- Model attribution
 - Edge cases
+
+## Use Cases
+
+### API Monitoring
+- Traffic analysis and monitoring
+- Compliance and auditing
+- Rate limiting and quotas
+- Security research
+
+### Content Analysis
+- Academic integrity checking
+- Content authenticity verification
+- Plagiarism detection enhancement
+- AI disclosure compliance
+- Content moderation assistance
 
 ## Security Considerations
 
