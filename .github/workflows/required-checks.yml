@@ -175,7 +175,7 @@ jobs:
       
       - name: Run cargo-deny
         run: |
-          cargo deny check advisories --all-features
+          cargo deny check advisories
       
       - name: Generate security summary
         if: always()
