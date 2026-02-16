@@ -160,10 +160,7 @@ fn analyze_metadata(text: &str) -> ContentMetadata {
     let word_count = words.len();
 
     // Simple sentence detection (naive approach - can be improved)
-    let sentence_count = text
-        .matches(['.', '!', '?'])
-        .count()
-        .max(1);
+    let sentence_count = text.matches(['.', '!', '?']).count().max(1);
 
     let avg_sentence_length = word_count as f32 / sentence_count as f32;
 

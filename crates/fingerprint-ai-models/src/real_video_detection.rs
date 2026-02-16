@@ -28,9 +28,7 @@ impl RealVideoAnalyzer {
     ///
     /// For now, this provides frame-based analysis that can work with
     /// pre-extracted frames or video thumbnails.
-    pub fn analyze_video_file<P: AsRef<Path>>(
-        _video_path: P,
-    ) -> Result<VideoFingerprint, String> {
+    pub fn analyze_video_file<P: AsRef<Path>>(_video_path: P) -> Result<VideoFingerprint, String> {
         // In production, extract frames using ffmpeg
         // For now, return analysis based on metadata patterns
         Err("Video file analysis requires frame extraction. Use analyze_frames() with extracted frames.".to_string())
@@ -102,7 +100,11 @@ impl RealVideoAnalyzer {
         );
 
         let is_ai_generated = ai_score > 0.65;
-        let confidence = if is_ai_generated { ai_score } else { 1.0 - ai_score };
+        let confidence = if is_ai_generated {
+            ai_score
+        } else {
+            1.0 - ai_score
+        };
 
         // Model attribution based on patterns
         let model_probabilities = Self::attribute_video_model(&patterns, fps, duration);
@@ -217,7 +219,7 @@ impl RealVideoAnalyzer {
         }
 
         let mean: f32 = motion_scores.iter().sum::<f32>() / motion_scores.len() as f32;
-        
+
         // AI-generated videos often have too-smooth motion
         if mean > 0.95 {
             0.4 // Too smooth = likely AI
@@ -276,7 +278,8 @@ impl RealVideoAnalyzer {
                 for neighbor in &neighbors {
                     let diff = ((center[0] as i32 - neighbor[0] as i32).abs()
                         + (center[1] as i32 - neighbor[1] as i32).abs()
-                        + (center[2] as i32 - neighbor[2] as i32).abs()) as u32;
+                        + (center[2] as i32 - neighbor[2] as i32).abs())
+                        as u32;
                     max_diff = max_diff.max(diff);
                 }
 
@@ -332,7 +335,9 @@ impl RealVideoAnalyzer {
 
         for pixel in img.pixels() {
             // Luminance formula
-            let brightness = (0.299 * pixel[0] as f32 + 0.587 * pixel[1] as f32 + 0.114 * pixel[2] as f32) as u64;
+            let brightness = (0.299 * pixel[0] as f32
+                + 0.587 * pixel[1] as f32
+                + 0.114 * pixel[2] as f32) as u64;
             total_brightness += brightness;
         }
 
@@ -435,13 +440,19 @@ impl RealVideoAnalyzer {
         if fps >= 24.0 && duration < 60.0 {
             sora_score += 0.2;
         }
-        if patterns.iter().any(|p| p.pattern_type == VideoPatternType::TemporalArtifacts) {
+        if patterns
+            .iter()
+            .any(|p| p.pattern_type == VideoPatternType::TemporalArtifacts)
+        {
             sora_score += 0.3;
         }
 
         // Runway: Creative effects, style transfer
         let mut runway_score = 0.0;
-        if patterns.iter().any(|p| p.pattern_type == VideoPatternType::DiffusionTraces) {
+        if patterns
+            .iter()
+            .any(|p| p.pattern_type == VideoPatternType::DiffusionTraces)
+        {
             runway_score += 0.4;
         }
 
@@ -453,16 +464,25 @@ impl RealVideoAnalyzer {
 
         // Synthesia/HeyGen: AI avatars, talking heads
         let mut avatar_score = 0.0;
-        if patterns.iter().any(|p| p.pattern_type == VideoPatternType::FaceBoundaryBlur) {
+        if patterns
+            .iter()
+            .any(|p| p.pattern_type == VideoPatternType::FaceBoundaryBlur)
+        {
             avatar_score += 0.5;
         }
-        if patterns.iter().any(|p| p.pattern_type == VideoPatternType::LipSyncMismatch) {
+        if patterns
+            .iter()
+            .any(|p| p.pattern_type == VideoPatternType::LipSyncMismatch)
+        {
             avatar_score += 0.3;
         }
 
         // Deepfake: Face swapping
         let mut deepfake_score = 0.0;
-        if patterns.iter().any(|p| p.pattern_type == VideoPatternType::GANArtifacts) {
+        if patterns
+            .iter()
+            .any(|p| p.pattern_type == VideoPatternType::GANArtifacts)
+        {
             deepfake_score += 0.4;
         }
 
@@ -528,7 +548,10 @@ mod tests {
         let frame2 = create_solid_frame(100, 100, Rgba([128, 128, 128, 255]));
 
         let similarity = RealVideoAnalyzer::calculate_frame_similarity(&frame1, &frame2);
-        assert!(similarity > 0.99, "Identical frames should have high similarity");
+        assert!(
+            similarity > 0.99,
+            "Identical frames should have high similarity"
+        );
     }
 
     #[test]
@@ -537,7 +560,10 @@ mod tests {
         let frame2 = create_solid_frame(100, 100, Rgba([255, 255, 255, 255]));
 
         let similarity = RealVideoAnalyzer::calculate_frame_similarity(&frame1, &frame2);
-        assert!(similarity < 0.1, "Completely different frames should have low similarity");
+        assert!(
+            similarity < 0.1,
+            "Completely different frames should have low similarity"
+        );
     }
 
     #[test]
@@ -548,7 +574,10 @@ mod tests {
             .collect();
 
         let consistency = RealVideoAnalyzer::analyze_temporal_consistency(&frames);
-        assert!(consistency < 0.5, "Too-uniform frames indicate AI generation");
+        assert!(
+            consistency < 0.5,
+            "Too-uniform frames indicate AI generation"
+        );
     }
 
     #[test]
@@ -563,7 +592,11 @@ mod tests {
 
         let consistency = RealVideoAnalyzer::analyze_temporal_consistency(&frames);
         // With significant frame variation, consistency should be detected
-        assert!(consistency >= 0.0 && consistency <= 1.0, "Varied frames should have calculable consistency: {}", consistency);
+        assert!(
+            consistency >= 0.0 && consistency <= 1.0,
+            "Varied frames should have calculable consistency: {}",
+            consistency
+        );
     }
 
     #[test]
@@ -634,14 +667,12 @@ mod tests {
 
     #[test]
     fn test_model_attribution() {
-        let patterns = vec![
-            VideoPattern {
-                pattern_type: VideoPatternType::FaceBoundaryBlur,
-                description: "Test".to_string(),
-                confidence: 0.8,
-                frame_range: None,
-            },
-        ];
+        let patterns = vec![VideoPattern {
+            pattern_type: VideoPatternType::FaceBoundaryBlur,
+            description: "Test".to_string(),
+            confidence: 0.8,
+            frame_range: None,
+        }];
 
         let models = RealVideoAnalyzer::attribute_video_model(&patterns, 30.0, 5.0);
         assert!(!models.is_empty());

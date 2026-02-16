@@ -6,13 +6,12 @@
 ///! ```bash
 ///! cargo run --example analyze_real_image <image_path>
 ///! ```
-
 use fingerprint_ai_models::real_detection::RealImageAnalyzer;
 use std::env;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
-    
+
     if args.len() < 2 {
         println!("📖 Real Image Analysis Tool");
         println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -26,21 +25,24 @@ fn main() {
         println!("Supported formats: PNG, JPEG, WebP, BMP, etc.");
         return;
     }
-    
+
     let image_path = &args[1];
-    
+
     println!("📊 Real Image Analysis: {}", image_path);
     println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
     println!();
-    
+
     match RealImageAnalyzer::analyze_file(image_path) {
         Ok(result) => {
             println!("🎨 Image Properties:");
             println!("  • Format: {}", result.format);
-            println!("  • Dimensions: {}×{}", result.dimensions.0, result.dimensions.1);
+            println!(
+                "  • Dimensions: {}×{}",
+                result.dimensions.0, result.dimensions.1
+            );
             println!("  • Size: {:.1} KB", result.file_size as f64 / 1024.0);
             println!();
-            
+
             println!("🔍 Detection Results:");
             if result.is_likely_ai {
                 println!("  AI-Generated: ✓ YES");
@@ -49,25 +51,50 @@ fn main() {
             }
             println!("  Confidence: {:.1}%", result.confidence * 100.0);
             println!();
-            
+
             println!("📈 Analysis Metrics:");
-            print_metric("Noise uniformity", result.noise_uniformity, 
-                        "Very AI-like", "Somewhat AI-like", "Natural variation");
-            print_metric("Frequency artifacts", result.frequency_artifacts,
-                        "High (GAN-like)", "Medium", "Low (natural)");
-            print_metric("Color uniformity", result.color_uniformity,
-                        "Over-smooth", "Moderate", "Natural distribution");
-            print_metric("Texture uniformity", result.texture_uniformity,
-                        "Synthetic", "Somewhat uniform", "Natural variation");
-            print_metric("EXIF indicators", result.exif_indicators,
-                        "Missing camera data", "Some indicators", "Full camera data");
+            print_metric(
+                "Noise uniformity",
+                result.noise_uniformity,
+                "Very AI-like",
+                "Somewhat AI-like",
+                "Natural variation",
+            );
+            print_metric(
+                "Frequency artifacts",
+                result.frequency_artifacts,
+                "High (GAN-like)",
+                "Medium",
+                "Low (natural)",
+            );
+            print_metric(
+                "Color uniformity",
+                result.color_uniformity,
+                "Over-smooth",
+                "Moderate",
+                "Natural distribution",
+            );
+            print_metric(
+                "Texture uniformity",
+                result.texture_uniformity,
+                "Synthetic",
+                "Somewhat uniform",
+                "Natural variation",
+            );
+            print_metric(
+                "EXIF indicators",
+                result.exif_indicators,
+                "Missing camera data",
+                "Some indicators",
+                "Full camera data",
+            );
             println!();
-            
+
             if !result.model_attribution.is_empty() {
                 println!("🤖 Model Attribution:");
                 let mut attrs: Vec<_> = result.model_attribution.iter().collect();
                 attrs.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
-                
+
                 for (model, prob) in attrs {
                     let bar_length = (prob * 30.0) as usize;
                     let bar = "█".repeat(bar_length);
@@ -75,7 +102,7 @@ fn main() {
                 }
             }
             println!();
-            
+
             // Summary
             if result.is_likely_ai {
                 println!("💡 Summary:");
@@ -114,6 +141,6 @@ fn print_metric(name: &str, value: f64, high_desc: &str, mid_desc: &str, low_des
     } else {
         low_desc
     };
-    
+
     println!("  • {:22} {:.3} ({})", format!("{}:", name), value, desc);
 }

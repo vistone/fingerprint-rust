@@ -22,30 +22,30 @@ fn main() {
     // Example 1: AI-generated video (too uniform)
     println!("Example 1: AI-Generated Video (Synthetic Content)");
     println!("─────────────────────────────────────────────────────");
-    
+
     let ai_frames = create_ai_generated_video_frames();
     let result1 = RealVideoAnalyzer::quick_analyze_short_form(&ai_frames, 30.0);
-    
+
     display_result(&result1, "TikTok-style-ai-avatar.mp4");
     println!();
 
     // Example 2: Real video (natural variation)
     println!("Example 2: Real Video (Human-Created Content)");
     println!("─────────────────────────────────────────────────────");
-    
+
     let real_frames = create_real_video_frames();
     let result2 = RealVideoAnalyzer::quick_analyze_short_form(&real_frames, 30.0);
-    
+
     display_result(&result2, "youtube-shorts-real-vlog.mp4");
     println!();
 
     // Example 3: Deepfake detection
     println!("Example 3: Potential Deepfake Video");
     println!("─────────────────────────────────────────────────────");
-    
+
     let deepfake_frames = create_deepfake_video_frames();
     let result3 = RealVideoAnalyzer::analyze_frames(&deepfake_frames, 30.0);
-    
+
     display_result(&result3, "suspicious-face-swap.mp4");
     println!();
 
@@ -80,14 +80,25 @@ fn main() {
     println!();
 }
 
-fn display_result(result: &fingerprint_ai_models::video_detection::VideoFingerprint, filename: &str) {
+fn display_result(
+    result: &fingerprint_ai_models::video_detection::VideoFingerprint,
+    filename: &str,
+) {
     println!("📹 File: {}", filename);
     println!();
-    
+
     // Detection status
-    let status_icon = if result.is_ai_generated { "⚠️  AI-GENERATED" } else { "✅ REAL" };
-    let status_color = if result.is_ai_generated { "🔴" } else { "🟢" };
-    
+    let status_icon = if result.is_ai_generated {
+        "⚠️  AI-GENERATED"
+    } else {
+        "✅ REAL"
+    };
+    let status_color = if result.is_ai_generated {
+        "🔴"
+    } else {
+        "🟢"
+    };
+
     println!("{} Detection Result: {}", status_color, status_icon);
     println!("   Confidence: {:.1}%", result.confidence * 100.0);
     println!();
@@ -100,25 +111,56 @@ fn display_result(result: &fingerprint_ai_models::video_detection::VideoFingerpr
         println!("   • Frame Rate: {:.0} fps", fps);
     }
     if let Some((w, h)) = result.metadata.resolution {
-        let aspect = if h > w { "Vertical (TikTok/Stories)" } else if w > h { "Horizontal" } else { "Square" };
+        let aspect = if h > w {
+            "Vertical (TikTok/Stories)"
+        } else if w > h {
+            "Horizontal"
+        } else {
+            "Square"
+        };
         println!("   • Resolution: {}×{} ({})", w, h, aspect);
     }
     println!();
 
     // Detection metrics
     println!("🔍 Analysis Metrics:");
-    
-    let temporal_status = if result.temporal_consistency < 0.5 { "⚠️  Suspicious" } else { "✓ Normal" };
-    println!("   • Temporal consistency: {:.3} {}", result.temporal_consistency, temporal_status);
-    
-    let motion_status = if result.motion_consistency < 0.5 { "⚠️  Unnatural" } else { "✓ Natural" };
-    println!("   • Motion consistency: {:.3} {}", result.motion_consistency, motion_status);
-    
-    let boundary_status = if result.boundary_artifacts > 0.5 { "⚠️  Detected" } else { "✓ None" };
-    println!("   • Boundary artifacts: {:.3} {}", result.boundary_artifacts, boundary_status);
-    
+
+    let temporal_status = if result.temporal_consistency < 0.5 {
+        "⚠️  Suspicious"
+    } else {
+        "✓ Normal"
+    };
+    println!(
+        "   • Temporal consistency: {:.3} {}",
+        result.temporal_consistency, temporal_status
+    );
+
+    let motion_status = if result.motion_consistency < 0.5 {
+        "⚠️  Unnatural"
+    } else {
+        "✓ Natural"
+    };
+    println!(
+        "   • Motion consistency: {:.3} {}",
+        result.motion_consistency, motion_status
+    );
+
+    let boundary_status = if result.boundary_artifacts > 0.5 {
+        "⚠️  Detected"
+    } else {
+        "✓ None"
+    };
+    println!(
+        "   • Boundary artifacts: {:.3} {}",
+        result.boundary_artifacts, boundary_status
+    );
+
     if let Some(lip_sync) = result.lip_sync_quality {
-        let sync_status = if lip_sync < 0.5 { "⚠️  Poor" } else { "✓ Good" };
+        let sync_status = if lip_sync < 0.5 {
+            "⚠️  Poor"
+        } else {
+            "✓ Good"
+        };
         println!("   • Lip-sync quality: {:.3} {}", lip_sync, sync_status);
     }
     println!();
@@ -128,7 +170,7 @@ fn display_result(result: &fingerprint_ai_models::video_detection::VideoFingerpr
         println!("🤖 Likely AI Model:");
         let mut probs: Vec<_> = result.model_probabilities.iter().collect();
         probs.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap());
-        
+
         for (model, prob) in probs.iter().take(3) {
             let bar_length = (*prob * 30.0) as usize;
             let bar = "█".repeat(bar_length);
@@ -161,7 +203,7 @@ fn display_result(result: &fingerprint_ai_models::video_detection::VideoFingerpr
         } else {
             println!("   Low confidence - manual review recommended.");
         }
-        
+
         // Platform-specific guidance
         println!();
         println!("📱 For Content Moderation:");
@@ -180,22 +222,18 @@ fn create_ai_generated_video_frames() -> Vec<DynamicImage> {
     // AI-generated videos often have suspiciously uniform frames
     // Simulating an AI avatar video (Synthesia/HeyGen style)
     let mut frames = Vec::new();
-    
+
     for i in 0..30 {
         // Very subtle changes (AI-like)
         let intensity = 128 + (i % 3) as u8;
         let img = ImageBuffer::from_fn(480, 854, |x, _y| {
             // Create a simple gradient with minimal variation
-            let value = if x < 240 {
-                intensity
-            } else {
-                intensity + 2
-            };
+            let value = if x < 240 { intensity } else { intensity + 2 };
             Rgba([value, value + 10, value + 20, 255])
         });
         frames.push(DynamicImage::ImageRgba8(img));
     }
-    
+
     frames
 }
 
@@ -203,12 +241,12 @@ fn create_ai_generated_video_frames() -> Vec<DynamicImage> {
 fn create_real_video_frames() -> Vec<DynamicImage> {
     // Real videos have natural camera movement, lighting changes
     let mut frames = Vec::new();
-    
+
     for i in 0..30 {
         // Natural variation in brightness and color
         let base = 100 + (i * 5) % 50;
         let variation = (i * 7) % 30;
-        
+
         let img = ImageBuffer::from_fn(1080, 1920, |x, y| {
             // More complex patterns (real-like)
             let r = ((base + variation + (x % 50)) as u8).wrapping_add(y as u8 % 20);
@@ -218,7 +256,7 @@ fn create_real_video_frames() -> Vec<DynamicImage> {
         });
         frames.push(DynamicImage::ImageRgba8(img));
     }
-    
+
     frames
 }
 
@@ -226,14 +264,15 @@ fn create_real_video_frames() -> Vec<DynamicImage> {
 fn create_deepfake_video_frames() -> Vec<DynamicImage> {
     // Deepfakes often have boundary artifacts and morphing
     let mut frames = Vec::new();
-    
+
     for i in 0..25 {
         let img = ImageBuffer::from_fn(720, 1280, |x, y| {
             // Simulate face boundary artifact
             let center_x = 360;
             let center_y = 640;
-            let dist = (((x as i32 - center_x).pow(2) + (y as i32 - center_y).pow(2)) as f32).sqrt();
-            
+            let dist =
+                (((x as i32 - center_x).pow(2) + (y as i32 - center_y).pow(2)) as f32).sqrt();
+
             if dist > 200.0 && dist < 220.0 {
                 // Sharp boundary (deepfake artifact)
                 Rgba([200 + (i * 2) as u8, 150, 150, 255])
@@ -247,6 +286,6 @@ fn create_deepfake_video_frames() -> Vec<DynamicImage> {
         });
         frames.push(DynamicImage::ImageRgba8(img));
     }
-    
+
     frames
 }
