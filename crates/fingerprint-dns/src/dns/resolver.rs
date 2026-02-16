@@ -1,7 +1,7 @@
-//! DNS Parseer module.
+//! DNS 解析器模块
 #![allow(clippy::empty_docs)]
 //!
-//! provideconcurrent DNS ParseFeatures, usecustom DNS serverlist
+//! 提供并发 DNS 解析功能，使用自定义 DNS 服务器列表
 
 use crate::dns::serverpool::ServerPool;
 use crate::dns::types::{DNSError, DNSResult, DomainIPs, IPInfo};
@@ -17,16 +17,16 @@ use hickory_resolver::{
     TokioResolver,
 };
 
-// / DNS parse器 trait
+/// DNS 解析器 trait
 /// DNS resolver interface for caching and other extensions.
-// / 定义 DNS parse器of通用interface，便于 implementationcacheandother functionality
+/// 定义 DNS 解析器的通用接口，便于实现缓存和其他功能
 #[async_trait::async_trait]
 pub trait DNSResolverTrait: Send + Sync {
-    // / parsedomain
+    /// 解析域名
     async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError>;
 }
 
-/// DNS Parseer
+/// DNS 解析器
 pub struct DNSResolver {
     /// DNS querytimeout duration
     timeout: Duration,
@@ -59,33 +59,33 @@ impl DNSResolver {
     /// Parsedomainall IP address (IPv4 and IPv6)
     pub async fn resolve(&self, domain: &str) -> Result<DNSResult, DNSError> {
         eprintln!(
-            "[DNS Resolver] ========== startParsedomain: {} ==========",
+            "[DNS Resolver] ========== 开始解析域名: {} ==========",
             domain
         );
         let mut domain_ips = DomainIPs::new();
 
-        // Parse IPv4
-        eprintln!("[DNS Resolver] startParse IPv4 address...");
+        // 解析 IPv4
+        eprintln!("[DNS Resolver] 开始解析 IPv4 地址...");
         if let Ok(ipv4_addrs) = self.resolve_aaaa_or_a(domain, false).await {
             eprintln!(
-                "[DNS Resolver] IPv4 Parsesuccess，obtain {} address",
+                "[DNS Resolver] IPv4 解析成功，获取 {} 个地址",
                 ipv4_addrs.len()
             );
             domain_ips.ipv4 = ipv4_addrs;
         } else {
-            eprintln!("[DNS Resolver] IPv4 Parsefailure");
+            eprintln!("[DNS Resolver] IPv4 解析失败");
         }
 
-        // Parse IPv6
-        eprintln!("[DNS Resolver] startParse IPv6 address...");
+        // 解析 IPv6
+        eprintln!("[DNS Resolver] 开始解析 IPv6 地址...");
         if let Ok(ipv6_addrs) = self.resolve_aaaa_or_a(domain, true).await {
             eprintln!(
-                "[DNS Resolver] IPv6 Parsesuccess，obtain {} address",
+                "[DNS Resolver] IPv6 解析成功，获取 {} 个地址",
                 ipv6_addrs.len()
             );
             domain_ips.ipv6 = ipv6_addrs;
         } else {
-            eprintln!("[DNS Resolver] IPv6 Parsefailure");
+            eprintln!("[DNS Resolver] IPv6 解析失败");
         }
 
         eprintln!(
@@ -118,18 +118,18 @@ impl DNSResolver {
         use std::net::SocketAddr;
         use std::str::FromStr;
 
-        // from serverpool in Get DNS serverlist
+        // 从服务器池获取 DNS 服务器列表
         let servers = self.server_pool.servers();
         eprintln!(
-            "[DNS Resolver] startParsedomain: {} (IPv6: {})",
+            "[DNS Resolver] 开始解析域名: {} (IPv6: {})",
             domain, ipv6
         );
-        eprintln!("[DNS Resolver] serverpool总count: {}", servers.len());
+        eprintln!("[DNS Resolver] 服务器池总数: {}", servers.len());
 
-        // useallserverconcurrentquery (不limitcount)
-        // Go item ResolveDomain use pool.GetAllServers() Getallserver, concurrentquery
-        // failureserverwill被ignore, successserverreturn IP will被collect并deduplicate
-        eprintln!("[DNS Resolver] willqueryall {} server", servers.len());
+        // 使用所有服务器并发查询（不限制数量）
+        // Go 版本的 ResolveDomain 使用 pool.GetAllServers() 获取所有服务器，并发查询
+        // 失败的服务器会被忽略，成功的服务器返回的 IP 将被收集并去重
+        eprintln!("[DNS Resolver] 将查询所有 {} 个服务器", servers.len());
 
         let servers_with_sockets: Vec<_> = servers
             .iter()
@@ -181,7 +181,7 @@ impl DNSResolver {
         );
 
         // concurrentquerymultiple DNS server
-        // usetimeoutwrap, avoidsingle慢serverblockingwholequery
+        // 使用超时包装，避免单个慢速服务器阻塞整个查询
         let server_pool = self.server_pool.clone();
         let query_timeout = self.timeout; // use resolver overalltimeout duration
                                           // Fix: shared resolver cache

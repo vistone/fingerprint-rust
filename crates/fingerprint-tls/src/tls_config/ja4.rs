@@ -1,19 +1,19 @@
-//! JA4 fingerprintGeneratemodule
+//! JA4 指纹生成模块
 //!
-//! implementcomplete JA4 TLS clientfingerprintGenerate
-//! reference：Huginn Net JA4 implement and official FoxIO specification
+//! 实现完整的 JA4 TLS 客户端指纹生成
+//! 参考：Huginn Net JA4 实现和官方 FoxIO 规范
 
 use crate::tls_config::grease::filter_grease_values;
 use crate::tls_config::version::TlsVersion;
 use sha2::{Digest, Sha256};
 use std::fmt;
 
-/// JA4 fingerprint (sort/notsort)
+/// JA4 指纹（排序/不排序）
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ja4Fingerprint {
-    /// sortversion (ja4)
+    /// 排序版本（ja4）
     Sorted(String),
-    /// notsortversion (ja4_o, originalbeginningorder)
+    /// 不排序版本（ja4_o，保持原始顺序）
     Unsorted(String),
 }
 
