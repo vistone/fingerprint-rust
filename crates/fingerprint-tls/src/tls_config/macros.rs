@@ -1,9 +1,9 @@
-// ! TLS configurationmacro
+//! TLS configurationmacro
 //! TLS configuration macros.
-// ! providemacrofromsimplifycommonconfigurationBuild, decreaseduplicatecode
+//! providemacrofromsimplifycommonconfigurationBuild, decreaseduplicatecode
 
-// / Create Chrome extensionlistauxiliarymacro
-// / similar wreq-util macrodesign
+/// Create Chrome extensionlistauxiliarymacro
+/// similar wreq-util macrodesign
 #[macro_export]
 macro_rules! chrome_extensions {
  (

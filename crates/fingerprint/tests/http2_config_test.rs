@@ -1,4 +1,4 @@
-// ! HTTP/2 configuremoduletesting
+//! HTTP/2 configuration module testing
 
 use fingerprint::*;
 

@@ -7,7 +7,7 @@ use crate::metadata::FingerprintMetadata;
 use std::hash::{Hash, Hasher};
 
 /// TCP configurationdescribefile
-// / for main动configurationexitconnection TCP parameter
+/// for main动configurationexitconnection TCP parameter
 #[derive(Debug, Clone, Copy)]
 pub struct TcpProfile {
     /// initialbeginning TTL
@@ -74,7 +74,7 @@ impl TcpProfile {
         }
     }
 
-    // / from User-Agent stringinferoperating system并Generates corresponding TCP Profile
+    /// from User-Agent stringinferoperating system并Generates corresponding TCP Profile
     ///
     /// this isunifiedfingerprintGeneratecorefunction, ensurebrowserfingerprint and TCP fingerprintsync
     pub fn from_user_agent(user_agent: &str) -> Self {
@@ -111,7 +111,7 @@ impl TcpProfile {
         Self::for_os(os)
     }
 
-    // / from platformstring (如 "Windows", "macOS", "Linux")Generate TCP Profile
+    /// from platformstring (如 "Windows", "macOS", "Linux")Generate TCP Profile
     pub fn from_platform(platform: &str) -> Self {
         use crate::types::OperatingSystem;
 

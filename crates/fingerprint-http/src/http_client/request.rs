@@ -84,13 +84,13 @@ impl HttpRequest {
         self
     }
 
-    // / settingsrequest体
+    /// settingsrequest体
     pub fn with_body(mut self, body: Vec<u8>) -> Self {
         self.body = Some(body);
         self
     }
 
-    // / settings JSON request体
+    /// settings JSON request体
     pub fn with_json_body(mut self, json: &str) -> Self {
         self.headers
             .insert("Content-Type".to_string(), "application/json".to_string());
@@ -100,7 +100,7 @@ impl HttpRequest {
 
     /// Build HTTP/1.1 requeststring
     ///
-    // / Note: 该methodwill把 body when作 UTF-8 textconcatenate to string in , **unsuitable for binary body**.
+    /// Note: 该methodwill把 body when作 UTF-8 textconcatenate to string in , **unsuitable for binary body**.
     /// if neededsendbinarycountdata, pleaseuse `build_http1_request_bytes`.
     pub fn build_http1_request(&self, host: &str, path: &str) -> String {
         // securityclean：prevent CRLF noteenter
@@ -216,7 +216,7 @@ impl HttpRequest {
         out
     }
 
-    // / random化 Header sizewrite (simulate某些specificfingerprint or avoid WAF trait)
+    /// random化 Header sizewrite (simulate某些specificfingerprint or avoid WAF trait)
     pub fn with_randomized_header_case(&mut self) {
         let mut new_headers = HashMap::new();
         for (key, value) in self.headers.drain() {

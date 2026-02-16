@@ -1,5 +1,5 @@
-// ! performance基准testing
-// ! validateHTTP/1.1、HTTP/2、HTTP/3of响应timeperformance指标
+//! performance基准testing
+//! validateHTTP/1.1、HTTP/2、HTTP/3of响应timeperformance指标
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use std::time::Instant;

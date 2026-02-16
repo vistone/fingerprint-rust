@@ -2,7 +2,7 @@
 //!
 //! useofficial rustls asbottomlayer TLS implement
 //! through ClientHelloCustomizer applicationbrowserfingerprint (Chrome, Firefox, Safari etc.)
-// ! simulatemarket maturebrowser TLS fingerprint, 不customselffingerprint
+//! simulatemarket maturebrowser TLS fingerprint, 不customselffingerprint
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 use std::io::Write;
@@ -32,7 +32,7 @@ impl Default for TlsConnector {
 /// send HTTPS request
 ///
 /// useofficial rustls asbottomlayer TLS implement
-// / Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
+/// Ifconfiguration了 ClientProfile, willthrough ClientHelloCustomizer applicationbrowserfingerprint
 /// simulatemarket maturebrowser TLS fingerprint (Chrome, Firefox, Safari etc.)
 pub fn send_https_request(
     host: &str,
@@ -124,8 +124,8 @@ pub fn send_https_request(
 /// useconnection poolsend HTTPS (HTTP/1.1 over TLS)request
 ///
 /// explain：
-// / - this is“connection pool + TLS”syncimplement (面toward `kh.google.com` thisclass https 站point)
-// / - itemfrontonly for 回归test and `HttpClient` https+pool path
+/// - this is“connection pool + TLS”syncimplement (面toward `kh.google.com` thisclass https 站point)
+/// - itemfrontonly for 回归test and `HttpClient` https+pool path
 #[cfg(feature = "connection-pool")]
 pub fn send_https_request_with_pool(
     host: &str,

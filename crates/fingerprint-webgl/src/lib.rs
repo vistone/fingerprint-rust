@@ -8,7 +8,7 @@
 
 use std::collections::HashMap;
 
-// / WebGL fingerprintinfo
+/// WebGL fingerprintinfo
 #[derive(Debug, Clone)]
 pub struct WebGLFingerprint {
     pub gpu_vendor: String,
@@ -19,7 +19,7 @@ pub struct WebGLFingerprint {
     pub max_texture_size: u32,
 }
 
-// / WebGL analyzer
+/// WebGL analyzer
 pub struct WebGLAnalyzer {
     profiles: HashMap<String, WebGLProfile>,
 }
@@ -31,7 +31,7 @@ struct WebGLProfile {
 }
 
 impl WebGLAnalyzer {
-    // / create新analyzer
+    /// create新analyzer
     pub fn new() -> Self {
         let mut profiles = HashMap::new();
 
@@ -55,7 +55,7 @@ impl WebGLAnalyzer {
         WebGLAnalyzer { profiles }
     }
 
-    // / analyze WebGL data
+    /// analyze WebGL data
     pub fn analyze(&self, vendor: &str, renderer: &str, extensions: &[&str]) -> WebGLFingerprint {
         let shader_fp = self.compute_shader_fingerprint(extensions);
 

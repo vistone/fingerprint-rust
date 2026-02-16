@@ -1,7 +1,7 @@
 //! HTTP/2 sessionpool
 //!
-// ! pool化 h2::client::SendRequest handle, implementtrue HTTP/2 multiplereuse
-// ! avoideach timerequest都reperform TLS and HTTP/2 handshake
+//! pool化 h2::client::SendRequest handle, implementtrue HTTP/2 multiplereuse
+//! avoideach timerequest都reperform TLS and HTTP/2 handshake
 
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 use super::Result;
@@ -20,7 +20,7 @@ use tokio::sync::Mutex as TokioMutex;
 use h2::client::SendRequest;
 
 /// HTTP/2 sessionpoolmanageer
-// / Fix: pool化 SendRequest handle, implementtrue multiplexreuse
+/// Fix: pool化 SendRequest handle, implementtrue multiplexreuse
 #[cfg(all(feature = "connection-pool", feature = "http2"))]
 pub struct H2SessionPool {
     /// sessionpool ( by  host:port group)
@@ -38,7 +38,7 @@ struct H2Session {
     /// SendRequest handle ( for sendrequest)
     send_request: Arc<TokioMutex<SendRequest<bytes::Bytes>>>,
     /// backbackground taskhandle ( for manage h2_conn lifecycle)
-    // / whenconnectioninvalid when , taskwillend, wecandetect to 并removesession
+    /// whenconnectioninvalid when , taskwillend, wecandetect to 并removesession
     _background_task: tokio::task::JoinHandle<()>,
     /// finallywhen used between
     last_used: Arc<Mutex<Instant>>,

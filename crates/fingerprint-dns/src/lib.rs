@@ -1,6 +1,6 @@
 //! # fingerprint-dns
 //!
-//! DNS preParse servicemodule
+//! DNS pre-parsing service module
 
 pub mod dns;
 

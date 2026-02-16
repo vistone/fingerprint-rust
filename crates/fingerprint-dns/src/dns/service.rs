@@ -83,7 +83,7 @@ impl Service {
         Self::new(config)
     }
 
-    // / startservice ( in back台threadrun, non-blockingmainthread)
+    /// startservice ( in back台threadrun, non-blockingmainthread)
     /// automaticmaintain DNS serverpool (dnsservernames.json), no needmanualinterferepre
     pub async fn start(&self) -> Result<(), DNSError> {
         // Checkwhetheralready in run
@@ -303,15 +303,15 @@ impl Service {
         // thisfunctionmain for staticpattern, itemfronttemporary不support
     }
 
-    // / Parse并savealldomain IP info
-    // / Note: 此methoditemfrontnotdirectlyuse, actualuseof is resolve_and_save_all_internal
+    /// Parse并savealldomain IP info
+    /// Note: 此methoditemfrontnotdirectlyuse, actualuseof is resolve_and_save_all_internal
     #[allow(dead_code)]
     async fn resolve_and_save_all(&self) -> Result<bool, DNSError> {
         resolve_and_save_all_internal(&self.resolver, &self.ipinfo_client, &self.config).await
     }
 }
 
-// / auxiliaryfunction：Parse并savealldomain IP info (can in closepackage in use)
+/// auxiliaryfunction：Parse并savealldomain IP info (can in closepackage in use)
 async fn resolve_and_save_all_internal(
     resolver: &Arc<RwLock<DNSResolver>>,
     ipinfo_client: &Arc<IPInfoClient>,
@@ -447,7 +447,7 @@ fn format_duration(d: &Duration) -> String {
     }
 }
 
-// / Parse when betweenstring (如 "2m", "30s", "1h")
+/// Parse when betweenstring (如 "2m", "30s", "1h")
 fn parse_duration(s: &str) -> Option<Duration> {
     let s = s.trim();
     if s.is_empty() {

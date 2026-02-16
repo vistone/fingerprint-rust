@@ -8,42 +8,42 @@
 
 use std::collections::VecDeque;
 
-// / exceptiondetect结果
+/// exceptiondetect结果
 #[derive(Debug, Clone)]
 pub struct AnomalyDetectionResult {
-    // / 是否exception
+    /// 是否exception
     pub is_anomaly: bool,
-    // / exceptionscore (0-1)
+    /// exceptionscore (0-1)
     pub anomaly_score: f32,
-    // / exceptiontype
+    /// exceptiontype
     pub anomaly_type: Option<AnomalyType>,
-    // / confidence
+    /// confidence
     pub confidence: f32,
 }
 
-// / exceptiontype
+/// exceptiontype
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AnomalyType {
-    // / fingerprint矛盾
+    /// fingerprint矛盾
     FingerprintContradiction,
-    // / 不可能ofconvert
+    /// 不可能ofconvert
     ImpossibleTransition,
-    // / timeexception
+    /// timeexception
     TimingAnomaly,
-    // / statisticsexception
+    /// statisticsexception
     StatisticalAnomaly,
-    // / behaviorexception
+    /// behaviorexception
     BehaviorAnomaly,
 }
 
-// / exceptiondetector
+/// exceptiondetector
 pub struct AnomalyDetector {
     history: VecDeque<f32>,
     max_history: usize,
 }
 
 impl AnomalyDetector {
-    // / createnewdetector
+    /// createnewdetector
     pub fn new(max_history: usize) -> Self {
         AnomalyDetector {
             history: VecDeque::with_capacity(max_history),
@@ -51,7 +51,7 @@ impl AnomalyDetector {
         }
     }
 
-    // / detectexception
+    /// detectexception
     pub fn detect(&mut self, features: &[f32]) -> AnomalyDetectionResult {
         if features.is_empty() {
             return AnomalyDetectionResult {
@@ -79,7 +79,7 @@ impl AnomalyDetector {
         }
     }
 
-    // / calculateexceptionscore
+    /// calculateexceptionscore
     fn calculate_anomaly_score(&self, current: &f32) -> (f32, Option<AnomalyType>) {
         if self.history.len() < 2 {
             return (0.0, None);
@@ -105,7 +105,7 @@ impl AnomalyDetector {
         (0.0, None)
     }
 
-    // / 清除历史
+    /// 清除历史
     pub fn clear_history(&mut self) {
         self.history.clear();
     }
@@ -117,11 +117,11 @@ impl Default for AnomalyDetector {
     }
 }
 
-// / fingerprint矛盾detector
+/// fingerprint矛盾detector
 pub struct ContradictionDetector;
 
 impl ContradictionDetector {
-    // / detectfingerprint矛盾
+    /// detectfingerprint矛盾
     pub fn detect_contradictions(fingerprints: &[(&str, f32)]) -> Vec<(usize, usize, String)> {
         let mut contradictions = Vec::new();
 
@@ -144,7 +144,7 @@ impl ContradictionDetector {
         contradictions
     }
 
-    // / check是否矛盾
+    /// check是否矛盾
     fn is_contradictory(name1: &str, name2: &str, score1: f32, score2: f32) -> bool {
         // 例如: Chrome 不能同时是 Firefox
         if (name1.contains("Chrome") && name2.contains("Firefox"))

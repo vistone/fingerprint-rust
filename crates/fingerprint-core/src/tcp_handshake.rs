@@ -3,12 +3,12 @@
 /// Analyzes TCP three-way handshake (SYN, SYN-ACK, ACK) to identify
 /// operating system and browser characteristics.
 ///
-// / TCP握手include三个关键阶段：
+/// TCP握手include三个关键阶段：
 /// 1. SYN (Client → Server)
 /// 2. SYN-ACK (Server → Client)
 /// 3. ACK (Client → Server)
 ///
-// / 每个阶段ofTCPoption顺序、窗口size等特performancerecognition浏览器/OSfingerprint
+/// 每个阶段ofTCPoption顺序、窗口size等特performancerecognition浏览器/OSfingerprint
 use serde::{Deserialize, Serialize};
 
 /// TCP Option types

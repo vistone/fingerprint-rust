@@ -107,7 +107,7 @@ impl DNSResolver {
         self.resolve_with_hickory(domain, ipv6).await
     }
 
-    // / use hickory-resolver perform DNS query, concurrentquerymultiple DNS serverending withGetallmay IP
+    /// use hickory-resolver perform DNS query, concurrentquerymultiple DNS serverending withGetallmay IP
     async fn resolve_with_hickory(
         &self,
         domain: &str,

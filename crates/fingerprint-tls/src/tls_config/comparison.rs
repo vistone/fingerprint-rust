@@ -66,14 +66,14 @@ pub fn compare_signatures(
     FingerprintMatch::None
 }
 
-// / find and 给fixedsignaturemostsimilarfingerprintconfiguration
+/// find and 给fixedsignaturemostsimilarfingerprintconfiguration
 ///
 /// # Parameters
 /// * `signature` - needmatchsignature
 /// * `specs` - candidate ClientHelloSpec list
 ///
 /// # Returns
-// / * `Option<usize>` - mostsimilarconfigurationindex, if no找 to thenreturn None
+/// * `Option<usize>` - mostsimilarconfigurationindex, if no找 to thenreturn None
 pub fn find_best_match(
     signature: &ClientHelloSignature,
     specs: &[ClientHelloSpec],

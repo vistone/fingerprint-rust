@@ -2,9 +2,9 @@
 //!
 //! architectureexplain：
 //! - HTTP/3 adoptsessionpool (H3SessionPool)implement QUIC sessionreuse
-// ! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
+//! - pool化pair象：h3::client::SendRequest handle (alreadyhandshakecomplete QUIC session)
 //! - reusemethod：concurrentmultiplereuse (an QUIC connectioncan when processmultiple Stream)
-// ! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage, no need netconnpool
+//! - QUIC Features：protocolthis身includingconnectionmigrate and statusmanage, no need netconnpool
 //! - sessionestablishback, connectionlifecycleby H3Session backbackground task (Driver)manage
 
 #[cfg(all(feature = "connection-pool", feature = "http3"))]

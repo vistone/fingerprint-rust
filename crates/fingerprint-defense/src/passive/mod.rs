@@ -59,7 +59,7 @@ impl PassiveAnalyzer {
         result
     }
 
-    // / analysiscountpacket并return NetworkFlow (newmethod, for system-level protection)
+    /// analysiscountpacket并return NetworkFlow (newmethod, for system-level protection)
     pub fn analyze_to_flow(&self, packet: &Packet) -> Result<NetworkFlow, PassiveError> {
         // 1. determineprotocoltype
         let protocol = match (

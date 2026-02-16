@@ -1,6 +1,6 @@
-// ! TLS 可observepropertymodule
+//! TLS 可observepropertymodule
 //!
-// ! provide TLS ClientHello 可observepropertycountdataExtract
+//! provide TLS ClientHello 可observepropertycountdataExtract
 //! reference：Huginn Net Profiler TlsClientObserved design
 
 use crate::tls_config::extract::extract_signature;
@@ -8,12 +8,12 @@ use crate::tls_config::signature::ClientHelloSignature;
 use crate::tls_config::spec::ClientHelloSpec;
 use fingerprint_core::dicttls::supported_groups::CurveID;
 
-// / TLS ClientHello 可observecountdata
+/// TLS ClientHello 可observecountdata
 /// includingallcan from ClientHello in observe to info
 /// reference：Huginn Net Profiler TlsClientObserved
 #[derive(Debug, Clone, PartialEq)]
 pub struct TlsClientObserved {
-    // / TLS version (stringrepresent, 如 "13", "12")
+    /// TLS version (stringrepresent, 如 "13", "12")
     pub version: String,
     /// Server Name Indication
     pub sni: Option<String>,
@@ -30,13 +30,13 @@ pub struct TlsClientObserved {
 }
 
 impl TlsClientObserved {
-    // / from ClientHelloSpec Create可observecountdata
+    /// from ClientHelloSpec Create可observecountdata
     pub fn from_spec(spec: &ClientHelloSpec) -> Self {
         let signature = extract_signature(spec);
         Self::from_signature(&signature)
     }
 
-    // / from ClientHelloSignature Create可observecountdata
+    /// from ClientHelloSignature Create可observecountdata
     pub fn from_signature(signature: &ClientHelloSignature) -> Self {
         Self {
             version: format!("{}", signature.version),

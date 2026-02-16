@@ -8,24 +8,24 @@
 
 use std::collections::HashMap;
 
-// / storefingerprint
+/// storefingerprint
 #[derive(Debug, Clone)]
 pub struct StorageFingerprint {
-    // / LocalStorage 键值对
+    /// LocalStorage 键值对
     pub localstorage: HashMap<String, String>,
-    // / SessionStorage 键值对
+    /// SessionStorage 键值对
     pub sessionstorage: HashMap<String, String>,
-    // / IndexedDB datalibrarylist
+    /// IndexedDB datalibrarylist
     pub indexeddb_databases: Vec<String>,
-    // / Cookie list
+    /// Cookie list
     pub cookies: Vec<CookieInfo>,
-    // / storeavailabilitycheck
+    /// storeavailabilitycheck
     pub storage_available: StorageAvailability,
-    // / storefingerprinthash
+    /// storefingerprinthash
     pub storage_hash: String,
 }
 
-// / Cookie info
+/// Cookie info
 #[derive(Debug, Clone, PartialEq)]
 pub struct CookieInfo {
     pub name: String,
@@ -35,7 +35,7 @@ pub struct CookieInfo {
     pub http_only: bool,
 }
 
-// / storeavailability
+/// storeavailability
 #[derive(Debug, Clone)]
 pub struct StorageAvailability {
     pub localstorage_available: bool,
@@ -44,14 +44,14 @@ pub struct StorageAvailability {
     pub cookies_available: bool,
 }
 
-// / storeerrortype
+/// storeerrortype
 #[derive(Debug)]
 pub enum StorageError {
-    // / invaliddata
+    /// invaliddata
     InvalidData,
-    // / analyzefailure
+    /// analyzefailure
     AnalysisFailed(String),
-    // / othererror
+    /// othererror
     Other(String),
 }
 
@@ -67,11 +67,11 @@ impl std::fmt::Display for StorageError {
 
 impl std::error::Error for StorageError {}
 
-// / storeanalyzer
+/// storeanalyzer
 pub struct StorageAnalyzer;
 
 impl StorageAnalyzer {
-    // / analyzestoredata
+    /// analyzestoredata
     pub fn analyze(
         localstorage: &HashMap<String, String>,
         sessionstorage: &HashMap<String, String>,
@@ -120,7 +120,7 @@ impl StorageAnalyzer {
         })
     }
 
-    // / generatestorehash
+    /// generatestorehash
     fn generate_storage_hash(
         localstorage: &HashMap<String, String>,
         sessionstorage: &HashMap<String, String>,
@@ -155,7 +155,7 @@ impl StorageAnalyzer {
         format!("{:x}", hash_value)
     }
 
-    // / detectstore更改
+    /// detectstore更改
     pub fn detect_changes(
         before: &StorageFingerprint,
         after: &StorageFingerprint,
@@ -170,7 +170,7 @@ impl StorageAnalyzer {
     }
 }
 
-// / store更改info
+/// store更改info
 #[derive(Debug, Clone)]
 pub struct StorageChanges {
     pub localstorage_changed: bool,

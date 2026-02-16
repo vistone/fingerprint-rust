@@ -1,6 +1,6 @@
 //! TLS extensionmodule
 //!
-// ! implementeach种 TLS extension, Corresponds to Go version's tls.TLSExtension
+//! implementeach种 TLS extension, Corresponds to Go version's tls.TLSExtension
 //!
 //! reference：https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go
 

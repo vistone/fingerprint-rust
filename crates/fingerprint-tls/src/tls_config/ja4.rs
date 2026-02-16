@@ -118,7 +118,7 @@ pub fn first_last_alpn(s: &str) -> (char, char) {
 /// Generate 12 characterhash (SHA256 front 12character)
 ///
 /// SHA256 hashalwaysproduce 64hexadecimalcharacter, sofront 12characteralways exists.
-// / 此function for JA4 fingerprintGenerate.
+/// 此function for JA4 fingerprintGenerate.
 pub fn hash12(input: &str) -> String {
     let hash = Sha256::digest(input.as_bytes());
     let hash_hex = format!("{:x}", hash);

@@ -16,25 +16,30 @@ git clone https://github.com/vistone/fingerprint-rust.git
 cd fingerprint-rust
 
 # 构建项目
-cargo build --release
+cargo build --workspace --release
 
-# 运行示例
-cargo run --example basic
+# 运行测试
+cargo test --workspace
 ```
 
 ## 🎯 第一个指纹生成
 
 ```rust
-use fingerprint::prelude::*;
+use fingerprint::{get_random_fingerprint, mapped_tls_clients};
 
-fn main() -> Result<()> {
-    // 创建Chrome 131指纹
-    let profile = BrowserProfile::chrome_131()?;
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 方法1：获取随机指纹和 HTTP 头
+    let result = get_random_fingerprint()?;
+    println!("Profile: {}", result.profile_id);
+    println!("User-Agent: {}", result.user_agent);
+    println!("Browser Type: {:?}", result.browser_type);
     
-    // 生成TLS ClientHello
-    let client_hello = profile.generate_client_hello()?;
+    // 方法2：直接使用浏览器配置
+    let profiles = mapped_tls_clients();
+    let chrome = profiles.get("chrome_133").unwrap();
+    let spec = chrome.get_client_hello_spec()?;
+    println!("Cipher suites: {}", spec.cipher_suites.len());
     
-    println!("Generated fingerprint: {:?}", client_hello.signature());
     Ok(())
 }
 ```

@@ -9,61 +9,61 @@
 use std::collections::HashSet;
 use std::net::IpAddr;
 
-// / WebRTC fingerprint
+/// WebRTC fingerprint
 #[derive(Debug, Clone)]
 pub struct WebRTCFingerprint {
-    // / local IP candidatesaddress
+    /// local IP candidatesaddress
     pub local_candidates: Vec<String>,
-    // / remote IP address
+    /// remote IP address
     pub remote_ip: Option<String>,
-    // / connectstate
+    /// connectstate
     pub connection_state: ConnectionState,
-    // / mDNS candidateshide
+    /// mDNS candidateshide
     pub mdns_hidden: bool,
-    // / candidatesfilterstatistics
+    /// candidatesfilterstatistics
     pub candidate_stats: CandidateStats,
 }
 
-// / connectstate
+/// connectstate
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConnectionState {
-    // / new
+    /// new
     New,
-    // / connect中
+    /// connect中
     Connecting,
-    // / 已connect
+    /// 已connect
     Connected,
-    // / completed
+    /// completed
     Completed,
-    // / disconnectconnect
+    /// disconnectconnect
     Disconnected,
-    // / failure
+    /// failure
     Failed,
-    // / closed
+    /// closed
     Closed,
 }
 
-// / candidatesstatisticsinfo
+/// candidatesstatisticsinfo
 #[derive(Debug, Clone)]
 pub struct CandidateStats {
-    // / hostcandidates
+    /// hostcandidates
     pub host_candidates: u32,
-    // / srflx candidates
+    /// srflx candidates
     pub srflx_candidates: u32,
-    // / prflx candidates
+    /// prflx candidates
     pub prflx_candidates: u32,
-    // / relay candidates
+    /// relay candidates
     pub relay_candidates: u32,
 }
 
-// / WebRTC errortype
+/// WebRTC errortype
 #[derive(Debug)]
 pub enum WebRTCError {
-    // / invalid IP
+    /// invalid IP
     InvalidIP,
-    // / analyzefailure
+    /// analyzefailure
     AnalysisFailed(String),
-    // / othererror
+    /// othererror
     Other(String),
 }
 
@@ -79,11 +79,11 @@ impl std::fmt::Display for WebRTCError {
 
 impl std::error::Error for WebRTCError {}
 
-// / WebRTC analyzer
+/// WebRTC analyzer
 pub struct WebRTCAnalyzer;
 
 impl WebRTCAnalyzer {
-    // / analyze WebRTC candidates
+    /// analyze WebRTC candidates
     pub fn analyze(candidates: &[&str]) -> Result<WebRTCFingerprint, WebRTCError> {
         let mut stats = CandidateStats {
             host_candidates: 0,
@@ -122,7 +122,7 @@ impl WebRTCAnalyzer {
         })
     }
 
-    // / extract IP address
+    /// extract IP address
     fn extract_ip(candidate: &str) -> Option<String> {
         // 简单of IP extract逻辑
         let parts: Vec<&str> = candidate.split_whitespace().collect();
@@ -134,17 +134,17 @@ impl WebRTCAnalyzer {
         None
     }
 
-    // / validate IP address
+    /// validate IP address
     fn is_valid_ip(s: &str) -> bool {
         s.parse::<IpAddr>().is_ok()
     }
 }
 
-// / WebRTC protector
+/// WebRTC protector
 pub struct WebRTCProtection;
 
 impl WebRTCProtection {
-    // / hide mDNS candidates
+    /// hide mDNS candidates
     pub fn hide_mdns_candidates(candidates: &[&str]) -> Vec<String> {
         candidates
             .iter()
@@ -153,14 +153,14 @@ impl WebRTCProtection {
             .collect()
     }
 
-    // / forge IP address
+    /// forge IP address
     pub fn spoof_ip(fingerprint: &WebRTCFingerprint, fake_ip: &str) -> WebRTCFingerprint {
         let mut spoofed = fingerprint.clone();
         spoofed.remote_ip = Some(fake_ip.to_string());
         spoofed
     }
 
-    // / detect WebRTC leak
+    /// detect WebRTC leak
     pub fn detect_leaks(candidates: &[&str]) -> WebRTCLeakReport {
         let private_ips = HashSet::from(["10.0.0.0", "172.16.0.0", "192.168.0.0", "127.0.0.1"]);
 
@@ -184,7 +184,7 @@ impl WebRTCProtection {
     }
 }
 
-// / WebRTC leakreport
+/// WebRTC leakreport
 #[derive(Debug, Clone)]
 pub struct WebRTCLeakReport {
     pub has_leaks: bool,

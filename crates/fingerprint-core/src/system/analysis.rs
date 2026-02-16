@@ -10,13 +10,13 @@ use crate::fingerprint::Fingerprint;
 /// representdetect to threattype.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ThreatType {
-    // / not知fingerprint
+    /// not知fingerprint
     UnknownFingerprint,
 
     /// suspiciousbehavior
     SuspiciousBehavior,
 
-    // / already知attack
+    /// already知attack
     KnownAttack,
 
     /// abnormaltrafficpattern
@@ -88,7 +88,7 @@ pub struct AnalysisDetails {
     /// abnormalindicator
     pub anomalies: Vec<String>,
 
-    // / 额outsideinfo
+    /// 额outsideinfo
     pub additional_info: std::collections::HashMap<String, String>,
 }
 
@@ -124,7 +124,7 @@ pub struct SystemAnalysisResult {
 
     /// risk score (0.0 - 1.0)
     /// - 0.0: completelysecurity
-    // / - 1.0: 极highrisk
+    /// - 1.0: 极highrisk
     pub risk_score: f64,
 
     /// confidence (0.0 - 1.0)
@@ -241,12 +241,12 @@ impl Clone for SystemAnalysisResult {
 
 /// systemlevelanalysis interface
 ///
-// / allsystemlevelanalysiser都shouldimplementthis trait.
+/// allsystemlevelanalysiser都shouldimplementthis trait.
 ///
 /// ## Core Concept
 ///
 /// systemlevelanalysis from **systemperspective**analysisnetwork traffic：
-// / - not onlyonly is singleprotocolParse, 而 is comprehensiveanalysis
+/// - not onlyonly is singleprotocolParse, 而 is comprehensiveanalysis
 /// - considersystemwholebehaviorpattern
 /// - detectsystemlevelthreat (DDoS, scan, abnormaltraffic etc.)
 ///

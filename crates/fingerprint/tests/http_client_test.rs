@@ -1,13 +1,13 @@
-// ! HTTP clienttesting
+//! HTTP client testing
 //!
-// ! testing fingerprint-rust + 自己of HTTP clientlibrary
+//! Tests fingerprint-rust with its own HTTP client library
 //!
-// ! run方式：
+//! Run methods:
 //! ```bash
-// ! # localtesting（不requirenetwork）
+//! # Local testing (no network required)
 //! cargo test --test http_client_test
 //!
-// ! # networktesting
+//! # Network testing
 //! cargo test --test http_client_test -- --ignored --nocapture
 //! ```
 

@@ -138,7 +138,7 @@ pub struct HttpClientConfig {
     pub prefer_http3: bool,
     /// Cookie store (optional)
     pub cookie_store: Option<Arc<CookieStore>>,
-    // / DNS 辅助器（optional，用于 DNS cacheand预parse）
+    /// DNS 辅助器（optional，用于 DNS cacheand预parse）
     pub dns_helper: Option<Arc<DNSHelper>>,
 }
 
@@ -207,7 +207,7 @@ impl HttpClient {
         self.pool_manager.as_ref().map(|pm| pm.get_stats())
     }
 
-    // / cleanupempty闲connection
+    /// cleanupempty闲connection
     pub fn cleanup_idle_connections(&self) {
         if let Some(pm) = &self.pool_manager {
             pm.cleanup_idle();
@@ -236,7 +236,7 @@ impl HttpClient {
         self.send_request_with_redirects(request, 0)
     }
 
-    // / sendrequest并processredirect
+    /// sendrequest并processredirect
     fn send_request_with_redirects(
         &self,
         request: &HttpRequest,
@@ -249,7 +249,7 @@ impl HttpClient {
         )
     }
 
-    // / inside部redirectprocess (bringloopdetect)
+    /// inside部redirectprocess (bringloopdetect)
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,

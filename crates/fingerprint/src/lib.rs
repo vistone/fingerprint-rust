@@ -4,7 +4,7 @@
 //!
 //! ## Features
 //!
-//! - ✅ **Real browser fingerprints**: 69+ real browser fingerprints (Chrome, Firefox, Safari, Opera, Edge)
+//! - ✅ **Real browser fingerprints**: 90+ real browser fingerprints (Chrome, Firefox, Safari, Opera, Edge)
 //! - ✅ **Real TLS configuration**: Complete TLS Client Hello Spec (cipher suite, elliptic curve, extension, etc.)
 //! - ✅ **JA4 fingerprint generation**: Complete JA4 TLS client fingerprint generation (sorted and unsorted versions)
 //! - ✅ **Fingerprint comparison**: Support fingerprint similarity comparison and best match finding

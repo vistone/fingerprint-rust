@@ -1,4 +1,4 @@
-// / Navigator API 噪声注入器
+/// Navigator API 噪声注入器
 pub struct NavigatorNoiseInjector {
     seed: u64,
 }
@@ -8,7 +8,7 @@ impl NavigatorNoiseInjector {
         Self { seed }
     }
 
-    // / to硬件concurrent数添加噪声
+    /// to硬件concurrent数添加噪声
     pub fn add_hardware_concurrency_noise(&self, cores: u32) -> u32 {
         use rand::{Rng, SeedableRng};
         use rand_chacha::ChaCha8Rng;
@@ -24,7 +24,7 @@ impl NavigatorNoiseInjector {
         }
     }
 
-    // / to设备memory添加噪声
+    /// to设备memory添加噪声
     pub fn add_device_memory_noise(&self, memory_gb: u32) -> u32 {
         use rand::{Rng, SeedableRng};
         use rand_chacha::ChaCha8Rng;

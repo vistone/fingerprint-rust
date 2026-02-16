@@ -1,15 +1,15 @@
 //! # fingerprint-api-noise
 //!
-// ! 浏览器 API 噪声注入module，用于对抗based on JavaScript offingerprintrecognition。
+//! Browser API noise injection module for anti-fingerprint detection based on JavaScript.
 //!
-// ! ## functionality
+//! ## Features
 //!
-// ! - Canvas fingerprint噪声
-// ! - WebGL argument噪声
-// ! - AudioContext 噪声
-// ! - fontenumeration噪声
-// ! - 屏幕info噪声
-// ! - Navigator API 噪声
+//! - Canvas fingerprint noise injection
+//! - WebGL parameter noise injection
+//! - AudioContext noise injection
+//! - Font enumeration noise injection
+//! - Screen information noise injection
+//! - Navigator API noise injection
 
 pub mod audio;
 pub mod canvas;
@@ -25,18 +25,18 @@ pub use webgl::{WebGLNoiseInjector, WebGLParams};
 
 use rand::Rng;
 
-// / API 噪声configure
+/// API noise configuration
 #[derive(Clone, Debug)]
 pub struct NoiseConfig {
-    // / 噪声种子（用于可重现of噪声）
+    /// Noise seed (for reproducible noise generation)
     pub seed: u64,
-    // / Canvas 噪声等级 (0.0 - 1.0)
+    /// Canvas noise level (0.0 - 1.0)
     pub canvas_noise_level: f64,
-    // / WebGL 噪声enable
+    /// WebGL noise enabled
     pub enable_webgl_noise: bool,
-    // / Audio 噪声enable
+    /// Audio noise enabled
     pub enable_audio_noise: bool,
-    // / font噪声enable
+    /// Font noise enabled
     pub enable_font_noise: bool,
 }
 
@@ -52,7 +52,7 @@ impl Default for NoiseConfig {
     }
 }
 
-// / 统一of API 噪声注入器
+/// Unified API noise injector
 pub struct ApiNoiseInjector {
     #[allow(dead_code)]
     config: NoiseConfig,
@@ -63,7 +63,7 @@ pub struct ApiNoiseInjector {
 }
 
 impl ApiNoiseInjector {
-    // / createnew API 噪声注入器
+    /// Create a new API noise injector
     pub fn new(config: NoiseConfig) -> Self {
         Self {
             canvas: CanvasNoiseInjector::new(config.seed, config.canvas_noise_level),
@@ -74,27 +74,27 @@ impl ApiNoiseInjector {
         }
     }
 
-    // / usedefaultconfigurecreate
+    /// Create with default configuration
     pub fn with_defaults() -> Self {
         Self::new(NoiseConfig::default())
     }
 
-    // / get Canvas 噪声注入器
+    /// Get Canvas noise injector
     pub fn canvas(&self) -> &CanvasNoiseInjector {
         &self.canvas
     }
 
-    // / get WebGL 噪声注入器
+    /// Get WebGL noise injector
     pub fn webgl(&self) -> &WebGLNoiseInjector {
         &self.webgl
     }
 
-    // / get Audio 噪声注入器
+    /// Get Audio noise injector
     pub fn audio(&self) -> &AudioNoiseInjector {
         &self.audio
     }
 
-    // / getfont噪声注入器
+    /// Get Font noise injector
     pub fn fonts(&self) -> &FontNoiseInjector {
         &self.fonts
     }
