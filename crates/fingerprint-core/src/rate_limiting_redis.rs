@@ -4,6 +4,11 @@
 /// Used by the RateLimiter service for shared state across multiple gateway instances.
 use std::time::Duration;
 
+// Redis 配置常量
+const DEFAULT_REDIS_POOL_SIZE: u32 = 10;  // 默认连接池大小
+const DEFAULT_REDIS_TIMEOUT_SECS: u64 = 5;  // 默认超时（秒）
+const DEFAULT_REDIS_COMMAND_TIMEOUT_SECS: u64 = 2;  // 默认命令超时（秒）
+
 /// Redis connection configuration
 #[derive(Debug, Clone)]
 pub struct RedisConfig {
@@ -22,9 +27,9 @@ impl RedisConfig {
     pub fn new(url: String) -> Self {
         Self {
             url,
-            pool_size: 10,
-            timeout: Duration::from_secs(5),
-            command_timeout: Duration::from_secs(2),
+            pool_size: DEFAULT_REDIS_POOL_SIZE,
+            timeout: Duration::from_secs(DEFAULT_REDIS_TIMEOUT_SECS),
+            command_timeout: Duration::from_secs(DEFAULT_REDIS_COMMAND_TIMEOUT_SECS),
         }
     }
 

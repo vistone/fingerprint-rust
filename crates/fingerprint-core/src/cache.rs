@@ -30,12 +30,17 @@ pub enum CacheTTL {
     Custom(Duration),
 }
 
+// Cache TTL 常量（秒）
+const CACHE_TTL_SHORT_SECS: u32 = 300;   // 5 分钟
+const CACHE_TTL_MEDIUM_SECS: u32 = 1800;  // 30 分钟
+const CACHE_TTL_LONG_SECS: u32 = 3600;    // 1 小时
+
 impl CacheTTL {
     pub fn to_seconds(&self) -> u32 {
         match self {
-            CacheTTL::Short => 300,
-            CacheTTL::Medium => 1800,
-            CacheTTL::Long => 3600,
+            CacheTTL::Short => CACHE_TTL_SHORT_SECS,
+            CacheTTL::Medium => CACHE_TTL_MEDIUM_SECS,
+            CacheTTL::Long => CACHE_TTL_LONG_SECS,
             CacheTTL::Custom(d) => d.as_secs() as u32,
         }
     }
