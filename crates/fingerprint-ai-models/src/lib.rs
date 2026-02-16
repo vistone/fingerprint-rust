@@ -45,6 +45,7 @@ use std::collections::HashMap;
 /// AI Model Provider Types
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Hash)]
 pub enum AiProvider {
+    // US/Western Providers
     /// OpenAI (GPT-3.5, GPT-4, etc.)
     OpenAI,
     /// Anthropic Claude (Claude 3, Claude 3.5, etc.)
@@ -63,6 +64,47 @@ pub enum AiProvider {
     HuggingFace,
     /// AWS Bedrock
     AwsBedrock,
+    /// Perplexity AI
+    PerplexityAI,
+    /// xAI Grok
+    XAI,
+    /// Replicate
+    Replicate,
+    /// Stability AI
+    StabilityAI,
+    /// AI21 Labs
+    AI21Labs,
+    
+    // Chinese Providers
+    /// Alibaba Cloud - Qwen/Tongyi Qianwen (通义千问)
+    AlibabaQwen,
+    /// Baidu - ERNIE Bot/Wenxin Yiyan (文心一言)
+    BaiduErnie,
+    /// Tencent - Hunyuan (混元)
+    TencentHunyuan,
+    /// ByteDance - Doubao/Coze (豆包)
+    ByteDanceDoubao,
+    /// Zhipu AI - ChatGLM/GLM-4 (智谱)
+    ZhipuGLM,
+    /// Moonshot AI - Kimi (月之暗面)
+    MoonshotKimi,
+    /// DeepSeek
+    DeepSeek,
+    /// MiniMax - Abab
+    MiniMax,
+    /// SenseTime - SenseChat/SenseNova (商汤)
+    SenseTime,
+    /// iFlytek - Spark/Xinghuo (科大讯飞/星火)
+    IFlytekSpark,
+    /// 01.AI - Yi (零一万物)
+    ZeroOneAI,
+    /// Baichuan (百川)
+    Baichuan,
+    
+    // Other Global Providers
+    /// Reka AI (Singapore)
+    RekaAI,
+    
     /// Other/Unknown provider
     Other(String),
 }
@@ -71,6 +113,7 @@ impl AiProvider {
     /// Get provider name as string
     pub fn as_str(&self) -> &str {
         match self {
+            // US/Western
             Self::OpenAI => "openai",
             Self::Anthropic => "anthropic",
             Self::GoogleGemini => "google_gemini",
@@ -80,6 +123,26 @@ impl AiProvider {
             Self::MetaLlama => "meta_llama",
             Self::HuggingFace => "huggingface",
             Self::AwsBedrock => "aws_bedrock",
+            Self::PerplexityAI => "perplexity",
+            Self::XAI => "xai",
+            Self::Replicate => "replicate",
+            Self::StabilityAI => "stability_ai",
+            Self::AI21Labs => "ai21",
+            // Chinese
+            Self::AlibabaQwen => "alibaba_qwen",
+            Self::BaiduErnie => "baidu_ernie",
+            Self::TencentHunyuan => "tencent_hunyuan",
+            Self::ByteDanceDoubao => "bytedance_doubao",
+            Self::ZhipuGLM => "zhipu_glm",
+            Self::MoonshotKimi => "moonshot_kimi",
+            Self::DeepSeek => "deepseek",
+            Self::MiniMax => "minimax",
+            Self::SenseTime => "sensetime",
+            Self::IFlytekSpark => "iflytek_spark",
+            Self::ZeroOneAI => "01ai",
+            Self::Baichuan => "baichuan",
+            // Other Global
+            Self::RekaAI => "reka",
             Self::Other(name) => name,
         }
     }

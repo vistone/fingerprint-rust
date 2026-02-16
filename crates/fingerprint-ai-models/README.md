@@ -34,6 +34,7 @@ Based on the latest research and patterns from 2025-2026, this library can ident
 
 ## Supported Providers
 
+### US/Western Providers
 - **OpenAI**: GPT-3.5, GPT-4, GPT-4 Turbo, and other OpenAI models
 - **Anthropic**: Claude 2, Claude 3 (Haiku, Sonnet, Opus)
 - **Google**: Gemini Pro, Gemini Ultra, Gemini 1.5
@@ -43,6 +44,28 @@ Based on the latest research and patterns from 2025-2026, this library can ident
 - **Meta Llama**: Via various hosting providers
 - **Hugging Face**: Inference API
 - **AWS Bedrock**: Claude, Titan, J2 models
+- **Perplexity AI**: PPLX models, Sonar
+- **xAI**: Grok-1, Grok-2
+- **Replicate**: Various open-source models
+- **Stability AI**: Stable Diffusion, SDXL, SD3
+- **AI21 Labs**: Jurassic-2, Jamba
+
+### Chinese Providers (中国AI模型)
+- **Alibaba Cloud**: Qwen/Tongyi Qianwen (通义千问)
+- **Baidu**: ERNIE Bot/Wenxin Yiyan (文心一言)
+- **Tencent**: Hunyuan (混元)
+- **ByteDance**: Doubao/Coze (豆包)
+- **Zhipu AI**: ChatGLM/GLM-4 (智谱)
+- **Moonshot AI**: Kimi (月之暗面)
+- **DeepSeek**: DeepSeek Chat, DeepSeek Coder
+- **MiniMax**: Abab models
+- **SenseTime**: SenseChat/SenseNova (商汤)
+- **iFlytek**: Spark/Xinghuo (科大讯飞/星火)
+- **01.AI**: Yi models (零一万物)
+- **Baichuan**: Baichuan-2 (百川)
+
+### Other Global Providers
+- **Reka AI**: Reka Core, Flash, Edge (Singapore)
 
 ## Usage
 
@@ -64,6 +87,32 @@ if let Some(fp) = detect_ai_provider(&headers, "/v1/chat/completions", None) {
 if let Some((sdk, version)) = detect_sdk("openai-python/1.12.0 Python/3.11") {
     println!("SDK: {} v{}", sdk, version.unwrap_or("unknown".to_string()));
 }
+
+// Detect Chinese providers
+// Example: Alibaba Qwen
+let qwen_headers = vec![
+    ("Authorization".to_string(), "Bearer sk-xxx".to_string()),
+    ("X-DashScope-API-Key".to_string(), "sk-xxx".to_string()),
+];
+if let Some(fp) = detect_ai_provider(&qwen_headers, "/v1/services/aigc/text-generation/generation", Some("qwen-plus")) {
+    println!("Provider: {}", fp.provider.as_str()); // alibaba_qwen
+}
+
+// Example: Baidu ERNIE
+let ernie_headers = vec![
+    ("Authorization".to_string(), "Bearer xxx".to_string()),
+];
+if let Some(fp) = detect_ai_provider(&ernie_headers, "/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/ernie-bot", Some("ernie-3.5")) {
+    println!("Provider: {}", fp.provider.as_str()); // baidu_ernie
+}
+
+// Example: Moonshot Kimi
+let kimi_headers = vec![
+    ("Authorization".to_string(), "Bearer sk-xxx".to_string()),
+];
+if let Some(fp) = detect_ai_provider(&kimi_headers, "/v1/chat/completions", Some("moonshot-v1-8k")) {
+    println!("Provider: {}", fp.provider.as_str()); // moonshot_kimi
+}
 ```
 
 ## Detection Methods
@@ -78,10 +127,14 @@ Identifies providers through:
 ### 2. Endpoint Pattern Matching
 
 Recognizes API endpoints:
-- OpenAI: `/v1/chat/completions`, `/v1/completions`
-- Anthropic: `/v1/messages`
-- Google: `/v1/projects/.../models/...`
-- Azure: `/openai/deployments/...`
+- **OpenAI**: `/v1/chat/completions`, `/v1/completions`
+- **Anthropic**: `/v1/messages`
+- **Google**: `/v1/projects/.../models/...`
+- **Azure**: `/openai/deployments/...`
+- **Alibaba Qwen**: `/v1/services/aigc/text-generation/generation`
+- **Baidu ERNIE**: `/rpc/2.0/ai_custom/v1/wenxinworkshop/chat/...`
+- **Moonshot**: `/v1/chat/completions`
+- **DeepSeek**: `/v1/chat/completions`
 
 ### 3. Request Body Analysis
 
