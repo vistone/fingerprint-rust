@@ -1,11 +1,11 @@
-///! Real Image Analysis Example
-///!
-///! This example demonstrates how to analyze real image files to detect AI-generated content.
-///!
-///! Usage:
-///! ```bash
-///! cargo run --example analyze_real_image <image_path>
-///! ```
+//! Real Image Analysis Example
+//!
+//! This example demonstrates how to analyze real image files to detect AI-generated content.
+//!
+//! Usage:
+//! ```bash
+//! cargo run --example analyze_real_image <image_path>
+//! ```
 use fingerprint_ai_models::real_detection::RealImageAnalyzer;
 use std::env;
 

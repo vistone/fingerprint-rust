@@ -593,7 +593,7 @@ mod tests {
         let consistency = RealVideoAnalyzer::analyze_temporal_consistency(&frames);
         // With significant frame variation, consistency should be detected
         assert!(
-            consistency >= 0.0 && consistency <= 1.0,
+            (0.0..=1.0).contains(&consistency),
             "Varied frames should have calculable consistency: {}",
             consistency
         );
@@ -606,14 +606,14 @@ mod tests {
             .collect();
 
         let motion = RealVideoAnalyzer::analyze_motion_patterns(&frames);
-        assert!(motion >= 0.0 && motion <= 1.0);
+        assert!((0.0..=1.0).contains(&motion));
     }
 
     #[test]
     fn test_boundary_artifacts() {
         let frames = vec![create_gradient_frame(100, 100)];
         let artifacts = RealVideoAnalyzer::analyze_boundary_artifacts(&frames);
-        assert!(artifacts >= 0.0 && artifacts <= 1.0);
+        assert!((0.0..=1.0).contains(&artifacts));
     }
 
     #[test]
@@ -623,7 +623,7 @@ mod tests {
             .collect();
 
         let lighting = RealVideoAnalyzer::analyze_lighting_consistency(&frames);
-        assert!(lighting >= 0.0 && lighting <= 1.0);
+        assert!((0.0..=1.0).contains(&lighting));
     }
 
     #[test]

@@ -1,7 +1,7 @@
-///! Real AI-Generated Content Detection
-///!
-///! This module provides practical, working implementations for detecting AI-generated
-///! content from actual files (images, text, audio, video).
+//! Real AI-Generated Content Detection
+//!
+//! This module provides practical, working implementations for detecting AI-generated
+//! content from actual files (images, text, audio, video).
 use image::{DynamicImage, GenericImageView, RgbImage};
 use std::collections::HashMap;
 use std::fs;
@@ -191,7 +191,7 @@ impl RealImageAnalyzer {
         // Real photos typically have variance_of_variance > 1000
         // AI images typically have variance_of_variance < 500
         let uniformity = 1.0 - (variance_of_variance / 1500.0).min(1.0);
-        uniformity.max(0.0).min(1.0)
+        uniformity.clamp(0.0, 1.0)
     }
 
     /// Analyze frequency domain for GAN artifacts
@@ -247,7 +247,7 @@ impl RealImageAnalyzer {
         // AI images often have specific frequency patterns
         // Normalize and check for checkerboard artifacts
         let artifact_score = (avg_energy / 3000.0).min(1.0);
-        artifact_score.max(0.0).min(1.0)
+        artifact_score.clamp(0.0, 1.0)
     }
 
     /// Analyze color histogram uniformity
@@ -256,9 +256,9 @@ impl RealImageAnalyzer {
         let (width, height) = img.dimensions();
 
         // Build histogram (simplified to 16 bins per channel)
-        let mut hist_r = vec![0u32; 16];
-        let mut hist_g = vec![0u32; 16];
-        let mut hist_b = vec![0u32; 16];
+        let mut hist_r = [0u32; 16];
+        let mut hist_g = [0u32; 16];
+        let mut hist_b = [0u32; 16];
 
         for y in 0..height {
             for x in 0..width {
@@ -292,7 +292,7 @@ impl RealImageAnalyzer {
         // Normalize entropy (max is log2(16) = 4 per channel, *3 = 12 total)
         // Lower entropy = more uniform = more AI-like
         let uniformity = 1.0 - (entropy / 12.0).min(1.0);
-        uniformity.max(0.0).min(1.0)
+        uniformity.clamp(0.0, 1.0)
     }
 
     /// Analyze texture uniformity
@@ -352,7 +352,7 @@ impl RealImageAnalyzer {
         // Lower coefficient of variation = more uniform = more AI-like
         // Real photos typically have CV > 0.5, AI images < 0.3
         let uniformity = 1.0 - (cv / 0.6).min(1.0);
-        uniformity.max(0.0).min(1.0)
+        uniformity.clamp(0.0, 1.0)
     }
 
     /// Analyze metadata for AI indicators
@@ -360,8 +360,8 @@ impl RealImageAnalyzer {
         let mut ai_score: f64 = 0.0;
 
         // Check for PNG text chunks indicating AI generation
-        if format == "PNG" {
-            if file_data.windows(4).any(|w| w == b"tEXt" || w == b"iTXt") {
+        if format == "PNG"
+            && file_data.windows(4).any(|w| w == b"tEXt" || w == b"iTXt") {
                 // Check for AI-related keywords
                 let data_str = String::from_utf8_lossy(file_data);
                 if data_str.contains("AI")
@@ -373,7 +373,6 @@ impl RealImageAnalyzer {
                     ai_score += 0.8;
                 }
             }
-        }
 
         // Check for typical AI image dimensions (often square or specific ratios)
         // This is handled at higher level, so just add base score here
@@ -402,7 +401,7 @@ impl RealImageAnalyzer {
             + texture_uniformity * 0.25
             + exif_indicators * 0.15;
 
-        confidence.max(0.0).min(1.0)
+        confidence.clamp(0.0, 1.0)
     }
 
     /// Attribute to specific AI models based on characteristics
@@ -525,7 +524,7 @@ mod tests {
         let uniformity = RealImageAnalyzer::analyze_noise_patterns(&img);
         // This is a basic test - just check it's in valid range
         assert!(
-            uniformity >= 0.0 && uniformity <= 1.0,
+            (0.0..=1.0).contains(&uniformity),
             "Uniformity should be in range [0,1]: {}",
             uniformity
         );
@@ -535,7 +534,7 @@ mod tests {
     fn test_frequency_analysis() {
         let img = RgbImage::new(64, 64);
         let artifacts = RealImageAnalyzer::analyze_frequency_domain(&img);
-        assert!(artifacts >= 0.0 && artifacts <= 1.0);
+        assert!((0.0..=1.0).contains(&artifacts));
     }
 
     #[test]
@@ -556,7 +555,7 @@ mod tests {
     fn test_texture_uniformity() {
         let img = RgbImage::new(100, 100);
         let uniformity = RealImageAnalyzer::analyze_texture_uniformity(&img);
-        assert!(uniformity >= 0.0 && uniformity <= 1.0);
+        assert!((0.0..=1.0).contains(&uniformity));
     }
 
     #[test]
@@ -584,7 +583,7 @@ mod tests {
         let noise = RealImageAnalyzer::analyze_noise_patterns(&img);
         // Check it's in valid range
         assert!(
-            noise >= 0.0 && noise <= 1.0,
+            (0.0..=1.0).contains(&noise),
             "Varied photo uniformity should be in range: {}",
             noise
         );
@@ -604,7 +603,7 @@ mod tests {
         let noise = RealImageAnalyzer::analyze_noise_patterns(&img);
         // Low variation should result in valid uniformity
         assert!(
-            noise >= 0.0 && noise <= 1.0,
+            (0.0..=1.0).contains(&noise),
             "Uniform pattern uniformity should be in range: {}",
             noise
         );

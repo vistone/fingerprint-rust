@@ -1,7 +1,7 @@
-///! Unified AI Content Detector CLI Tool
-///!
-///! Production-ready command-line tool for detecting AI-generated content
-///! across all modalities (text, image, audio, video).
+//! Unified AI Content Detector CLI Tool
+//!
+//! Production-ready command-line tool for detecting AI-generated content
+//! across all modalities (text, image, audio, video).
 use fingerprint_ai_models::advanced_detection::{
     DetectionExplanation, EnsembleDetectionResult, EnsembleDetector,
 };

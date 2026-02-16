@@ -3,7 +3,7 @@
 //! Demonstrates detection of Chinese and other global AI model providers,
 //! not just US-based providers.
 
-use fingerprint_ai_models::{detect_ai_provider, AiProvider};
+use fingerprint_ai_models::detect_ai_provider;
 
 fn main() {
     println!("=== Global AI Provider Detection Demo ===\n");

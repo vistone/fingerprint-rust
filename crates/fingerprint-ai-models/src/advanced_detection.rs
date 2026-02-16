@@ -1,7 +1,7 @@
-///! Advanced AI Content Detection
-///!
-///! This module provides advanced detection algorithms including statistical tests,
-///! ensemble methods, and explainability features.
+//! Advanced AI Content Detection
+//!
+//! This module provides advanced detection algorithms including statistical tests,
+//! ensemble methods, and explainability features.
 use std::collections::HashMap;
 
 /// Detection explanation - why content was flagged as AI
@@ -63,11 +63,11 @@ impl AdvancedStatistics {
         ];
 
         // Count leading digits
-        let mut counts = vec![0; 9];
+        let mut counts = [0; 9];
         for &value in values {
             if value > 0 {
                 let first_digit = Self::get_leading_digit(value);
-                if first_digit >= 1 && first_digit <= 9 {
+                if (1..=9).contains(&first_digit) {
                     counts[first_digit - 1] += 1;
                 }
             }
@@ -94,9 +94,9 @@ impl AdvancedStatistics {
         // Normalize chi-square to 0-1 score
         // Higher chi-square = more deviation from Benford's Law = more AI-like
         // Chi-square critical value at 0.05 significance for 8 df is ~15.5
-        let ai_score = (chi_square / 15.5).min(1.0);
+        
 
-        ai_score
+        (chi_square / 15.5).min(1.0)
     }
 
     /// Get leading (first non-zero) digit
@@ -179,9 +179,9 @@ impl AdvancedStatistics {
 
         // K-S statistic, higher = more different from natural
         // Typical critical value ~0.3 for moderate sample sizes
-        let ai_score = (max_distance / 0.3).min(1.0);
+        
 
-        ai_score
+        (max_distance / 0.3).min(1.0)
     }
 
     /// Approximate normal CDF using error function approximation

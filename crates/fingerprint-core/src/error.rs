@@ -6,7 +6,7 @@
 use std::fmt;
 
 /// Main error type for fingerprint operations
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone)]
 pub enum FingerprintError {
     /// TLS-related errors
     Tls(TlsError),
@@ -29,8 +29,8 @@ pub enum FingerprintError {
     /// Configuration errors
     Config(ConfigError),
 
-    /// Cache errors
-    Cache(CacheError),
+    /// Cache errors (uses cache::CacheError from cache module)
+    Cache(String),
 
     /// Database errors
     Database(DatabaseError),
@@ -314,41 +314,6 @@ impl fmt::Display for ConfigError {
     }
 }
 
-/// Cache errors
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub enum CacheError {
-    /// Cache miss
-    Miss,
-
-    /// Cache full
-    Full,
-
-    /// Serialization failed
-    SerializationFailed(String),
-
-    /// Deserialization failed
-    DeserializationFailed(String),
-
-    /// Redis error
-    RedisError(String),
-
-    /// TTL expired
-    Expired,
-}
-
-impl fmt::Display for CacheError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::Miss => write!(f, "Cache miss"),
-            Self::Full => write!(f, "Cache is full"),
-            Self::SerializationFailed(msg) => write!(f, "Serialization failed: {}", msg),
-            Self::DeserializationFailed(msg) => write!(f, "Deserialization failed: {}", msg),
-            Self::RedisError(msg) => write!(f, "Redis error: {}", msg),
-            Self::Expired => write!(f, "Cache entry expired"),
-        }
-    }
-}
-
 /// Database errors
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DatabaseError {
@@ -482,8 +447,8 @@ impl FingerprintError {
     }
 
     /// Create a cache error
-    pub fn cache(error: CacheError) -> Self {
-        Self::Cache(error)
+    pub fn cache(msg: String) -> Self {
+        Self::Cache(msg)
     }
 
     /// Create a database error

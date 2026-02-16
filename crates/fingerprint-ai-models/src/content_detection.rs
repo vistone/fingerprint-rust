@@ -450,7 +450,7 @@ mod tests {
         let metadata = analyze_metadata(text);
         let perplexity = calculate_perplexity(text, &metadata);
 
-        assert!(perplexity >= 0.0 && perplexity <= 1.0);
+        assert!((0.0..=1.0).contains(&perplexity));
     }
 
     #[test]

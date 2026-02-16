@@ -133,7 +133,7 @@ impl ModelFingerprintDatabase {
             .iter()
             .filter(|(_, fp)| fp.model_type == content_type)
             .map(|(name, fp)| {
-                let similarity = calculate_cosine_similarity(&signature, &fp.statistical_signature);
+                let similarity = calculate_cosine_similarity(signature, &fp.statistical_signature);
                 (name.clone(), similarity)
             })
             .collect();
@@ -147,7 +147,7 @@ impl ModelFingerprintDatabase {
     /// Save database to JSON file
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
         let json = serde_json::to_string_pretty(self)
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            .map_err(io::Error::other)?;
         fs::write(path, json)
     }
 
@@ -200,7 +200,7 @@ impl FingerprintLearner {
 
         self.samples
             .entry(model_name.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(sample);
     }
 
@@ -218,7 +218,7 @@ impl FingerprintLearner {
 
         self.samples
             .entry(model_name.to_string())
-            .or_insert_with(Vec::new)
+            .or_default()
             .push(sample);
     }
 
@@ -429,23 +429,19 @@ pub fn calculate_cosine_similarity(
     sig1: &StatisticalSignature,
     sig2: &StatisticalSignature,
 ) -> f32 {
-    let v1 = vec![
-        sig1.perplexity_mean,
+    let v1 = [sig1.perplexity_mean,
         sig1.burstiness_mean,
         sig1.vocabulary_richness_mean,
         sig1.noise_pattern_mean,
         sig1.texture_regularity_mean,
-        sig1.color_distribution_mean,
-    ];
+        sig1.color_distribution_mean];
 
-    let v2 = vec![
-        sig2.perplexity_mean,
+    let v2 = [sig2.perplexity_mean,
         sig2.burstiness_mean,
         sig2.vocabulary_richness_mean,
         sig2.noise_pattern_mean,
         sig2.texture_regularity_mean,
-        sig2.color_distribution_mean,
-    ];
+        sig2.color_distribution_mean];
 
     let dot_product: f32 = v1.iter().zip(v2.iter()).map(|(a, b)| a * b).sum();
     let norm1: f32 = v1.iter().map(|x| x * x).sum::<f32>().sqrt();
@@ -463,17 +459,13 @@ pub fn calculate_kl_divergence(sig1: &StatisticalSignature, sig2: &StatisticalSi
     // Simplified KL-divergence calculation
     let epsilon = 1e-6;
 
-    let features1 = vec![
-        sig1.perplexity_mean + epsilon,
+    let features1 = [sig1.perplexity_mean + epsilon,
         sig1.burstiness_mean + epsilon,
-        sig1.vocabulary_richness_mean + epsilon,
-    ];
+        sig1.vocabulary_richness_mean + epsilon];
 
-    let features2 = vec![
-        sig2.perplexity_mean + epsilon,
+    let features2 = [sig2.perplexity_mean + epsilon,
         sig2.burstiness_mean + epsilon,
-        sig2.vocabulary_richness_mean + epsilon,
-    ];
+        sig2.vocabulary_richness_mean + epsilon];
 
     // Normalize to probabilities
     let sum1: f32 = features1.iter().sum();
@@ -535,7 +527,7 @@ mod tests {
         let sig2 = create_test_signature();
 
         let similarity = calculate_cosine_similarity(&sig1, &sig2);
-        assert!(similarity >= 0.0 && similarity <= 1.0);
+        assert!((0.0..=1.0).contains(&similarity));
 
         let divergence = calculate_kl_divergence(&sig1, &sig2);
         assert!(divergence >= 0.0);

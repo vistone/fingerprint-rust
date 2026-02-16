@@ -309,10 +309,8 @@ impl WasmCapabilities {
                             browser, version
                         ));
                     }
-                } else {
-                    if !self.available {
-                        return Err(format!("{} v{} should have WASM support", browser, version));
-                    }
+                } else if !self.available {
+                    return Err(format!("{} v{} should have WASM support", browser, version));
                 }
             }
             _ => {}

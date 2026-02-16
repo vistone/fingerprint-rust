@@ -78,7 +78,7 @@ fn main() {
     println!();
 }
 
-fn analyze_and_display(text: &str, label: &str) {
+fn analyze_and_display(text: &str, _label: &str) {
     let result = detect_ai_content(text);
 
     println!("Text: \"{}...\"", &text[..text.len().min(60)]);
