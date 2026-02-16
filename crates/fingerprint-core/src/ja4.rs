@@ -296,7 +296,7 @@ impl JA4S {
         };
 
         // filter GREASE value
-        let filtered_extensions: Vec<u16> = extensions
+        let mut filtered_extensions: Vec<u16> = extensions
             .iter()
             .filter(|&&e| !crate::grease::is_grease_value(e))
             .cloned()
@@ -311,12 +311,11 @@ impl JA4S {
             None => "00",
         };
 
-        // Calculateextensionhash (SHA256)
+        // Calculate extension hash (SHA256)
         use sha2::{Digest, Sha256};
-        let mut sorted_extensions = filtered_extensions.clone();
-        sorted_extensions.sort_unstable();
+        filtered_extensions.sort_unstable();
 
-        let ext_string = sorted_extensions
+        let ext_string = filtered_extensions
             .iter()
             .map(|e| format!("{:04x}", e))
             .collect::<Vec<String>>()
