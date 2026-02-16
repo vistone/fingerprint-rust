@@ -34,6 +34,7 @@ pub mod audio_detection;
 pub mod content_detection;
 pub mod headers;
 pub mod image_detection;
+pub mod model_fingerprints;
 pub mod patterns;
 pub mod providers;
 pub mod real_detection;
