@@ -79,10 +79,6 @@ jobs:
         run: |
           echo "::group::Checking formatting..."
           cargo fmt --all -- --check
-          if [ $? -ne 0 ]; then
-            echo "::error::Code is not properly formatted. Run 'cargo fmt --all' locally."
-            exit 1
-          fi
           echo "::endgroup::"
       
       - name: Generate format summary
@@ -118,10 +114,6 @@ jobs:
         run: |
           echo "::group::Running clippy..."
           cargo clippy --workspace --all-targets --all-features -- -D warnings
-          if [ $? -ne 0 ]; then
-            echo "::error::Clippy found issues. Fix all warnings before merge."
-            exit 1
-          fi
           echo "::endgroup::"
       
       - name: Generate clippy summary
@@ -159,10 +151,6 @@ jobs:
         run: |
           echo "::group::Building workspace on ${{ matrix.os }}..."
           cargo build --workspace --all-features
-          if [ $? -ne 0 ]; then
-            echo "::error::Build failed on ${{ matrix.os }}"
-            exit 1
-          fi
           echo "::endgroup::"
       
       - name: Generate build summary
