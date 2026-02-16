@@ -120,10 +120,7 @@ impl DNSResolver {
 
         // 从服务器池获取 DNS 服务器列表
         let servers = self.server_pool.servers();
-        eprintln!(
-            "[DNS Resolver] 开始解析域名: {} (IPv6: {})",
-            domain, ipv6
-        );
+        eprintln!("[DNS Resolver] 开始解析域名: {} (IPv6: {})", domain, ipv6);
         eprintln!("[DNS Resolver] 服务器池总数: {}", servers.len());
 
         // 使用所有服务器并发查询（不限制数量）

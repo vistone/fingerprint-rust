@@ -168,7 +168,7 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 ///
 /// **Note**: This function is kept for backward compatibility and testing purposes only.
 /// In production, use the validator with database/configuration service integration.
-/// 
+///
 /// # Implementation Note
 /// For production use, replace this with actual database queries or configuration service calls.
 /// Current implementation is a simple prefix-based matcher for testing.

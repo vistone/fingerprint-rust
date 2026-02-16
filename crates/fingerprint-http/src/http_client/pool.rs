@@ -73,11 +73,11 @@ pub struct PoolManagerConfig {
 }
 
 // 连接池配置默认值常量
-const DEFAULT_MAX_CONNECTIONS: usize = 100;  // 最大连接数
-const DEFAULT_MIN_IDLE: usize = 10;  // 最小空闲连接数
-const DEFAULT_CONNECT_TIMEOUT_SECS: u64 = 30;  // 连接超时（秒）
-const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 90;  // 空闲超时（秒）
-const DEFAULT_MAX_LIFETIME_SECS: u64 = 600;  // 最大生命周期（秒）
+const DEFAULT_MAX_CONNECTIONS: usize = 100; // 最大连接数
+const DEFAULT_MIN_IDLE: usize = 10; // 最小空闲连接数
+const DEFAULT_CONNECT_TIMEOUT_SECS: u64 = 30; // 连接超时（秒）
+const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 90; // 空闲超时（秒）
+const DEFAULT_MAX_LIFETIME_SECS: u64 = 600; // 最大生命周期（秒）
 
 impl Default for PoolManagerConfig {
     fn default() -> Self {

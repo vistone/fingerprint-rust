@@ -20,13 +20,13 @@ impl ThreatHunter {
     /// Create new threat hunter
     pub fn new() -> Self {
         let mut known_bad_patterns = HashSet::new();
-        
+
         // Initialize with common malicious patterns
         known_bad_patterns.insert("scraper".to_string());
         known_bad_patterns.insert("bot".to_string());
         known_bad_patterns.insert("crawler".to_string());
         known_bad_patterns.insert("spider".to_string());
-        
+
         ThreatHunter {
             known_bad_patterns,
             honeypot_tokens: Vec::new(),

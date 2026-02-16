@@ -214,13 +214,11 @@ pub async fn send_http2_request_with_pool(
     } else {
         ::bytes::Bytes::new()
     };
-    
+
     // 发送 body 数据，end_of_stream = true 表示这是最后的数据
     send_stream
         .send_data(body_bytes, true)
-        .map_err(|e| {
-            HttpClientError::Http2Error(format!("Failed to send request body: {}", e))
-        })?;
+        .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
 
     // waitresponseheader
     let response = response
@@ -371,46 +369,48 @@ mod tests {
         if let Ok(debug_log_path) = std::env::var("FINGERPRINT_DEBUG_LOG") {
             println!("\n📋 debug log analysis:");
             if let Ok(log_content) = std::fs::read_to_string(&debug_log_path) {
-            let mut create_count = 0;
-            let mut reuse_count = 0;
-            for line in log_content.lines() {
-                // simplestringmatchfromParse JSON log
-                if line.contains("\"message\"") {
-                    let location = if let Some(start) = line.find("\"location\":\"") {
-                        let end = line[start + 12..].find('"').unwrap_or(0);
-                        &line[start + 12..start + 12 + end]
-                    } else {
-                        ""
-                    };
-                    let message = if let Some(start) = line.find("\"message\":\"") {
-                        let end = line[start + 11..].find('"').unwrap_or(0);
-                        &line[start + 11..start + 11 + end]
-                    } else {
-                        ""
-                    };
-                    println!(" {}: {}", location, message);
+                let mut create_count = 0;
+                let mut reuse_count = 0;
+                for line in log_content.lines() {
+                    // simplestringmatchfromParse JSON log
+                    if line.contains("\"message\"") {
+                        let location = if let Some(start) = line.find("\"location\":\"") {
+                            let end = line[start + 12..].find('"').unwrap_or(0);
+                            &line[start + 12..start + 12 + end]
+                        } else {
+                            ""
+                        };
+                        let message = if let Some(start) = line.find("\"message\":\"") {
+                            let end = line[start + 11..].find('"').unwrap_or(0);
+                            &line[start + 11..start + 11 + end]
+                        } else {
+                            ""
+                        };
+                        println!(" {}: {}", location, message);
 
-                    if message.contains("Create新session") || message.contains("Create 新 session") {
-                        create_count += 1;
-                    } else if message.contains("reuseexistingsession") {
-                        reuse_count += 1;
+                        if message.contains("Create新session")
+                            || message.contains("Create 新 session")
+                        {
+                            create_count += 1;
+                        } else if message.contains("reuseexistingsession") {
+                            reuse_count += 1;
+                        }
                     }
                 }
-            }
-            println!("\n📊 session pool statistics:");
-            println!(" Create 新 session: {} 次", create_count);
-            println!(" reuse session: {} 次", reuse_count);
+                println!("\n📊 session pool statistics:");
+                println!(" Create 新 session: {} 次", create_count);
+                println!(" reuse session: {} 次", reuse_count);
 
-            if reuse_count > 0 {
-                println!(" ✅ session reuse success！HTTP/2 multiple reuse normal 工作");
-            } else if create_count > 1 {
-                println!(" ⚠️ session not reuse，each time request 都 Create 新 session");
+                if reuse_count > 0 {
+                    println!(" ✅ session reuse success！HTTP/2 multiple reuse normal 工作");
+                } else if create_count > 1 {
+                    println!(" ⚠️ session not reuse，each time request 都 Create 新 session");
+                } else {
+                    println!(" ℹ️ 只 send 了 a request，unable to Validate session reuse");
+                }
             } else {
-                println!(" ℹ️ 只 send 了 a request，unable to Validate session reuse");
+                println!(" ⚠️ unable to read log file");
             }
-        } else {
-            println!(" ⚠️ unable to read log file");
-        }
         }
     }
 }

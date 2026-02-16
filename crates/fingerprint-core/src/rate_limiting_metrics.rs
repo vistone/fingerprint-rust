@@ -72,43 +72,43 @@ impl PrometheusMetrics {
             "# HELP rate_limiter_cache_hits_total Total number of cache hits"
         );
         let _ = writeln!(output, "# TYPE rate_limiter_cache_hits_total counter");
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_cache_hits_total {}",
             self.cache_hits
         );
 
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# HELP rate_limiter_cache_misses_total Total number of cache misses"
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# TYPE rate_limiter_cache_misses_total counter"
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_cache_misses_total {}",
             self.cache_misses
         );
 
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# HELP rate_limiter_active_users_gauge Current number of active users"
         );
         let _ = writeln!(output, "# TYPE rate_limiter_active_users_gauge gauge");
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_active_users_gauge {}",
             self.active_users
         );
 
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# HELP rate_limiter_active_ips_gauge Current number of active IP addresses"
         );
         let _ = writeln!(output, "# TYPE rate_limiter_active_ips_gauge gauge");
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_active_ips_gauge {}",
             self.active_ips
@@ -127,29 +127,29 @@ impl PrometheusMetrics {
             (self.cache_hits as f64 / (self.cache_hits + self.cache_misses) as f64) * 100.0
         };
 
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# HELP rate_limiter_rejection_rate_percent Percentage of requests rejected"
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# TYPE rate_limiter_rejection_rate_percent gauge"
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_rejection_rate_percent {:.2}",
             rejection_rate
         );
 
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# HELP rate_limiter_cache_hit_ratio_percent Percentage of cache hits"
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "# TYPE rate_limiter_cache_hit_ratio_percent gauge"
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_cache_hit_ratio_percent {:.2}",
             cache_hit_ratio
@@ -200,17 +200,17 @@ impl TierMetrics {
         let mut output = String::new();
         let tier_name = format!("{:?}", self.tier).to_lowercase();
 
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_tier_users{{tier=\"{}\"}} {}",
             tier_name, self.user_count
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_tier_requests_total{{tier=\"{}\"}} {}",
             tier_name, self.total_requests
         );
-        writeln!(
+        let _ = writeln!(
             &mut output,
             "rate_limiter_tier_rejected_total{{tier=\"{}\"}} {}",
             tier_name, self.rejected_requests

@@ -61,9 +61,9 @@ async fn send_http2_request_async(
 
     // 1. 建立 TCP 连接
     // 注意：暂时不使用 TCP fingerprint，直接建立连接
-    let tcp = TcpStream::connect(socket_addrs).await.map_err(|e| {
-        HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-    })?;
+    let tcp = TcpStream::connect(socket_addrs)
+        .await
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e)))?;
 
     // 2. TLS 握手
     let tls_stream = perform_tls_handshake(tcp, host, config).await?;

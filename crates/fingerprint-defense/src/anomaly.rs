@@ -118,10 +118,7 @@ impl AnomalyDetector {
         ];
 
         for pattern in spoofing_patterns {
-            if data
-                .windows(pattern.len())
-                .any(|window| window == *pattern)
-            {
+            if data.windows(pattern.len()).any(|window| window == *pattern) {
                 return true;
             }
         }
