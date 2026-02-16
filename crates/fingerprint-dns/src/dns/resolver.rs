@@ -32,8 +32,8 @@ pub struct DNSResolver {
     timeout: Duration,
     /// DNS serverpool
     server_pool: Arc<ServerPool>,
-    /// Fix: cache resolver instance, avoidfrequentCreate and destroy
-    /// use Arc<Mutex<HashMap>> storeeach DNS server resolver
+    /// Fix: cache resolver instance, avoid frequent Create and destroy
+    /// use `Arc<Mutex<HashMap>>` to store each DNS server resolver
     resolver_cache: Arc<std::sync::Mutex<std::collections::HashMap<String, Arc<TokioResolver>>>>,
 }
 
