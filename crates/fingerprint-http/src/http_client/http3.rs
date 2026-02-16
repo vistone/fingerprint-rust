@@ -1,22 +1,30 @@
-//! HTTP/3 implement
+//! HTTP/3 实现
 //!
-//! use quinn + h3 implementcomplete HTTP/3 support
-//! HTTP/3 based on QUIC protocol
+//! 使用 quinn + h3 实现完整的 HTTP/3 支持
+//! HTTP/3 基于 QUIC 协议
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 
 #[cfg(feature = "http3")]
 use quinn::{ClientConfig, Endpoint, TransportConfig};
 
-// Fix: useglobalsingleton Runtime avoidfrequentCreate
+// 修复：使用全局单例 Runtime 避免频繁创建
 #[cfg(feature = "http3")]
 use once_cell::sync::Lazy;
 
 #[cfg(feature = "http3")]
-static RUNTIME: Lazy<tokio::runtime::Runtime> =
-    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
+static RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
+    tokio::runtime::Runtime::new().unwrap_or_else(|err| {
+        // 记录错误并创建最小化运行时作为后备
+        eprintln!("警告：无法创建最优 Tokio 运行时：{}。使用基础运行时。", err);
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("无法创建基础 Tokio 运行时 - 系统资源耗尽")
+    })
+});
 
-/// send HTTP/3 request
+/// 发送 HTTP/3 请求
 #[cfg(feature = "http3")]
 pub fn send_http3_request(
     host: &str,

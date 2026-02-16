@@ -111,7 +111,7 @@ impl Benchmark {
             return;
         }
 
-        let total_times: Vec<f64> = self
+        let mut total_times: Vec<f64> = self
             .metrics
             .iter()
             .map(|m| m.total_duration.as_secs_f64() * 1000.0)
@@ -127,11 +127,10 @@ impl Benchmark {
         let std_dev = variance.sqrt();
 
         // Calculate percentiles
-        let mut sorted_times = total_times.clone();
-        sorted_times.sort_by(|a, b| a.total_cmp(b)); // Use total_cmp for f64 to handle NaN
-        let p50 = sorted_times[sorted_times.len() / 2];
-        let p95 = sorted_times[sorted_times.len() * 95 / 100];
-        let p99 = sorted_times[sorted_times.len() * 99 / 100];
+        total_times.sort_by(|a, b| a.total_cmp(b)); // Use total_cmp for f64 to handle NaN
+        let p50 = total_times[total_times.len() / 2];
+        let p95 = total_times[total_times.len() * 95 / 100];
+        let p99 = total_times[total_times.len() * 99 / 100];
 
         // Calculate total throughput
         let total_bytes: usize = self.metrics.iter().map(|m| m.response_size).sum();
@@ -263,7 +262,7 @@ impl CacheBenchmark {
             return;
         }
 
-        let times_micros: Vec<f64> = self
+        let mut times_micros: Vec<f64> = self
             .operation_times
             .iter()
             .map(|d| d.as_micros() as f64)
@@ -276,11 +275,10 @@ impl CacheBenchmark {
             .fold(f64::NEG_INFINITY, |a, &b| a.max(b));
 
         // Calculate percentiles
-        let mut sorted = times_micros.clone();
-        sorted.sort_by(|a, b| a.total_cmp(b));
-        let p50 = sorted[sorted.len() / 2];
-        let p95 = sorted[sorted.len() * 95 / 100];
-        let p99 = sorted[sorted.len() * 99 / 100];
+        times_micros.sort_by(|a, b| a.total_cmp(b));
+        let p50 = times_micros[times_micros.len() / 2];
+        let p95 = times_micros[times_micros.len() * 95 / 100];
+        let p99 = times_micros[times_micros.len() * 99 / 100];
 
         // Calculate throughput
         let total_time_secs: f64 = self.operation_times.iter().map(|d| d.as_secs_f64()).sum();

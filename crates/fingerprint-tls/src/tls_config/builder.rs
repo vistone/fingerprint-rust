@@ -255,11 +255,11 @@ impl ClientHelloSpecBuilder {
     ) {
         let (mut extensions, mut metadata) = Self::chrome_133_extensions();
 
-        // needlepair 136 fine-tune：ensure ALPN including h3 并put firstbit (Chrome 136 strongchangedpair h3 support)
+        // 针对 Chrome 136 的微调：确保 ALPN 包含 h3 并放在首位（Chrome 136 大幅改进了 h3 支持）
         let alpn_protocols = vec!["h3".to_string(), "h2".to_string(), "http/1.1".to_string()];
         metadata.set_alpn(alpn_protocols.clone());
 
-        // adjustextensionlist in ALPN
+        // 调整扩展列表中的 ALPN
         for ext in extensions.iter_mut() {
             if ext.extension_id() == fingerprint_core::dicttls::extensions::EXT_TYPE_APPLICATION_LAYER_PROTOCOL_NEGOTIATION {
  *ext = Box::new(ALPNExtension::new(alpn_protocols.clone()));

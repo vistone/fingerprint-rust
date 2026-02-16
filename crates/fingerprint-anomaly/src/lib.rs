@@ -1,10 +1,10 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-anomaly
+//! # Anomaly Detection Module
 //!
-// ! exceptiondetectmodule
+//! 异常检测模块
 //!
-// ! providefingerprintexceptiondetectand攻击recognitioncapabilities
+//! 提供指纹异常检测和攻击识别功能
 
 use std::collections::VecDeque;
 

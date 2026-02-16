@@ -1,19 +1,19 @@
-//! JA4 fingerprintGeneratemodule
+//! JA4 指纹生成模块
 //!
-//! implementcomplete JA4 TLS clientfingerprintGenerate
-//! reference：Huginn Net JA4 implement and official FoxIO specification
+//! 实现完整的 JA4 TLS 客户端指纹生成
+//! 参考：Huginn Net JA4 实现和官方 FoxIO 规范
 
 use crate::tls_config::grease::filter_grease_values;
 use crate::tls_config::version::TlsVersion;
 use sha2::{Digest, Sha256};
 use std::fmt;
 
-/// JA4 fingerprint (sort/notsort)
+/// JA4 指纹（排序/不排序）
 #[derive(Debug, Clone, PartialEq)]
 pub enum Ja4Fingerprint {
-    /// sortversion (ja4)
+    /// 排序版本（ja4）
     Sorted(String),
-    /// notsortversion (ja4_o, originalbeginningorder)
+    /// 不排序版本（ja4_o，保持原始顺序）
     Unsorted(String),
 }
 
@@ -200,11 +200,11 @@ impl Ja4Signature {
             .collect::<Vec<String>>()
             .join(",");
 
-        // JA4_c: extension (sort or originalbeginningorder, comma-separated, 4-bithexadecimal)+ "_" + signaturealgorithm
+        // JA4_c: 扩展（排序或保持原始顺序，逗号分隔，4位十六进制）+ "_" + 签名算法
         let mut extensions_for_c = filtered_extensions;
 
-        // for sortversion：remove SNI (0x0000) and ALPN (0x0010) 并sort
-        // for originalbeginningversion：preserve SNI/ALPN 并keeporiginalbeginningorder
+        // 对于排序版本：移除 SNI (0x0000) 和 ALPN (0x0010) 并排序
+        // 对于原始顺序版本：保留 SNI/ALPN 并保持原始顺序
         if !original_order {
             extensions_for_c.retain(|ext| *ext != 0x0000 && *ext != 0x0010);
             extensions_for_c.sort_unstable();

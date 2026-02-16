@@ -166,9 +166,12 @@ pub fn configure(cfg: &mut web::ServiceConfig) {
 
 /// Determine quota tier based on API key
 ///
-/// TODO: This should query a database or configuration service
-/// Note: This function is kept for backward compatibility and testing,
-/// but is no longer used in production code (validator is used instead)
+/// **Note**: This function is kept for backward compatibility and testing purposes only.
+/// In production, use the validator with database/configuration service integration.
+///
+/// # Implementation Note
+/// For production use, replace this with actual database queries or configuration service calls.
+/// Current implementation is a simple prefix-based matcher for testing.
 #[allow(dead_code)]
 fn determine_quota_tier(api_key: &str) -> QuotaTier {
     if api_key.starts_with("sk_test_") {

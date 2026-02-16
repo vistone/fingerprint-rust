@@ -1,22 +1,30 @@
-//! HTTP/2 implement
+//! HTTP/2 实现
 //!
-//! use h2 crate implementcomplete HTTP/2 support
-//! application fingerprint-rust HTTP/2 Settings
+//! 使用 h2 crate 实现完整的 HTTP/2 支持
+//! 应用 fingerprint-rust HTTP/2 设置
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 
 #[cfg(feature = "http2")]
 use h2::client;
 
-// Fix: useglobalsingleton Runtime avoidfrequentCreate
+// 修复：使用全局单例 Runtime 避免频繁创建
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
 #[cfg(feature = "http2")]
-static RUNTIME: Lazy<tokio::runtime::Runtime> =
-    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
+static RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
+    tokio::runtime::Runtime::new().unwrap_or_else(|err| {
+        // 记录错误并创建最小化运行时作为后备
+        eprintln!("警告：无法创建最优 Tokio 运行时：{}。使用基础运行时。", err);
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("无法创建基础 Tokio 运行时 - 系统资源耗尽")
+    })
+});
 
-/// send HTTP/2 request
+/// 发送 HTTP/2 请求
 #[cfg(feature = "http2")]
 pub fn send_http2_request(
     host: &str,
@@ -49,20 +57,15 @@ async fn send_http2_request_async(
         .to_socket_addrs()
         .map_err(|e| HttpClientError::InvalidUrl(format!("DNS Parsefailure: {}", e)))?
         .next()
-        .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
+        .ok_or_else(|| HttpClientError::InvalidUrl("unable to Parse address".to_string()))?;
 
-    let tcp = if let Some(_profile) = &config.profile {
-        // 暂时不use TCP fingerprint，直接建立connect
-        TcpStream::connect(socket_addrs).await.map_err(|e| {
-            HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-        })?
-    } else {
-        TcpStream::connect(socket_addrs).await.map_err(|e| {
-            HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-        })?
-    };
+    // 1. 建立 TCP 连接
+    // 注意：暂时不使用 TCP fingerprint，直接建立连接
+    let tcp = TcpStream::connect(socket_addrs)
+        .await
+        .map_err(|e| HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e)))?;
 
-    // 2. TLS handshake
+    // 2. TLS 握手
     let tls_stream = perform_tls_handshake(tcp, host, config).await?;
 
     // 3. HTTP/2 handshake (application Settings configuration)

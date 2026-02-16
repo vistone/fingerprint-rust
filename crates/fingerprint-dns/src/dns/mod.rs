@@ -1,17 +1,17 @@
-//! DNS preParselibrary
+//! DNS 预解析库
 //!
-// ! provide DNS Parse service, regularParsedomainlist, 并setbecome IPInfo.io Get IP geographicinfo.
+//! 提供 DNS 解析服务，定期解析域名列表，并通过 IPInfo.io 获取 IP 地理信息。
 //!
-//! ## Features
+//! ## 功能特性
 //!
-//! - ✅ **concurrent DNS Parse**：supporthighconcurrent DNS query
-//! - ✅ **multipleformatconfiguration**：support JSON, YAML, TOML threeconfigurationformat
-//! - ✅ **IP geographicinfo**：setbecome IPInfo.io Getdetailedgeographicbitplace and ISP info
-//! - ✅ **intelligentintervaladjust**：discovernew IP when highfrequencydetect, otherwisepointcountbackoff
-//! - ✅ **multipleformatoutput**：support JSON, YAML, TOML threeoutputformat
-//! - ✅ **originalchildpropertywrite**：usetemporaryfileensurecountdatasecurity
-// ! - ✅ **easy于setbecome**：providesimple Start/Stop interface, supportaslibraryuse
-// ! - ✅ **DNS cache**：memorycache functionality，减少重复parse，improveperformance
+//! - ✅ **并发 DNS 解析**：支持高并发 DNS 查询
+//! - ✅ **多种格式配置**：支持 JSON、YAML、TOML 三种配置格式
+//! - ✅ **IP 地理信息**：通过 IPInfo.io 获取详细的地理位置和 ISP 信息
+//! - ✅ **智能间隔调整**：发现新 IP 时高频检测，否则逐步退避
+//! - ✅ **多种格式输出**：支持 JSON、YAML、TOML 三种输出格式
+//! - ✅ **原子性写入**：使用临时文件确保数据安全
+//! - ✅ **易于集成**：提供简单的 Start/Stop 接口，支持作为库使用
+//! - ✅ **DNS 缓存**：内存缓存功能，减少重复解析，提高性能
 
 mod cache;
 mod collector;

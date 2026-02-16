@@ -72,14 +72,21 @@ pub struct PoolManagerConfig {
     pub profile: Option<std::sync::Arc<fingerprint_profiles::BrowserProfile>>,
 }
 
+// 连接池配置默认值常量
+const DEFAULT_MAX_CONNECTIONS: usize = 100; // 最大连接数
+const DEFAULT_MIN_IDLE: usize = 10; // 最小空闲连接数
+const DEFAULT_CONNECT_TIMEOUT_SECS: u64 = 30; // 连接超时（秒）
+const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 90; // 空闲超时（秒）
+const DEFAULT_MAX_LIFETIME_SECS: u64 = 600; // 最大生命周期（秒）
+
 impl Default for PoolManagerConfig {
     fn default() -> Self {
         Self {
-            max_connections: 100,
-            min_idle: 10,
-            connect_timeout: Duration::from_secs(30),
-            idle_timeout: Duration::from_secs(90),
-            max_lifetime: Duration::from_secs(600), // 10minutes
+            max_connections: DEFAULT_MAX_CONNECTIONS,
+            min_idle: DEFAULT_MIN_IDLE,
+            connect_timeout: Duration::from_secs(DEFAULT_CONNECT_TIMEOUT_SECS),
+            idle_timeout: Duration::from_secs(DEFAULT_IDLE_TIMEOUT_SECS),
+            max_lifetime: Duration::from_secs(DEFAULT_MAX_LIFETIME_SECS),
             enable_reuse: true,
             profile: None,
         }
@@ -191,8 +198,8 @@ impl ConnectionPoolManager {
 
                 let mut last_err: Option<std::io::Error> = None;
                 for addr in v4.into_iter().chain(v6.into_iter()) {
-                    // Note: 这里暂时usestandardconnect方式
-                    // TODO: 在后续version中完善TCP Profile在connect池中ofapply
+                    // Note: Currently using standard connect method
+                    // Future enhancement: Apply TCP profile configuration in connection pool
                     match TcpStream::connect_timeout(&addr, connect_timeout) {
                         Ok(s) => return Ok(ConnectionType::Tcp(s)),
                         Err(e) => last_err = Some(e),

@@ -1,10 +1,10 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-storage
+//! # Storage Fingerprint Module
 //!
-// ! storefeaturesrecognitionmodule
+//! 存储特征识别模块
 //!
-// ! provide LocalStorage/SessionStorage/IndexedDB fingerprintrecognitioncapabilities
+//! 提供 LocalStorage/SessionStorage/IndexedDB 指纹识别功能
 
 use std::collections::HashMap;
 

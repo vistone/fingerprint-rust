@@ -77,32 +77,46 @@ pub async fn send_http2_request_with_pool(
     let session_key = format!("{}:{}", host, port);
     let h2_session_pool = pool_manager.h2_session_pool();
 
-    // #region agent log
-    let log_msg = format!("http2_pool: requestsession key={}", session_key);
-    if let Ok(mut file) = std::fs::OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open("/home/stone/fingerprint-rust/.cursor/debug.log")
+    // 调试日志（仅在开发环境启用）
+    #[cfg(debug_assertions)]
     {
-        use std::io::Write;
-        let _ = writeln!(file, "{{\"timestamp\":{},\"location\":\"http2_pool.rs:66\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\",\"host\":\"{}\",\"port\":{}}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}", 
- std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
- log_msg, session_key, host, port);
+        if let Ok(debug_log_path) = std::env::var("FINGERPRINT_DEBUG_LOG") {
+            let log_msg = format!("http2_pool: request session key={}", session_key);
+            if let Ok(mut file) = std::fs::OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&debug_log_path)
+            {
+                use std::io::Write;
+                let _ = writeln!(
+                    file,
+                    "{{\"timestamp\":{},\"location\":\"http2_pool.rs:66\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\",\"host\":\"{}\",\"port\":{}}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}",
+                    std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
+                    log_msg, session_key, host, port
+                );
+            }
+        }
     }
-    // #endregion
 
     // from sessionpoolGet or Create SendRequest handle
     let send_request = h2_session_pool
 .get_or_create_session::<_, tokio_rustls::client::TlsStream<tokio::net::TcpStream>>(&session_key, async {
- // #region agent log
- let log_msg = format!("http2_pool: startCreate新session key={}", session_key);
- if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open("/home/stone/fingerprint-rust/.cursor/debug.log") {
- use std::io::Write;
- let _ = writeln!(file, "{{\"timestamp\":{},\"location\":\"http2_pool.rs:74\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\"}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}", 
- std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
- log_msg, session_key);
+ // 调试日志（仅在开发环境启用）
+ #[cfg(debug_assertions)]
+ {
+  if let Ok(debug_log_path) = std::env::var("FINGERPRINT_DEBUG_LOG") {
+  let log_msg = format!("http2_pool: start Create 新 session key={}", session_key);
+  if let Ok(mut file) = std::fs::OpenOptions::new().create(true).append(true).open(&debug_log_path) {
+  use std::io::Write;
+  let _ = writeln!(
+   file,
+   "{{\"timestamp\":{},\"location\":\"http2_pool.rs:74\",\"message\":\"{}\",\"data\":{{\"key\":\"{}\"}},\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\"}}",
+   std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap().as_millis(),
+   log_msg, session_key
+  );
+  }
+  }
  }
- // #endregion
  // establish HTTP/2 connection
  let mut builder = client::Builder::new();
 
@@ -181,41 +195,30 @@ pub async fn send_http2_request_with_pool(
         .body(())
         .map_err(|e| HttpClientError::InvalidRequest(format!("Buildrequestfailure: {}", e)))?;
 
-    // sendrequest (Get SendStream for send body)
-    // Fix: end_of_stream must as false, otherwisestreamwillimmediatelyclose, unable tosend body
-    let has_body = request.body.is_some() && !request.body.as_ref().unwrap().is_empty();
+    // 发送请求（获取 SendStream 用于发送 body）
+    // 注意：end_of_stream 必须为 false，否则流会立即关闭，无法发送 body
     let (response, mut send_stream) = client
-        .send_request(http2_request, false) // Fix: 改 as false，only in send完 body back才endstream
-        .map_err(|e| HttpClientError::Http2Error(format!("sendrequestfailure: {}", e)))?;
+        .send_request(http2_request, false) // 改为 false，只在发送完 body 后才结束流
+        .map_err(|e| HttpClientError::Http2Error(format!("send request failure: {}", e)))?;
 
-    // releaselock, allowotherrequestreusesameansession
+    // 释放锁，允许其他请求复用同一个 session
     drop(client);
 
-    // Fix: through SendStream sendrequest体 ( if exists)
-    if let Some(body) = &request.body {
+    // 通过 SendStream 发送请求体（如果存在）
+    let body_bytes = if let Some(body) = &request.body {
         if !body.is_empty() {
-            // send body countdata, end_of_stream = true representthis isfinallycountdata
-            send_stream
-                .send_data(::bytes::Bytes::from(body.clone()), true)
-                .map_err(|e| {
-                    HttpClientError::Http2Error(format!("Failed to send request body: {}", e))
-                })?;
+            ::bytes::Bytes::from(body.clone())
         } else {
-            // empty body, sendemptycountdata并endstream
-            send_stream
-                .send_data(::bytes::Bytes::new(), true)
-                .map_err(|e| {
-                    HttpClientError::Http2Error(format!("Failed to send request body: {}", e))
-                })?;
+            ::bytes::Bytes::new()
         }
-    } else if !has_body {
-        // no body, sendemptycountdata并endstream
-        send_stream
-            .send_data(::bytes::Bytes::new(), true)
-            .map_err(|e| {
-                HttpClientError::Http2Error(format!("Failed to send request body: {}", e))
-            })?;
-    }
+    } else {
+        ::bytes::Bytes::new()
+    };
+
+    // 发送 body 数据，end_of_stream = true 表示这是最后的数据
+    send_stream
+        .send_data(body_bytes, true)
+        .map_err(|e| HttpClientError::Http2Error(format!("Failed to send request body: {}", e)))?;
 
     // waitresponseheader
     let response = response
@@ -294,10 +297,13 @@ mod tests {
     use crate::http_client::request::HttpMethod;
 
     #[tokio::test]
-    #[ignore] // neednetworkconnection
+    #[ignore] // need network connection
     async fn test_http2_with_pool() {
-        // clearbeforelog
-        let _ = std::fs::remove_file("/home/stone/fingerprint-rust/.cursor/debug.log");
+        // 清理之前的日志（仅在设置了环境变量时）
+        #[cfg(debug_assertions)]
+        if let Ok(debug_log_path) = std::env::var("FINGERPRINT_DEBUG_LOG") {
+            let _ = std::fs::remove_file(&debug_log_path);
+        }
 
         let user_agent = "TestClient/1.0".to_string();
         let config = HttpClientConfig {
@@ -358,50 +364,53 @@ mod tests {
             println!(" ❌ secondrequestfailure: {:?}", result2);
         }
 
-        // readlog并analysis
-        println!("\n📋 debugloganalysis:");
-        if let Ok(log_content) =
-            std::fs::read_to_string("/home/stone/fingerprint-rust/.cursor/debug.log")
-        {
-            let mut create_count = 0;
-            let mut reuse_count = 0;
-            for line in log_content.lines() {
-                // simplestringmatchfromParse JSON log
-                if line.contains("\"message\"") {
-                    let location = if let Some(start) = line.find("\"location\":\"") {
-                        let end = line[start + 12..].find('"').unwrap_or(0);
-                        &line[start + 12..start + 12 + end]
-                    } else {
-                        ""
-                    };
-                    let message = if let Some(start) = line.find("\"message\":\"") {
-                        let end = line[start + 11..].find('"').unwrap_or(0);
-                        &line[start + 11..start + 11 + end]
-                    } else {
-                        ""
-                    };
-                    println!(" {}: {}", location, message);
+        // 读取日志并分析（仅在设置了环境变量时）
+        #[cfg(debug_assertions)]
+        if let Ok(debug_log_path) = std::env::var("FINGERPRINT_DEBUG_LOG") {
+            println!("\n📋 debug log analysis:");
+            if let Ok(log_content) = std::fs::read_to_string(&debug_log_path) {
+                let mut create_count = 0;
+                let mut reuse_count = 0;
+                for line in log_content.lines() {
+                    // simplestringmatchfromParse JSON log
+                    if line.contains("\"message\"") {
+                        let location = if let Some(start) = line.find("\"location\":\"") {
+                            let end = line[start + 12..].find('"').unwrap_or(0);
+                            &line[start + 12..start + 12 + end]
+                        } else {
+                            ""
+                        };
+                        let message = if let Some(start) = line.find("\"message\":\"") {
+                            let end = line[start + 11..].find('"').unwrap_or(0);
+                            &line[start + 11..start + 11 + end]
+                        } else {
+                            ""
+                        };
+                        println!(" {}: {}", location, message);
 
-                    if message.contains("Create新session") {
-                        create_count += 1;
-                    } else if message.contains("reuseexistingsession") {
-                        reuse_count += 1;
+                        if message.contains("Create新session")
+                            || message.contains("Create 新 session")
+                        {
+                            create_count += 1;
+                        } else if message.contains("reuseexistingsession") {
+                            reuse_count += 1;
+                        }
                     }
                 }
-            }
-            println!("\n📊 sessionpoolstatistics:");
-            println!(" Create新session: {} 次", create_count);
-            println!(" reusesession: {} 次", reuse_count);
+                println!("\n📊 session pool statistics:");
+                println!(" Create 新 session: {} 次", create_count);
+                println!(" reuse session: {} 次", reuse_count);
 
-            if reuse_count > 0 {
-                println!(" ✅ sessionreusesuccess！HTTP/2 multiplereusenormal工作");
-            } else if create_count > 1 {
-                println!(" ⚠️ sessionnotreuse，each timerequest都Create新session");
+                if reuse_count > 0 {
+                    println!(" ✅ session reuse success！HTTP/2 multiple reuse normal 工作");
+                } else if create_count > 1 {
+                    println!(" ⚠️ session not reuse，each time request 都 Create 新 session");
+                } else {
+                    println!(" ℹ️ 只 send 了 a request，unable to Validate session reuse");
+                }
             } else {
-                println!(" ℹ️ 只send了anrequest，unable toValidatesessionreuse");
+                println!(" ⚠️ unable to read log file");
             }
-        } else {
-            println!(" ⚠️ unable toreadlogfile");
         }
     }
 }

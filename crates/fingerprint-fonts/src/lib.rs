@@ -1,14 +1,14 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-fonts
+//! # Fonts Fingerprint Module
 //!
-// ! fontenumerationandfingerprintrecognitionmodule
+//! 字体枚举和指纹识别模块
 //!
-// ! providefontrecognitioncapabilities，including：
-// ! - systemfontlistenumeration
-// ! - fontloadtimeanalyze
-// ! - fontrenderingfeaturesrecognition
-// ! - subsetsupportdetect
+//! 提供字体识别功能，包括：
+//! - 系统字体列表枚举
+//! - 字体加载时间分析
+//! - 字体渲染特征识别
+//! - 子集支持检测
 
 use std::collections::HashSet;
 

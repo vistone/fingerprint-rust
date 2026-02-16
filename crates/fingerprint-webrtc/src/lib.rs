@@ -1,10 +1,10 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-webrtc
+//! # WebRTC Fingerprint Module
 //!
-// ! WebRTC leakprotectionmodule
+//! WebRTC 泄露防护模块
 //!
-// ! provide WebRTC IP leakprotectionandfingerprintrecognitioncapabilities
+//! 提供 WebRTC IP 泄露防护和指纹识别功能
 
 use std::collections::HashSet;
 use std::net::IpAddr;

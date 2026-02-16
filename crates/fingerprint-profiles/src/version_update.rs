@@ -90,9 +90,12 @@ impl VersionUpdateManager {
         format!(
             r#"/// {} v{} fingerprint configuration
 pub fn {fn_name}() -> BrowserProfile {{
-    // TODO: Implement {} v{} specific configuration
-    // Base on: {fallback_fn}() or copy from previous stable version
-    {fallback_fn}()  // Temporary fallback
+    // Implementation note: This is a generated stub function.
+    // To implement {} v{} specific configuration:
+    // 1. Copy configuration from {}() or previous stable version
+    // 2. Update HTTP/2 settings, TLS parameters, and headers as needed
+    // 3. Test with real {} v{} browser fingerprint
+    {}()  // Temporary fallback to nearest compatible version
 }}"#,
             match browser {
                 "chrome" => "Chrome",
@@ -112,6 +115,17 @@ pub fn {fn_name}() -> BrowserProfile {{
                 _ => browser,
             },
             version,
+            fallback_fn,
+            match browser {
+                "chrome" => "Chrome",
+                "firefox" => "Firefox",
+                "safari" => "Safari",
+                "edge" => "Edge",
+                "opera" => "Opera",
+                _ => browser,
+            },
+            version,
+            fallback_fn,
         )
     }
 
@@ -217,8 +231,11 @@ pub fn {fn_name}() -> BrowserProfile {{
         let psk_needed = vec!["chrome_130", "chrome_131"];
         let mut needs_psk = Vec::new();
         for v in &psk_needed {
-            if let Ok(version) = v.split('_').nth(1).unwrap().parse::<u32>() {
-                needs_psk.push(version);
+            // 安全地分割字符串并解析版本号
+            if let Some(version_str) = v.split('_').nth(1) {
+                if let Ok(version) = version_str.parse::<u32>() {
+                    needs_psk.push(version);
+                }
             }
         }
         if !needs_psk.is_empty() {

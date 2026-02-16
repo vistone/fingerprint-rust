@@ -1,10 +1,10 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-webgl
+//! # WebGL Fingerprint Module
 //!
-// ! WebGL fingerprintrecognitionmodule
+//! WebGL 指纹识别模块
 //!
-// ! provide GPU and WebGL fingerprintrecognitioncapabilities
+//! 提供 GPU 和 WebGL 指纹识别功能
 
 use std::collections::HashMap;
 

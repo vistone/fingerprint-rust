@@ -36,12 +36,12 @@ impl TLSHandshakeBuilder {
         Ok(record.to_bytes())
     }
 
-    // / Build并printdebuginfo
+    /// 构建并打印调试信息
     pub fn build_with_debug(spec: &ClientHelloSpec, server_name: &str) -> Result<Vec<u8>, String> {
-        // 1. Create ClientHello message
+        // 1. 创建 ClientHello 消息
         let client_hello = ClientHelloMessage::from_spec(spec, server_name)?;
         println!("\n╔══════════════════════════════════════════════════════════╗");
-        println!("║ Build TLS ClientHello (useselffingerprint) ║");
+        println!("║ 构建 TLS ClientHello (使用自定义指纹) ║");
         println!("╚══════════════════════════════════════════════════════════╝\n");
 
         println!("📋 ClientHelloSpec info:");

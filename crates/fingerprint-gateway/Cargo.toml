@@ -1,10 +1,10 @@
 [package]
 name = "fingerprint-gateway"
-version = "0.1.0"
+version.workspace = true
 edition = "2021"
 authors = ["fingerprint-rust team"]
 description = "High-performance API Gateway with rate limiting for fingerprint-rust"
-license = "MIT OR Apache-2.0"
+license.workspace = true
 repository = "https://github.com/vistone/fingerprint-rust"
 
 [dependencies]

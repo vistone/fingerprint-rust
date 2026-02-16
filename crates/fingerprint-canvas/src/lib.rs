@@ -1,14 +1,14 @@
 #![allow(clippy::all, dead_code, unused_variables, unused_parens)]
 
-//! # fingerprint-canvas
+//! # Canvas Fingerprint Module
 //!
-// ! Canvas fingerprintrecognitionand混淆module
+//! Canvas 指纹识别和混淆模块
 //!
-// ! provide完整of HTML5 Canvas fingerprintrecognitioncapabilities，including：
-// ! - Canvas 2D fingerprintrecognition
-// ! - Canvas 混淆andprotection
-// ! - 预generatefingerprintlibrary匹配
-// ! - 浏览器versionrecognition
+//! 提供完整的 HTML5 Canvas 指纹识别功能，包括：
+//! - Canvas 2D 指纹识别
+//! - Canvas 混淆和保护
+//! - 预生成指纹库匹配
+//! - 浏览器版本识别
 
 use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
