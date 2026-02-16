@@ -205,7 +205,8 @@ async fn test_service_config_validation() {
     );
 
     // Missing domain_list should fail
-    let invalid_config2 = DNSConfig::new("test_token", &[] as &[&str]); // Empty list
+    let empty_domains: &[&str] = &[];
+    let invalid_config2 = DNSConfig::new("test_token", empty_domains);
 
     let result2 = DNSService::new(invalid_config2);
     assert!(
