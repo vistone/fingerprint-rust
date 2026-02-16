@@ -52,6 +52,7 @@ pub mod jarm;
 pub mod metadata;
 pub mod packet_capture;
 pub mod pcap_generator;
+pub mod pqc; // Post-Quantum Cryptography detection
 pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
 pub mod rate_limiting_metrics; // Prometheus metrics for rate limiting
 pub mod rate_limiting_redis; // Redis integration for rate limiting
@@ -80,9 +81,12 @@ pub use grease::{
 };
 pub use hassh::{HASSHServer, SSHKexInit, HASSH, JA4SSH};
 pub use ja3::{JA3, JA3S};
-pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T};
+pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T, JA4X};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
+
+// Post-Quantum Cryptography
+pub use pqc::{PQCAlgorithm, PQCBrowserSupport, PQCCapabilities};
 
 // HTTP related
 pub use hpack::{
