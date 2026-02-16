@@ -169,9 +169,9 @@ jobs:
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
       
-      - name: Install cargo-deny (latest version with CVSS 4.0 support)
+      - name: Install cargo-deny (latest version)
         run: |
-          cargo install cargo-deny --locked --version "^0.14"
+          cargo install cargo-deny --locked
       
       - name: Run cargo-deny
         run: |
