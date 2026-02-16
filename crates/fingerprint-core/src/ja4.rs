@@ -157,7 +157,7 @@ impl std::fmt::Display for JA4 {
 }
 
 /// JA4H HTTP fingerprint
-/// format: [Method][Version][Cookie][Referer][HeaderCount][HeaderOrderHash][HeaderValueHash]
+/// format: \[Method\]\[Version\]\[Cookie\]\[Referer\]\[HeaderCount\]\[HeaderOrderHash\]\[HeaderValueHash\]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4H {
     pub method: String,
@@ -209,7 +209,7 @@ impl JA4H {
 }
 
 /// JA4T TCP fingerprint
-/// format: [WindowSize]_[TCP_Options]_[MSS]_[TTL]
+/// format: \[WindowSize\]_\[TCP_Options\]_\[MSS\]_\[TTL\]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct JA4T {
     pub window_size: u16,

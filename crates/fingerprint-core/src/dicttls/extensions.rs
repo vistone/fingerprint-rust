@@ -1,6 +1,6 @@
 //! TLS extensiontypeconstant
 //!
-//! fromsource：https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml
+//! fromsource：<https://www.iana.org/assignments/tls-extensiontype-values/tls-extensiontype-values.xhtml>
 //! finallyUpdate：March 2023
 
 /// TLS extensiontypeconstant
