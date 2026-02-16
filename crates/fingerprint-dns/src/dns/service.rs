@@ -1,6 +1,6 @@
-//! DNS Service module
+//! DNS 服务模块
 //!
-//! provide DNS Parse service Start/Stop interface
+//! 提供 DNS 解析服务的启动/停止接口
 
 use crate::dns::collector::ServerCollector;
 use crate::dns::config::load_config;
@@ -15,27 +15,27 @@ use std::time::Duration;
 use tokio::sync::{oneshot, RwLock};
 use tokio::time::sleep;
 
-/// DNS Service (Corresponds to Go version's Service)
+/// DNS 服务（对应 Go 版本的 Service）
 pub struct Service {
     config: Arc<DNSConfig>,
-    resolver: Arc<RwLock<DNSResolver>>, // use RwLock so that in start when Update
+    resolver: Arc<RwLock<DNSResolver>>, // 使用 RwLock 以便在启动时更新
     ipinfo_client: Arc<IPInfoClient>,
     running: Arc<RwLock<bool>>,
     stop_tx: Arc<RwLock<Option<oneshot::Sender<()>>>>,
 }
 
 impl Service {
-    /// Create a new Service instance
+    /// 创建新的 Service 实例
     pub fn new(config: DNSConfig) -> Result<Self, DNSError> {
         config.validate()?;
 
-        // Parse timeout duration
+        // 解析超时时长
         let dns_timeout = parse_duration(&config.dns_timeout).unwrap_or(Duration::from_secs(4));
 
-        // HTTP timeout duration
+        // HTTP 超时时长
         let http_timeout = parse_duration(&config.http_timeout).unwrap_or(Duration::from_secs(20));
 
-        // use default DNS server Create resolver (will in start when replace as collected server)
+        // 使用默认 DNS 服务器创建 resolver（将在启动时替换为收集的服务器）
         let resolver = Arc::new(RwLock::new(DNSResolver::new(dns_timeout)));
         let ipinfo_client = Arc::new(IPInfoClient::new(config.ipinfo_token.clone(), http_timeout));
 

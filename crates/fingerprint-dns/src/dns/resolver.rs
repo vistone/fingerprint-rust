@@ -199,21 +199,21 @@ impl DNSResolver {
  async move {
  let start_time = std::time::Instant::now();
 
- // usetimeoutwrapquery, avoidsingleserverblocking
+ // 使用超时包装查询，避免单个服务器阻塞
  let query_result = tokio::time::timeout(query_timeout, async {
-  // Fix: reuse resolver instance, avoid frequent creation and destruction
- // Use server_str as key to cache resolver
+  // 修复：重用 resolver 实例，避免频繁创建和销毁
+ // 使用 server_str 作为键来缓存 resolver
  let resolver = {
  let mut cache = resolver_cache.lock().unwrap_or_else(|poisoned| {
- eprintln!("Warning: resolver cache lock was poisoned, recovering...");
- // If lock is poisoned, recover the inner data and continue
+ eprintln!("警告：resolver 缓存锁被污染，正在恢复...");
+ // 如果锁被污染，恢复内部数据并继续
  poisoned.into_inner()
  });
 
  if let Some(cached) = cache.get(&server_str) {
  cached.clone()
  } else {
- // Create a new resolver and cache it
+ // 创建新的 resolver 并缓存
  let mut config = ResolverConfig::new();
  let mut name_server = NameServerConfig::new(socket_addr, Protocol::Udp);
  name_server.trust_negative_responses = false;

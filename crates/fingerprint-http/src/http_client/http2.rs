@@ -1,30 +1,30 @@
-//! HTTP/2 implement
+//! HTTP/2 实现
 //!
-//! use h2 crate implementcomplete HTTP/2 support
-//! application fingerprint-rust HTTP/2 Settings
+//! 使用 h2 crate 实现完整的 HTTP/2 支持
+//! 应用 fingerprint-rust HTTP/2 设置
 
 use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result};
 
 #[cfg(feature = "http2")]
 use h2::client;
 
-// Fix: use global singleton Runtime to avoid frequent creation
+// 修复：使用全局单例 Runtime 避免频繁创建
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
 #[cfg(feature = "http2")]
 static RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
     tokio::runtime::Runtime::new().unwrap_or_else(|err| {
-        // Log the error and create a minimal runtime as fallback
-        eprintln!("Warning: Failed to create optimal Tokio runtime: {}. Using basic runtime.", err);
+        // 记录错误并创建最小化运行时作为后备
+        eprintln!("警告：无法创建最优 Tokio 运行时：{}。使用基础运行时。", err);
         tokio::runtime::Builder::new_current_thread()
             .enable_all()
             .build()
-            .expect("Failed to create even basic Tokio runtime - system resources exhausted")
+            .expect("无法创建基础 Tokio 运行时 - 系统资源耗尽")
     })
 });
 
-/// send HTTP/2 request
+/// 发送 HTTP/2 请求
 #[cfg(feature = "http2")]
 pub fn send_http2_request(
     host: &str,
