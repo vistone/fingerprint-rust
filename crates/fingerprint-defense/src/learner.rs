@@ -195,11 +195,13 @@ impl SelfLearningAnalyzer {
             observation.stability_score
         );
 
-        // 将stablefingerprint存入datalibrary作topending reviewcandidatessignature
+        // Store stable fingerprint in database as a candidate signature pending review
+        // Use unwrap_or to handle potential overflow when converting u64 to u32
+        let observation_count_u32 = observation.observation_count.try_into().unwrap_or(u32::MAX);
         match self.db.store_candidate_fingerprint(
             &observation.fingerprint_type,
             &observation.fingerprint_id,
-            observation.observation_count.try_into().unwrap(),
+            observation_count_u32,
             observation.stability_score,
             Some(&format!(
                 "Auto-detected stable fingerprint with count {} and stability {:.2}",

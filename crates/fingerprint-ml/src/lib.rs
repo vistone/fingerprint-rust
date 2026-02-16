@@ -45,7 +45,7 @@ impl FingerprintMatcher {
                 let similarity = self.cosine_similarity(query, profile);
                 (id.clone(), similarity)
             })
-            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
+            .max_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal))
     }
 
     /// Calculate cosine similarity
