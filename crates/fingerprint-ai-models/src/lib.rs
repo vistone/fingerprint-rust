@@ -29,6 +29,7 @@
 //! assert!(result.is_some());
 //! ```
 
+pub mod advanced_detection;
 pub mod audio_detection;
 pub mod content_detection;
 pub mod headers;
