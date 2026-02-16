@@ -64,6 +64,7 @@ pub mod tls_parser;
 pub mod types;
 pub mod utils;
 pub mod version; // Performance benchmarking utilities
+pub mod wasm; // WebAssembly fingerprinting detection
 
 // Re-export public API
 
@@ -87,6 +88,9 @@ pub use version::TlsVersion;
 
 // Post-Quantum Cryptography
 pub use pqc::{PQCAlgorithm, PQCBrowserSupport, PQCCapabilities};
+
+// WebAssembly fingerprinting
+pub use wasm::{WasmBrowserSupport, WasmCapabilities, WasmMemoryFingerprint, WasmTableFingerprint, WasmVersion};
 
 // HTTP related
 pub use hpack::{
