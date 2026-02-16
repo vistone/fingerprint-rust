@@ -83,7 +83,7 @@ ring = "0.17.14"
 hickory-resolver = { version = "0.25", default-features = false, features = ["tokio"] }
 
 # Configuration file parsing
-toml = "0.8"
+toml = "1.0"
 serde_yaml = "0.9"
 
 # Stream processing
