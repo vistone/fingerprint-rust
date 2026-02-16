@@ -8,13 +8,21 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http2")]
 use h2::client;
 
-// Fix: useglobalsingleton Runtime avoidfrequentCreate
+// Fix: use global singleton Runtime to avoid frequent creation
 #[cfg(feature = "http2")]
 use once_cell::sync::Lazy;
 
 #[cfg(feature = "http2")]
-static RUNTIME: Lazy<tokio::runtime::Runtime> =
-    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
+static RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
+    tokio::runtime::Runtime::new().unwrap_or_else(|err| {
+        // Log the error and create a minimal runtime as fallback
+        eprintln!("Warning: Failed to create optimal Tokio runtime: {}. Using basic runtime.", err);
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Failed to create even basic Tokio runtime - system resources exhausted")
+    })
+});
 
 /// send HTTP/2 request
 #[cfg(feature = "http2")]

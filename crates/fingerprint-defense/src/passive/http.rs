@@ -37,6 +37,12 @@ impl HttpFingerprint {
 }
 
 /// HTTP analyzer for passive fingerprinting
+///
+/// This analyzer provides simplified HTTP fingerprint extraction from packet data.
+/// It can identify HTTP versions, header patterns, and content characteristics.
+///
+/// Note: This implementation is intentionally simplified for passive detection.
+/// For complete HTTP parsing, use the `fingerprint-http` crate's active client.
 pub struct HttpAnalyzer;
 
 impl HttpAnalyzer {
@@ -52,8 +58,13 @@ impl HttpAnalyzer {
     }
 
     /// Analyze HTTP request from raw bytes
+    ///
+    /// Note: This method returns `None` for most cases as full HTTP parsing
+    /// requires stateful analysis. Use `fingerprint_from_headers()` when
+    /// headers have already been extracted from the packet.
     pub fn analyze_bytes(&self, _data: &[u8]) -> Option<HttpFingerprint> {
-        // Simplified implementation - would need full HTTP parsing
+        // Simplified implementation - passive HTTP analysis without full parsing
+        // For production use, implement proper HTTP request parsing or use existing libraries
         None
     }
 

@@ -201,8 +201,12 @@ impl VersionDetector {
 }
 
 /// Helper function to get or create regex (with caching)
+///
+/// This function maintains static regex instances for performance.
+/// It only accepts known patterns from the browser detection code.
 fn static_regex(pattern: &str) -> &'static Regex {
-    // This is a simplified version - in production, use a proper regex cache
+    // This function is internal and only called with known patterns
+    // from the detect_* methods in this module
     match pattern {
         r"Chrome[/\s]+(\d+)" => {
             static CHROME: OnceLock<Regex> = OnceLock::new();
@@ -224,7 +228,14 @@ fn static_regex(pattern: &str) -> &'static Regex {
             static OPERA: OnceLock<Regex> = OnceLock::new();
             OPERA.get_or_init(|| Regex::new(r"(?:OPR|Opera)[/\s]+(\d+)").unwrap())
         }
-        _ => panic!("Unknown regex pattern"),
+        _ => {
+            // This should never happen as function is only called internally with known patterns
+            // If you see this panic, a new browser pattern was added but not registered here
+            panic!(
+                "Unknown regex pattern: '{}'. Add this pattern to static_regex() match arms.",
+                pattern
+            )
+        }
     }
 }
 

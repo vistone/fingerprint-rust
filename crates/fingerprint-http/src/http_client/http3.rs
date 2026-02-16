@@ -13,8 +13,16 @@ use quinn::{ClientConfig, Endpoint, TransportConfig};
 use once_cell::sync::Lazy;
 
 #[cfg(feature = "http3")]
-static RUNTIME: Lazy<tokio::runtime::Runtime> =
-    Lazy::new(|| tokio::runtime::Runtime::new().expect("Failed to create Tokio runtime"));
+static RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
+    tokio::runtime::Runtime::new().unwrap_or_else(|err| {
+        // Log the error and create a minimal runtime as fallback
+        eprintln!("Warning: Failed to create optimal Tokio runtime: {}. Using basic runtime.", err);
+        tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .expect("Failed to create even basic Tokio runtime - system resources exhausted")
+    })
+});
 
 /// send HTTP/3 request
 #[cfg(feature = "http3")]
