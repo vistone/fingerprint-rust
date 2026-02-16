@@ -1,4 +1,4 @@
-//! TCP fingerprintsync实际run演示
+//! TCP fingerprint sync actual run demonstration
 
 use fingerprint::*;
 

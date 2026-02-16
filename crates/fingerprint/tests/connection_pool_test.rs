@@ -1,6 +1,6 @@
-//! connect池 functionalitytesting
-//! Connection pool integration tests.
-//! validate netconnpool 集成andconnect复用
+//! Connection pool functionality testing
+//!
+//! Validates netconnpool integration and connection reuse
 
 #[cfg(feature = "connection-pool")]
 use fingerprint::{

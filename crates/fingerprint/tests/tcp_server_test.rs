@@ -1,8 +1,8 @@
-//! TCP Profile 实际applytesting
+//! TCP Profile actual application testing
 //!
-//! createservice端andclient，validate TCP Profile 是否真正apply到 TCP connect上
+//! Creates server and client to validate whether TCP Profile is truly applied to TCP connections
 //!
-//! run方式：
+//! Run method:
 //! ```bash
 //! cargo test --test tcp_server_test -- --nocapture
 //! ```

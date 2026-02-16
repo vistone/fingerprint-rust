@@ -1,13 +1,13 @@
-//! performancetesting套件
+//! Performance test suite
 //!
-//! testingallprotocolofperformance表现，including响应time、throughput等指标
+//! Tests performance metrics of all protocols, including response time and throughput
 //!
-//! run方式:
+//! Run methods:
 //! ```bash
-//! # runallperformancetesting
+//! # Run all performance tests
 //! cargo test --test performance_test --features rustls-tls,http2,http3 -- --ignored --nocapture
 //!
-//! # run特定protocoltesting
+//! # Run specific protocol test
 //! cargo test --test performance_test benchmark_http1 --features rustls-tls -- --ignored
 //! cargo test --test performance_test benchmark_http2 --features rustls-tls,http2 -- --ignored
 //! cargo test --test performance_test benchmark_http3 --features rustls-tls,http3 -- --ignored

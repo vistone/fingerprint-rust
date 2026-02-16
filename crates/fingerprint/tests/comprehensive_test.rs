@@ -1,20 +1,20 @@
-//! 全面testing套件
+//! Comprehensive test suite
 //!
-//! testing fingerprint-rust libraryofall核心 functionality：
-//! - TLS fingerprintgenerateandvalidate
-//! - HTTP client（H1/H2/H3）
-//! - 浏览器fingerprintconfigure
-//! - User-Agent and Headers generate
-//! - Cookie 管理
-//! - proxysupport
-//! - connect池
+//! Tests all core functionality of fingerprint-rust library:
+//! - TLS fingerprint generation and validation
+//! - HTTP client (H1/H2/H3)
+//! - Browser fingerprint configuration
+//! - User-Agent and Headers generation
+//! - Cookie management
+//! - Proxy support
+//! - Connection pool
 //!
-//! run方式：
+//! Run methods:
 //! ```bash
-//! # localtesting（不requirenetwork）
+//! # Local testing (no network required)
 //! cargo test --test comprehensive_test
 //!
-//! # networktesting（requirenetworkconnect）
+//! # Network testing (requires network connection)
 //! cargo test --test comprehensive_test -- --ignored --nocapture
 //! ```
 

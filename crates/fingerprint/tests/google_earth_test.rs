@@ -1,14 +1,14 @@
-//! Google Earth API 完整testing
+//! Google Earth API complete testing
 //!
-//! testingaddress: https://kh.google.com/rt/earth/PlanetoidMetadata
-//! testingall浏览器fingerprintandallprotocol（HTTP/1.1、HTTP/2、HTTP/3）
+//! Test address: https://kh.google.com/rt/earth/PlanetoidMetadata
+//! Tests all browser fingerprints and all protocols (HTTP/1.1, HTTP/2, HTTP/3)
 //!
-//! run方式:
+//! Run methods:
 //! ```bash
-//! # testingall浏览器fingerprintandprotocol
+//! # Test all browser fingerprints and protocols
 //! cargo test --test google_earth_test --features rustls-tls,http2,http3 -- --ignored --nocapture
 //!
-//! # testing特定protocol
+//! # Test specific protocol
 //! cargo test --test google_earth_test test_google_earth_http1 --features rustls-tls -- --ignored
 //! cargo test --test google_earth_test test_google_earth_http2 --features rustls-tls,http2 -- --ignored
 //! cargo test --test google_earth_test test_google_earth_http3 --features rustls-tls,http3 -- --ignored

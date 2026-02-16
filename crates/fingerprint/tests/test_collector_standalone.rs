@@ -1,4 +1,4 @@
-//! 独立testing DNS service器收集器（不依赖libraryofothermodule）
+//! Standalone DNS server collector testing (independent of other library modules)
 
 #[cfg(feature = "dns")]
 #[tokio::test]
