@@ -35,6 +35,9 @@ pub mod patterns;
 pub mod sdk;
 pub mod tls;
 pub mod content_detection;
+pub mod audio_detection;
+pub mod video_detection;
+pub mod image_detection;
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
