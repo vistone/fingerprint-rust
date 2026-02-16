@@ -360,19 +360,18 @@ impl RealImageAnalyzer {
         let mut ai_score: f64 = 0.0;
 
         // Check for PNG text chunks indicating AI generation
-        if format == "PNG"
-            && file_data.windows(4).any(|w| w == b"tEXt" || w == b"iTXt") {
-                // Check for AI-related keywords
-                let data_str = String::from_utf8_lossy(file_data);
-                if data_str.contains("AI")
-                    || data_str.contains("Generated")
-                    || data_str.contains("DALL")
-                    || data_str.contains("Stable Diffusion")
-                    || data_str.contains("Midjourney")
-                {
-                    ai_score += 0.8;
-                }
+        if format == "PNG" && file_data.windows(4).any(|w| w == b"tEXt" || w == b"iTXt") {
+            // Check for AI-related keywords
+            let data_str = String::from_utf8_lossy(file_data);
+            if data_str.contains("AI")
+                || data_str.contains("Generated")
+                || data_str.contains("DALL")
+                || data_str.contains("Stable Diffusion")
+                || data_str.contains("Midjourney")
+            {
+                ai_score += 0.8;
             }
+        }
 
         // Check for typical AI image dimensions (often square or specific ratios)
         // This is handled at higher level, so just add base score here

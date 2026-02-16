@@ -146,8 +146,7 @@ impl ModelFingerprintDatabase {
 
     /// Save database to JSON file
     pub fn save_to_file<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
-        let json = serde_json::to_string_pretty(self)
-            .map_err(io::Error::other)?;
+        let json = serde_json::to_string_pretty(self).map_err(io::Error::other)?;
         fs::write(path, json)
     }
 
@@ -429,19 +428,23 @@ pub fn calculate_cosine_similarity(
     sig1: &StatisticalSignature,
     sig2: &StatisticalSignature,
 ) -> f32 {
-    let v1 = [sig1.perplexity_mean,
+    let v1 = [
+        sig1.perplexity_mean,
         sig1.burstiness_mean,
         sig1.vocabulary_richness_mean,
         sig1.noise_pattern_mean,
         sig1.texture_regularity_mean,
-        sig1.color_distribution_mean];
+        sig1.color_distribution_mean,
+    ];
 
-    let v2 = [sig2.perplexity_mean,
+    let v2 = [
+        sig2.perplexity_mean,
         sig2.burstiness_mean,
         sig2.vocabulary_richness_mean,
         sig2.noise_pattern_mean,
         sig2.texture_regularity_mean,
-        sig2.color_distribution_mean];
+        sig2.color_distribution_mean,
+    ];
 
     let dot_product: f32 = v1.iter().zip(v2.iter()).map(|(a, b)| a * b).sum();
     let norm1: f32 = v1.iter().map(|x| x * x).sum::<f32>().sqrt();
@@ -459,13 +462,17 @@ pub fn calculate_kl_divergence(sig1: &StatisticalSignature, sig2: &StatisticalSi
     // Simplified KL-divergence calculation
     let epsilon = 1e-6;
 
-    let features1 = [sig1.perplexity_mean + epsilon,
+    let features1 = [
+        sig1.perplexity_mean + epsilon,
         sig1.burstiness_mean + epsilon,
-        sig1.vocabulary_richness_mean + epsilon];
+        sig1.vocabulary_richness_mean + epsilon,
+    ];
 
-    let features2 = [sig2.perplexity_mean + epsilon,
+    let features2 = [
+        sig2.perplexity_mean + epsilon,
         sig2.burstiness_mean + epsilon,
-        sig2.vocabulary_richness_mean + epsilon];
+        sig2.vocabulary_richness_mean + epsilon,
+    ];
 
     // Normalize to probabilities
     let sum1: f32 = features1.iter().sum();

@@ -71,8 +71,8 @@ pub mod wasm; // WebAssembly fingerprinting detection
 
 // Error types
 pub use error::{
-    ConfigError, DatabaseError, DnsError, FingerprintError, HttpError, ParseError,
-    RateLimitError, Result, TcpError, TlsError, ValidationError,
+    ConfigError, DatabaseError, DnsError, FingerprintError, HttpError, ParseError, RateLimitError,
+    Result, TcpError, TlsError, ValidationError,
 };
 
 // Cache error from cache module

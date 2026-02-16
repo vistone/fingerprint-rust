@@ -94,7 +94,6 @@ impl AdvancedStatistics {
         // Normalize chi-square to 0-1 score
         // Higher chi-square = more deviation from Benford's Law = more AI-like
         // Chi-square critical value at 0.05 significance for 8 df is ~15.5
-        
 
         (chi_square / 15.5).min(1.0)
     }
@@ -179,7 +178,6 @@ impl AdvancedStatistics {
 
         // K-S statistic, higher = more different from natural
         // Typical critical value ~0.3 for moderate sample sizes
-        
 
         (max_distance / 0.3).min(1.0)
     }
