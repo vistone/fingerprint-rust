@@ -90,9 +90,12 @@ impl VersionUpdateManager {
         format!(
             r#"/// {} v{} fingerprint configuration
 pub fn {fn_name}() -> BrowserProfile {{
-    // TODO: Implement {} v{} specific configuration
-    // Base on: {fallback_fn}() or copy from previous stable version
-    {fallback_fn}()  // Temporary fallback
+    // Implementation note: This is a generated stub function.
+    // To implement {} v{} specific configuration:
+    // 1. Copy configuration from {}() or previous stable version
+    // 2. Update HTTP/2 settings, TLS parameters, and headers as needed
+    // 3. Test with real {} v{} browser fingerprint
+    {}()  // Temporary fallback to nearest compatible version
 }}"#,
             match browser {
                 "chrome" => "Chrome",
@@ -112,6 +115,17 @@ pub fn {fn_name}() -> BrowserProfile {{
                 _ => browser,
             },
             version,
+            fallback_fn,
+            match browser {
+                "chrome" => "Chrome",
+                "firefox" => "Firefox",
+                "safari" => "Safari",
+                "edge" => "Edge",
+                "opera" => "Opera",
+                _ => browser,
+            },
+            version,
+            fallback_fn,
         )
     }
 
