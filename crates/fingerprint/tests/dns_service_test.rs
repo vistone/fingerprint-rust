@@ -1,5 +1,8 @@
 //! DNS Service testing
-//! DNS service start/stop tests.
+//!
+//! Tests for DNS service start/stop functionality.
+//! Note: Tests that require network access are marked with #[ignore]
+//! Run ignored tests manually with: cargo test --test dns_service_test -- --ignored
 
 #![cfg(feature = "dns")]
 
@@ -16,171 +19,199 @@ async fn check_network_available() -> bool {
 }
 
 #[tokio::test]
+#[ignore = "requires external network access - run manually with: cargo test --test dns_service_test -- --ignored"]
 async fn test_service_start_stop() {
     // Skip test if network is not available (for CI/CD environments without network access)
     if !check_network_available().await {
-        eprintln!("[测试] 网络不可用或 DNS 配置失败，跳过此测试");
+        eprintln!("[Test] Network unavailable or DNS config failed, skipping test");
         return;
     }
 
-    // createtestingconfigure（use简单ofdomain，减少parsetime）
+    // Create test config (use simple domain to reduce resolution time)
     let mut config = DNSConfig::new("f6babc99a5ec26", &["google.com"]);
-    // customotherconfigure
+    // Custom other config
     config.domain_ips_dir = "./test_dns_data".to_string();
-    // set较长of间隔，避免testing时等待太久
-    config.interval = "300s".to_string(); // 5分钟，testing中不会触发第二次parse
+    // Set long interval to avoid triggering second resolution during test
+    config.interval = "300s".to_string(); // 5 minutes - won't trigger during test
 
-    // createservice
+    // Create service
     let service = match DNSService::new(config) {
         Ok(svc) => svc,
         Err(e) => {
-            eprintln!("[测试] 创建 DNS 服务失败: {:?}，跳过此测试", e);
+            eprintln!(
+                "[Test] Failed to create DNS service: {:?}, skipping test",
+                e
+            );
             return;
         }
     };
 
-    // check初始state
-    assert!(!service.is_running().await, "服务初始状态应该是未运行");
+    // Check initial state
+    assert!(
+        !service.is_running().await,
+        "Service should not be running initially"
+    );
 
-    // startservice（应该在后台run，不blocking）
-    println!("[测试] 启动服务...");
+    // Start service (should run in background, non-blocking)
+    println!("[Test] Starting service...");
     let start_result = service.start().await;
     if start_result.is_err() {
-        eprintln!("[测试] 启动服务失败: {:?}，跳过余下测试", start_result);
+        eprintln!(
+            "[Test] Failed to start service: {:?}, skipping remaining test",
+            start_result
+        );
         return;
     }
 
-    // validateservice已在后台start（不blocking主thread）
-    println!("[测试] 验证服务在后台运行...");
+    // Verify service started in background (non-blocking main thread)
+    println!("[Test] Verifying service runs in background...");
     let start_time = std::time::Instant::now();
 
-    // 等待一小段time，validate主thread没有被blocking
+    // Wait a short time to verify main thread is not blocked
     sleep(Duration::from_millis(100)).await;
 
     let elapsed = start_time.elapsed();
-    assert!(elapsed < Duration::from_millis(200), "主线程不应该被阻塞");
+    assert!(
+        elapsed < Duration::from_millis(200),
+        "Main thread should not be blocked"
+    );
 
-    // validateservicestate
-    assert!(service.is_running().await, "服务应该正在运行");
+    // Verify service state
+    assert!(service.is_running().await, "Service should be running");
 
-    println!("[测试] 服务已在后台运行，主线程未被阻塞");
+    println!("[Test] Service running in background, main thread not blocked");
 
-    // 等待一小段time，让service开始执行（但不等待完整parse完成）
-    println!("[测试] 等待服务运行 3 秒（验证后台任务已启动）...");
+    // Wait a short time for service to start executing (but don't wait for full resolution)
+    println!("[Test] Waiting 3 seconds (verifying background task started)...");
     sleep(Duration::from_secs(3)).await;
 
-    // stopservice
-    println!("[测试] 停止服务...");
+    // Stop service
+    println!("[Test] Stopping service...");
     let stop_result = service.stop().await;
-    assert!(stop_result.is_ok(), "停止服务应该成功: {:?}", stop_result);
+    assert!(
+        stop_result.is_ok(),
+        "Stopping service should succeed: {:?}",
+        stop_result
+    );
 
-    // 等待service完全stop（background taskrequiretimeprocessstopsignal）
+    // Wait for service to fully stop (background task needs time to process stop signal)
     let mut attempts = 0;
     while service.is_running().await && attempts < 100 {
         sleep(Duration::from_millis(100)).await;
         attempts += 1;
     }
 
-    // validateservice已stop
+    // Verify service stopped
     if service.is_running().await {
         eprintln!(
-            "[测试] 警告: 服务在停止后仍显示为运行状态，但这是正常的（后台任务可能仍在处理）"
+            "[Test] Warning: Service still shows running after stop, but this is normal (background task may still be processing)"
         );
     }
 
-    println!("[测试] 服务已成功停止");
+    println!("[Test] Service stopped successfully");
 }
 
 #[tokio::test]
+#[ignore = "requires external network access - run manually with: cargo test --test dns_service_test -- --ignored"]
 async fn test_service_double_start() {
-    // testing重复startservice应该failure
+    // Test that double starting the service should fail
     let mut config = DNSConfig::new("test_token", &["google.com"]);
     config.domain_ips_dir = "./test_dns_data".to_string();
     config.interval = "5s".to_string();
 
-    let service = DNSService::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("Failed to create service");
 
-    // 第一次start应该success
+    // First start should succeed
     let result1 = service.start().await;
-    assert!(result1.is_ok(), "第一次启动应该成功");
+    assert!(result1.is_ok(), "First start should succeed");
 
-    // 等待一小段timeensureservice已start
+    // Wait a short time to ensure service has started
     sleep(Duration::from_millis(100)).await;
 
-    // 第二次start应该failure
+    // Second start should fail
     let result2 = service.start().await;
-    assert!(result2.is_err(), "重复启动应该失败");
+    assert!(result2.is_err(), "Double start should fail");
 
-    // cleanup
+    // Cleanup
     let _ = service.stop().await;
 }
 
 #[tokio::test]
 async fn test_service_stop_before_start() {
-    // testing在未start时stopservice
+    // Test stopping service before it's started
     let config = DNSConfig::new("test_token", &["google.com"]);
 
-    let service = DNSService::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("Failed to create service");
 
-    // 未start时stop应该returnerror或normalprocess
+    // Stop before start should return error or handle normally
     let result = service.stop().await;
-    // stop 方法应该能够process未startof情况（可能return Ok 或 Err，取决于 implementation）
-    println!("[测试] 未启动时停止服务的结果: {:?}", result);
+    // Stop method should handle not-started case (may return Ok or Err depending on implementation)
+    println!("[Test] Result of stopping before start: {:?}", result);
 }
 
 #[tokio::test]
+#[ignore = "requires external network access - run manually with: cargo test --test dns_service_test -- --ignored"]
 async fn test_service_background_resolution() {
-    // testingservice在后台执行 DNS parse
-    // 注意：这个testing会start真实of DNS parse，可能require较长time
-    // 如果testing环境不allow长timerun，可ending with跳过此testing
+    // Test service executes DNS resolution in the background
+    // Note: This test starts real DNS resolution which may take a long time
+    // Skip this test if the environment doesn't allow long-running operations
     let mut config = DNSConfig::new("test_token", &["google.com"]);
     config.domain_ips_dir = "./test_dns_data".to_string();
-    // set很长of间隔，避免在testing期间触发第二次parse
-    config.interval = "600s".to_string(); // 10分钟
+    // Set long interval to avoid triggering second resolution during test
+    config.interval = "600s".to_string(); // 10 minutes
 
-    let service = DNSService::new(config).expect("创建服务失败");
+    let service = DNSService::new(config).expect("Failed to create service");
 
-    println!("[测试] 启动服务进行后台解析测试...");
+    println!("[Test] Starting service for background resolution test...");
     let start_result = service.start().await;
-    assert!(start_result.is_ok(), "启动服务应该成功");
+    assert!(start_result.is_ok(), "Starting service should succeed");
 
-    // 等待service开始执行parse（不等待完整parse完成，因to可能require很长time）
-    // 只validateservice能够normalstart并开始工作
-    println!("[测试] 等待服务运行 5 秒（验证后台任务已启动）...");
+    // Wait for service to start executing (don't wait for full resolution as it may take too long)
+    // Just verify service can start normally and begin working
+    println!("[Test] Waiting 5 seconds (verifying background task started)...");
     sleep(Duration::from_secs(5)).await;
 
-    // validateservice仍在run
-    assert!(service.is_running().await, "服务应该仍在运行");
+    // Verify service is still running
+    assert!(
+        service.is_running().await,
+        "Service should still be running"
+    );
 
-    println!("[测试] 服务在后台正常运行（解析可能在后台继续进行）");
+    println!("[Test] Service running normally in background (resolution may continue)");
 
-    // stopservice
+    // Stop service
     let _ = service.stop().await;
 
-    // 等待servicestop
+    // Wait for service to stop
     let mut attempts = 0;
     while service.is_running().await && attempts < 50 {
         sleep(Duration::from_millis(100)).await;
         attempts += 1;
     }
 
-    println!("[测试] 后台解析测试完成");
+    println!("[Test] Background resolution test completed");
 }
 
 #[tokio::test]
 async fn test_service_config_validation() {
-    // testingconfigurevalidate
-    // 缺少 ipinfo_token 应该failure
+    // Test configuration validation
+    // Missing ipinfo_token should fail
     let invalid_config = DNSConfig::new("", &["google.com"]);
 
     let result = DNSService::new(invalid_config);
-    assert!(result.is_err(), "空 ipinfo_token 应该导致验证失败");
+    assert!(
+        result.is_err(),
+        "Empty ipinfo_token should cause validation failure"
+    );
 
-    // 缺少 domain_list 应该failure
-    let invalid_config2 = DNSConfig::new("test_token", &[] as &[&str]); // 空list
+    // Missing domain_list should fail
+    let invalid_config2 = DNSConfig::new("test_token", &[] as &[&str]); // Empty list
 
     let result2 = DNSService::new(invalid_config2);
-    assert!(result2.is_err(), "空 domain_list 应该导致验证失败");
+    assert!(
+        result2.is_err(),
+        "Empty domain_list should cause validation failure"
+    );
 
-    println!("[测试] 配置验证测试通过");
+    println!("[Test] Configuration validation test passed");
 }
