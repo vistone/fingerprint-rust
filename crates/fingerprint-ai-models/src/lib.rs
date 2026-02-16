@@ -35,6 +35,7 @@ pub mod headers;
 pub mod image_detection;
 pub mod patterns;
 pub mod providers;
+pub mod real_detection;
 pub mod sdk;
 pub mod tls;
 pub mod video_detection;
