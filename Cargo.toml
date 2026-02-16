@@ -20,6 +20,7 @@ members = [
     "crates/fingerprint-timing",
     "crates/fingerprint-ml",
     "crates/fingerprint-anomaly",
+    "crates/fingerprint-ai-models",
 ]
 resolver = "2"
 
