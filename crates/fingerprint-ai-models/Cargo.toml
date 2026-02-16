@@ -19,4 +19,8 @@ hex = { workspace = true }
 image = "0.24"
 chrono = "0.4"
 
+# Video processing (note: requires ffmpeg to be installed on system)
+# For production: would use ffmpeg-next or opencv bindings
+# For now: we'll implement frame-based analysis that can work with extracted frames
+
 [dev-dependencies]

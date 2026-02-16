@@ -38,6 +38,7 @@ pub mod model_fingerprints;
 pub mod patterns;
 pub mod providers;
 pub mod real_detection;
+pub mod real_video_detection;
 pub mod sdk;
 pub mod tls;
 pub mod video_detection;
