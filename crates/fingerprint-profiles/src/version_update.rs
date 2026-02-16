@@ -217,8 +217,11 @@ pub fn {fn_name}() -> BrowserProfile {{
         let psk_needed = vec!["chrome_130", "chrome_131"];
         let mut needs_psk = Vec::new();
         for v in &psk_needed {
-            if let Ok(version) = v.split('_').nth(1).unwrap().parse::<u32>() {
-                needs_psk.push(version);
+            // 安全地分割字符串并解析版本号
+            if let Some(version_str) = v.split('_').nth(1) {
+                if let Ok(version) = version_str.parse::<u32>() {
+                    needs_psk.push(version);
+                }
             }
         }
         if !needs_psk.is_empty() {
