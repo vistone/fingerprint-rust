@@ -37,94 +37,82 @@ impl PrometheusMetrics {
 
     /// Export metrics in Prometheus text format
     pub fn to_prometheus_format(&self) -> String {
+        use std::fmt::Write;
         let mut output = String::new();
 
         // HELP and TYPE comments
-        writeln!(
-            &mut output,
+        // 注意：对String的write操作不会失败，所以使用let _忽略Result
+        let _ = writeln!(
+            output,
             "# HELP rate_limiter_requests_total Total number of requests processed"
-        )
-        .unwrap();
-        writeln!(&mut output, "# TYPE rate_limiter_requests_total counter").unwrap();
-        writeln!(
-            &mut output,
+        );
+        let _ = writeln!(output, "# TYPE rate_limiter_requests_total counter");
+        let _ = writeln!(
+            output,
             "rate_limiter_requests_total {}",
             self.total_requests
-        )
-        .unwrap();
+        );
 
-        writeln!(
-            &mut output,
+        let _ = writeln!(
+            output,
             "# HELP rate_limiter_requests_rejected_total Total number of rejected requests"
-        )
-        .unwrap();
-        writeln!(
-            &mut output,
+        );
+        let _ = writeln!(
+            output,
             "# TYPE rate_limiter_requests_rejected_total counter"
-        )
-        .unwrap();
-        writeln!(
-            &mut output,
+        );
+        let _ = writeln!(
+            output,
             "rate_limiter_requests_rejected_total {}",
             self.total_rejected
-        )
-        .unwrap();
+        );
 
-        writeln!(
-            &mut output,
+        let _ = writeln!(
+            output,
             "# HELP rate_limiter_cache_hits_total Total number of cache hits"
-        )
-        .unwrap();
-        writeln!(&mut output, "# TYPE rate_limiter_cache_hits_total counter").unwrap();
+        );
+        let _ = writeln!(output, "# TYPE rate_limiter_cache_hits_total counter");
         writeln!(
             &mut output,
             "rate_limiter_cache_hits_total {}",
             self.cache_hits
-        )
-        .unwrap();
+        );
 
         writeln!(
             &mut output,
             "# HELP rate_limiter_cache_misses_total Total number of cache misses"
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "# TYPE rate_limiter_cache_misses_total counter"
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "rate_limiter_cache_misses_total {}",
             self.cache_misses
-        )
-        .unwrap();
+        );
 
         writeln!(
             &mut output,
             "# HELP rate_limiter_active_users_gauge Current number of active users"
-        )
-        .unwrap();
-        writeln!(&mut output, "# TYPE rate_limiter_active_users_gauge gauge").unwrap();
+        );
+        let _ = writeln!(output, "# TYPE rate_limiter_active_users_gauge gauge");
         writeln!(
             &mut output,
             "rate_limiter_active_users_gauge {}",
             self.active_users
-        )
-        .unwrap();
+        );
 
         writeln!(
             &mut output,
             "# HELP rate_limiter_active_ips_gauge Current number of active IP addresses"
-        )
-        .unwrap();
-        writeln!(&mut output, "# TYPE rate_limiter_active_ips_gauge gauge").unwrap();
+        );
+        let _ = writeln!(output, "# TYPE rate_limiter_active_ips_gauge gauge");
         writeln!(
             &mut output,
             "rate_limiter_active_ips_gauge {}",
             self.active_ips
-        )
-        .unwrap();
+        );
 
         // Calculated metrics
         let rejection_rate = if self.total_requests == 0 {
@@ -142,36 +130,30 @@ impl PrometheusMetrics {
         writeln!(
             &mut output,
             "# HELP rate_limiter_rejection_rate_percent Percentage of requests rejected"
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "# TYPE rate_limiter_rejection_rate_percent gauge"
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "rate_limiter_rejection_rate_percent {:.2}",
             rejection_rate
-        )
-        .unwrap();
+        );
 
         writeln!(
             &mut output,
             "# HELP rate_limiter_cache_hit_ratio_percent Percentage of cache hits"
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "# TYPE rate_limiter_cache_hit_ratio_percent gauge"
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "rate_limiter_cache_hit_ratio_percent {:.2}",
             cache_hit_ratio
-        )
-        .unwrap();
+        );
 
         output
     }
@@ -222,20 +204,17 @@ impl TierMetrics {
             &mut output,
             "rate_limiter_tier_users{{tier=\"{}\"}} {}",
             tier_name, self.user_count
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "rate_limiter_tier_requests_total{{tier=\"{}\"}} {}",
             tier_name, self.total_requests
-        )
-        .unwrap();
+        );
         writeln!(
             &mut output,
             "rate_limiter_tier_rejected_total{{tier=\"{}\"}} {}",
             tier_name, self.rejected_requests
-        )
-        .unwrap();
+        );
 
         output
     }

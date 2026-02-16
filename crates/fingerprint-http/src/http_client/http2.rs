@@ -57,20 +57,15 @@ async fn send_http2_request_async(
         .to_socket_addrs()
         .map_err(|e| HttpClientError::InvalidUrl(format!("DNS Parsefailure: {}", e)))?
         .next()
-        .ok_or_else(|| HttpClientError::InvalidUrl("unable toParseaddress".to_string()))?;
+        .ok_or_else(|| HttpClientError::InvalidUrl("unable to Parse address".to_string()))?;
 
-    let tcp = if let Some(_profile) = &config.profile {
-        // 暂时不use TCP fingerprint，直接建立connect
-        TcpStream::connect(socket_addrs).await.map_err(|e| {
-            HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-        })?
-    } else {
-        TcpStream::connect(socket_addrs).await.map_err(|e| {
-            HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
-        })?
-    };
+    // 1. 建立 TCP 连接
+    // 注意：暂时不使用 TCP fingerprint，直接建立连接
+    let tcp = TcpStream::connect(socket_addrs).await.map_err(|e| {
+        HttpClientError::ConnectionFailed(format!("TCP Connection failed: {}", e))
+    })?;
 
-    // 2. TLS handshake
+    // 2. TLS 握手
     let tls_stream = perform_tls_handshake(tcp, host, config).await?;
 
     // 3. HTTP/2 handshake (application Settings configuration)
