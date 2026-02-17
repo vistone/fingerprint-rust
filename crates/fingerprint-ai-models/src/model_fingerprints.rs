@@ -572,13 +572,14 @@ mod tests {
         let mut db = ModelFingerprintDatabase::new();
         db.add_fingerprint(create_test_fingerprint("gpt4", "text"));
 
-        let temp_file = "/tmp/test_fingerprints.json";
-        db.save_to_file(temp_file).unwrap();
+        let temp_dir = std::env::temp_dir();
+        let temp_file = temp_dir.join("test_fingerprints.json");
+        db.save_to_file(&temp_file).unwrap();
 
-        let loaded_db = ModelFingerprintDatabase::load_from_file(temp_file).unwrap();
+        let loaded_db = ModelFingerprintDatabase::load_from_file(&temp_file).unwrap();
         assert_eq!(loaded_db.fingerprints.len(), 1);
 
-        let _ = std::fs::remove_file(temp_file);
+        let _ = std::fs::remove_file(&temp_file);
     }
 
     #[test]
