@@ -26,7 +26,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -68,7 +68,7 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -107,7 +107,7 @@ jobs:
       contents: read
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Install markdown link checker
         run: npm install -g markdown-link-check
@@ -132,7 +132,7 @@ jobs:
       pull-requests: write
     
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       
       - name: Generate documentation summary
         run: |
