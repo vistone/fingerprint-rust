@@ -2,7 +2,6 @@
 members = [
     "crates/fingerprint",
     "crates/fingerprint-ai-models",
-    "crates/fingerprint-anomaly",
     "crates/fingerprint-api-noise",
     "crates/fingerprint-audio",
     "crates/fingerprint-canvas",
@@ -17,7 +16,6 @@ members = [
     "crates/fingerprint-ml",
     "crates/fingerprint-profiles",
     "crates/fingerprint-storage",
-    "crates/fingerprint-timing",
     "crates/fingerprint-tls",
     "crates/fingerprint-webgl",
     "crates/fingerprint-webrtc",

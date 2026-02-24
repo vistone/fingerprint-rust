@@ -4,9 +4,11 @@ Welcome to the fingerprint-rust documentation! Here you'll find everything you n
 
 ## 🚀 Getting Started
 
-- **[Quick Start Guide](user-guides/getting-started.md)** - Installation and basic setup
+- **[Quick Start Guide](guides/QUICKSTART.md)** - 5-minute setup and basic examples
+- **[User Guide](user-guides/getting-started.md)** - Installation and basic setup
 - **[Fingerprint Guide](user-guides/fingerprint-guide.md)** - Browser fingerprint configuration
 - **[API Usage Guide](user-guides/api-usage.md)** - REST API usage
+- **[FAQ](FAQ.md)** - Frequently asked questions
 
 ## 📚 Core Documentation
 
@@ -20,6 +22,7 @@ Welcome to the fingerprint-rust documentation! Here you'll find everything you n
   - [Defense Module](modules/defense.md)
 
 ### Development
+- **[Developer Guide](guides/DEVELOPMENT.md)** - Development environment and contribution guidelines
 - **[Contributing Guidelines](CONTRIBUTING.md)** - How to contribute to the project
 - **[Developer Guides](developer-guides/)** - Development documentation
 - **[API Reference](reference/)** - Complete API documentation

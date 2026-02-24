@@ -51,6 +51,7 @@ pub mod ja3_database;
 pub mod ja4;
 pub mod jarm;
 pub mod metadata;
+pub mod metrics; // Prometheus metrics collection
 pub mod packet_capture;
 pub mod pcap_generator;
 pub mod pqc; // Post-Quantum Cryptography detection
@@ -77,6 +78,21 @@ pub use error::{
 
 // Cache error from cache module
 pub use cache::CacheError;
+
+// Metrics
+pub use metrics::{
+    record_cache_hit, record_cache_miss, record_db_operation, record_error,
+    record_fingerprint_duration, record_ml_inference, ANOMALY_DETECTION_TOTAL,
+    ANOMALY_FALSE_POSITIVE_RATE, ANOMALY_SCORE, CACHE_EVICTIONS_TOTAL, CACHE_HIT_RATE,
+    CACHE_MISS_RATE, CACHE_SIZE_BYTES, CPU_USAGE_PERCENT, DB_CONNECTIONS_ACTIVE,
+    DB_OPERATION_DURATION_MS, DB_QUERIES_TOTAL, DNS_CACHE_HIT_RATE, DNS_RESOLUTION_DURATION_MS,
+    DNS_RESOLUTION_TOTAL, ERRORS_TOTAL, ERROR_RATE, FINGERPRINT_RECOGNITION_DURATION_MS,
+    FINGERPRINT_RECOGNITION_TOTAL, FINGERPRINT_SIMILARITY_SCORE, GOROUTINES_ACTIVE,
+    HTTP_POOL_CONNECTIONS, HTTP_REQUEST_DURATION_MS, HTTP_REQUEST_TOTAL, JA_FINGERPRINT_CALC_TOTAL,
+    MEMORY_USAGE_MB, ML_INFERENCE_DURATION_MS, ML_PREDICTION_ACCURACY, ML_PREDICTION_TOTAL,
+    RATE_LIMIT_CHECK_TOTAL, RATE_LIMIT_QUOTA_USAGE, RATE_LIMIT_REJECTIONS_TOTAL,
+    TLS_CLIENTHELLO_PARSE_MS, TLS_FINGERPRINT_GENERATION_TOTAL,
+};
 
 // fingerprint abstractions
 pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison, FingerprintType};

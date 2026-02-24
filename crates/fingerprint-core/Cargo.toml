@@ -25,6 +25,8 @@ dashmap = "5.5"
 parking_lot = "0.12"
 lru = "0.16"
 tokio = { workspace = true, features = ["sync"] }
+prometheus = "0.13"
+lazy_static = "1.4"
 
 # Optional Redis support
 redis = { version = "0.25", features = ["tokio-comp", "connection-manager"], optional = true }

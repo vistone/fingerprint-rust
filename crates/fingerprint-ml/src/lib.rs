@@ -9,7 +9,14 @@
 //! - One-Class SVM for novelty detection
 //! - AutoEncoder neural networks for reconstruction-based anomaly detection
 //! - Statistical ensemble methods for robust detection
+//! - Pre-trained models for classification tasks
 //! - Online learning capabilities for adaptive threat detection
+
+pub mod pretrained_models;
+
+pub use pretrained_models::{
+    EnsemblePredictor, ModelMetrics, ModelPrediction, PreTrainedModel, PreTrainedModelManager,
+};
 
 use std::collections::HashMap;
 

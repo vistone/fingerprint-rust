@@ -5,6 +5,9 @@ Welcome to the fingerprint-rust documentation! This directory contains all docum
 ## 📍 Start Here
 
 - **[Documentation Index](INDEX.md)** ← Main documentation hub
+- **[Quick Start Guide](guides/QUICKSTART.md)** ← 5-minute setup (⭐ NEW)
+- **[Developer Guide](guides/DEVELOPMENT.md)** ← Development environment & contributing (⭐ NEW)
+- **[FAQ](FAQ.md)** ← Frequently asked questions
 
 ## 📚 Documentation Structure
 
@@ -34,14 +37,16 @@ docs/
 │   ├── architecture.md
 │   └── TEST_REPORT.md
 │
-├── guides/                     # Implementation guides (精简)
+├── guides/                     # Implementation guides
 │   ├── README.md
-│   ├── CAPTURE_BROWSER_FINGERPRINTS.md (合并)
+│   ├── QUICKSTART.md          # ⭐ 5-minute quick start
+│   ├── DEVELOPMENT.md         # ⭐ Developer guide & setup
+│   ├── CAPTURE_BROWSER_FINGERPRINTS.md
 │   ├── DNS_INTEGRATION_GUIDE.md
 │   ├── HTTP2_INTEGRATION_GUIDE.md
 │   ├── OPERATIONS_RUNBOOK.md
-│   ├── TCP_FINGERPRINT.md (合并)
-│   ├── UNIFIED_FINGERPRINT.md (合并)
+│   ├── TCP_FINGERPRINT.md
+│   ├── UNIFIED_FINGERPRINT.md
 │   └── USAGE_GUIDE.md
 │
 ├── reference/                  # Reference documentation

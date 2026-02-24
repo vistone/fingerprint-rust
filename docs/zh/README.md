@@ -5,6 +5,9 @@
 ## 📍 从这里开始
 
 - **[文档索引](INDEX.md)** ← 主文档中心
+- **[快速开始指南](guides/QUICKSTART.md)** ← 5分钟初始化 (⭐ 最新)
+- **[开发者指南](guides/DEVELOPMENT.md)** ← 开发环境配置与贡献 (⭐ 最新)
+- **[常见问题](FAQ.md)** ← 常见问题解答
 
 ## 📚 文档结构
 
@@ -36,6 +39,8 @@ docs/
 │
 ├── guides/                     # 实现指南
 │   ├── README.md
+│   ├── QUICKSTART.md          # ⭐ 5分钟快速开始
+│   ├── DEVELOPMENT.md         # ⭐ 开发者指南与配置
 │   ├── CAPTURE_BROWSER_FINGERPRINTS.md
 │   ├── DNS_INTEGRATION_GUIDE.md
 │   ├── HTTP2_INTEGRATION_GUIDE.md
