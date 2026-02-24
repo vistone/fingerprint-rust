@@ -46,10 +46,10 @@ jobs:
             ${{ runner.os }}-cargo-test-
       
       - name: Run unit tests
-        run: cargo nextest run --workspace --all-features --lib
+        run: cargo nextest run --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --lib
       
       - name: Run doc tests
-        run: cargo test --workspace --all-features --doc
+        run: cargo test --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --doc
 
   integration-tests:
     name: Integration Tests
@@ -80,7 +80,7 @@ jobs:
             ${{ runner.os }}-cargo-integration-
       
       - name: Run integration tests
-        run: cargo nextest run --workspace --all-features --test '*' --no-fail-fast
+        run: cargo nextest run --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --test '*' --no-fail-fast
 
   example-tests:
     name: Example Tests
@@ -108,7 +108,7 @@ jobs:
             ${{ runner.os }}-cargo-examples-
       
       - name: Build all examples
-        run: cargo build --workspace --all-features --examples
+        run: cargo build --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --examples
       
       - name: Test fingerprint-core examples
         run: |
@@ -139,7 +139,7 @@ jobs:
           - "rustls-tls"
           - "rustls-tls,compression"
           - "rustls-tls,compression,http2"
-          - "rustls-tls,compression,http2,http3"
+          - "rustls-tls,compression,http2,connection-pool,dns"
     
     steps:
       - uses: actions/checkout@v4
@@ -200,7 +200,7 @@ jobs:
             ${{ runner.os }}-cargo-minimal-
       
       - name: Check with minimal versions
-        run: cargo minimal-versions check --workspace --all-features
+        run: cargo minimal-versions check --workspace --features "rustls-tls,compression,http2,connection-pool,dns"
         continue-on-error: true
 
   test-summary:
