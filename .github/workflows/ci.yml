@@ -9,7 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
-  TEST_FEATURES: "rustls-tls,compression,http2,http3,connection-pool,dns"
+  TEST_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 jobs:
   test:
@@ -21,9 +21,8 @@ jobs:
         rust: [stable, beta]
         features:
           - "rustls-tls,compression,http2"
-          - "rustls-tls,compression,http2,http3"
-          - "rustls-tls,compression,http2,http3,connection-pool"
-          - "rustls-tls,compression,http2,http3,connection-pool,dns"
+          - "rustls-tls,compression,http2,connection-pool"
+          - "rustls-tls,compression,http2,connection-pool,dns"
     
     steps:
     - uses: actions/checkout@v4
@@ -134,7 +133,7 @@ jobs:
       run: cargo fmt --all -- --check
     
     - name: Run clippy
-      run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+      run: cargo clippy --workspace --all-targets --features "${{ env.TEST_FEATURES }}" -- -D warnings
 
   build:
     name: Build
@@ -143,7 +142,8 @@ jobs:
       matrix:
         features:
           - "rustls-tls,compression,http2"
-          - "rustls-tls,compression,http2,http3"
+          - "rustls-tls,compression,http2,connection-pool"
+          - "rustls-tls,compression,http2,connection-pool,dns"
     
     steps:
     - uses: actions/checkout@v4

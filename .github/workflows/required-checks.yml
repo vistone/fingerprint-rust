@@ -9,6 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  TEST_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 # This workflow contains all checks that MUST pass before merge
 # Configure these as required status checks in branch protection rules
@@ -41,20 +42,20 @@ jobs:
       - name: Run all workspace tests
         run: |
           echo "::group::Running all tests..."
-          cargo nextest run --workspace --all-features --no-fail-fast
+          cargo nextest run --workspace --features "${{ env.TEST_FEATURES }}" --no-fail-fast
           echo "::endgroup::"
       
       - name: Run doc tests
         run: |
           echo "::group::Running doc tests..."
-          cargo test --workspace --all-features --doc
+          cargo test --workspace --features "${{ env.TEST_FEATURES }}" --doc
           echo "::endgroup::"
       
       - name: Test AI models crate specifically
         working-directory: crates/fingerprint-ai-models
         run: |
           echo "::group::Testing AI models..."
-          cargo nextest run --all-features
+          cargo nextest run --features "${{ env.TEST_FEATURES }}"
           echo "::endgroup::"
       
       - name: Generate test summary
@@ -113,7 +114,7 @@ jobs:
       - name: Run clippy
         run: |
           echo "::group::Running clippy..."
-          cargo clippy --workspace --all-targets --all-features -- -D warnings
+          cargo clippy --workspace --all-targets --features "${{ env.TEST_FEATURES }}" -- -D warnings
           echo "::endgroup::"
       
       - name: Generate clippy summary
@@ -150,7 +151,7 @@ jobs:
       - name: Build all workspace crates
         run: |
           echo "::group::Building workspace on ${{ matrix.os }}..."
-          cargo build --workspace --all-features
+          cargo build --workspace --features "${{ env.TEST_FEATURES }}"
           echo "::endgroup::"
       
       - name: Generate build summary

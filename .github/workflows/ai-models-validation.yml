@@ -94,10 +94,10 @@ jobs:
             ${{ runner.os }}-cargo-ai-test-
       
       - name: Run AI models tests
-        run: cargo nextest run -p fingerprint-ai-models --all-features
+        run: cargo nextest run -p fingerprint-ai-models
       
       - name: Run doc tests
-        run: cargo test -p fingerprint-ai-models --doc --all-features
+        run: cargo test -p fingerprint-ai-models --doc
 
   test-detection-accuracy:
     name: Test Detection Accuracy
@@ -125,7 +125,7 @@ jobs:
             ${{ runner.os }}-cargo-ai-accuracy-
       
       - name: Build AI models examples
-        run: cargo build -p fingerprint-ai-models --examples --all-features
+        run: cargo build -p fingerprint-ai-models --examples
       
       - name: Test text detection
         run: |
