@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["HttpClientError"],"mod":["cookie","dns_helper","http1","http1_pool","http2","http2_pool","http3","http3_pool","io","pool","proxy","reporter","request","response","tcp_fingerprint","tls"],"struct":["HttpClient","HttpClientConfig"],"type":["Result"]};
+window.SIDEBAR_ITEMS = {"enum":["HttpClientError"],"mod":["cookie","dns_helper","http1","http1_pool","http2","http2_pool","http3","io","pool","proxy","reporter","request","response","tcp_fingerprint","tls"],"struct":["HttpClient","HttpClientConfig"],"type":["Result"]};

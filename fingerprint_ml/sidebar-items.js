@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["BehaviorClass"],"struct":["BehaviorClassifier","FingerprintMatcher","FingerprintVector"]};
+window.SIDEBAR_ITEMS = {"enum":["AnomalyClassification","BehaviorClass"],"struct":["AdvancedAnomalyDetector","AnomalyDetectionResult","BehaviorClassifier","FingerprintMatcher","FingerprintVector"]};
