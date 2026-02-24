@@ -25,4 +25,24 @@ lru = "0.12"
 # For production: would use ffmpeg-next or opencv bindings
 # For now: we'll implement frame-based analysis that can work with extracted frames
 
+[features]
+# Features for compatibility with workspace features
+# These are pass-through features that don't add functionality to this crate
+# but allow workspace-wide feature builds like `--all-features` to work
+default = []
+rustls-tls = []
+compression = []
+http2 = []
+http3 = []
+async = []
+connection-pool = []
+reporter = []
+export = []
+crypto = []
+dangerous_configuration = []
+rustls-client-hello-customizer = []
+dns = []
+defense = []
+api-noise = []
+
 [dev-dependencies]
