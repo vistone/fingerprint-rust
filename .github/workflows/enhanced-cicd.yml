@@ -164,7 +164,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-integration-
       
       - name: Run integration tests
-        run: cargo nextest run --workspace --test '*' --features rustls-tls,compression,http2,connection-pool,dns --timeout 120s
+        run: cargo nextest run --workspace --test '*' --features rustls-tls,compression,http2,connection-pool,dns
 
   # ============================================================
   # Code Coverage
