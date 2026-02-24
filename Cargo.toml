@@ -1,116 +1,78 @@
 [workspace]
 members = [
+    "crates/fingerprint",
+    "crates/fingerprint-ai-models",
+    "crates/fingerprint-anomaly",
+    "crates/fingerprint-api-noise",
+    "crates/fingerprint-audio",
+    "crates/fingerprint-canvas",
     "crates/fingerprint-core",
-    "crates/fingerprint-tls",
-    "crates/fingerprint-profiles",
+    "crates/fingerprint-defense",
+    "crates/fingerprint-dns",
+    "crates/fingerprint-fonts",
+    "crates/fingerprint-gateway",
+    "crates/fingerprint-hardware",
     "crates/fingerprint-headers",
     "crates/fingerprint-http",
-    "crates/fingerprint-dns",
-    "crates/fingerprint-defense",
-    "crates/fingerprint-api-noise",
-    "crates/fingerprint-gateway",
-    "crates/fingerprint",
-    "crates/fingerprint-canvas",
-    "crates/fingerprint-webgl",
-    "crates/fingerprint-audio",
-    "crates/fingerprint-fonts",
-    "crates/fingerprint-storage",
-    "crates/fingerprint-webrtc",
-    "crates/fingerprint-hardware",
-    "crates/fingerprint-timing",
     "crates/fingerprint-ml",
-    "crates/fingerprint-anomaly",
-    "crates/fingerprint-ai-models",
+    "crates/fingerprint-profiles",
+    "crates/fingerprint-storage",
+    "crates/fingerprint-timing",
+    "crates/fingerprint-tls",
+    "crates/fingerprint-webgl",
+    "crates/fingerprint-webrtc",
 ]
 resolver = "2"
 
 [workspace.package]
 version = "2.1.0"
 edition = "2021"
-authors = ["fingerprint-rust"]
-license = "BSD-3-Clause"
+authors = ["fingerprint-rust Authors"]
+license = "MIT"
 repository = "https://github.com/vistone/fingerprint-rust"
 documentation = "https://docs.rs/fingerprint-rust"
 homepage = "https://github.com/vistone/fingerprint-rust"
-keywords = ["tls", "fingerprint", "browser", "http2", "ja4", "grease"]
+description = "Advanced browser fingerprinting library"
+keywords = ["fingerprint", "tls", "http", "security", "browser"]
 categories = ["network-programming", "web-programming"]
 
 [workspace.dependencies]
-# Core dependencies
-rand = "0.8"
-once_cell = "1.19"
-sha2 = "0.10"
-md5 = "0.7"
-thiserror = "2.0"
-socket2 = "0.5"
-
-# HTTP client dependencies (optional)
-rustls = { version = "0.23", features = ["ring"] }
-webpki-roots = "0.26"
-flate2 = "1.0"
-brotli-decompressor = "5.0"
-
-# HTTP/2 support
-h2 = "0.4"
-http = "1.1"
-tokio = { version = "1.40", features = ["full"] }
-tokio-rustls = "0.26"
-
-# HTTP/3 support
-quinn = "0.11"
-h3 = "0.0.8"
-h3-quinn = "0.0.10"
-bytes = "1.10"
-
-# Network connection pool
-netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.4" }
-
-# Time handling
-chrono = "0.4"
-
-# Configuration export functionality
+tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
-hex = "0.4.3"
-
-# HTTP parsing
-httparse = "1.10.1"
-
-# Cryptography library
-ring = "0.17.14"
-
-# DNS resolution functionality
-hickory-resolver = { version = "0.25", default-features = false, features = ["tokio"] }
-
-# Configuration file parsing
-toml = "0.8"
 serde_yaml = "0.9"
-
-# Stream processing
+toml = "0.8"
+thiserror = "2.0"
+log = "0.4"
+dashmap = "5.5"
+parking_lot = "0.12"
+hex = "0.4"
+chrono = "0.4"
+bytes = "1.0"
+rand = "0.8"
+sha2 = "0.10"
+md5 = "0.7"
+regex = "1.0"
+once_cell = "1.0"
+lru = "0.16"
+brotli-decompressor = "4.0"
+flate2 = "1.0"
+h2 = "0.4"
+http = "1.0"
+httparse = "1.9"
+socket2 = "0.5"
+rustls = "0.23"
+ring = "0.17.14"
+webpki-roots = "0.26"
+tokio-rustls = "0.26"
+quinn = "0.11"
+netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.4" }
 futures = "0.3"
-
-# Benchmarking
-criterion = { version = "0.5", features = ["html_reports"] }
-
-# [workspace.dev-dependencies]
-# Note: Workspace-level dev-dependencies are not supported in Cargo
-# Each crate needs to define dev-dependencies in its own Cargo.toml
+hickory-resolver = "0.25"
 
 [profile.release]
-opt-level = 3
 lto = "fat"
 codegen-units = 1
-strip = true
 panic = "abort"
-
-[profile.bench]
-inherits = "release"
-
-[profile.dev]
-opt-level = 0
-debug = true
-
-[profile.test]
-opt-level = 1
-
-
+strip = "symbols"
+opt-level = 3

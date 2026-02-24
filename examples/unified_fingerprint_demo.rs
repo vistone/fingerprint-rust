@@ -104,9 +104,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let result = get_random_fingerprint_with_os(Some(OperatingSystem::Windows10))?;
     println!("生成的 User-Agent: {}", result.user_agent);
     println!("Profile ID: {}", result.profile_id);
-    println!("浏览器类型: {:?}", result.browser_type);
+    println!("Browser type: {:?}", result.browser_type);
     
-    // 验证一致性
+    // Verify consistency
     let inferred_os = if result.user_agent.contains("Windows") {
         "Windows"
     } else if result.user_agent.contains("Macintosh") || result.user_agent.contains("Mac OS X") {

@@ -81,13 +81,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
-    // 7. 测试多主机连接池
-    println!("📡 测试多主机连接池:\n");
+    // 7. Test multi-host connection pool
+    println!("📡 Testing multi-host connection pool:\n");
 
     let multi_urls = [
         "http://example.com/",
         "http://httpbin.org/get",
-        "http://example.com/", // 重复 URL，应该复用连接
+        "http://example.com/", // Duplicate URL, should reuse connection
     ];
 
     for (i, url) in multi_urls.iter().enumerate() {

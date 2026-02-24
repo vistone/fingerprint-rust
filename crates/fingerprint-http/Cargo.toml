@@ -21,7 +21,7 @@ socket2 = { workspace = true }
 log = "0.4"
 
 # HTTP 客户端依赖 (可选)
-rustls = { workspace = true, optional = true }
+rustls = { workspace = true, optional = true, features = ["ring"] }
 webpki-roots = { workspace = true, optional = true }
 flate2 = { workspace = true, optional = true }
 brotli-decompressor = { workspace = true, optional = true }
@@ -32,10 +32,10 @@ http = { workspace = true, optional = true }
 tokio = { workspace = true, optional = true }
 tokio-rustls = { workspace = true, optional = true }
 
-# HTTP/3 支持
-quinn = { workspace = true, optional = true }
-h3 = { workspace = true, optional = true }
-h3-quinn = { workspace = true, optional = true }
+# HTTP/3 支持 (可选 - 有版本兼容性问题，分离处理)
+quinn = { version = "0.11", optional = true }
+h3 = { version = "0.0.8", optional = true }
+h3-quinn = { version = "0.0.6", optional = true }
 bytes = { workspace = true, optional = true }
 
 # 网络连接池

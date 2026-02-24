@@ -38,16 +38,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     {
         match TLSHandshakeBuilder::build_client_hello(&spec, "www.google.com") {
             Ok(bytes) => {
-                println!("   ✅ ClientHello 生成成功！");
-                println!("     - 总大小: {} bytes", bytes.len());
-                println!("     - 前 10 bytes: {:02x?}", &bytes[..10.min(bytes.len())]);
+                println!("   ✅ ClientHello generated successfully!");
+                println!("     - Total size: {} bytes", bytes.len());
+                println!("     - First 10 bytes: {:02x?}", &bytes[..10.min(bytes.len())]);
 
-                // 验证 TLS 记录格式
-                println!("\n   TLS 记录格式:");
-                println!("     - 类型: {} (Handshake)", bytes[0]);
-                println!("     - 版本: 0x{:02x}{:02x}", bytes[1], bytes[2]);
+                // Verify TLS record format
+                println!("\n   TLS record format:");
+                println!("     - Type: {} (Handshake)", bytes[0]);
+                println!("     - Version: 0x{:02x}{:02x}", bytes[1], bytes[2]);
                 let length = u16::from_be_bytes([bytes[3], bytes[4]]);
-                println!("     - 长度: {} bytes", length);
+                println!("     - Length: {} bytes", length);
             }
             Err(e) => {
                 println!("   ❌ ClientHello 生成失败: {}", e);

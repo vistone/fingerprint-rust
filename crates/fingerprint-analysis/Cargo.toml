@@ -1,0 +1,29 @@
+[package]
+name = "fingerprint-analysis"
+version = "2.1.0"
+edition = "2021"
+authors = ["fingerprint-rust Authors"]
+description = "Unified analysis engine for fingerprint detection and anomaly analysis"
+license = "MIT"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core", version = "2.1.0" }
+fingerprint-config = { path = "../fingerprint-config", version = "2.1.0" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0"
+log = "0.4"
+dashmap = "5.5"
+parking_lot = "0.12"
+tokio = { version = "1.0", features = ["sync"] }
+uuid = { version = "1.0", features = ["v4"] }
+
+[features]
+default = ["statistical", "machine-learning"]
+statistical = []
+machine-learning = []
+real-time = []
+historical = []
+
+[dev-dependencies]
+tempfile = "3.2"

@@ -1,0 +1,28 @@
+[package]
+name = "fingerprint-config"
+version = "2.1.0"
+edition = "2021"
+authors = ["fingerprint-rust Authors"]
+description = "Unified configuration management for fingerprint-rust"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+config = "0.14"
+thiserror = "2.0"
+log = "0.4"
+dashmap = "5.5"
+parking_lot = "0.12"
+
+[features]
+default = ["file-system", "environment"]
+file-system = []
+environment = []
+remote = []
+validation = []
+
+[dev-dependencies]
+tempfile = "3.2"
+tokio = { version = "1.0", features = ["full"] }

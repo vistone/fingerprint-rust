@@ -144,7 +144,7 @@ mod tests {
         assert!(!noise.is_empty());
         assert!(noise.len() <= 512); // 1024 * 0.5
 
-        // 测试不同强度
+        // Test different intensities
         let low_generator = CanvasNoiseGenerator::new(0.1);
         let low_noise = low_generator.generate_canvas_noise();
         assert!(low_noise.len() <= noise.len());

@@ -1,6 +1,6 @@
-//! configurationexportmodule
+//! Configuration export module
 //!
-//! will ClientHelloSpec export as JSON format, so thatprovideotherlanguage (如 Go uTLS)use.
+//! Will export ClientHelloSpec as JSON format, so that other languages (such as Go uTLS) can use it.
 
 #[cfg(feature = "export")]
 use fingerprint_tls::tls_config::ClientHelloSpec;
@@ -9,7 +9,7 @@ use fingerprint_tls::tls_extensions::*;
 #[cfg(feature = "export")]
 use serde::{Deserialize, Serialize};
 
-/// exportconfigurationstruct
+/// Export configuration struct
 #[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExportConfig {
@@ -20,7 +20,7 @@ pub struct ExportConfig {
     pub tls_vers_max: u16,
 }
 
-/// export KeyShare
+/// Export KeyShare
 #[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExportKeyShare {
@@ -28,12 +28,12 @@ pub struct ExportKeyShare {
     pub data_hex: String,
 }
 
-/// export's extensionsenum
+/// Export's extensions enum
 #[cfg(feature = "export")]
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 pub enum ExportExtension {
-    SNI, // onlytype，nocountdata (由clientrun when decide)
+    SNI, // Only type, no content data (decided by client at runtime)
     StatusRequest,
     SupportedCurves(Vec<u16>),
     SupportedPoints(Vec<u8>),
@@ -55,7 +55,7 @@ pub enum ExportExtension {
     Unknown(u16),
 }
 
-/// will ClientHelloSpec convert to JSON string
+/// Will ClientHelloSpec convert to JSON string
 #[cfg(feature = "export")]
 pub fn export_config_json(spec: &ClientHelloSpec) -> Result<String, serde_json::Error> {
     let export = ExportConfig::from(spec);
@@ -74,7 +74,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                 .extensions
                 .iter()
                 .map(|ext| {
-                    // use as_any performtowarddowntransform
+                    // use as_any perform toward down transform
                     let any_ext = ext.as_any();
 
                     if let Some(e) = any_ext.downcast_ref::<UtlsGREASEExtension>() {
@@ -137,7 +137,7 @@ impl From<&ClientHelloSpec> for ExportConfig {
                                     }
                                     #[cfg(not(feature = "hex"))]
                                     {
-                                        // Ifno hex feature, usehexadecimalformatmanualencoding
+                                        // If no hex feature, use hexadecimal format manual encoding
                                         ks.data
                                             .iter()
                                             .map(|b| format!("{:02x}", b))

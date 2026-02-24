@@ -49,8 +49,8 @@ use fingerprint_profiles::BrowserProfile;
 use std::io as std_io;
 use std::time::Duration;
 
-// Fix: useglobalsingleton Runtime avoidfrequentCreate ( for HTTP/2 and HTTP/3 connection poolscenario)
-// Note: only in connection-pool enabled when 才need, becauseonlyconnection poolscenario才needsyncwrapasynccode
+// Fix: use global singleton Runtime avoid frequent Create (for HTTP/2 and HTTP/3 connection pool scenario)
+// Note: only in connection-pool enabled when need, because only connection pool scenario needs sync wrap async code
 #[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
 use once_cell::sync::Lazy;
 
@@ -69,7 +69,7 @@ fn get_shared_runtime() -> Result<&'static tokio::runtime::Runtime> {
     })
 }
 
-/// HTTP clienterror
+/// HTTP client error
 #[derive(Debug)]
 pub enum HttpClientError {
     Io(std_io::Error),
@@ -113,32 +113,32 @@ impl From<std_io::Error> for HttpClientError {
 
 pub type Result<T> = std::result::Result<T, HttpClientError>;
 
-/// HTTP clientconfiguration
+/// HTTP client configuration
 #[derive(Debug)]
 pub struct HttpClientConfig {
-    /// userproxy
+    /// User agent
     pub user_agent: String,
     /// HTTP Headers
     pub headers: HTTPHeaders,
-    /// browserconfiguration
+    /// Browser configuration
     pub profile: Option<BrowserProfile>,
-    /// connectiontimeout
+    /// Connection timeout
     pub connect_timeout: Duration,
-    /// readtimeout
+    /// Read timeout
     pub read_timeout: Duration,
-    /// writetimeout
+    /// Write timeout
     pub write_timeout: Duration,
-    /// maximumredirecttimecount
+    /// Maximum redirect times count
     pub max_redirects: usize,
-    /// whetherValidate TLS certificate
+    /// Whether validate TLS certificate
     pub verify_tls: bool,
-    /// priorityuse HTTP/2
+    /// Priority use HTTP/2
     pub prefer_http2: bool,
-    /// priorityuse HTTP/3
+    /// Priority use HTTP/3
     pub prefer_http3: bool,
     /// Cookie store (optional)
     pub cookie_store: Option<Arc<CookieStore>>,
-    /// DNS 辅助器（optional，用于 DNS cacheand预parse）
+    /// DNS helper (optional, for DNS cache and pre-parse)
     pub dns_helper: Option<Arc<DNSHelper>>,
 }
 
@@ -153,20 +153,20 @@ impl Default for HttpClientConfig {
             write_timeout: Duration::from_secs(30),
             max_redirects: 10,
             verify_tls: true,
-            prefer_http2: true,  // defaultpriorityuse HTTP/2
-            prefer_http3: false, // HTTP/3 defaultclose (needspecialconfiguration)
+            prefer_http2: true,  // Default priority use HTTP/2
+            prefer_http3: false, // HTTP/3 default close (need special configuration)
             cookie_store: None,
-            dns_helper: None, // DNS 辅助器default关闭（optional functionality）
+            dns_helper: None, // DNS helper default close (optional functionality)
         }
     }
 }
 
 /// HTTP client
 ///
-/// use netconnpool manageconnection, application fingerprint-rust configuration
+/// Use netconnpool manage connection, application fingerprint-rust configuration
 pub struct HttpClient {
     config: HttpClientConfig,
-    /// connection poolmanageer (optional)
+    /// Connection pool manager (optional)
     #[allow(clippy::arc_with_non_send_sync)]
     pool_manager: Option<Arc<ConnectionPoolManager>>,
 }
@@ -182,7 +182,7 @@ impl HttpClient {
         }
     }
 
-    /// Createbringconnection pool HTTP client
+    /// Create bring connection pool HTTP client
     #[allow(clippy::arc_with_non_send_sync)]
     pub fn with_pool(config: HttpClientConfig, pool_config: PoolManagerConfig) -> Self {
         Self {
@@ -191,7 +191,7 @@ impl HttpClient {
         }
     }
 
-    /// usebrowserconfigurationCreateclient
+    /// Use browser configuration create client
     pub fn with_profile(profile: BrowserProfile, headers: HTTPHeaders, user_agent: String) -> Self {
         let config = HttpClientConfig {
             profile: Some(profile),
@@ -202,19 +202,19 @@ impl HttpClient {
         Self::new(config)
     }
 
-    /// Getconnection poolstatisticsinfo
+    /// Get connection pool statistics info
     pub fn pool_stats(&self) -> Option<Vec<PoolStats>> {
         self.pool_manager.as_ref().map(|pm| pm.get_stats())
     }
 
-    /// cleanupempty闲connection
+    /// Cleanup empty idle connection
     pub fn cleanup_idle_connections(&self) {
         if let Some(pm) = &self.pool_manager {
             pm.cleanup_idle();
         }
     }
 
-    /// send GET request
+    /// Send GET request
     pub fn get(&self, url: &str) -> Result<HttpResponse> {
         let request = HttpRequest::new(HttpMethod::Get, url)
             .with_user_agent(&self.config.user_agent)
@@ -222,7 +222,7 @@ impl HttpClient {
         self.send_request(&request)
     }
 
-    /// send POST request
+    /// Send POST request
     pub fn post(&self, url: &str, body: &[u8]) -> Result<HttpResponse> {
         let request = HttpRequest::new(HttpMethod::Post, url)
             .with_user_agent(&self.config.user_agent)
@@ -231,12 +231,12 @@ impl HttpClient {
         self.send_request(&request)
     }
 
-    /// sendcustomrequest (supportredirect)
+    /// Send custom request (support redirect)
     pub fn send_request(&self, request: &HttpRequest) -> Result<HttpResponse> {
         self.send_request_with_redirects(request, 0)
     }
 
-    /// sendrequest并processredirect
+    /// Send request and process redirect
     fn send_request_with_redirects(
         &self,
         request: &HttpRequest,
@@ -249,25 +249,25 @@ impl HttpClient {
         )
     }
 
-    /// inside部redirectprocess (bringloopdetect)
+    /// Inside redirect process (bring loop detect)
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,
         redirect_count: usize,
         visited_urls: &mut std::collections::HashSet<String>,
     ) -> Result<HttpResponse> {
-        // Checkredirecttimecount
+        // Check redirect times count
         if redirect_count >= self.config.max_redirects {
             return Err(HttpClientError::InvalidResponse(format!(
-                "redirect次countexceedlimit: {}",
+                "Redirect count exceed limit: {}",
                 self.config.max_redirects
             )));
         }
 
-        // Checkredirectloop
+        // Check redirect loop
         if visited_urls.contains(&request.url) {
             return Err(HttpClientError::InvalidResponse(format!(
-                "detect to redirectloop: {}",
+                "Detect redirect loop: {}",
                 request.url
             )));
         }
@@ -276,22 +276,22 @@ impl HttpClient {
         // Parse URL
         let (scheme, host, port, path) = self.parse_url(&request.url)?;
 
-        // Based onprotocolselectprocessmethod
+        // Based on protocol select process method
         let response = match scheme.as_str() {
             "http" => self.send_http_request(&host, port, &path, request)?,
             "https" => self.send_https_request(&host, port, &path, request)?,
             _ => {
                 return Err(HttpClientError::InvalidUrl(format!(
-                    "不supportprotocol: {}",
+                    "Not support protocol: {}",
                     scheme
                 )));
             }
         };
 
-        // processredirect
+        // Process redirect
         if (300..400).contains(&response.status_code) {
             if let Some(location) = response.headers.get("location") {
-                // Buildnew URL (may is mutualpairpath or 绝pairpath)
+                // Build new URL (may is absolute path or relative path)
                 let redirect_url =
                     if location.starts_with("http://") || location.starts_with("https://") {
                         location.clone()
@@ -300,14 +300,14 @@ impl HttpClient {
                     } else if location.starts_with('/') {
                         format!("{}://{}:{}{}", scheme, host, port, location)
                     } else {
-                        // mutualpairpath
-                        // Fix: correctprocesspathconcatenate, avoiddouble slash
+                        // Relative path
+                        // Fix: correct process path concatenate, avoid double slash
                         let base_path = if path.ends_with('/') {
                             &path
                         } else {
                             path.rsplit_once('/').map(|(p, _)| p).unwrap_or("/")
                         };
-                        // ensure base_path ending with / ending, location not / openheader
+                        // Ensure base_path ending with / ending, location not / header
                         let location = location.trim_start_matches('/');
                         if base_path == "/" {
                             format!("{}://{}:{}/{}", scheme, host, port, location)
@@ -316,26 +316,26 @@ impl HttpClient {
                         }
                     };
 
-                // Fix: Based on HTTP status codecorrectprocessredirectmethod (RFC 7231)
+                // Fix: Based on HTTP status code correct process redirect method (RFC 7231)
                 let redirect_method = match response.status_code {
                     301..=303 => {
-                        // 301, 302, 303: POST shouldchange as GET, 并removerequest体
+                        // 301, 302, 303: POST should change as GET, and remove request body
                         HttpMethod::Get
                     }
                     307 | 308 => {
-                        // 307, 308: keeporiginal HTTP method (POST still is POST)
+                        // 307, 308: keep original HTTP method (POST still is POST)
                         request.method
                     }
                     _ => {
-                        // other 3xx status codekeeporiginalmethod
+                        // Other 3xx status code keep original method
                         request.method
                     }
                 };
 
-                // Fix: process Set-Cookie ( if redirectresponse in 有 Cookie)
+                // Fix: process Set-Cookie (if redirect response has Cookie)
                 if let Some(cookie_store) = &self.config.cookie_store {
                     if let Some(set_cookie) = response.headers.get("set-cookie") {
-                        // Parse并Add Cookie
+                        // Parse and add Cookie
                         if let Some(cookie) =
                             super::cookie::Cookie::parse_set_cookie(set_cookie, host.clone())
                         {
@@ -344,23 +344,23 @@ impl HttpClient {
                     }
                 }
 
-                // Parsenew URL domain and path ( for Cookie fieldfilter)
+                // Parse new URL domain and path (for Cookie field filter)
                 let (new_scheme, new_host, _new_port, new_path) = self.parse_url(&redirect_url)?;
 
-                // Fix: reBuildrequest, onlyincludingsuitable for newdomain Cookie
+                // Fix: rebuild request, only including suitable for new domain Cookie
                 let mut final_redirect_request = HttpRequest::new(redirect_method, &redirect_url);
 
-                // copynon Cookie headers, 并Add Referer
+                // Copy non Cookie headers, and add Referer
                 for (key, value) in &request.headers {
                     if key.to_lowercase() != "cookie" {
                         final_redirect_request = final_redirect_request.with_header(key, value);
                     }
                 }
-                // Fix: Add Referer header (simulatebrowserbehavior)
+                // Fix: add Referer header (simulate browser behavior)
                 final_redirect_request =
                     final_redirect_request.with_header("Referer", &request.url);
 
-                // Addsuitable for newdomain Cookie
+                // Add suitable for new domain Cookie
                 if let Some(cookie_store) = &self.config.cookie_store {
                     if let Some(cookie_header) = cookie_store.generate_cookie_header(
                         &new_host,
@@ -372,14 +372,14 @@ impl HttpClient {
                     }
                 }
 
-                // Ifkeep POST/PUT/PATCH, preserverequest体； if change as GET, removerequest体 ((RFC 7231 require)
+                // If keep POST/PUT/PATCH, preserve request body; if change as GET, remove request body (RFC 7231 require)
                 if redirect_method != HttpMethod::Get {
                     if let Some(body) = &request.body {
                         final_redirect_request = final_redirect_request.with_body(body.clone());
                     }
                 }
 
-                // recursiveprocessredirect (pass visited_urls ending withdetectloop)
+                // Recursive process redirect (pass visited_urls end with detect loop)
                 return self.send_request_with_redirects_internal(
                     &final_redirect_request,
                     redirect_count + 1,
@@ -392,7 +392,7 @@ impl HttpClient {
     }
 
     /// Parse URL
-    /// Fix: support IPv6 address and correctprocess query/fragment
+    /// Fix: support IPv6 address and correct process query/fragment
     fn parse_url(&self, url: &str) -> Result<(String, String, u16, String)> {
         let url = url.trim();
 
@@ -402,38 +402,38 @@ impl HttpClient {
         } else if let Some(stripped) = url.strip_prefix("http://") {
             ("http", stripped)
         } else {
-            return Err(HttpClientError::InvalidUrl("missingprotocol".to_string()));
+            return Err(HttpClientError::InvalidUrl("Missing protocol".to_string()));
         };
 
-        // remove fragment (# back面partial)
+        // Remove fragment (#后面部分)
         let rest = if let Some(frag_pos) = rest.find('#') {
             &rest[..frag_pos]
         } else {
             rest
         };
 
-        // separate query parameter (? back面partial) and path
+        // Separate query parameter (?后面部分) and path
         let (host_port, path_with_query) = if let Some(pos) = rest.find('/') {
             (&rest[..pos], &rest[pos..])
         } else {
             (rest, "/")
         };
 
-        // Extract path (remove query parameter, butpreserve in path in send)
-        // Note: query parametershouldpreserve in path in , becauseserverneedthem
+        // Extract path (remove query parameter, but preserve in path in send)
+        // Note: query parameter should preserve in path in, because server need them
         let path = path_with_query.to_string();
 
         // Parse host and port
-        // Fix: support IPv6 addressformat [2001:db8::1]:8080
+        // Fix: support IPv6 address format [2001:db8::1]:8080
         let (host, port) = if host_port.starts_with('[') {
-            // IPv6 addressformat
+            // IPv6 address format
             if let Some(close_bracket) = host_port.find(']') {
                 let host = host_port[1..close_bracket].to_string();
                 if let Some(colon_pos) = host_port[close_bracket + 1..].find(':') {
                     let port_str = &host_port[close_bracket + 2 + colon_pos..];
                     let port = port_str
                         .parse::<u16>()
-                        .map_err(|_| HttpClientError::InvalidUrl("invalidport".to_string()))?;
+                        .map_err(|_| HttpClientError::InvalidUrl("Invalid port".to_string()))?;
                     (host, port)
                 } else {
                     let default_port = if scheme == "https" { 443 } else { 80 };
@@ -441,7 +441,7 @@ impl HttpClient {
                 }
             } else {
                 return Err(HttpClientError::InvalidUrl(
-                    "IPv6 addressformaterror".to_string(),
+                    "IPv6 address format error".to_string(),
                 ));
             }
         } else {
@@ -450,7 +450,7 @@ impl HttpClient {
                 let host = host_port[..pos].to_string();
                 let port = host_port[pos + 1..]
                     .parse::<u16>()
-                    .map_err(|_| HttpClientError::InvalidUrl("invalidport".to_string()))?;
+                    .map_err(|_| HttpClientError::InvalidUrl("Invalid port".to_string()))?;
                 (host, port)
             } else {
                 let default_port = if scheme == "https" { 443 } else { 80 };
@@ -461,7 +461,7 @@ impl HttpClient {
         Ok((scheme.to_string(), host, port, path))
     }
 
-    /// send HTTP request
+    /// Send HTTP request
     fn send_http_request(
         &self,
         host: &str,
@@ -469,7 +469,7 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
-        // If有connection pool, useconnection pool
+        // If has connection pool, use connection pool
         #[cfg(feature = "connection-pool")]
         {
             if let Some(pool_manager) = &self.pool_manager {
@@ -483,11 +483,11 @@ impl HttpClient {
                 );
             }
         }
-        // otherwiseuseordinaryconnection
+        // Otherwise use ordinary connection
         http1::send_http1_request(host, port, path, request, &self.config)
     }
 
-    /// send HTTPS request (support HTTP/1.1, HTTP/2, HTTP/3)
+    /// Send HTTPS request (support HTTP/1.1, HTTP/2, HTTP/3)
     fn send_https_request(
         &self,
         host: &str,
@@ -495,13 +495,13 @@ impl HttpClient {
         path: &str,
         request: &HttpRequest,
     ) -> Result<HttpResponse> {
-        // If有connection pool, priorityuseconnection pool (HTTPS：HTTP/3 > HTTP/2 > HTTP/1.1)
+        // If has connection pool, priority use connection pool (HTTPS: HTTP/3 > HTTP/2 > HTTP/1.1)
         #[cfg(feature = "connection-pool")]
         if let Some(pool_manager) = &self.pool_manager {
-            // HTTP/3 with pool (async -> syncwrap)
+            // HTTP/3 with pool (async -> sync wrap)
             #[cfg(feature = "http3")]
             if self.config.prefer_http3 {
-                // Fix: useglobalsingleton Runtime
+                // Fix: use global singleton Runtime
                 let runtime = get_shared_runtime()?;
                 return runtime.block_on(async {
                     http3_pool::send_http3_request_with_pool(
@@ -516,12 +516,12 @@ impl HttpClient {
                 });
             }
 
-            // HTTP/2 with pool (async -> syncwrap)
+            // HTTP/2 with pool (async -> sync wrap)
             #[cfg(feature = "http2")]
             if self.config.prefer_http2 {
-                // Fix: useglobalsingleton Runtime
-                // Note: herenot do"automatic降level", because pool scenariowemore希望by userpreference走specifiedprotocol
-                // (test里alsowillstrictValidateversion)
+                // Fix: use global singleton Runtime
+                // Note: here not do "automatic downgrade", because pool scenario we more hope by user preference go specified protocol
+                // (test also will strict validate version)
                 let runtime = get_shared_runtime()?;
                 return runtime.block_on(async {
                     http2_pool::send_http2_request_with_pool(
@@ -547,44 +547,44 @@ impl HttpClient {
             );
         }
 
-        // priority：HTTP/3 > HTTP/2 > HTTP/1.1
+        // Priority: HTTP/3 > HTTP/2 > HTTP/1.1
 
-        // try HTTP/3
+        // Try HTTP/3
         #[cfg(feature = "http3")]
         {
             if self.config.prefer_http3 {
-                // Ifopen了 HTTP/3, wetry它.
-                // Iffailure, wemaywant to reducelevel, but HTTP/3 to TCP is differenttransferlayer,
-                // usually if userexplicitrequire HTTP/3, failurethenshouldreport error.
-                // butherein order tostable健property, if is becauseprotocolerror, wecan降level.
-                // temporary when keepsimple：directlyreturn.
+                // If opened HTTP/3, we try it.
+                // If failure, we may want to downgrade, but HTTP/3 to TCP is different transfer layer,
+                // Usually if user explicit require HTTP/3, failure then should report error.
+                // But here in order to stable property, if is because protocol error, we can downgrade.
+                // Temporary when keep simple: directly return.
                 match http3::send_http3_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(e) => {
-                        // Ifonlyonly is preference, cantry降level
-                        // If is Connection failed, may is networkissue, alsomay is server不support
-                        eprintln!("warning: HTTP/3 failure，try降level: {}", e);
+                        // If only only is preference, can try downgrade
+                        // If is Connection failed, may is network issue, also may is server not support
+                        eprintln!("Warning: HTTP/3 failure, try downgrade: {}", e);
                     }
                 }
             }
         }
 
-        // try HTTP/2
+        // Try HTTP/2
         #[cfg(feature = "http2")]
         {
             if self.config.prefer_http2 {
                 match http2::send_http2_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(_e) => {
-                        // recorderrorbutcontinuetry HTTP/1.1
-                        // in actualproduction in shoulduselogsystem
-                        // eprintln!("HTTP/2 tryfailure: {}, back to HTTP/1.1", e);
+                        // Record error but continue try HTTP/1.1
+                        // In actual production should use log system
+                        // eprintln!("HTTP/2 try failure: {}, back to HTTP/1.1", e);
                     }
                 }
             }
         }
 
-        // back to HTTP/1.1 + TLS
+        // Back to HTTP/1.1 + TLS
         tls::send_https_request(host, port, path, request, &self.config)
     }
 }

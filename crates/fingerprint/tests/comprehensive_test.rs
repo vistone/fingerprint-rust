@@ -28,9 +28,9 @@ use std::time::Instant;
 
 #[test]
 fn test_tls_fingerprint_generation() {
-    println!("\n=== TLS 指纹生成测试 ===");
+    println!("\n=== TLS Fingerprint Generation Test ===");
 
-    // testingall核心浏览器
+    // Testing all core browsers
     let browsers = vec![
         ("Chrome 103", chrome_103()),
         ("Chrome 133", chrome_133()),
@@ -41,11 +41,19 @@ fn test_tls_fingerprint_generation() {
 
     for (name, profile) in browsers {
         let spec = &profile.tls_config;
-        assert!(!spec.cipher_suites.is_empty(), "{} 应该有密码套件", name);
-        assert!(!spec.extensions.is_empty(), "{} 应该有扩展", name);
+        assert!(
+            !spec.cipher_suites.is_empty(),
+            "{} should have cipher suites",
+            name
+        );
+        assert!(
+            !spec.extensions.is_empty(),
+            "{} should have extensions",
+            name
+        );
 
         println!(
-            "✅ {}: {} 密码套件, {} 扩展",
+            "✅ {}: {} cipher suites, {} extensions",
             name,
             spec.cipher_suites.len(),
             spec.extensions.len()
@@ -55,12 +63,12 @@ fn test_tls_fingerprint_generation() {
 
 #[test]
 fn test_ja4_fingerprint_generation() {
-    println!("\n=== JA4 指纹生成测试 ===");
+    println!("\n=== JA4 Fingerprint Generation Test ===");
 
     let profile = chrome_133();
     let spec = &profile.tls_config;
 
-    // generate JA4 fingerprint
+    // Generate JA4 fingerprint
     let signature = extract_signature(spec);
     let ja4_signature = Ja4Signature {
         version: signature.version,
@@ -84,7 +92,7 @@ fn test_ja4_fingerprint_generation() {
 
 #[test]
 fn test_tls_handshake_builder() {
-    println!("\n=== TLS 握手构建测试 ===");
+    println!("\n=== TLS Handshake Builder Test ===");
 
     #[cfg(feature = "crypto")]
     {
@@ -93,12 +101,15 @@ fn test_tls_handshake_builder() {
 
         let client_hello_result = TLSHandshakeBuilder::build_client_hello(spec, "example.com");
 
-        assert!(client_hello_result.is_ok(), "应该能构建 ClientHello");
+        assert!(
+            client_hello_result.is_ok(),
+            "Should be able to build ClientHello"
+        );
 
         let client_hello = client_hello_result.unwrap();
-        assert!(!client_hello.is_empty(), "ClientHello 应该不为空");
+        assert!(!client_hello.is_empty(), "ClientHello should not be empty");
 
-        println!("✅ ClientHello 大小: {} bytes", client_hello.len());
+        println!("✅ ClientHello size: {} bytes", client_hello.len());
         #[cfg(feature = "export")]
         {
             println!(
@@ -109,7 +120,7 @@ fn test_tls_handshake_builder() {
         #[cfg(not(feature = "export"))]
         {
             println!(
-                "✅ ClientHello (前64字节): {:?}",
+                "✅ ClientHello (first 64 bytes): {:?}",
                 &client_hello[..std::cmp::min(64, client_hello.len())]
             );
         }
@@ -117,35 +128,39 @@ fn test_tls_handshake_builder() {
 
     #[cfg(not(feature = "crypto"))]
     {
-        println!("⚠️  跳过 TLS 握手测试（需要 crypto feature）");
+        println!("⚠️  Skipping TLS handshake test (requires crypto feature)");
     }
 }
 
 #[test]
 fn test_grease_value_filtering() {
-    println!("\n=== GREASE 值过滤测试 ===");
+    println!("\n=== GREASE Value Filtering Test ===");
 
     let grease_values = vec![0x0a0a, 0x1a1a, 0x2a2a, 0x3a3a];
 
     for &value in &grease_values {
-        assert!(is_grease_value(value), "{} 应该是 GREASE 值", value);
+        assert!(is_grease_value(value), "{} should be a GREASE value", value);
     }
 
     let normal_values = vec![0x0001, 0x0013, 0x0029];
     for &value in &normal_values {
-        assert!(!is_grease_value(value), "{} 不应该是 GREASE 值", value);
+        assert!(
+            !is_grease_value(value),
+            "{} should not be a GREASE value",
+            value
+        );
     }
 
-    println!("✅ GREASE 值检测正常");
+    println!("✅ GREASE value detection works correctly");
 }
 
 // ============================================================================
-// 2. 浏览器fingerprintconfiguretesting
+// 2. Browser fingerprint configuration testing
 // ============================================================================
 
 #[test]
 fn test_browser_profiles() {
-    println!("\n=== 浏览器配置测试 ===");
+    println!("\n=== Browser Profile Test ===");
 
     let profiles = vec![
         ("Chrome 103", chrome_103()),
@@ -156,19 +171,19 @@ fn test_browser_profiles() {
     ];
 
     for (name, profile) in profiles {
-        // testing ClientHelloID
+        // Testing ClientHelloID
         let client_id = profile.id();
-        assert!(!client_id.is_empty(), "{} 应该有 ClientHelloID", name);
+        assert!(!client_id.is_empty(), "{} should have ClientHelloID", name);
 
-        // testing HTTP/2 Settings
+        // Testing HTTP/2 Settings
         let settings = &profile.http2_settings;
-        assert!(!settings.is_empty(), "{} 应该有 HTTP/2 Settings", name);
+        assert!(!settings.is_empty(), "{} should have HTTP/2 Settings", name);
 
-        // testing Pseudo Header Order
+        // Testing Pseudo Header Order
         let pseudo_order = &profile.http2_settings_order;
         assert!(
             !pseudo_order.is_empty(),
-            "{} 应该有 Pseudo Header Order",
+            "{} should have Pseudo Header Order",
             name
         );
 
@@ -184,34 +199,41 @@ fn test_browser_profiles() {
 
 #[test]
 fn test_random_fingerprint_generation() {
-    println!("\n=== 随机指纹生成测试 ===");
+    println!("\n=== Random Fingerprint Generation Test ===");
 
-    // testing完全random
+    // Testing completely random
     let result1 = get_random_fingerprint();
-    assert!(result1.is_ok(), "应该能生成随机指纹");
+    assert!(
+        result1.is_ok(),
+        "Should be able to generate random fingerprint"
+    );
     let fp1 = result1.unwrap();
     assert!(!fp1.user_agent.is_empty());
     assert!(!fp1.profile_id.is_empty());
 
-    // testing按浏览器type
+    // Testing by browser type
     let browsers = vec!["chrome", "firefox", "safari"];
     for browser in browsers {
         let result = get_random_fingerprint_by_browser(browser);
-        assert!(result.is_ok(), "应该能生成 {} 指纹", browser);
+        assert!(
+            result.is_ok(),
+            "Should be able to generate {} fingerprint",
+            browser
+        );
         let fp = result.unwrap();
         assert!(!fp.user_agent.is_empty());
     }
 
-    // testing按operating system
+    // Testing by operating system
     let result2 = get_random_fingerprint_with_os(Some(OperatingSystem::Windows10));
     assert!(result2.is_ok());
 
-    println!("✅ 随机指纹生成正常");
+    println!("✅ Random fingerprint generation works correctly");
 }
 
 #[test]
 fn test_all_browser_profiles() {
-    println!("\n=== 所有浏览器配置验证 ===");
+    println!("\n=== All Browser Profiles Verification ===");
 
     let mapped = mapped_tls_clients();
     let mut success_count = 0;
@@ -222,13 +244,16 @@ fn test_all_browser_profiles() {
         if !spec.cipher_suites.is_empty() {
             success_count += 1;
         } else {
-            println!("⚠️  {} 配置错误: cipher_suites 为空", name);
+            println!("⚠️  {} configuration error: cipher_suites is empty", name);
             fail_count += 1;
         }
     }
 
-    println!("✅ 成功: {}, 失败: {}", success_count, fail_count);
-    assert!(success_count > 0, "至少应该有一个浏览器配置成功");
+    println!("✅ Success: {}, Failures: {}", success_count, fail_count);
+    assert!(
+        success_count > 0,
+        "At least one browser configuration should succeed"
+    );
 }
 
 // ============================================================================
@@ -237,53 +262,56 @@ fn test_all_browser_profiles() {
 
 #[test]
 fn test_user_agent_generation() {
-    println!("\n=== User-Agent 生成测试 ===");
+    println!("\n=== User-Agent Generation Test ===");
 
-    // testing按configurenamegenerate
+    // Testing generate by configuration name
     let ua1 = get_user_agent_by_profile_name("Chrome-133");
-    assert!(ua1.is_ok(), "应该能生成 Chrome-133 User-Agent");
+    assert!(
+        ua1.is_ok(),
+        "Should be able to generate Chrome-133 User-Agent"
+    );
     let ua1 = ua1.unwrap();
-    assert!(ua1.contains("Chrome"), "应该包含 Chrome");
+    assert!(ua1.contains("Chrome"), "Should contain Chrome");
 
-    // testing按configurenameandoperating systemgenerate
+    // Testing generate by configuration name and operating system
     let ua2 = get_user_agent_by_profile_name_with_os("Firefox-133", OperatingSystem::Linux);
     if let Ok(ua2) = ua2 {
-        // Firefox User-Agent 可能include "Firefox" 或 "Gecko"
+        // Firefox User-Agent may include "Firefox" or "Gecko"
         assert!(
             ua2.contains("Firefox") || ua2.contains("Gecko"),
-            "应该包含 Firefox 或 Gecko"
+            "Should contain Firefox or Gecko"
         );
     } else {
-        // 如果failure，可能是configurename格式问题，尝试other格式
+        // If failure, maybe configuration name format issue, try other format
         let ua2_alt = get_user_agent_by_profile_name("firefox_133");
         if let Ok(ua2_alt) = ua2_alt {
             assert!(ua2_alt.contains("Firefox") || ua2_alt.contains("Gecko"));
         }
     }
 
-    // testingrandomoperating system
+    // Testing random operating system
     let os = random_os();
     assert!(fingerprint::types::OPERATING_SYSTEMS.contains(&os));
 
-    println!("✅ User-Agent 生成正常");
-    println!("   示例 UA: {}", ua1);
+    println!("✅ User-Agent generation works correctly");
+    println!("   Sample UA: {}", ua1);
 }
 
 #[test]
 fn test_http_headers_generation() {
-    println!("\n=== HTTP Headers 生成测试 ===");
+    println!("\n=== HTTP Headers Generation Test ===");
 
     let fp_result = get_random_fingerprint_by_browser("chrome").unwrap();
     let headers = fp_result.headers;
 
-    assert!(!headers.user_agent.is_empty(), "应该有 User-Agent");
-    assert!(!headers.accept.is_empty(), "应该有 Accept");
+    assert!(!headers.user_agent.is_empty(), "Should have User-Agent");
+    assert!(!headers.accept.is_empty(), "Should have Accept");
     assert!(
         !headers.accept_language.is_empty(),
-        "应该有 Accept-Language"
+        "Should have Accept-Language"
     );
 
-    println!("✅ Headers 生成正常");
+    println!("✅ Headers generation works correctly");
     println!("   User-Agent: {}", headers.user_agent);
     println!("   Accept: {}", headers.accept);
     println!("   Accept-Language: {}", headers.accept_language);
@@ -291,21 +319,21 @@ fn test_http_headers_generation() {
 
 #[test]
 fn test_random_language() {
-    println!("\n=== 随机语言测试 ===");
+    println!("\n=== Random Language Test ===");
 
     let lang = random_language();
-    assert!(!lang.is_empty(), "应该返回语言代码");
+    assert!(!lang.is_empty(), "Should return language code");
 
-    println!("✅ 随机语言: {}", lang);
+    println!("✅ Random language: {}", lang);
 }
 
 // ============================================================================
-// 4. HTTP clienttesting
+// 4. HTTP client testing
 // ============================================================================
 
 #[test]
 fn test_http_client_creation() {
-    println!("\n=== HTTP 客户端创建测试 ===");
+    println!("\n=== HTTP Client Creation Test ===");
 
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) Chrome/133.0.0.0".to_string(),
@@ -315,12 +343,12 @@ fn test_http_client_creation() {
     };
 
     let _client = HttpClient::new(config);
-    println!("✅ HTTP 客户端创建成功");
+    println!("✅ HTTP client creation successful");
 }
 
 #[test]
 fn test_http_request_builder() {
-    println!("\n=== HTTP 请求构建测试 ===");
+    println!("\n=== HTTP Request Builder Test ===");
 
     let request = HttpRequest::new(HttpMethod::Get, "https://example.com/test")
         .with_header("Accept", "text/html")
@@ -332,14 +360,14 @@ fn test_http_request_builder() {
     assert!(http1_request.contains("Host: example.com"));
     assert!(http1_request.contains("Accept: text/html"));
 
-    println!("✅ HTTP 请求构建成功");
+    println!("✅ HTTP request building successful");
     println!("{}", http1_request);
 }
 
 #[test]
 #[ignore]
 fn test_http_client_get_request() {
-    println!("\n=== HTTP GET 请求测试 ===");
+    println!("\n=== HTTP GET Request Test ===");
 
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) Chrome/133.0.0.0".to_string(),
@@ -353,17 +381,17 @@ fn test_http_client_get_request() {
     match client.get("https://www.example.com/") {
         Ok(response) => {
             let duration = start.elapsed();
-            println!("✅ 请求成功");
-            println!("   状态码: {}", response.status_code);
-            println!("   HTTP 版本: {}", response.http_version);
-            println!("   响应时间: {:?}", duration);
-            println!("   Body 大小: {} bytes", response.body.len());
+            println!("✅ Request successful");
+            println!("   Status code: {}", response.status_code);
+            println!("   HTTP version: {}", response.http_version);
+            println!("   Response time: {:?}", duration);
+            println!("   Body size: {} bytes", response.body.len());
 
             assert_eq!(response.status_code, 200);
         }
         Err(e) => {
-            println!("⚠️  请求失败: {}", e);
-            // networktesting可能failure，不 panic
+            println!("⚠️  Request failed: {}", e);
+            // Network testing may fail, don't panic
         }
     }
 }
@@ -371,7 +399,7 @@ fn test_http_client_get_request() {
 #[test]
 #[ignore]
 fn test_http_client_post_request() {
-    println!("\n=== HTTP POST 请求测试 ===");
+    println!("\n=== HTTP POST Request Test ===");
 
     let config = HttpClientConfig {
         user_agent: "Mozilla/5.0 (X11; Linux x86_64) Chrome/133.0.0.0".to_string(),
@@ -383,29 +411,32 @@ fn test_http_client_post_request() {
     let body = "test=data";
     match client.post("https://httpbin.org/post", body.as_bytes()) {
         Ok(response) => {
-            println!("✅ POST 请求成功");
-            println!("   状态码: {}", response.status_code);
+            println!("✅ POST request successful");
+            println!("   Status code: {}", response.status_code);
             assert_eq!(response.status_code, 200);
         }
         Err(e) => {
-            println!("⚠️  POST 请求失败: {}", e);
+            println!("⚠️  POST request failed: {}", e);
         }
     }
 }
 
 // ============================================================================
-// 5. Cookie 管理testing
+// 5. Cookie management testing
 // ============================================================================
 
 #[test]
 fn test_cookie_parsing() {
-    println!("\n=== Cookie 解析测试 ===");
+    println!("\n=== Cookie Parsing Test ===");
 
     let set_cookie =
         "session_id=abc123; Path=/; Domain=example.com; Secure; HttpOnly; SameSite=Strict";
 
     let cookie_result = Cookie::parse_set_cookie(set_cookie, "example.com".to_string());
-    assert!(cookie_result.is_some(), "应该能解析 Set-Cookie");
+    assert!(
+        cookie_result.is_some(),
+        "Should be able to parse Set-Cookie"
+    );
 
     let cookie = cookie_result.unwrap();
     assert_eq!(cookie.name, "session_id");
@@ -416,7 +447,7 @@ fn test_cookie_parsing() {
     assert!(cookie.http_only);
     assert_eq!(cookie.same_site, Some(SameSite::Strict));
 
-    println!("✅ Cookie 解析成功");
+    println!("✅ Cookie parsing successful");
     println!("   Name: {}", cookie.name);
     println!("   Value: {}", cookie.value);
     println!("   Path: {:?}", cookie.path);
@@ -425,11 +456,11 @@ fn test_cookie_parsing() {
 
 #[test]
 fn test_cookie_store() {
-    println!("\n=== Cookie 存储测试 ===");
+    println!("\n=== Cookie Store Test ===");
 
     let store = CookieStore::new();
 
-    // 添加 Cookie
+    // Add Cookie
     let cookie1 = Cookie {
         name: "session".to_string(),
         value: "abc123".to_string(),
@@ -444,38 +475,44 @@ fn test_cookie_store() {
 
     store.add_cookie(cookie1);
 
-    // get Cookie
+    // Get Cookie
     let cookies = store.get_cookies_for_domain("example.com");
-    assert!(!cookies.is_empty(), "应该能找到 Cookie");
+    assert!(!cookies.is_empty(), "Should be able to find Cookie");
 
-    println!("✅ Cookie 存储正常");
-    println!("   找到 {} 个 Cookie", cookies.len());
+    println!("✅ Cookie storage works correctly");
+    println!("   Found {} cookies", cookies.len());
 }
 
 // ============================================================================
-// 6. HTTP/2 configuretesting
+// 6. HTTP/2 configuration testing
 // ============================================================================
 
 #[test]
 fn test_http2_settings() {
-    println!("\n=== HTTP/2 Settings 测试 ===");
+    println!("\n=== HTTP/2 Settings Test ===");
 
     // Chrome Settings
     let (chrome_settings, _) = chrome_http2_settings();
-    assert!(!chrome_settings.is_empty(), "Chrome 应该有 HTTP/2 Settings");
+    assert!(
+        !chrome_settings.is_empty(),
+        "Chrome should have HTTP/2 Settings"
+    );
 
     // Firefox Settings
     let (firefox_settings, _) = firefox_http2_settings();
     assert!(
         !firefox_settings.is_empty(),
-        "Firefox 应该有 HTTP/2 Settings"
+        "Firefox should have HTTP/2 Settings"
     );
 
     // Safari Settings
     let (safari_settings, _) = safari_http2_settings();
-    assert!(!safari_settings.is_empty(), "Safari 应该有 HTTP/2 Settings");
+    assert!(
+        !safari_settings.is_empty(),
+        "Safari should have HTTP/2 Settings"
+    );
 
-    println!("✅ HTTP/2 Settings 正常");
+    println!("✅ HTTP/2 Settings work correctly");
     println!("   Chrome: {} settings", chrome_settings.len());
     println!("   Firefox: {} settings", firefox_settings.len());
     println!("   Safari: {} settings", safari_settings.len());
@@ -483,7 +520,7 @@ fn test_http2_settings() {
 
 #[test]
 fn test_http2_pseudo_header_order() {
-    println!("\n=== HTTP/2 Pseudo Header Order 测试 ===");
+    println!("\n=== HTTP/2 Pseudo Header Order Test ===");
 
     let chrome_order = chrome_pseudo_header_order();
     let firefox_order = firefox_pseudo_header_order();
@@ -493,33 +530,33 @@ fn test_http2_pseudo_header_order() {
     assert!(!firefox_order.is_empty());
     assert!(!safari_order.is_empty());
 
-    println!("✅ Pseudo Header Order 正常");
+    println!("✅ Pseudo Header Order works correctly");
     println!("   Chrome: {:?}", chrome_order);
     println!("   Firefox: {:?}", firefox_order);
     println!("   Safari: {:?}", safari_order);
 }
 
 // ============================================================================
-// 7. fingerprint比较testing
+// 7. Fingerprint comparison testing
 // ============================================================================
 
 #[test]
 fn test_fingerprint_comparison() {
-    println!("\n=== 指纹比较测试 ===");
+    println!("\n=== Fingerprint Comparison Test ===");
 
     let spec1 = chrome_133().tls_config;
     let spec2 = firefox_133().tls_config;
 
-    // 比较两个fingerprint
+    // Compare two fingerprints
     let comparison = compare_specs(&spec1, &spec2);
 
-    println!("✅ 指纹比较完成");
-    println!("   匹配结果: {:?}", comparison);
+    println!("✅ Fingerprint comparison completed");
+    println!("   Match result: {:?}", comparison);
 }
 
 #[test]
 fn test_fingerprint_matching() {
-    println!("\n=== 指纹匹配测试 ===");
+    println!("\n=== Fingerprint Matching Test ===");
 
     let target = chrome_133().tls_config;
     let candidates = vec![
@@ -532,41 +569,41 @@ fn test_fingerprint_matching() {
 
     let match_result = find_best_match(&target_sig, &candidates);
 
-    // 可能找不到完全匹配，但至少应该尝试匹配
+    // May not find perfect match, but should at least attempt matching
     if let Some(best_index) = match_result {
-        println!("✅ 最佳匹配找到");
-        println!("   最佳匹配索引: {}", best_index);
+        println!("✅ Best match found");
+        println!("   Best match index: {}", best_index);
     } else {
-        println!("⚠️  未找到最佳匹配（可能所有候选都不匹配）");
+        println!("⚠️  No best match found (possibly no candidates match)");
     }
 }
 
 // ============================================================================
-// 8. configure导出testing
+// 8. Configuration export testing
 // ============================================================================
 
 #[test]
 #[cfg(feature = "export")]
 fn test_config_export() {
-    println!("\n=== 配置导出测试 ===");
+    println!("\n=== Configuration Export Test ===");
 
     let profile = chrome_133();
     let spec = &profile.tls_config;
 
-    // 导出to JSON（如果support）
-    println!("✅ 配置导出功能可用");
+    // Export to JSON (if supported)
+    println!("✅ Configuration export feature available");
     println!("   Profile: {}", profile.id());
-    println!("   密码套件数量: {}", spec.cipher_suites.len());
-    println!("   扩展数量: {}", spec.extensions.len());
+    println!("   Cipher suite count: {}", spec.cipher_suites.len());
+    println!("   Extension count: {}", spec.extensions.len());
 }
 
 // ============================================================================
-// 9. performancetesting
+// 9. Performance testing
 // ============================================================================
 
 #[test]
 fn test_fingerprint_generation_performance() {
-    println!("\n=== 指纹生成性能测试 ===");
+    println!("\n=== Fingerprint Generation Performance Test ===");
 
     let iterations = 1000;
     let start = Instant::now();
@@ -578,18 +615,18 @@ fn test_fingerprint_generation_performance() {
     let duration = start.elapsed();
     let avg_time = duration.as_nanos() / iterations as u128;
 
-    println!("✅ 性能测试完成");
-    println!("   迭代次数: {}", iterations);
-    println!("   总时间: {:?}", duration);
-    println!("   平均时间: {} ns/次", avg_time);
+    println!("✅ Performance test completed");
+    println!("   Iterations: {}", iterations);
+    println!("   Total time: {:?}", duration);
+    println!("   Average time: {} ns/iteration", avg_time);
 
-    // 应该很快（< 1ms per iteration）
-    assert!(avg_time < 1_000_000, "每次生成应该 < 1ms");
+    // Should be fast (< 1ms per iteration)
+    assert!(avg_time < 1_000_000, "Each generation should be < 1ms");
 }
 
 #[test]
 fn test_http_request_building_performance() {
-    println!("\n=== HTTP 请求构建性能测试 ===");
+    println!("\n=== HTTP Request Building Performance Test ===");
 
     let iterations = 1000;
     let start = Instant::now();
@@ -603,96 +640,96 @@ fn test_http_request_building_performance() {
     let duration = start.elapsed();
     let avg_time = duration.as_nanos() / iterations as u128;
 
-    println!("✅ 请求构建性能测试完成");
-    println!("   迭代次数: {}", iterations);
-    println!("   总时间: {:?}", duration);
-    println!("   平均时间: {} ns/次", avg_time);
+    println!("✅ Request building performance test completed");
+    println!("   Iterations: {}", iterations);
+    println!("   Total time: {:?}", duration);
+    println!("   Average time: {} ns/iteration", avg_time);
 }
 
 // ============================================================================
-// 10. errorprocesstesting
+// 10. Error processing testing
 // ============================================================================
 
 #[test]
 fn test_error_handling() {
-    println!("\n=== 错误处理测试 ===");
+    println!("\n=== Error Handling Test ===");
 
-    // testinginvalid浏览器name
+    // Testing invalid browser name
     let result = get_random_fingerprint_by_browser("invalid_browser");
-    assert!(result.is_err(), "无效浏览器应该返回错误");
+    assert!(result.is_err(), "Invalid browser should return error");
 
-    // testinginvalid User-Agent generate
+    // Testing invalid User-Agent generation
     let result = get_user_agent_by_profile_name("Invalid-Profile");
-    // 可能return空string而不是error，这是可接受of
+    // May return empty string instead of error, this is acceptable
     if let Ok(ua) = result {
         if ua.is_empty() {
-            println!("✅ 无效配置返回空字符串（可接受）");
+            println!("✅ Invalid configuration returns empty string (acceptable)");
         }
     } else {
-        println!("✅ 无效配置返回错误（符合预期）");
+        println!("✅ Invalid configuration returns error (as expected)");
     }
 
-    println!("✅ 错误处理正常");
+    println!("✅ Error handling works correctly");
 }
 
 // ============================================================================
-// 11. 集成testing
+// 11. Integration testing
 // ============================================================================
 
 #[test]
 fn test_full_integration() {
-    println!("\n=== 完整集成测试 ===");
+    println!("\n=== Full Integration Test ===");
 
-    // 1. 获取随机指纹
+    // 1. Get random fingerprint
     let fp_result = get_random_fingerprint().unwrap();
 
-    // 2. 创建 HTTP 客户端配置（不加载 profile，因为可能在 mapped_tls_clients 中不存在）
+    // 2. Create HTTP client configuration (not loading profile, because it may not exist in mapped_tls_clients)
     let config = HttpClientConfig {
         user_agent: fp_result.user_agent.clone(),
         headers: fp_result.headers.clone(),
-        profile: None, // 不设置 profile，测试基本功能
+        profile: None, // Don't set profile, test basic functionality
         prefer_http2: true,
         ..Default::default()
     };
 
-    // 3. 创建客户端
+    // 3. Create client
     let _client = HttpClient::new(config);
 
-    // 4. 构建请求
+    // 4. Build request
     let _request =
         HttpRequest::new(HttpMethod::Get, "https://example.com/").with_headers(&fp_result.headers);
 
-    println!("✅ 完整集成测试通过");
-    println!("   浏览器: {}", fp_result.profile_id);
+    println!("✅ Full integration test passed");
+    println!("   Browser: {}", fp_result.profile_id);
     println!("   User-Agent: {}", fp_result.user_agent);
 }
 
 // ============================================================================
-// 12. 边界条件testing
+// 12. Boundary conditions testing
 // ============================================================================
 
 #[test]
 fn test_edge_cases() {
-    println!("\n=== 边界条件测试 ===");
+    println!("\n=== Boundary Conditions Test ===");
 
-    // testing空string
+    // Testing empty string
     let empty_headers = HTTPHeaders::default();
     assert!(empty_headers.user_agent.is_empty() || !empty_headers.user_agent.is_empty());
 
-    // testingdefaultconfigure
+    // Testing default configuration
     let default_config = HttpClientConfig::default();
     assert!(!default_config.user_agent.is_empty());
 
-    println!("✅ 边界条件测试通过");
+    println!("✅ Boundary conditions test passed");
 }
 
 // ============================================================================
-// 13. concurrentsecuritytesting
+// 13. Concurrent security testing
 // ============================================================================
 
 #[test]
 fn test_concurrent_access() {
-    println!("\n=== 并发安全测试 ===");
+    println!("\n=== Concurrent Security Test ===");
 
     use std::thread;
 
@@ -709,33 +746,33 @@ fn test_concurrent_access() {
         handle.join().unwrap();
     }
 
-    println!("✅ 并发安全测试通过");
+    println!("✅ Concurrent security test passed");
 }
 
 // ============================================================================
-// 14. testing总结
+// 14. Testing summary
 // ============================================================================
 
 #[test]
 fn test_summary() {
     println!("\n");
     println!("═══════════════════════════════════════════════════════════");
-    println!("   fingerprint-rust 全面测试套件");
+    println!("   fingerprint-rust comprehensive test suite");
     println!("═══════════════════════════════════════════════════════════");
     println!();
-    println!("✅ TLS 指纹生成和验证");
-    println!("✅ 浏览器指纹配置（66+ 浏览器）");
-    println!("✅ User-Agent 和 Headers 生成");
-    println!("✅ HTTP 客户端（H1/H2/H3）");
-    println!("✅ Cookie 管理");
-    println!("✅ HTTP/2 配置");
-    println!("✅ 指纹比较和匹配");
-    println!("✅ 性能测试");
-    println!("✅ 错误处理");
-    println!("✅ 并发安全");
+    println!("✅ TLS fingerprint generation and validation");
+    println!("✅ Browser fingerprint configuration (66+ browsers)");
+    println!("✅ User-Agent and Headers generation");
+    println!("✅ HTTP client (H1/H2/H3)");
+    println!("✅ Cookie management");
+    println!("✅ HTTP/2 configuration");
+    println!("✅ Fingerprint comparison and matching");
+    println!("✅ Performance test");
+    println!("✅ Error handling");
+    println!("✅ Concurrent security");
     println!();
     println!("═══════════════════════════════════════════════════════════");
 }
 
-// TCP fingerprintsync演示已移至 tcp_sync_demo_test.rs
-// 请use独立oftestingfile：tests/tcp_sync_demo_test.rs
+// TCP fingerprint sync demo has been moved to tcp_sync_demo_test.rs
+// Please use separate testing file: tests/tcp_sync_demo_test.rs

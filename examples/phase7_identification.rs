@@ -1,33 +1,33 @@
-// Phase 7.1.2: JA3计算与单次识别准确性测试
-// 对所有66个浏览器配置进行单次会话识别准确性测试
+// Phase 7.1.2: JA3 calculation and single-session identification accuracy test
+// Single-session identification accuracy test for all 66 browser configurations
 
 use std::collections::HashMap;
 use std::fs;
 
 fn main() {
     println!("╔══════════════════════════════════════════════════════════╗");
-    println!("║  Phase 7.1.2: JA3计算与单次识别准确性测试              ║");
+    println!("║  Phase 7.1.2: JA3 calculation and single-session identification accuracy test  ║");
     println!("╚══════════════════════════════════════════════════════════╝");
     println!();
 
-    // 1. 加载所有配置文件
-    println!("▶ 步骤1: 加载配置文件");
+    // 1. Load all configuration files
+    println!("▶ Step 1: Load configuration files");
     let profiles_dir = "./exported_profiles";
     let profiles = load_profiles(profiles_dir);
-    println!("  ✓ 已加载 {} 个配置文件", profiles.len());
+    println!("  ✓ Loaded {} configuration files", profiles.len());
     println!();
 
-    // 2. 计算JA3指纹
-    println!("▶ 步骤2: 计算JA3指纹");
+    // 2. Calculate JA3 fingerprints
+    println!("▶ Step 2: Calculate JA3 fingerprints");
     let mut ja3_data = HashMap::new();
     let mut grease_count = 0;
 
     for profile in &profiles {
         let profile_name = &profile.name;
         
-        // 提取TLS参数
+        // Extract TLS parameters
         if let Some(tls) = profile.tls_params.as_ref() {
-            // 简化的JA3计算 (实际应使用完整的fingerprint-core库)
+            // Simplified JA3 calculation (actual should use the complete fingerprint-core library)
             let ja3 = format!(
                 "{},{},{},{},{}",
                 tls.get("version").unwrap_or(&"".to_string()),
@@ -39,7 +39,7 @@ fn main() {
 
             ja3_data.insert(profile_name.clone(), ja3);
 
-            // 检测GREASE
+            // Detect GREASE
             if let Some(has_grease) = tls.get("has_grease") {
                 if has_grease == "true" {
                     grease_count += 1;
@@ -47,18 +47,18 @@ fn main() {
             }
         }
     }
-    println!("  ✓ 计算了 {} 个JA3指纹", ja3_data.len());
-    println!("  ✓ 检测到 {} 个包含GREASE的配置", grease_count);
+    println!("  ✓ Calculated {} JA3 fingerprints", ja3_data.len());
+    println!("  ✓ Detected {} configurations with GREASE", grease_count);
     println!();
 
-    // 3. 进行识别准确性测试
-    println!("▶ 步骤3: 单次识别准确性测试");
+    // 3. Perform identification accuracy test
+    println!("▶ Step 3: Single-session identification accuracy test");
     let mut results = IdentificationResults::new();
 
     for profile in &profiles {
         let ja3 = ja3_data.get(&profile.name).cloned().unwrap_or_default();
         
-        // 简化的识别逻辑: 基于浏览器名称前缀匹配
+        // Simplified identification logic: based on browser name prefix matching
         let predicted = predict_browser(&ja3, &profile.name);
         
         let is_correct = predicted.family == profile.family && predicted.version == profile.version;
@@ -72,23 +72,23 @@ fn main() {
             is_correct,
         );
     }
-    println!("  ✓ 完成 {} 个配置的识别测试", profiles.len());
+    println!("  ✓ Completed identification test for {} configurations", profiles.len());
     println!();
 
-    // 4. 生成统计报告
-    println!("▶ 步骤4: 生成统计报告");
+    // 4. Generate statistics report
+    println!("▶ Step 4: Generate statistics report");
     results.print_summary();
     println!();
 
-    // 5. 保存详细报告
-    println!("▶ 步骤5: 保存详细报告");
+    // 5. Save detailed report
+    println!("▶ Step 5: Save detailed report");
     save_report(&results).expect("Failed to save report");
-    println!("  ✓ 报告已保存到 phase7_results/");
+    println!("  ✓ Report saved to phase7_results/");
     println!();
 
-    // 6. 汇总结果
+    // 6. Summarize results
     println!("╔══════════════════════════════════════════════════════════╗");
-    println!("║  Phase 7.1.2 完成                                       ║");
+    println!("║  Phase 7.1.2 completed                                    ║");
     println!("╚══════════════════════════════════════════════════════════╝");
 }
 
@@ -143,7 +143,7 @@ impl IdentificationResults {
         is_correct: bool,
     ) {
         let is_family_correct = expected_family == predicted_family;
-        let predicted_version = "".to_string(); // 简化版本
+        let predicted_version = "".to_string(); // Simplified version
 
         self.results.push(IdentificationResult {
             config_name: config_name.to_string(),
@@ -156,7 +156,7 @@ impl IdentificationResults {
             is_family_correct,
         });
 
-        // 更新族群准确性统计
+        // Update family accuracy statistics
         let entry = self.family_accuracy.entry(expected_family.to_string())
             .or_insert((0, 0));
         entry.1 += 1;
@@ -173,12 +173,12 @@ impl IdentificationResults {
         let overall_accuracy = (correct as f64 / total as f64) * 100.0;
         let family_accuracy = (family_correct as f64 / total as f64) * 100.0;
 
-        println!("📊 总体识别准确性");
-        println!("  └─ 总体准确率: {:.2}% ({}/{})", overall_accuracy, correct, total);
-        println!("  └─ 族群准确率: {:.2}% ({}/{})", family_accuracy, family_correct, total);
+        println!("📊 Overall identification accuracy");
+        println!("  └─ Overall accuracy: {:.2}% ({}/{})", overall_accuracy, correct, total);
+        println!("  └─ Family accuracy: {:.2}% ({}/{})", family_accuracy, family_correct, total);
         println!();
 
-        println!("📊 按浏览器族群的准确性");
+        println!("📊 Accuracy by browser family");
         let mut families: Vec<_> = self.family_accuracy.iter().collect();
         families.sort_by_key(|a| a.0);
 
@@ -190,15 +190,15 @@ impl IdentificationResults {
         }
         println!();
 
-        // 识别错误的配置
+        // Identification errors
         let mismatches: Vec<_> = self.results.iter()
             .filter(|r| !r.is_correct)
             .collect();
         
         if !mismatches.is_empty() {
-            println!("⚠️  识别错误的配置 ({})", mismatches.len());
+            println!("⚠️  Identification errors ({})", mismatches.len());
             for mismatch in mismatches.iter().take(10) {
-                println!("  └─ {}: 预期{} {}, 识别{} (相似度: {:.2}%)",
+                println!("  └─ {}: Expected {} {}, Identified {} (similarity: {:.2}%)",
                     mismatch.config_name,
                     mismatch.expected_family,
                     mismatch.expected_version,
@@ -207,10 +207,10 @@ impl IdentificationResults {
                 );
             }
             if mismatches.len() > 10 {
-                println!("  └─ ... 及更多 {} 个", mismatches.len() - 10);
+                println!("  └─ ... and {} more", mismatches.len() - 10);
             }
         } else {
-            println!("✅ 所有配置全部正确识别!");
+            println!("✅ All configurations identified correctly!");
         }
     }
 }
@@ -229,7 +229,7 @@ fn load_profiles(dir: &str) -> Vec<Profile> {
                                 .unwrap_or("unknown")
                                 .to_string();
 
-                            // 解析浏览器名称和版本
+                            // Parse browser name and version
                             let parts: Vec<&str> = file_name.split('_').collect();
                             let family = parts.get(0).unwrap_or(&"unknown").to_string();
                             let version = if parts.len() > 1 {
@@ -238,7 +238,7 @@ fn load_profiles(dir: &str) -> Vec<Profile> {
                                 "unknown".to_string()
                             };
 
-                            // 提取TLS参数
+                            // Extract TLS parameters
                             let mut tls_params = HashMap::new();
                             if let Some(tls) = json_data.get("tls") {
                                 if let Some(version_str) = tls.get("version").and_then(|v| v.as_str()) {
@@ -270,7 +270,7 @@ fn load_profiles(dir: &str) -> Vec<Profile> {
 }
 
 fn predict_browser(ja3: &str, profile_name: &str) -> PredictionResult {
-    // 简化的预测: 基于配置名称来预测
+    // Simplified prediction: based on configuration name
     let parts: Vec<&str> = profile_name.split('_').collect();
     let family = parts.get(0).unwrap_or(&"unknown").to_string();
     let version = if parts.len() > 1 {
@@ -279,7 +279,7 @@ fn predict_browser(ja3: &str, profile_name: &str) -> PredictionResult {
         "unknown".to_string()
     };
 
-    // 简化的相似度计算
+    // Simplified similarity calculation
     let similarity = if ja3.contains(&family) { 0.95 } else { 0.5 };
 
     PredictionResult {
@@ -290,11 +290,11 @@ fn predict_browser(ja3: &str, profile_name: &str) -> PredictionResult {
 }
 
 fn save_report(results: &IdentificationResults) -> std::io::Result<()> {
-    // 创建结果目录
+    // Create results directory
     fs::create_dir_all("phase7_results")?;
 
-    // 保存CSV格式的详细结果
-    let mut csv_content = String::from("配置,期望族群,期望版本,预测族群,相似度,是否正确\n");
+    // Save CSV format detailed results
+    let mut csv_content = String::from("Configuration,Expected Family,Expected Version,Predicted Family,Similarity,Correct\n");
     for result in &results.results {
         csv_content.push_str(&format!(
             "{},{},{},{},{},{}\n",
@@ -303,12 +303,12 @@ fn save_report(results: &IdentificationResults) -> std::io::Result<()> {
             result.expected_version,
             result.predicted_family,
             format!("{:.4}", result.similarity),
-            if result.is_correct { "是" } else { "否" },
+            if result.is_correct { "Yes" } else { "No" },
         ));
     }
     fs::write("phase7_results/identification_results_detail.csv", csv_content)?;
 
-    // 保存Markdown格式的汇总报告
+    // Save Markdown format summary report
     let total = results.results.len();
     let correct = results.results.iter().filter(|r| r.is_correct).count();
     let family_correct = results.results.iter().filter(|r| r.is_family_correct).count();
@@ -316,33 +316,33 @@ fn save_report(results: &IdentificationResults) -> std::io::Result<()> {
     let family_accuracy = (family_correct as f64 / total as f64) * 100.0;
 
     let mut markdown_content = String::from(
-        "# Phase 7.1.2 识别准确性测试报告\n\n"
+        "# Phase 7.1.2 Identification Accuracy Test Report\n\n"
     );
-    markdown_content.push_str("## 执行摘要\n\n");
+    markdown_content.push_str("## Execution Summary\n\n");
     markdown_content.push_str(&format!(
-        "对所有66个浏览器配置进行了单次会话TLS指纹识别测试。\n\n"
+        "Single-session TLS fingerprint identification test performed for all 66 browser configurations.\n\n"
     ));
 
-    markdown_content.push_str("## 总体准确性\n\n");
-    markdown_content.push_str("| 指标 | 数值 | 目标 | 状态 |\n");
+    markdown_content.push_str("## Overall Accuracy\n\n");
+    markdown_content.push_str("| Metric | Value | Target | Status |\n");
     markdown_content.push_str("|------|------|------|------|\n");
     markdown_content.push_str(&format!(
-        "| 浏览器族群准确率 | {:.2}% | ≥99% | {} |\n",
+        "| Family accuracy | {:.2}% | ≥99% | {} |\n",
         family_accuracy,
         if family_accuracy >= 99.0 { "✅" } else { "⚠️ " }
     ));
     markdown_content.push_str(&format!(
-        "| 完全匹配准确率 | {:.2}% | ≥95% | {} |\n",
+        "| Full match accuracy | {:.2}% | ≥95% | {} |\n",
         overall_accuracy,
         if overall_accuracy >= 95.0 { "✅" } else { "⚠️ " }
     ));
     markdown_content.push_str(&format!(
-        "| 识别样本数 | {} | 66 | ✅ |\n",
+        "| Number of samples | {} | 66 | ✅ |\n",
         total
     ));
 
-    markdown_content.push_str("\n## 按浏览器族群的准确性\n\n");
-    markdown_content.push_str("| 浏览器族群 | 准确率 | 正确/总数 | 状态 |\n");
+    markdown_content.push_str("\n## Accuracy by Browser Family\n\n");
+    markdown_content.push_str("| Browser Family | Accuracy | Correct/Total | Status |\n");
     markdown_content.push_str("|-----------|--------|----------|------|\n");
 
     let mut families: Vec<_> = results.family_accuracy.iter().collect();
@@ -357,13 +357,13 @@ fn save_report(results: &IdentificationResults) -> std::io::Result<()> {
         ));
     }
 
-    markdown_content.push_str("\n## 关键发现\n\n");
+    markdown_content.push_str("\n## Key Findings\n\n");
     markdown_content.push_str(&format!(
-        "✅ 浏览器族群识别准确率: **{:.2}%**\n",
+        "✅ Browser family identification accuracy: **{:.2}%**\n",
         family_accuracy
     ));
     markdown_content.push_str(&format!(
-        "✅ 完全版本匹配准确率: **{:.2}%**\n\n",
+        "✅ Full version match accuracy: **{:.2}%**\n\n",
         overall_accuracy
     ));
 
@@ -371,45 +371,45 @@ fn save_report(results: &IdentificationResults) -> std::io::Result<()> {
         .filter(|r| !r.is_correct)
         .collect();
     if mismatches.is_empty() {
-        markdown_content.push_str("🎉 **完美成就**: 所有66个配置全部正确识别!\n\n");
+        markdown_content.push_str("🎉 **Perfect Achievement**: All 66 configurations identified correctly!\n\n");
     } else {
         markdown_content.push_str(&format!(
-            "⚠️  识别失败: {} 个配置 ({:.2}%)\n\n",
+            "⚠️  Identification failures: {} configurations ({:.2}%)\n\n",
             mismatches.len(),
             (mismatches.len() as f64 / total as f64) * 100.0
         ));
     }
 
-    markdown_content.push_str("## 下一步建议\n\n");
+    markdown_content.push_str("## Next Steps\n\n");
     if family_accuracy >= 99.0 && overall_accuracy >= 95.0 {
         markdown_content.push_str(
-            "✅ **准确性已达标**\n\n\
-            准备进行Phase 7.1.3 - 相似度矩阵与混淆对分析\n"
+            "✅ **Accuracy met**\n\n\
+            Prepare for Phase 7.1.3 - Similarity Matrix and Confusion Pair Analysis\n"
         );
     } else if family_accuracy >= 95.0 {
         markdown_content.push_str(
-            "⚠️  **族群识别准确，版本识别需改进**\n\n\
-            建议:\n\
-            1. 分析容易混淆的版本对\n\
-            2. 使用HTTP特征补充\n\
-            3. 调整JA3权重\n"
+            "⚠️  **Family identification accurate, version identification needs improvement**\n\n\
+            Suggestions:\n\
+            1. Analyze easily confused version pairs\n\
+            2. Use HTTP features as supplement\n\
+            3. Adjust JA3 weights\n"
         );
     } else {
         markdown_content.push_str(
-            "❌ **准确性未达标，需调查**\n\n\
-            建议:\n\
-            1. 检查配置文件完整性\n\
-            2. 验证TLS参数提取正确性\n\
-            3. 增加GREASE处理\n"
+            "❌ **Accuracy not met, investigation needed**\n\n\
+            Suggestions:\n\
+            1. Check configuration file integrity\n\
+            2. Verify TLS parameter extraction correctness\n\
+            3. Increase GREASE handling\n"
         );
     }
 
-    markdown_content.push_str("\n---\n\n报告生成: 2026-02-12 15:30:00\n");
+    markdown_content.push_str("\n---\n\nReport generated: 2026-02-12 15:30:00\n");
 
     fs::write("phase7_results/identification_accuracy_report.md", markdown_content)?;
 
-    println!("  ✓ 详细结果已保存到: phase7_results/identification_results_detail.csv");
-    println!("  ✓ 准确性报告已保存到: phase7_results/identification_accuracy_report.md");
+    println!("  ✓ Detailed results saved to: phase7_results/identification_results_detail.csv");
+    println!("  ✓ Accuracy report saved to: phase7_results/identification_accuracy_report.md");
 
     Ok(())
 }

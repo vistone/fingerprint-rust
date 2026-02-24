@@ -1,10 +1,10 @@
-//! fingerprintcoreabstract
+//! Fingerprint core abstraction
 //!
-//! defineunifiedfingerprint abstractions, support TLS, HTTP, TCP etc.multiple fingerprint types.
+//! Define unified fingerprint abstractions, support TLS, HTTP, TCP and other multiple fingerprint types.
 
 use crate::metadata::FingerprintMetadata;
 
-/// fingerprinttype
+/// Fingerprint type
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum FingerprintType {
     /// TLS fingerprint
@@ -16,7 +16,7 @@ pub enum FingerprintType {
 }
 
 impl FingerprintType {
-    /// convert tostring
+    /// Convert to string
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::Tls => "tls",
@@ -32,50 +32,50 @@ impl std::fmt::Display for FingerprintType {
     }
 }
 
-/// fingerprint abstractions trait
+/// Fingerprint abstractions trait
 ///
-/// allfingerprinttype (TLS, HTTP, TCP)都shouldimplementthis trait
+/// All fingerprint types (TLS, HTTP, TCP) should implement this trait
 pub trait Fingerprint: Send + Sync {
-    /// Getfingerprinttype
+    /// Get fingerprint type
     fn fingerprint_type(&self) -> FingerprintType;
 
-    /// Getfingerprintuniqueidentifiersymbol (usually is hashvalue)
+    /// Get fingerprint unique identifier symbol (usually is hash value)
     fn id(&self) -> String;
 
-    /// Getfingerprintmetadata
+    /// Get fingerprint metadata
     fn metadata(&self) -> &FingerprintMetadata;
 
-    /// Getfingerprintmetadata (mutablereference)
+    /// Get fingerprint metadata (mutable reference)
     fn metadata_mut(&mut self) -> &mut FingerprintMetadata;
 
-    /// Calculatefingerprinthashvalue ( for fastcompare)
+    /// Calculate fingerprint hash value (for fast compare)
     fn hash(&self) -> u64;
 
-    /// compare twofingerprintwhethersimilar
+    /// Compare two fingerprints whether similar
     fn similar_to(&self, other: &dyn Fingerprint) -> bool;
 
-    /// Getfingerprintstringrepresent ( for debug and log)
+    /// Get fingerprint string represent (for debug and log)
     fn to_string(&self) -> String;
 }
 
-/// fingerprintcompareresult
+/// Fingerprint compare result
 #[derive(Debug, Clone, PartialEq)]
 pub struct FingerprintComparison {
-    /// similardegreeminutecount (0.0 - 1.0)
+    /// Similar degree minute count (0.0 - 1.0)
     pub similarity: f64,
 
-    /// whethermatch
+    /// Whether match
     pub matched: bool,
 
-    /// matchfield
+    /// Match field
     pub matched_fields: Vec<String>,
 
-    /// does not matchfield
+    /// Does not match field
     pub unmatched_fields: Vec<String>,
 }
 
 impl FingerprintComparison {
-    /// Create a newcompareresult
+    /// Create a new compare result
     pub fn new(similarity: f64, matched: bool) -> Self {
         Self {
             similarity,
@@ -85,7 +85,7 @@ impl FingerprintComparison {
         }
     }
 
-    /// Createcompletelymatchresult
+    /// Create completely match result
     pub fn perfect_match() -> Self {
         Self {
             similarity: 1.0,
@@ -95,7 +95,7 @@ impl FingerprintComparison {
         }
     }
 
-    /// Createcompletelydoes not matchresult
+    /// Create completely does not match result
     pub fn no_match() -> Self {
         Self {
             similarity: 0.0,
@@ -106,7 +106,7 @@ impl FingerprintComparison {
     }
 }
 
-/// fingerprintcompareer
+/// Fingerprint compareer
 pub struct FingerprintComparator;
 
 impl FingerprintComparator {

@@ -109,7 +109,7 @@ pub fn get_random_fingerprint_by_browser(
     get_random_fingerprint_by_browser_with_os(browser_type, None)
 }
 
-/// Based on browser type randomly get fingerprint and User-Agent, 并specified operating system
+/// Based on browser type randomly get fingerprint and User-Agent, and specified operating system
 pub fn get_random_fingerprint_by_browser_with_os(
     browser_type: &str,
     os: Option<OperatingSystem>,
@@ -125,7 +125,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
     let browser_type_lower = browser_type.to_lowercase();
 
-    // filter out specified browser type fingerprint
+    // Filter out specified browser type fingerprint
     let candidates: Vec<String> = clients
         .keys()
         .filter(|name| {
@@ -141,7 +141,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
         }));
     }
 
-    // randomly select an (thread security)
+    // Randomly select an (thread security)
     let candidate_refs: Vec<&str> = candidates.iter().map(|s| s.as_str()).collect();
     let random_name = random_choice_string(&candidate_refs)
         .ok_or_else(|| "failed to select random profile".to_string())?;
@@ -152,7 +152,7 @@ pub fn get_random_fingerprint_by_browser_with_os(
 
     let profile_id = profile.id();
 
-    // Get pair should User-Agent
+    // Get paired User-Agent
     let ua = match os {
         Some(os) => get_user_agent_by_profile_name_with_os(&random_name, os)?,
         None => get_user_agent_by_profile_name(&random_name)?,
@@ -206,12 +206,12 @@ mod tests {
         println!("╚════════════════════════════════════════════════════════════════╝\n");
 
         println!(
-            "【test】randomly select browser fingerprint (Validate TCP fingerprint automatic sync)\n"
+            "【test】Randomly select browser fingerprint (Validate TCP fingerprint automatic sync)\n"
         );
 
         for i in 1..=5 {
             println!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            println!("第 {} 次 randomly select：", i);
+            println!("Round {} randomly select：", i);
 
             let result = get_random_fingerprint().unwrap();
             let user_agent = &result.user_agent;
@@ -235,8 +235,8 @@ mod tests {
 
             println!(" Profile ID: {}", profile_id);
 
-            // 如果requireTCPconfigureinfo，可ending withthroughprofile_idget
-            // 这里暂时comment掉TCPconfigurecheck逻辑
+            // If TCP configuration info is required, it can be obtained through profile_id
+            // Temporarily comment out TCP configuration check logic
             /*
             if let Some(tcp_profile) = &profile.tcp_profile {
                 println!(" TCP Profile:");

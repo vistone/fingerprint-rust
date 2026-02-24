@@ -2,13 +2,13 @@
 
 //! # Timing Fingerprint Module
 //!
-//! Timing 攻击防护模块
+//! Timing attack protection module
 //!
-//! 提供时间戳一致性检查和 timing 侧信道防护
+//! Provides timestamp consistency checking and timing side-channel protection
 
 use std::time::{Duration, SystemTime};
 
-/// timingfingerprint
+/// Timing fingerprint
 #[derive(Debug, Clone)]
 pub struct TimingFingerprint {
     /// time戳

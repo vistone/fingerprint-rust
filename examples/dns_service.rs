@@ -25,11 +25,11 @@ async fn main() {
         process::exit(1);
     };
 
-    // 加载配置（验证配置有效性）
+    // Load configuration (validate configuration validity)
     let _config = match load_config(config_path) {
         Ok(cfg) => cfg,
         Err(e) => {
-            eprintln!("加载配置失败: {}", e);
+            eprintln!("Failed to load configuration: {}", e);
             process::exit(1);
         }
     };

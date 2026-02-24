@@ -1,8 +1,8 @@
-//! TLS extensionmodule
+//! TLS extension module
 //!
-//! implementeach种 TLS extension, Corresponds to Go version's tls.TLSExtension
+//! Implement each kind of TLS extension, corresponds to Go version's tls.TLSExtension
 //!
-//! reference：<https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go>
+//! Reference: <https://github.com/refraction-networking/utls/blob/master/u_tls_extensions.go>
 
 use fingerprint_core::dicttls::extensions::*;
 use fingerprint_core::dicttls::signature_schemes::SignatureScheme;
@@ -27,31 +27,31 @@ pub struct KeyShare {
 /// TLS extension trait
 /// Corresponds to Go version's tls.TLSExtension interface
 pub trait TLSExtension: std::fmt::Debug + Any + Send {
-    /// Getextensionlength (includeheader)
+    /// Get extension length (include header)
     /// Corresponds to Go version's Len() int
     fn len(&self) -> usize;
 
-    /// Checkextensionwhether as empty
-    /// defaultimplement：length as 0 when as empty
+    /// Check extension whether as empty
+    /// Default implement: length as 0 when as empty
     fn is_empty(&self) -> bool {
         self.len() == 0
     }
 
-    /// readextensioncountdata to bytesbuffer
+    /// Read extension count data to bytes buffer
     /// Corresponds to Go version's Read(p []byte) (n int, err error)
     fn read(&self, buf: &mut [u8]) -> io::Result<usize>;
 
-    /// Getextension ID
+    /// Get extension ID
     fn extension_id(&self) -> ExtensionID;
 
-    /// convert to Any trait object,  for towarddowntransform
+    /// Convert to Any trait object, for toward down transform
     fn as_any(&self) -> &dyn Any;
 }
 
 /// TLS extension Writer trait
 /// Corresponds to Go version's tls.TLSExtensionWriter interface
 pub trait TLSExtensionWriter: TLSExtension {
-    /// from bytesbufferwriteextensioncountdata
+    /// From bytes buffer write extension count data
     /// Corresponds to Go version's Write(b []byte) (n int, err error)
     fn write(&mut self, buf: &[u8]) -> io::Result<usize>;
 }
