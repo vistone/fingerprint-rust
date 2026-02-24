@@ -315,7 +315,7 @@ jobs:
       - name: Run tests under MIRI
         run: cargo +nightly miri test --workspace --lib
         env:
-          MIRIFLAGS: -Zmiri-strict-provenance
+          MIRIFLAGS: -Zmiri-strict-provenance -Zmiri-disable-isolation
 
   # ============================================================
   # Status Check
