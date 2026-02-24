@@ -110,37 +110,74 @@ impl FingerprintComparison {
 pub struct FingerprintComparator;
 
 impl FingerprintComparator {
-    /// compare twofingerprint
+    /// compare two fingerprint using field-level similarity instead of unreliable hash
     pub fn compare(f1: &dyn Fingerprint, f2: &dyn Fingerprint) -> FingerprintComparison {
-        // typemustsame
+        // type must be same
         if f1.fingerprint_type() != f2.fingerprint_type() {
             return FingerprintComparison::no_match();
         }
 
-        // use similar_to methodperformcompare
+        // use similar_to method for exact match
         if f1.similar_to(f2) {
-            FingerprintComparison::perfect_match()
+            return FingerprintComparison::perfect_match();
+        }
+
+        // Calculate field-level similarity for softer matching
+        let meta1 = f1.metadata();
+        let meta2 = f2.metadata();
+
+        let mut matched_fields = Vec::new();
+        let mut unmatched_fields = Vec::new();
+        let mut total_fields = 0;
+        let mut matching_count = 0;
+
+        // Browser type field comparison
+        total_fields += 1;
+        if meta1.browser_type == meta2.browser_type {
+            matching_count += 1;
+            matched_fields.push("browser_type".to_string());
         } else {
-            // Calculatesimilardegree (based onhashvalue)
-            let h1 = f1.hash();
-            let h2 = f2.hash();
+            unmatched_fields.push("browser_type".to_string());
+        }
 
-            // simplesimilardegreeCalculate (based onhashvalue汉cleardistance)
-            let similarity = if h1 == h2 {
-                1.0
-            } else {
-                // Calculatehashvaluedifference
-                let diff = (h1 ^ h2).count_ones() as f64;
-                let max_diff = 64.0; // u64 maximumbit count
-                1.0 - (diff / max_diff)
-            };
+        // Operating system type field comparison
+        total_fields += 1;
+        if meta1.os_type == meta2.os_type {
+            matching_count += 1;
+            matched_fields.push("os_type".to_string());
+        } else {
+            unmatched_fields.push("os_type".to_string());
+        }
 
-            FingerprintComparison {
-                similarity,
-                matched: similarity > 0.8, // similarthresholdvalue
-                matched_fields: Vec::new(),
-                unmatched_fields: Vec::new(),
-            }
+        // Confidence field comparison (within 0.1 threshold)
+        total_fields += 1;
+        if (meta1.confidence - meta2.confidence).abs() < 0.1 {
+            matching_count += 1;
+            matched_fields.push("confidence".to_string());
+        } else {
+            unmatched_fields.push("confidence".to_string());
+        }
+
+        // Tags field comparison (any overlap counts as match)
+        total_fields += 1;
+        let has_common_tags = meta1.tags.iter().any(|tag| meta2.tags.contains(tag));
+        if has_common_tags || (meta1.tags.is_empty() && meta2.tags.is_empty()) {
+            matching_count += 1;
+            matched_fields.push("tags".to_string());
+        } else {
+            unmatched_fields.push("tags".to_string());
+        }
+
+        // Calculate similarity based on matching fields
+        let similarity = matching_count as f64 / total_fields as f64;
+
+        // Use more conservative matching threshold (0.6 instead of 0.8)
+        // Require at least 60% field match to be considered similar
+        FingerprintComparison {
+            similarity,
+            matched: similarity >= 0.6,
+            matched_fields,
+            unmatched_fields,
         }
     }
 }

@@ -178,7 +178,7 @@ impl TLSExtension for SNIExtension {
 
 impl TLSExtensionWriter for SNIExtension {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
-        // SNI Write is no-op, because SNI 不should被fingerprint化, is usercontrolof
+        // SNI Write is no-op, because SNI should not be fingerprinted, it is user controlled
         Ok(buf.len())
     }
 }
@@ -1401,7 +1401,7 @@ impl Clone for UtlsPaddingExtension {
         Self {
             padding_len: self.padding_len,
             will_pad: self.will_pad,
-            get_padding_len: None, // 不clonefunctionpointer
+            get_padding_len: None, // Cannot clone function pointer
         }
     }
 }

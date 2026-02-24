@@ -233,7 +233,9 @@ impl HttpClient {
 
     /// Send custom request (support redirect)
     pub fn send_request(&self, request: &HttpRequest) -> Result<HttpResponse> {
-        self.send_request_with_redirects(request, 0)
+        use std::time::Instant;
+        let request_start = Instant::now();
+        self.send_request_with_redirects(request, 0, request_start)
     }
 
     /// Send request and process redirect
@@ -241,21 +243,29 @@ impl HttpClient {
         &self,
         request: &HttpRequest,
         redirect_count: usize,
+        request_start: std::time::Instant,
     ) -> Result<HttpResponse> {
         self.send_request_with_redirects_internal(
             request,
             redirect_count,
             &mut std::collections::HashSet::new(),
+            request_start,
         )
     }
 
-    /// Inside redirect process (bring loop detect)
+    /// Inside redirect process (bring loop detect and cumulative timeout protection)
     fn send_request_with_redirects_internal(
         &self,
         request: &HttpRequest,
         redirect_count: usize,
         visited_urls: &mut std::collections::HashSet<String>,
+        request_start: std::time::Instant,
     ) -> Result<HttpResponse> {
+        // Check cumulative timeout (5 minutes maximum for entire request including redirects)
+        if request_start.elapsed() > Duration::from_secs(300) {
+            return Err(HttpClientError::Timeout);
+        }
+
         // Check redirect times count
         if redirect_count >= self.config.max_redirects {
             return Err(HttpClientError::InvalidResponse(format!(
@@ -384,6 +394,7 @@ impl HttpClient {
                     &final_redirect_request,
                     redirect_count + 1,
                     visited_urls,
+                    request_start,
                 );
             }
         }

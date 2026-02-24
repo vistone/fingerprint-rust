@@ -24,14 +24,14 @@ serde_json.workspace = true
 dashmap = "5.5"
 parking_lot = "0.12"
 lru = "0.16"
+tokio = { workspace = true, features = ["sync"] }
 
 # Optional Redis support
 redis = { version = "0.25", features = ["tokio-comp", "connection-manager"], optional = true }
-tokio = { workspace = true, optional = true }
 
 [features]
 default = []
-redis-cache = ["redis", "tokio"]
+redis-cache = ["redis"]
 
 [dev-dependencies]
 serde = { workspace = true, features = ["derive"] }

@@ -74,7 +74,7 @@ impl SelfLearningAnalyzer {
     pub fn process_result(&self, result: &PassiveAnalysisResult) {
         // 分别process各层fingerprint
         if let Some(tls) = &result.tls {
-            // TLS直接use观察ID (JA4)
+            // Use TLS observation ID directly (JA4)
             self.observe_unknown_fingerprint(
                 tls.id(),
                 "tls",
@@ -140,48 +140,71 @@ impl SelfLearningAnalyzer {
             return;
         }
 
-        // Update or create observation record
-        let mut entry =
-            self.observations
-                .entry(key.clone())
-                .or_insert_with(|| UnknownFingerprintObservation {
-                    fingerprint_id: fp_id.clone(),
+        // Use DashMap's entry API for atomic updates
+        self.observations
+            .entry(key.clone())
+            .and_modify(|entry| {
+                // Atomically update the entry
+                entry.observation_count += 1;
+                entry.last_seen = now;
+
+                // Recalculate stability score based on updated observation count
+                let time_span = timestamp_duration(entry.first_seen, entry.last_seen);
+                let expected_frequency =
+                    entry.observation_count as f64 / (time_span.as_secs_f64() / 3600.0).max(1.0); // observations per hour
+
+                // stability score based on observation frequency consistency
+                let stability_bonus = if expected_frequency > 1.0 && expected_frequency < 100.0 {
+                    0.3 // normal frequency bonus
+                } else if expected_frequency >= 100.0 {
+                    0.1 // high frequency but not stable
+                } else {
+                    0.0 // frequency too low
+                };
+
+                entry.stability_score =
+                    (entry.observation_count as f64 / self.learning_threshold as f64).min(1.0)
+                        * 0.7
+                        + stability_bonus;
+
+                // check if learning conditions are met
+                if entry.observation_count >= self.learning_threshold
+                    && entry.stability_score >= self.min_stability_score
+                {
+                    // threshold reached, can enter database to create preliminary entry
+                    // Store reference for later processing
+                    log::info!(
+                        "[Learner] 🎯 Ready to learn: {}:{} (count: {}, stability: {:.2})",
+                        entry.fingerprint_type,
+                        entry.fingerprint_id,
+                        entry.observation_count,
+                        entry.stability_score
+                    );
+                }
+            })
+            .or_insert_with(|| {
+                // Create new observation record
+                UnknownFingerprintObservation {
+                    fingerprint_id: fp_id,
                     fingerprint_type: fp_type.to_string(),
                     first_seen: now,
                     last_seen: now,
-                    observation_count: 0,
+                    observation_count: 1,
                     stability_score: 0.0,
                     features: features.clone(),
-                });
+                }
+            });
 
-        // update观察record
-        entry.observation_count += 1;
-        entry.last_seen = now;
-
-        // calculate stability score
-        let time_span = timestamp_duration(entry.first_seen, entry.last_seen);
-        let expected_frequency =
-            entry.observation_count as f64 / (time_span.as_secs_f64() / 3600.0).max(1.0); // observation frequency per hour
-
-        // stability score based on observation frequency consistency
-        let stability_bonus = if expected_frequency > 1.0 && expected_frequency < 100.0 {
-            0.3 // normal frequency bonus
-        } else if expected_frequency >= 100.0 {
-            0.1 // high frequency but not stable
-        } else {
-            0.0 // frequency too low
-        };
-
-        entry.stability_score =
-            (entry.observation_count as f64 / self.learning_threshold as f64).min(1.0) * 0.7
-                + stability_bonus;
-
-        // check if learning conditions are met
-        if entry.observation_count >= self.learning_threshold
-            && entry.stability_score >= self.min_stability_score
-        {
-            // threshold reached, can enter database to create preliminary entry
-            self.learn_new_fingerprint(&entry);
+        // Process learning after the atomic update completes
+        if let Some(entry) = self.observations.get(&key) {
+            if entry.observation_count >= self.learning_threshold
+                && entry.stability_score >= self.min_stability_score
+            {
+                // Create a clone to avoid holding the read lock during database operation
+                let observation = entry.value().clone();
+                drop(entry); // Explicitly release the DashMap read lock
+                self.learn_new_fingerprint(&observation);
+            }
         }
     }
 
@@ -347,7 +370,6 @@ impl FingerprintObserver {
     /// Get evaluation results
     pub fn get_results(&self) -> Vec<UnknownFingerprintObservation> {
         // Return collected observations
-        // 返回收集的观察结果
         vec![]
     }
 }

@@ -1,7 +1,7 @@
 //! TLS ClientHello Signature module
 //!
-//! provide TLS ClientHello signatureExtract and compareFeatures
-//! reference：Huginn Net Signature structdesign
+//! Provides TLS ClientHello signature extraction and comparison features
+//! Reference: Huginn Net Signature structure design
 
 use crate::dicttls::supported_groups::CurveID;
 use crate::fingerprint::{Fingerprint, FingerprintType};
@@ -11,23 +11,23 @@ use crate::version::TlsVersion;
 use sha2::{Digest, Sha256};
 
 /// TLS ClientHello signature
-/// including from ClientHello message in Extractallclosekey information
+/// Extracts all key information from ClientHello message
 #[derive(Debug, Clone, PartialEq)]
 pub struct ClientHelloSignature {
-    /// fingerprint ID (based on JA4 hash or signaturetraithash)
+    /// Fingerprint ID (based on JA4 hash or signature trait hash)
     pub id: String,
 
     /// TLS version
     pub version: TlsVersion,
-    /// cipher suitelist (including GREASE)
+    /// Cipher suite list (including GREASE)
     pub cipher_suites: Vec<u16>,
-    /// extensionlist (including GREASE)
+    /// Extension list (including GREASE)
     pub extensions: Vec<u16>,
-    /// elliptic curvelist
+    /// Elliptic curve list
     pub elliptic_curves: Vec<CurveID>,
-    /// elliptic curvepointformat
+    /// Elliptic curve point format
     pub elliptic_curve_point_formats: Vec<u8>,
-    /// signaturealgorithmlist
+    /// Signature algorithm list
     pub signature_algorithms: Vec<u16>,
     /// Server Name Indication
     pub sni: Option<String>,
@@ -39,7 +39,7 @@ pub struct ClientHelloSignature {
 }
 
 impl ClientHelloSignature {
-    /// Create a newsignature
+    /// Creates a new signature
     pub fn new() -> Self {
         let mut sig = Self {
             id: String::new(),
@@ -57,7 +57,7 @@ impl ClientHelloSignature {
         sig
     }
 
-    /// Calculatefingerprint ID (based onsignaturetrait)
+    /// Calculates the fingerprint ID (based on signature trait)
     pub fn calculate_id(&self) -> String {
         let mut hasher = Sha256::new();
         hasher.update(self.version.to_u16().to_be_bytes());
@@ -81,22 +81,22 @@ impl ClientHelloSignature {
         format!("{:x}", hasher.finalize())
     }
 
-    /// Getfilter GREASE back's cipher suites
+    /// Gets filtered cipher suites without GREASE values
     pub fn cipher_suites_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.cipher_suites)
     }
 
-    /// Getfilter GREASE back's extensions
+    /// Gets filtered extensions without GREASE values
     pub fn extensions_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.extensions)
     }
 
-    /// Getfilter GREASE backsignaturealgorithm
+    /// Gets filtered signature algorithms without GREASE values
     pub fn signature_algorithms_without_grease(&self) -> Vec<u16> {
         filter_grease_values(&self.signature_algorithms)
     }
 
-    /// Checkwhetherincluding GREASE value
+    /// Checks whether the signature includes GREASE values
     pub fn has_grease(&self) -> bool {
         self.cipher_suites.iter().any(|&v| is_grease_value(v))
             || self.extensions.iter().any(|&v| is_grease_value(v))
@@ -106,13 +106,13 @@ impl ClientHelloSignature {
                 .any(|&v| is_grease_value(v))
     }
 
-    /// compare twosignaturewhethersimilar (ignore GREASE value)
+    /// Compares two signatures for similarity (ignoring GREASE values)
     ///
     /// # Parameters
-    /// * `other` - needcompare另ansignature
+    /// * `other` - Another signature to compare
     ///
     /// # Returns
-    /// * `true` if signaturesimilar (ignore GREASE backsame), `false` otherwise
+    /// * `true` if signatures are similar (ignoring GREASE values), `false` otherwise
     pub fn similar_to(&self, other: &Self) -> bool {
         self.version == other.version
             && self.cipher_suites_without_grease() == other.cipher_suites_without_grease()
@@ -125,8 +125,8 @@ impl ClientHelloSignature {
             && self.alpn == other.alpn
     }
 
-    /// Calculatesignaturehashvalue ( for fastcompare)
-    /// usefilter GREASE backvalue
+    /// Calculates signature hash value (for fast comparison)
+    /// Uses filtered GREASE value
     pub fn hash(&self) -> u64 {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
@@ -170,9 +170,9 @@ impl Fingerprint for ClientHelloSignature {
             return false;
         }
 
-        // tryconvert to ClientHelloSignature
-        // due to trait limit, wecan onlycomparehashvalue
-        // actualuse in , shouldthroughtypeConvertfromcompare
+        // Try to convert to ClientHelloSignature
+        // Due to trait limitations, we can only compare hash values
+        // Actual usage should convert through type conversion from comparison
         self.hash() == other.hash()
     }
 
@@ -201,15 +201,15 @@ mod tests {
     fn test_similar_to() {
         let mut sig1 = ClientHelloSignature::new();
         sig1.version = TlsVersion::V1_2;
-        sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // including GREASE
+        sig1.cipher_suites = vec![0x0a0a, 0x0017, 0x1a1a]; // Including GREASE
         sig1.extensions = vec![0x0000, 0x0010];
 
         let mut sig2 = ClientHelloSignature::new();
         sig2.version = TlsVersion::V1_2;
-        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // different GREASE，butfilterbacksame
+        sig2.cipher_suites = vec![0x0017, 0x2a2a]; // Different GREASE, but filtered result should be same
         sig2.extensions = vec![0x0000, 0x0010];
 
-        // filter GREASE backshouldsame
+        // Filtered GREASE should be the same
         assert_eq!(
             sig1.cipher_suites_without_grease(),
             sig2.cipher_suites_without_grease()

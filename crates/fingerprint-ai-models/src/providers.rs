@@ -244,9 +244,9 @@ impl ProviderCharacteristics {
         }
     }
 
-    // === Chinese Providers ===
+    // === Chinese-based AI Providers ===
 
-    /// Alibaba Cloud Qwen/Tongyi Qianwen (通义千问) characteristics
+    /// Alibaba Cloud Qwen AI characteristics
     pub fn alibaba_qwen() -> Self {
         Self {
             provider: AiProvider::AlibabaQwen,
@@ -262,7 +262,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// Baidu ERNIE Bot/Wenxin Yiyan (文心一言) characteristics
+    /// Baidu ERNIE Bot AI characteristics
     pub fn baidu_ernie() -> Self {
         Self {
             provider: AiProvider::BaiduErnie,
@@ -285,7 +285,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// Tencent Hunyuan (混元) characteristics
+    /// Tencent Hunyuan AI characteristics
     pub fn tencent_hunyuan() -> Self {
         Self {
             provider: AiProvider::TencentHunyuan,
@@ -297,7 +297,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// ByteDance Doubao/Coze (豆包) characteristics
+    /// ByteDance Doubao AI characteristics
     pub fn bytedance_doubao() -> Self {
         Self {
             provider: AiProvider::ByteDanceDoubao,
@@ -317,7 +317,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// Zhipu AI ChatGLM/GLM-4 (智谱) characteristics
+    /// Zhipu AI ChatGLM/GLM-4 characteristics
     pub fn zhipu_glm() -> Self {
         Self {
             provider: AiProvider::ZhipuGLM,
@@ -329,7 +329,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// Moonshot AI Kimi (月之暗面) characteristics
+    /// Moonshot AI Kimi characteristics
     pub fn moonshot_kimi() -> Self {
         Self {
             provider: AiProvider::MoonshotKimi,
@@ -365,7 +365,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// SenseTime SenseChat/SenseNova (商汤) characteristics
+    /// SenseTime SenseChat/SenseNova characteristics
     pub fn sensetime() -> Self {
         Self {
             provider: AiProvider::SenseTime,
@@ -377,7 +377,7 @@ impl ProviderCharacteristics {
         }
     }
 
-    /// iFlytek Spark/Xinghuo (科大讯飞/星火) characteristics
+    /// iFlytek Spark/Xinghuo characteristics
     pub fn iflytek_spark() -> Self {
         Self {
             provider: AiProvider::IFlytekSpark,

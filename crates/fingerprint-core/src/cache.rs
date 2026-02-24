@@ -1,10 +1,10 @@
 // Cache layer module for fingerprint-api
 // Implements multi-tier caching: L1 (in-memory) + L2 (Redis) + L3 (Database)
 
-use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::time::Duration;
+use tokio::sync::RwLock;
 
 /// Cache tier configuration
 #[derive(Debug, Clone, Copy)]
@@ -117,11 +117,11 @@ pub type CacheResult<T> = Result<T, CacheError>;
 
 /// Multi-tier cache implementation
 pub struct Cache {
-    // L1: In-memory cache using LRU
+    // L1: In-memory cache using LRU (async-safe)
     l1: Arc<RwLock<lru::LruCache<String, Vec<u8>>>>,
     // L2 address for connection
     l2_addr: String,
-    // Statistics
+    // Statistics (async-safe)
     stats: Arc<RwLock<CacheStats>>,
 }
 
@@ -152,21 +152,34 @@ impl Cache {
 
     /// Get value from cache (tries L1, then L2)
     pub async fn get(&self, key: &str) -> Option<Vec<u8>> {
-        // Try L1
-        if let Some(value) = self.l1.write().get(key) {
-            let value = value.clone();
-            self.stats.write().hits_l1 += 1;
-            return Some(value);
+        // Try L1 - minimize lock scope by cloning before releasing
+        {
+            let mut cache = self.l1.write().await;
+            if let Some(value) = cache.get(key) {
+                let value = value.clone();
+                // Update stats outside the lock to avoid blocking
+                drop(cache);
+                {
+                    let mut stats = self.stats.write().await;
+                    stats.hits_l1 += 1;
+                }
+                return Some(value);
+            }
         }
 
-        self.stats.write().misses += 1;
+        // Miss in L1
+        {
+            let mut stats = self.stats.write().await;
+            stats.misses += 1;
+        }
         None
     }
 
     /// Set value in cache (stores in both L1 and L2)
     pub async fn set(&self, key: &str, value: Vec<u8>, _ttl: CacheTTL) -> CacheResult<()> {
         // Store in L1
-        self.l1.write().put(key.to_string(), value);
+        let mut cache = self.l1.write().await;
+        cache.put(key.to_string(), value);
         Ok(())
     }
 
@@ -176,33 +189,38 @@ impl Cache {
         if pattern.ends_with('*') {
             // Pattern matching for keys
             let prefix = pattern.trim_end_matches('*');
-            let l1 = self.l1.write();
-            // Collect keys to remove (to avoid borrow issues)
-            let keys_to_remove: Vec<String> = l1
-                .iter()
-                .filter(|(k, _)| k.starts_with(prefix))
-                .map(|(k, _)| k.clone())
-                .collect();
-            drop(l1);
+            let keys_to_remove: Vec<String> = {
+                let cache = self.l1.write().await;
+                // Collect keys to remove (to avoid borrow issues)
+                cache
+                    .iter()
+                    .filter(|(k, _)| k.starts_with(prefix))
+                    .map(|(k, _)| k.clone())
+                    .collect()
+            };
 
+            // Remove keys outside the lock to avoid prolonged lock holding
+            let mut cache = self.l1.write().await;
             for key in keys_to_remove {
-                self.l1.write().pop(&key);
+                cache.pop(&key);
             }
         } else {
-            self.l1.write().pop(pattern);
+            let mut cache = self.l1.write().await;
+            cache.pop(pattern);
         }
 
         Ok(())
     }
 
     /// Get cache statistics
-    pub fn stats(&self) -> CacheStats {
-        self.stats.read().clone()
+    pub async fn stats(&self) -> CacheStats {
+        self.stats.read().await.clone()
     }
 
     /// Clear all cache
     pub async fn clear(&self) -> CacheResult<()> {
-        self.l1.write().clear();
+        let mut cache = self.l1.write().await;
+        cache.clear();
         Ok(())
     }
 
@@ -317,11 +335,11 @@ mod tests {
             let retrieved = cache.get(key).await;
             assert!(retrieved.is_some(), "Should retrieve value from L1");
             assert_eq!(retrieved.unwrap(), value, "Retrieved value should match");
-        });
 
-        // Check stats
-        let stats = cache.stats();
-        assert_eq!(stats.hits_l1, 1, "Should have 1 L1 hit");
+            // Check stats (now async)
+            let stats = cache.stats().await;
+            assert_eq!(stats.hits_l1, 1, "Should have 1 L1 hit");
+        });
     }
 
     #[test]

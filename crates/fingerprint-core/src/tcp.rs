@@ -1,19 +1,19 @@
-//! TCP fingerprintcoretype
+//! TCP Fingerprint Type
 //!
-//! define TCP fingerprintcorecountdatastruct.
+//! Defines the TCP fingerprint data structure.
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
 use std::hash::{Hash, Hasher};
 
-/// TCP configurationdescribefile
-/// for main动configurationexitconnection TCP parameter
+/// TCP configuration
+/// for configuring TCP parameters for connections
 #[derive(Debug, Clone, Copy)]
 pub struct TcpProfile {
-    /// initialbeginning TTL
+    /// Initial Time-To-Live value
     pub ttl: u8,
 
-    /// initialbeginningwindowsize
+    /// Initial window size
     pub window_size: u16,
 
     /// MSS (Maximum Segment Size)
@@ -27,21 +27,21 @@ impl Default for TcpProfile {
     fn default() -> Self {
         Self {
             ttl: 64,            // Linux default
-            window_size: 64240, // typicalvalue
-            mss: None,          // operating systemdefault
-            window_scale: None, // operating systemdefault
+            window_size: 64240, // Typical value for Windows
+            mss: None,          // Operating system default
+            window_scale: None, // Operating system default
         }
     }
 }
 
 impl TcpProfile {
-    /// Based onoperating systemtypeGenerates corresponding TCP Profile
+    /// Generates a TCP profile based on the operating system type
     ///
-    /// ensure TCP fingerprint and browserfingerprint (User-Agent)consistent
+    /// Ensures TCP fingerprint matches browser fingerprint (User-Agent)
     pub fn for_os(os: crate::types::OperatingSystem) -> Self {
         match os {
             crate::types::OperatingSystem::Windows10 | crate::types::OperatingSystem::Windows11 => {
-                // Windows: TTL=128, Window Size=64240 (Windows 10/11 typicalvalue)
+                // Windows: TTL=128, Window Size=64240 (Windows 10/11 typical values)
                 Self {
                     ttl: 128,
                     window_size: 64240,
@@ -52,7 +52,7 @@ impl TcpProfile {
             crate::types::OperatingSystem::MacOS13
             | crate::types::OperatingSystem::MacOS14
             | crate::types::OperatingSystem::MacOS15 => {
-                // macOS: TTL=64, Window Size=65535 (macOS typicalvalue)
+                // macOS: TTL=64, Window Size=65535 (macOS typical values)
                 Self {
                     ttl: 64,
                     window_size: 65535,
@@ -63,7 +63,7 @@ impl TcpProfile {
             crate::types::OperatingSystem::Linux
             | crate::types::OperatingSystem::LinuxUbuntu
             | crate::types::OperatingSystem::LinuxDebian => {
-                // Linux: TTL=64, Window Size=65535 (Linux typicalvalue)
+                // Linux: TTL=64, Window Size=65535 (Linux typical values)
                 Self {
                     ttl: 64,
                     window_size: 65535,
@@ -74,16 +74,16 @@ impl TcpProfile {
         }
     }
 
-    /// from User-Agent stringinferoperating system并Generates corresponding TCP Profile
+    /// Generates a TCP profile by inferring the operating system from User-Agent string
     ///
-    /// this isunifiedfingerprintGeneratecorefunction, ensurebrowserfingerprint and TCP fingerprintsync
+    /// This is a core function for unified fingerprint generation, ensuring browser fingerprint and TCP fingerprint are synchronized
     pub fn from_user_agent(user_agent: &str) -> Self {
         use crate::types::OperatingSystem;
 
-        // from User-Agent inferoperating system
-        // Note: iPhone/iPad User-Agent including "Mac OS X", need先Checkmovedevice
+        // Infer operating system from User-Agent
+        // Note: iPhone/iPad User-Agent contains "Mac OS X", need to check mobile device first
         let os = if user_agent.contains("iPhone") || user_agent.contains("iPad") {
-            // iOS device：use macOS TCP fingerprint (iOS based on macOS)
+            // iOS device: use macOS TCP fingerprint (iOS based on macOS)
             OperatingSystem::MacOS14
         } else if user_agent.contains("Windows NT 10.0") {
             OperatingSystem::Windows10
@@ -104,14 +104,14 @@ impl TcpProfile {
         } else if user_agent.contains("Linux") || user_agent.contains("Android") {
             OperatingSystem::Linux
         } else {
-            // defaultuse Windows (most commonbrowserenvironment)
+            // Default to Windows (most common browser environment)
             OperatingSystem::Windows10
         };
 
         Self::for_os(os)
     }
 
-    /// from platformstring (如 "Windows", "macOS", "Linux")Generate TCP Profile
+    /// Generates a TCP profile from platform string (e.g., "Windows", "macOS", "Linux")
     pub fn from_platform(platform: &str) -> Self {
         use crate::types::OperatingSystem;
 
@@ -129,22 +129,22 @@ impl TcpProfile {
 /// TCP fingerprint
 #[derive(Debug, Clone)]
 pub struct TcpFingerprint {
-    /// fingerprint ID (based on TCP traithash)
+    /// Fingerprint ID (based on TCP trait hash)
     pub id: String,
 
-    /// TTL
+    /// Time-To-Live value
     pub ttl: u8,
 
-    /// Window Size
+    /// Transmission window size
     pub window_size: u16,
 
     /// MSS (Maximum Segment Size)
     pub mss: Option<u16>,
 
-    /// Window Scale
+    /// Window scale option
     pub window_scale: Option<u8>,
 
-    /// TCP optionsstring ( for p0f compatible)
+    /// TCP options string (for p0f compatibility)
     pub options_str: Option<String>,
 
     /// metadata
@@ -248,7 +248,7 @@ impl TcpFingerprint {
         }
     }
 
-    /// Calculatefingerprint ID
+    /// Calculates the fingerprint ID
     fn calculate_id(
         ttl: u8,
         window_size: u16,
@@ -268,10 +268,10 @@ impl TcpFingerprint {
         format!("{:x}", hasher.finalize())
     }
 
-    /// inferinitialbeginning TTL
+    /// Infers the initial TTL according to common OS defaults
     pub fn infer_initial_ttl(&self) -> u8 {
-        // Based on TTL inferinitialbeginning TTL
-        // commoninitialbeginning TTL value：64 (Linux), 128 (Windows), 255 (Unix)
+        // Based on current TTL, infer the initial TTL
+        // Common initial TTL values: 64 (Linux), 128 (Windows), 255 (Unix)
         if self.ttl <= 64 {
             64
         } else if self.ttl <= 128 {
@@ -314,8 +314,8 @@ impl Fingerprint for TcpFingerprint {
             return false;
         }
 
-        // TCP fingerprintsimilardegreejudge：allowcertain tolerance
-        // heresimplifyprocess, actualshouldconsider TTL infervalue, Window Size 倍countclosesystem etc.
+        // TCP fingerprint similarity judgment: allow certain tolerance
+        // Simplified process here, should actually consider TTL inferred value, Window Size multiple close system etc.
         self.hash() == other.hash()
     }
 

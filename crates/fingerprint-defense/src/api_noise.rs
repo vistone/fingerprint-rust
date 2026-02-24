@@ -2,19 +2,17 @@ use rand::Rng;
 use std::collections::HashMap;
 
 /// Canvas noise generator for preventing fingerprinting
-/// 画布噪声生成器用于防止指纹识别
 pub struct CanvasNoiseGenerator {
-    /// 噪声强度 (0.0 - 1.0)
+    /// Noise intensity (0.0 - 1.0)
     intensity: f64,
-    /// 随机种子
+    /// Random seed
     seed: u64,
-    /// 已应用噪声的画布标识
+    /// Canvas IDs that have been processed
     canvas_cache: HashMap<String, bool>,
 }
 
 impl CanvasNoiseGenerator {
     /// Create a new canvas noise generator
-    /// 创建新的画布噪声生成器
     pub fn new(intensity: f64) -> Self {
         Self {
             intensity: intensity.clamp(0.0, 1.0),
@@ -24,13 +22,12 @@ impl CanvasNoiseGenerator {
     }
 
     /// Generate noise for canvas fingerprint prevention
-    /// 生成噪声用于防止画布指纹识别
     pub fn generate_canvas_noise(&self) -> Vec<u8> {
         let mut rng = rand::thread_rng();
         let noise_size = (1024.0 * self.intensity) as usize;
         let mut noise_data = Vec::with_capacity(noise_size);
 
-        // 生成随机噪声数据
+        // Generate random noise data
         for _ in 0..noise_size {
             noise_data.push(rng.gen::<u8>());
         }
@@ -39,14 +36,13 @@ impl CanvasNoiseGenerator {
     }
 
     /// Apply noise to audio context
-    /// 对音频上下文应用噪声
     pub fn apply_audio_noise(&self, audio_data: &[f32]) -> Vec<f32> {
         let mut rng = rand::thread_rng();
         let mut noisy_audio = Vec::with_capacity(audio_data.len());
 
         for &sample in audio_data {
-            // 添加轻微的白噪声
-            let noise_level = (self.intensity * 0.01) as f32; // 1%的噪声强度
+            // Add slight white noise
+            let noise_level = (self.intensity * 0.01) as f32; // 1% noise intensity
             let noise = (rng.gen::<f32>() - 0.5) * noise_level;
             noisy_audio.push(sample + noise);
         }
@@ -55,9 +51,8 @@ impl CanvasNoiseGenerator {
     }
 
     /// Apply canvas rendering noise
-    /// 应用画布渲染噪声
     pub fn apply_canvas_rendering_noise(
-        &mut self, // 改为可变引用
+        &mut self, // mutable reference
         canvas_id: &str,
         pixel_data: &mut [u8],
     ) -> Result<(), String> {
@@ -67,10 +62,10 @@ impl CanvasNoiseGenerator {
 
         let mut rng = rand::thread_rng();
 
-        // 对像素数据应用微小扰动
+        // Apply minor perturbations to pixel data
         for pixel_chunk in pixel_data.chunks_mut(4) {
             if pixel_chunk.len() == 4 {
-                // RGBA格式：对RGB通道应用噪声，保持Alpha通道不变
+                // RGBA format: apply noise to RGB channels, keep Alpha unchanged
                 for channel in pixel_chunk.iter_mut().take(3) {
                     let noise = ((rng.gen::<f64>() - 0.5) * self.intensity * 10.0) as i8;
                     let new_value = *channel as i16 + noise as i16;
@@ -84,12 +79,11 @@ impl CanvasNoiseGenerator {
     }
 
     /// Generate WebGL context noise
-    /// 生成WebGL上下文噪声
     pub fn generate_webgl_noise(&self) -> HashMap<String, String> {
         let mut rng = rand::thread_rng();
         let mut noise_params = HashMap::new();
 
-        // 生成随机的WebGL参数扰动
+        // Generate random WebGL parameter perturbations
         noise_params.insert(
             "MAX_TEXTURE_SIZE".to_string(),
             (rng.gen_range(2048..=16384)).to_string(),
@@ -107,7 +101,6 @@ impl CanvasNoiseGenerator {
     }
 
     /// Get current noise configuration
-    /// 获取当前噪声配置
     pub fn get_config(&self) -> NoiseConfiguration {
         NoiseConfiguration {
             intensity: self.intensity,
@@ -117,14 +110,12 @@ impl CanvasNoiseGenerator {
     }
 
     /// Set noise intensity
-    /// 设置噪声强度
     pub fn set_intensity(&mut self, intensity: f64) {
         self.intensity = intensity.clamp(0.0, 1.0);
     }
 }
 
 /// Noise configuration information
-/// 噪声配置信息
 #[derive(Debug, Clone)]
 pub struct NoiseConfiguration {
     pub intensity: f64,
