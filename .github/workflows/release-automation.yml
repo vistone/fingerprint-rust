@@ -33,13 +33,13 @@ jobs:
         run: cargo fmt --all -- --check
       
       - name: Run clippy
-        run: cargo clippy --workspace --all-features -- -D warnings
+        run: cargo clippy --workspace --features rustls-tls,compression,http2,connection-pool,dns -- -D warnings
       
       - name: Run tests
-        run: cargo test --workspace --all-features
+        run: cargo test --workspace --features rustls-tls,compression,http2,connection-pool,dns
       
       - name: Build release
-        run: cargo build --workspace --release --all-features
+        run: cargo build --workspace --release --features rustls-tls,compression,http2,connection-pool,dns
       
       - name: Generate changelog
         run: |

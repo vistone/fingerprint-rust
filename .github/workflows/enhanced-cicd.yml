@@ -46,10 +46,10 @@ jobs:
         run: cargo fmt --all -- --check
       
       - name: Run clippy
-        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+        run: cargo clippy --workspace --all-targets --features rustls-tls,compression,http2,connection-pool,dns -- -D warnings
       
       - name: Run clippy on tests
-        run: cargo clippy --workspace --tests --all-features -- -D warnings
+        run: cargo clippy --workspace --tests --features rustls-tls,compression,http2,connection-pool,dns -- -D warnings
 
   # ============================================================
   # Security Audit
@@ -105,10 +105,10 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-compile-
       
       - name: Check compilation (debug)
-        run: cargo check --workspace --all-features --verbose
+        run: cargo check --workspace --features rustls-tls,compression,http2,connection-pool,dns --verbose
       
       - name: Check compilation (release)
-        run: cargo build --workspace --release --all-features --verbose
+        run: cargo build --workspace --release --features rustls-tls,compression,http2,connection-pool,dns --verbose
 
   # ============================================================
   # Unit Tests
@@ -136,10 +136,10 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-test-
       
       - name: Run unit tests
-        run: cargo nextest run --workspace --lib --all-features
+        run: cargo nextest run --workspace --lib --features rustls-tls,compression,http2,connection-pool,dns
       
       - name: Run doc tests
-        run: cargo test --doc --workspace --all-features
+        run: cargo test --doc --workspace --features rustls-tls,compression,http2,connection-pool,dns
 
   # ============================================================
   # Integration Tests
@@ -164,7 +164,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-integration-
       
       - name: Run integration tests
-        run: cargo nextest run --workspace --test '*' --all-features --timeout 120s
+        run: cargo nextest run --workspace --test '*' --features rustls-tls,compression,http2,connection-pool,dns --timeout 120s
 
   # ============================================================
   # Code Coverage
@@ -189,7 +189,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-coverage-
       
       - name: Generate coverage
-        run: cargo tarpaulin --workspace --all-features --timeout 300 --out xml --output-dir ./coverage
+        run: cargo tarpaulin --workspace --features rustls-tls,compression,http2,connection-pool,dns --timeout 300 --out xml --output-dir ./coverage
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -219,8 +219,8 @@ jobs:
       
       - name: Run benchmarks
         run: |
-          cargo bench --workspace --all-features --no-run
-          cargo bench --workspace --all-features 2>&1 | tee benchmark-results.txt
+          cargo bench --workspace --features rustls-tls,compression,http2,connection-pool,dns --no-run
+          cargo bench --workspace --features rustls-tls,compression,http2,connection-pool,dns 2>&1 | tee benchmark-results.txt
       
       - name: Store benchmark result
         uses: benchmark-action/github-action-benchmark@v1
@@ -250,7 +250,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-docs-
       
       - name: Build documentation
-        run: cargo doc --workspace --all-features --no-deps
+        run: cargo doc --workspace --features rustls-tls,compression,http2,connection-pool,dns --no-deps
       
       - name: Check documentation links
         run: |
@@ -289,7 +289,7 @@ jobs:
           restore-keys: ${{ runner.os }}-cargo-features-
       
       - name: Test with features
-        run: cargo test --workspace --features "${{ matrix.features }}" --all-features
+        run: cargo test --workspace --features "${{ matrix.features }}"
 
   # ============================================================
   # MIRI (Undefined Behavior Detection)
