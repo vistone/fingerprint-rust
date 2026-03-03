@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"constant":["HTTP2_PREFACE"],"enum":["BrowserType","Http2FrameType","Http2ParseError"],"fn":["find_settings_frame","is_http2_connection"],"struct":["Http2FrameHeader","Http2SettingsFrame","Http2SettingsMatcher"]};
+window.SIDEBAR_ITEMS = {"constant":["HTTP2_PREFACE"],"enum":["BrowserType","Http2FrameType","Http2ParseError"],"fn":["collect_initial_frames","find_settings_frame","frame_sequence_fingerprint","is_http2_connection"],"struct":["Http2FrameHeader","Http2PriorityFrame","Http2SettingsFrame","Http2SettingsMatcher","Http2WindowUpdateFrame"]};
