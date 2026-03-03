@@ -193,4 +193,4 @@ docs/en/
 **最后更新**: 2026-02-24
 **类型**: 浏览器指纹识别库 / Browser Fingerprinting Library  
 **仓库**: [GitHub](https://github.com/vistone/fingerprint-rust)  
-**许可**: MIT
+**许可**: BSD-3-Clause

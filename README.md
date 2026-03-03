@@ -57,6 +57,7 @@ crates/
 ├── fingerprint-profiles/  # Browser fingerprint profiles
 ├── fingerprint-headers/   # HTTP headers generation
 ├── fingerprint-dns/       # DNS resolution
+├── fingerprint-ai-models/ # AI model provider detection
 ├── fingerprint-gateway/   # High-performance API gateway
 ├── fingerprint-defense/   # Passive detection and active protection
 ├── fingerprint-ml/        # Machine learning classification
@@ -67,8 +68,6 @@ crates/
 ├── fingerprint-storage/   # Storage fingerprinting
 ├── fingerprint-webrtc/    # WebRTC fingerprinting
 ├── fingerprint-hardware/  # Hardware fingerprinting
-├── fingerprint-timing/    # Timing analysis
-├── fingerprint-anomaly/   # Anomaly detection
 └── fingerprint-api-noise/ # API noise injection
 ```
 
@@ -149,6 +148,7 @@ crates/
 ├── fingerprint-profiles/  # 浏览器指纹配置
 ├── fingerprint-headers/   # HTTP头生成
 ├── fingerprint-dns/       # DNS解析
+├── fingerprint-ai-models/ # AI模型提供商检测
 ├── fingerprint-gateway/   # 高性能API网关
 ├── fingerprint-defense/   # 被动检测和主动防护
 ├── fingerprint-ml/        # 机器学习分类
@@ -159,8 +159,6 @@ crates/
 ├── fingerprint-storage/   # 存储指纹
 ├── fingerprint-webrtc/    # WebRTC指纹
 ├── fingerprint-hardware/  # 硬件指纹
-├── fingerprint-timing/    # 时序分析
-├── fingerprint-anomaly/   # 异常检测
 └── fingerprint-api-noise/ # API噪声注入
 ```
 

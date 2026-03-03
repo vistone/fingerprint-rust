@@ -530,9 +530,8 @@ impl HttpClient {
             // HTTP/2 with pool (async -> sync wrap)
             #[cfg(feature = "http2")]
             if self.config.prefer_http2 {
-                // Fix: use global singleton Runtime
-                // Note: here not do "automatic downgrade", because pool scenario we more hope by user preference go specified protocol
-                // (test also will strict validate version)
+                // Note: In connection pool mode, we strictly follow the user's protocol preference
+                // rather than attempting automatic downgrade (tests will validate the exact version).
                 let runtime = get_shared_runtime()?;
                 return runtime.block_on(async {
                     http2_pool::send_http2_request_with_pool(
@@ -564,17 +563,11 @@ impl HttpClient {
         #[cfg(feature = "http3")]
         {
             if self.config.prefer_http3 {
-                // If opened HTTP/3, we try it.
-                // If failure, we may want to downgrade, but HTTP/3 to TCP is different transfer layer,
-                // Usually if user explicit require HTTP/3, failure then should report error.
-                // But here in order to stable property, if is because protocol error, we can downgrade.
-                // Temporary when keep simple: directly return.
+                // Try HTTP/3 first. On protocol failure, gracefully downgrade to HTTP/2 or HTTP/1.1.
                 match http3::send_http3_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(e) => {
-                        // If only only is preference, can try downgrade
-                        // If is Connection failed, may is network issue, also may is server not support
-                        eprintln!("Warning: HTTP/3 failure, try downgrade: {}", e);
+                        log::warn!("HTTP/3 failure, try downgrade: {}", e);
                     }
                 }
             }
@@ -587,9 +580,8 @@ impl HttpClient {
                 match http2::send_http2_request(host, port, path, request, &self.config) {
                     Ok(resp) => return Ok(resp),
                     Err(_e) => {
-                        // Record error but continue try HTTP/1.1
-                        // In actual production should use log system
-                        // eprintln!("HTTP/2 try failure: {}, back to HTTP/1.1", e);
+                        // Record error but continue trying HTTP/1.1
+                        log::debug!("HTTP/2 attempt failed: {}, falling back to HTTP/1.1", _e);
                     }
                 }
             }
