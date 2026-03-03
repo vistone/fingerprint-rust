@@ -141,9 +141,8 @@ mod tests {
     #[test]
     fn test_save_and_load_domain_ips() {
         use std::fs;
-        use std::path::PathBuf;
 
-        let temp_dir = PathBuf::from("/tmp/test_dns_storage");
+        let temp_dir = std::env::temp_dir().join("test_dns_storage");
         fs::create_dir_all(&temp_dir).ok();
         let domain = "test.com";
 

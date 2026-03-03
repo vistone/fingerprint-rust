@@ -10,11 +10,11 @@ fn bench_packet_parsing(c: &mut Criterion) {
     // Generate sample packet
     let mut gen = PcapGenerator::new();
     gen.add_chrome_syn();
-    let pcap_path = "/tmp/bench_packet.pcap";
-    gen.write_to_file(pcap_path)
+    let pcap_path = std::env::temp_dir().join("bench_packet.pcap");
+    gen.write_to_file(&pcap_path)
         .expect("Failed to write test PCAP");
 
-    let pcap_data = std::fs::read(pcap_path).expect("Failed to read PCAP");
+    let pcap_data = std::fs::read(&pcap_path).expect("Failed to read PCAP");
     let packet_data = &pcap_data[24 + 16..]; // Skip global + packet headers
 
     group.throughput(Throughput::Bytes(packet_data.len() as u64));
@@ -68,7 +68,7 @@ fn bench_pcap_generation(c: &mut Criterion) {
         gen.add_chrome_syn();
 
         b.iter(|| {
-            gen.write_to_file("/tmp/bench_write.pcap")
+            gen.write_to_file(std::env::temp_dir().join("bench_write.pcap"))
                 .expect("Failed to write PCAP");
         });
     });
@@ -84,10 +84,10 @@ fn bench_complete_fingerprinting(c: &mut Criterion) {
     // Generate sample PCAP
     let mut gen = PcapGenerator::new();
     gen.add_chrome_syn();
-    let pcap_path = "/tmp/bench_complete.pcap";
-    gen.write_to_file(pcap_path).expect("Failed to write PCAP");
+    let pcap_path = std::env::temp_dir().join("bench_complete.pcap");
+    gen.write_to_file(&pcap_path).expect("Failed to write PCAP");
 
-    let pcap_data = std::fs::read(pcap_path).expect("Failed to read PCAP");
+    let pcap_data = std::fs::read(&pcap_path).expect("Failed to read PCAP");
 
     group.bench_function("complete_pipeline", |b| {
         b.iter(|| {
@@ -129,7 +129,7 @@ fn bench_scalability(c: &mut Criterion) {
             gen.add_chrome_syn();
         }
 
-        let pcap_path = format!("/tmp/bench_scale_{}.pcap", packet_count);
+        let pcap_path = std::env::temp_dir().join(format!("bench_scale_{}.pcap", packet_count));
         gen.write_to_file(&pcap_path).expect("Failed to write PCAP");
         let pcap_data = std::fs::read(&pcap_path).expect("Failed to read PCAP");
 

@@ -108,7 +108,9 @@ pub use grease::{
 };
 pub use hassh::{HASSHServer, SSHKexInit, HASSH, JA4SSH};
 pub use ja3::{JA3, JA3S};
-pub use ja4::{ConsistencyReport, JA4, JA4H, JA4L, JA4S, JA4T, JA4X};
+pub use ja4::{
+    ConsistencyReport, TlsExtensionOrderFingerprint, JA4, JA4H, JA4L, JA4S, JA4T, JA4TS, JA4X,
+};
 pub use signature::ClientHelloSignature;
 pub use version::TlsVersion;
 
@@ -127,8 +129,9 @@ pub use hpack::{
 };
 pub use http::{Http2Settings, HttpFingerprint};
 pub use http2_frame_parser::{
-    find_settings_frame, is_http2_connection, Http2FrameHeader, Http2FrameType, Http2ParseError,
-    Http2SettingsFrame, Http2SettingsMatcher, HTTP2_PREFACE,
+    collect_initial_frames, find_settings_frame, frame_sequence_fingerprint, is_http2_connection,
+    Http2FrameHeader, Http2FrameType, Http2ParseError, Http2PriorityFrame, Http2SettingsFrame,
+    Http2SettingsMatcher, Http2WindowUpdateFrame, HTTP2_PREFACE,
 };
 pub use packet_capture::{
     EthernetHeader, Ipv4Header, Ipv6Header, NetworkProtocol, PacketFlowAnalyzer, PacketParser,

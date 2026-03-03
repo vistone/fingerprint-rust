@@ -375,6 +375,166 @@ fn is_valid_window_size(size: u32) -> bool {
     )
 }
 
+/// HTTP/2 PRIORITY Frame
+///
+/// PRIORITY frames (type=0x2) specify stream dependencies and weights.
+/// Different browsers send PRIORITY frames in distinct patterns:
+/// - Chrome: Uses PRIORITY frames with tree-based dependency model
+/// - Firefox: Uses PRIORITY frames with flat dependency structure
+/// - Safari: Rarely sends PRIORITY frames
+///
+/// ```text
+/// +-----------------------------------------------+
+/// |E|               Stream Dependency (31)        |
+/// +-----------------------------------------------+
+/// |   Weight (8)  |
+/// +-+-------------+
+/// ```
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Http2PriorityFrame {
+    pub header: Http2FrameHeader,
+    /// Whether the dependency is exclusive
+    pub exclusive: bool,
+    /// Stream dependency ID
+    pub stream_dependency: u32,
+    /// Weight (1-256, stored as 0-255)
+    pub weight: u8,
+}
+
+impl Http2PriorityFrame {
+    /// Parse PRIORITY frame from bytes
+    pub fn parse(data: &[u8]) -> Result<Self, Http2ParseError> {
+        let header = Http2FrameHeader::parse(data)?;
+
+        if header.frame_type != Http2FrameType::Priority as u8 {
+            return Err(Http2ParseError::NotSettingsFrame);
+        }
+
+        // PRIORITY payload is exactly 5 bytes
+        if header.length != 5 {
+            return Err(Http2ParseError::InvalidPayloadLength);
+        }
+
+        if data.len() < 14 {
+            return Err(Http2ParseError::TooShort);
+        }
+
+        let payload = &data[9..14];
+
+        // Exclusive bit (1) + Stream Dependency (31)
+        let dep_raw = u32::from_be_bytes([payload[0], payload[1], payload[2], payload[3]]);
+        let exclusive = (dep_raw >> 31) == 1;
+        let stream_dependency = dep_raw & 0x7FFF_FFFF;
+
+        let weight = payload[4];
+
+        Ok(Http2PriorityFrame {
+            header,
+            exclusive,
+            stream_dependency,
+            weight,
+        })
+    }
+
+    /// Get actual weight value (1-256) from stored value (0-255)
+    pub fn actual_weight(&self) -> u16 {
+        self.weight as u16 + 1
+    }
+}
+
+/// HTTP/2 WINDOW_UPDATE Frame
+///
+/// WINDOW_UPDATE frames (type=0x8) manage flow control.
+/// The window size increment value differs between browsers:
+/// - Chrome: Typically sends large increments (15663105)
+/// - Firefox: Sends smaller, more frequent increments
+/// - Safari: Moderate increment sizes
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Http2WindowUpdateFrame {
+    pub header: Http2FrameHeader,
+    /// Window size increment (1 to 2^31-1)
+    pub window_size_increment: u32,
+}
+
+impl Http2WindowUpdateFrame {
+    /// Parse WINDOW_UPDATE frame from bytes
+    pub fn parse(data: &[u8]) -> Result<Self, Http2ParseError> {
+        let header = Http2FrameHeader::parse(data)?;
+
+        if header.frame_type != Http2FrameType::WindowUpdate as u8 {
+            return Err(Http2ParseError::NotSettingsFrame);
+        }
+
+        // WINDOW_UPDATE payload is exactly 4 bytes
+        if header.length != 4 {
+            return Err(Http2ParseError::InvalidPayloadLength);
+        }
+
+        if data.len() < 13 {
+            return Err(Http2ParseError::TooShort);
+        }
+
+        let payload = &data[9..13];
+        let window_size_increment =
+            u32::from_be_bytes([payload[0], payload[1], payload[2], payload[3]]) & 0x7FFF_FFFF;
+
+        Ok(Http2WindowUpdateFrame {
+            header,
+            window_size_increment,
+        })
+    }
+}
+
+/// Collect all initial HTTP/2 frames for comprehensive fingerprinting
+///
+/// Parses the initial sequence of frames sent by a client (after the connection preface).
+/// The frame types and their ordering form a strong fingerprint signal.
+pub fn collect_initial_frames(data: &[u8]) -> Vec<Http2FrameHeader> {
+    let offset = if is_http2_connection(data) { 24 } else { 0 };
+    let mut pos = offset;
+    let mut frames = Vec::new();
+
+    while pos + 9 <= data.len() {
+        if let Ok(header) = Http2FrameHeader::parse(&data[pos..]) {
+            let frame_end = pos + 9 + header.length as usize;
+            if frame_end > data.len() {
+                break;
+            }
+            frames.push(header);
+            pos = frame_end;
+        } else {
+            break;
+        }
+    }
+
+    frames
+}
+
+/// Generate an HTTP/2 frame sequence fingerprint string
+///
+/// Creates a fingerprint from the sequence of frame types and their key parameters.
+/// This is useful for browser identification because different browsers send
+/// initial frames in different orders:
+/// - Chrome: SETTINGS, WINDOW_UPDATE, PRIORITY*5, HEADERS
+/// - Firefox: SETTINGS, PRIORITY*5, HEADERS
+/// - Safari: SETTINGS, WINDOW_UPDATE, HEADERS
+pub fn frame_sequence_fingerprint(data: &[u8]) -> String {
+    let frames = collect_initial_frames(data);
+    frames
+        .iter()
+        .map(|f| match Http2FrameType::try_from(f.frame_type) {
+            Ok(Http2FrameType::Settings) => format!("S[{}]", f.length / 6),
+            Ok(Http2FrameType::WindowUpdate) => "W".to_string(),
+            Ok(Http2FrameType::Priority) => "P".to_string(),
+            Ok(Http2FrameType::Headers) => "H".to_string(),
+            Ok(Http2FrameType::Data) => "D".to_string(),
+            Ok(Http2FrameType::Ping) => "G".to_string(),
+            _ => format!("?{}", f.frame_type),
+        })
+        .collect::<Vec<_>>()
+        .join(",")
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -495,5 +655,88 @@ mod tests {
 
         let (browser, _) = matcher.match_browser(&settings);
         assert_eq!(browser, BrowserType::Unknown);
+    }
+
+    #[test]
+    fn test_parse_priority_frame() {
+        let data = vec![
+            // Frame Header
+            0x00, 0x00, 0x05, // Length: 5
+            0x02, // Type: PRIORITY
+            0x00, // Flags
+            0x00, 0x00, 0x00, 0x03, // Stream ID: 3
+            // Priority payload
+            0x80, 0x00, 0x00, 0x00, // Exclusive=1, Dependency=0
+            0xFF, // Weight: 255 (actual: 256)
+        ];
+
+        let frame = Http2PriorityFrame::parse(&data).unwrap();
+        assert!(frame.exclusive);
+        assert_eq!(frame.stream_dependency, 0);
+        assert_eq!(frame.weight, 255);
+        assert_eq!(frame.actual_weight(), 256);
+        assert_eq!(frame.header.stream_id, 3);
+    }
+
+    #[test]
+    fn test_parse_window_update_frame() {
+        let data = vec![
+            // Frame Header
+            0x00, 0x00, 0x04, // Length: 4
+            0x08, // Type: WINDOW_UPDATE
+            0x00, // Flags
+            0x00, 0x00, 0x00, 0x00, // Stream ID: 0
+            // Window Size Increment: 15663105 (Chrome connection flow)
+            0x00, 0xEF, 0x00, 0x01,
+        ];
+
+        let frame = Http2WindowUpdateFrame::parse(&data).unwrap();
+        assert_eq!(frame.window_size_increment, 15663105);
+    }
+
+    #[test]
+    fn test_frame_sequence_fingerprint() {
+        let mut data = Vec::new();
+        data.extend_from_slice(HTTP2_PREFACE);
+        // SETTINGS frame with 2 settings
+        data.extend_from_slice(&[
+            0x00, 0x00, 0x0C, // Length: 12 (2 settings)
+            0x04, // Type: SETTINGS
+            0x00, 0x00, 0x00, 0x00, 0x00, // Stream ID: 0
+            0x00, 0x01, 0x00, 0x01, 0x00, 0x00, // HEADER_TABLE_SIZE=65536
+            0x00, 0x04, 0x00, 0x60, 0x00, 0x00, // INITIAL_WINDOW_SIZE=6291456
+        ]);
+        // WINDOW_UPDATE frame
+        data.extend_from_slice(&[
+            0x00, 0x00, 0x04, // Length: 4
+            0x08, // Type: WINDOW_UPDATE
+            0x00, 0x00, 0x00, 0x00, 0x00, // Stream ID: 0
+            0x00, 0xEF, 0x00, 0x01, // Increment: 15663105
+        ]);
+
+        let fp = frame_sequence_fingerprint(&data);
+        assert_eq!(fp, "S[2],W");
+    }
+
+    #[test]
+    fn test_collect_initial_frames() {
+        let mut data = Vec::new();
+        // SETTINGS frame (no preface)
+        data.extend_from_slice(&[
+            0x00, 0x00, 0x06, // Length: 6
+            0x04, // Type: SETTINGS
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x00, 0x60, 0x00, 0x00,
+        ]);
+        // PRIORITY frame
+        data.extend_from_slice(&[
+            0x00, 0x00, 0x05, // Length: 5
+            0x02, // Type: PRIORITY
+            0x00, 0x00, 0x00, 0x00, 0x03, 0x80, 0x00, 0x00, 0x00, 0xFF,
+        ]);
+
+        let frames = collect_initial_frames(&data);
+        assert_eq!(frames.len(), 2);
+        assert_eq!(frames[0].frame_type, 0x04); // SETTINGS
+        assert_eq!(frames[1].frame_type, 0x02); // PRIORITY
     }
 }
