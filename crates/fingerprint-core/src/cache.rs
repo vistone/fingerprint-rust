@@ -93,17 +93,19 @@ impl CacheStats {
         }
     }
 
+    /// L1 cache hit rate: ratio of L1 hits to total cache lookups.
     pub fn l1_hit_rate(&self) -> f64 {
-        let l1_total = self.hits_l1 + (self.hits_l2 + self.hits_l3 + self.misses);
-        if l1_total == 0 {
+        let total = self.hits_l1 + self.hits_l2 + self.hits_l3 + self.misses;
+        if total == 0 {
             0.0
         } else {
-            self.hits_l1 as f64 / l1_total as f64
+            self.hits_l1 as f64 / total as f64
         }
     }
 
+    /// L2 cache hit rate: ratio of L2 hits to requests that missed L1.
     pub fn l2_hit_rate(&self) -> f64 {
-        let l2_total = self.hits_l2 + (self.hits_l3 + self.misses);
+        let l2_total = self.hits_l2 + self.hits_l3 + self.misses;
         if l2_total == 0 {
             0.0
         } else {
@@ -175,7 +177,11 @@ impl Cache {
         None
     }
 
-    /// Set value in cache (stores in both L1 and L2)
+    /// Set value in L1 cache.
+    ///
+    /// Note: The `ttl` parameter is accepted for API compatibility but is
+    /// currently unused since only L1 (in-memory LRU) caching is implemented.
+    /// L2 (Redis) support will use TTL when enabled.
     pub async fn set(&self, key: &str, value: Vec<u8>, _ttl: CacheTTL) -> CacheResult<()> {
         // Store in L1
         let mut cache = self.l1.write().await;
@@ -183,29 +189,23 @@ impl Cache {
         Ok(())
     }
 
-    /// Invalidate cache entry (both L1 and L2)
+    /// Invalidate cache entry from L1.
+    ///
+    /// Supports wildcard patterns ending with `*` to remove all keys
+    /// matching a given prefix.
     pub async fn invalidate(&self, pattern: &str) -> CacheResult<()> {
-        // Remove from L1
+        let mut cache = self.l1.write().await;
         if pattern.ends_with('*') {
-            // Pattern matching for keys
             let prefix = pattern.trim_end_matches('*');
-            let keys_to_remove: Vec<String> = {
-                let cache = self.l1.write().await;
-                // Collect keys to remove (to avoid borrow issues)
-                cache
-                    .iter()
-                    .filter(|(k, _)| k.starts_with(prefix))
-                    .map(|(k, _)| k.clone())
-                    .collect()
-            };
-
-            // Remove keys outside the lock to avoid prolonged lock holding
-            let mut cache = self.l1.write().await;
+            let keys_to_remove: Vec<String> = cache
+                .iter()
+                .filter(|(k, _)| k.starts_with(prefix))
+                .map(|(k, _)| k.clone())
+                .collect();
             for key in keys_to_remove {
                 cache.pop(&key);
             }
         } else {
-            let mut cache = self.l1.write().await;
             cache.pop(pattern);
         }
 

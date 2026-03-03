@@ -263,13 +263,14 @@ impl RateLimiter {
 
         // Authenticated user flow
         if let Some(user) = user_id {
-            let cache_hit = self.user_quotas.contains_key(user);
-
-            // Create quota entry if not exists (avoid borrow issues by computing first)
             let user_key = user.to_string();
-            if !cache_hit {
-                let new_quota = UserQuota::new(user_key.clone(), tier);
-                self.user_quotas.insert(user_key.clone(), new_quota);
+
+            // Use entry API for atomic check-or-insert to avoid race conditions
+            let is_new_entry;
+            {
+                let entry = self.user_quotas.entry(user_key.clone());
+                is_new_entry = matches!(entry, dashmap::mapref::entry::Entry::Vacant(_));
+                entry.or_insert_with(|| UserQuota::new(user_key.clone(), tier));
             }
 
             // Get mutable reference to the quota
@@ -307,7 +308,7 @@ impl RateLimiter {
                 });
             }
 
-            if cache_hit {
+            if !is_new_entry {
                 let mut hits = self.metrics.cache_hits.lock();
                 *hits += 1;
             } else {
@@ -496,8 +497,8 @@ pub struct RateLimitResponse {
 pub enum RateLimitError {
     /// Monthly quota exceeded
     QuotaExceeded {
-        /// Seconds until monthly reset
-        retry_after: u64,
+        /// Duration until monthly reset
+        retry_after: Duration,
         /// Epoch timestamp of monthly reset
         monthly_reset: u64,
     },
@@ -546,14 +547,15 @@ pub fn current_unix_timestamp() -> u64 {
         .as_secs()
 }
 
-/// Calculate seconds until next token refill
-fn calculate_retry_after(quota: &UserQuota, tier: QuotaTier) -> u64 {
+/// Calculate duration until next token refill
+fn calculate_retry_after(quota: &UserQuota, tier: QuotaTier) -> Duration {
     // If monthly quota exceeded, return until next month
     if quota.month_requests >= tier.monthly_quota() {
-        (quota.month_start + 30 * 86400).saturating_sub(current_unix_timestamp())
+        let secs = (quota.month_start + 30 * 86400).saturating_sub(current_unix_timestamp());
+        Duration::from_secs(secs)
     } else {
         // If minute limit exceeded, return 60 seconds
-        60
+        Duration::from_secs(60)
     }
 }
 
