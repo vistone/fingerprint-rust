@@ -93,119 +93,119 @@
 <a href=#93 id=93 data-nosnippet>93</a>        }
 <a href=#94 id=94 data-nosnippet>94</a>    }
 <a href=#95 id=95 data-nosnippet>95</a>
-<a href=#96 id=96 data-nosnippet>96</a>    <span class="kw">pub fn </span>l1_hit_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; f64 {
-<a href=#97 id=97 data-nosnippet>97</a>        <span class="kw">let </span>l1_total = <span class="self">self</span>.hits_l1 + (<span class="self">self</span>.hits_l2 + <span class="self">self</span>.hits_l3 + <span class="self">self</span>.misses);
-<a href=#98 id=98 data-nosnippet>98</a>        <span class="kw">if </span>l1_total == <span class="number">0 </span>{
-<a href=#99 id=99 data-nosnippet>99</a>            <span class="number">0.0
-<a href=#100 id=100 data-nosnippet>100</a>        </span>} <span class="kw">else </span>{
-<a href=#101 id=101 data-nosnippet>101</a>            <span class="self">self</span>.hits_l1 <span class="kw">as </span>f64 / l1_total <span class="kw">as </span>f64
-<a href=#102 id=102 data-nosnippet>102</a>        }
-<a href=#103 id=103 data-nosnippet>103</a>    }
-<a href=#104 id=104 data-nosnippet>104</a>
-<a href=#105 id=105 data-nosnippet>105</a>    <span class="kw">pub fn </span>l2_hit_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; f64 {
-<a href=#106 id=106 data-nosnippet>106</a>        <span class="kw">let </span>l2_total = <span class="self">self</span>.hits_l2 + (<span class="self">self</span>.hits_l3 + <span class="self">self</span>.misses);
-<a href=#107 id=107 data-nosnippet>107</a>        <span class="kw">if </span>l2_total == <span class="number">0 </span>{
-<a href=#108 id=108 data-nosnippet>108</a>            <span class="number">0.0
-<a href=#109 id=109 data-nosnippet>109</a>        </span>} <span class="kw">else </span>{
-<a href=#110 id=110 data-nosnippet>110</a>            <span class="self">self</span>.hits_l2 <span class="kw">as </span>f64 / l2_total <span class="kw">as </span>f64
-<a href=#111 id=111 data-nosnippet>111</a>        }
-<a href=#112 id=112 data-nosnippet>112</a>    }
-<a href=#113 id=113 data-nosnippet>113</a>}
-<a href=#114 id=114 data-nosnippet>114</a>
-<a href=#115 id=115 data-nosnippet>115</a><span class="doccomment">/// Cache result type
-<a href=#116 id=116 data-nosnippet>116</a></span><span class="kw">pub type </span>CacheResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, CacheError&gt;;
-<a href=#117 id=117 data-nosnippet>117</a>
-<a href=#118 id=118 data-nosnippet>118</a><span class="doccomment">/// Multi-tier cache implementation
-<a href=#119 id=119 data-nosnippet>119</a></span><span class="kw">pub struct </span>Cache {
-<a href=#120 id=120 data-nosnippet>120</a>    <span class="comment">// L1: In-memory cache using LRU (async-safe)
-<a href=#121 id=121 data-nosnippet>121</a>    </span>l1: Arc&lt;RwLock&lt;lru::LruCache&lt;String, Vec&lt;u8&gt;&gt;&gt;&gt;,
-<a href=#122 id=122 data-nosnippet>122</a>    <span class="comment">// L2 address for connection
-<a href=#123 id=123 data-nosnippet>123</a>    </span>l2_addr: String,
-<a href=#124 id=124 data-nosnippet>124</a>    <span class="comment">// Statistics (async-safe)
-<a href=#125 id=125 data-nosnippet>125</a>    </span>stats: Arc&lt;RwLock&lt;CacheStats&gt;&gt;,
-<a href=#126 id=126 data-nosnippet>126</a>}
-<a href=#127 id=127 data-nosnippet>127</a>
-<a href=#128 id=128 data-nosnippet>128</a><span class="kw">impl </span>Cache {
-<a href=#129 id=129 data-nosnippet>129</a>    <span class="doccomment">/// Create new cache instance with only L1 cache enabled
-<a href=#130 id=130 data-nosnippet>130</a>    </span><span class="kw">pub fn </span>new_l1_only(l1_capacity: usize) -&gt; CacheResult&lt;<span class="self">Self</span>&gt; {
-<a href=#131 id=131 data-nosnippet>131</a>        <span class="kw">let </span>capacity = std::num::NonZeroUsize::new(l1_capacity)
-<a href=#132 id=132 data-nosnippet>132</a>            .ok_or_else(|| CacheError::ConfigError(<span class="string">"L1 capacity must be &gt; 0"</span>.to_string()))<span class="question-mark">?</span>;
-<a href=#133 id=133 data-nosnippet>133</a>
-<a href=#134 id=134 data-nosnippet>134</a>        <span class="prelude-val">Ok</span>(Cache {
-<a href=#135 id=135 data-nosnippet>135</a>            l1: Arc::new(RwLock::new(lru::LruCache::new(capacity))),
-<a href=#136 id=136 data-nosnippet>136</a>            l2_addr: String::new(),
-<a href=#137 id=137 data-nosnippet>137</a>            stats: Arc::new(RwLock::new(CacheStats::default())),
-<a href=#138 id=138 data-nosnippet>138</a>        })
-<a href=#139 id=139 data-nosnippet>139</a>    }
-<a href=#140 id=140 data-nosnippet>140</a>
-<a href=#141 id=141 data-nosnippet>141</a>    <span class="doccomment">/// Create new cache instance (L1 only, Redis URL stored for later)
-<a href=#142 id=142 data-nosnippet>142</a>    </span><span class="kw">pub fn </span>new(l2_addr: <span class="kw-2">&amp;</span>str, l1_capacity: usize) -&gt; CacheResult&lt;<span class="self">Self</span>&gt; {
-<a href=#143 id=143 data-nosnippet>143</a>        <span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">Self</span>::new_l1_only(l1_capacity)<span class="question-mark">?</span>;
-<a href=#144 id=144 data-nosnippet>144</a>        cache.l2_addr = l2_addr.to_string();
-<a href=#145 id=145 data-nosnippet>145</a>        <span class="prelude-val">Ok</span>(cache)
-<a href=#146 id=146 data-nosnippet>146</a>    }
-<a href=#147 id=147 data-nosnippet>147</a>
-<a href=#148 id=148 data-nosnippet>148</a>    <span class="doccomment">/// Generate versioned cache key
-<a href=#149 id=149 data-nosnippet>149</a>    </span><span class="kw">pub fn </span>versioned_key(namespace: <span class="kw-2">&amp;</span>str, version: u32, id: <span class="kw-2">&amp;</span>str) -&gt; String {
-<a href=#150 id=150 data-nosnippet>150</a>        <span class="macro">format!</span>(<span class="string">"{}:v{}:{}"</span>, namespace, version, id)
-<a href=#151 id=151 data-nosnippet>151</a>    }
-<a href=#152 id=152 data-nosnippet>152</a>
-<a href=#153 id=153 data-nosnippet>153</a>    <span class="doccomment">/// Get value from cache (tries L1, then L2)
-<a href=#154 id=154 data-nosnippet>154</a>    </span><span class="kw">pub async fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;u8&gt;&gt; {
-<a href=#155 id=155 data-nosnippet>155</a>        <span class="comment">// Try L1 - minimize lock scope by cloning before releasing
-<a href=#156 id=156 data-nosnippet>156</a>        </span>{
-<a href=#157 id=157 data-nosnippet>157</a>            <span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
-<a href=#158 id=158 data-nosnippet>158</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = cache.get(key) {
-<a href=#159 id=159 data-nosnippet>159</a>                <span class="kw">let </span>value = value.clone();
-<a href=#160 id=160 data-nosnippet>160</a>                <span class="comment">// Update stats outside the lock to avoid blocking
-<a href=#161 id=161 data-nosnippet>161</a>                </span>drop(cache);
-<a href=#162 id=162 data-nosnippet>162</a>                {
-<a href=#163 id=163 data-nosnippet>163</a>                    <span class="kw">let </span><span class="kw-2">mut </span>stats = <span class="self">self</span>.stats.write().<span class="kw">await</span>;
-<a href=#164 id=164 data-nosnippet>164</a>                    stats.hits_l1 += <span class="number">1</span>;
-<a href=#165 id=165 data-nosnippet>165</a>                }
-<a href=#166 id=166 data-nosnippet>166</a>                <span class="kw">return </span><span class="prelude-val">Some</span>(value);
-<a href=#167 id=167 data-nosnippet>167</a>            }
-<a href=#168 id=168 data-nosnippet>168</a>        }
-<a href=#169 id=169 data-nosnippet>169</a>
-<a href=#170 id=170 data-nosnippet>170</a>        <span class="comment">// Miss in L1
-<a href=#171 id=171 data-nosnippet>171</a>        </span>{
-<a href=#172 id=172 data-nosnippet>172</a>            <span class="kw">let </span><span class="kw-2">mut </span>stats = <span class="self">self</span>.stats.write().<span class="kw">await</span>;
-<a href=#173 id=173 data-nosnippet>173</a>            stats.misses += <span class="number">1</span>;
-<a href=#174 id=174 data-nosnippet>174</a>        }
-<a href=#175 id=175 data-nosnippet>175</a>        <span class="prelude-val">None
-<a href=#176 id=176 data-nosnippet>176</a>    </span>}
-<a href=#177 id=177 data-nosnippet>177</a>
-<a href=#178 id=178 data-nosnippet>178</a>    <span class="doccomment">/// Set value in cache (stores in both L1 and L2)
-<a href=#179 id=179 data-nosnippet>179</a>    </span><span class="kw">pub async fn </span>set(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str, value: Vec&lt;u8&gt;, _ttl: CacheTTL) -&gt; CacheResult&lt;()&gt; {
-<a href=#180 id=180 data-nosnippet>180</a>        <span class="comment">// Store in L1
-<a href=#181 id=181 data-nosnippet>181</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
-<a href=#182 id=182 data-nosnippet>182</a>        cache.put(key.to_string(), value);
-<a href=#183 id=183 data-nosnippet>183</a>        <span class="prelude-val">Ok</span>(())
-<a href=#184 id=184 data-nosnippet>184</a>    }
-<a href=#185 id=185 data-nosnippet>185</a>
-<a href=#186 id=186 data-nosnippet>186</a>    <span class="doccomment">/// Invalidate cache entry (both L1 and L2)
-<a href=#187 id=187 data-nosnippet>187</a>    </span><span class="kw">pub async fn </span>invalidate(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern: <span class="kw-2">&amp;</span>str) -&gt; CacheResult&lt;()&gt; {
-<a href=#188 id=188 data-nosnippet>188</a>        <span class="comment">// Remove from L1
-<a href=#189 id=189 data-nosnippet>189</a>        </span><span class="kw">if </span>pattern.ends_with(<span class="string">'*'</span>) {
-<a href=#190 id=190 data-nosnippet>190</a>            <span class="comment">// Pattern matching for keys
-<a href=#191 id=191 data-nosnippet>191</a>            </span><span class="kw">let </span>prefix = pattern.trim_end_matches(<span class="string">'*'</span>);
-<a href=#192 id=192 data-nosnippet>192</a>            <span class="kw">let </span>keys_to_remove: Vec&lt;String&gt; = {
-<a href=#193 id=193 data-nosnippet>193</a>                <span class="kw">let </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
-<a href=#194 id=194 data-nosnippet>194</a>                <span class="comment">// Collect keys to remove (to avoid borrow issues)
-<a href=#195 id=195 data-nosnippet>195</a>                </span>cache
-<a href=#196 id=196 data-nosnippet>196</a>                    .iter()
-<a href=#197 id=197 data-nosnippet>197</a>                    .filter(|(k, <span class="kw">_</span>)| k.starts_with(prefix))
-<a href=#198 id=198 data-nosnippet>198</a>                    .map(|(k, <span class="kw">_</span>)| k.clone())
-<a href=#199 id=199 data-nosnippet>199</a>                    .collect()
-<a href=#200 id=200 data-nosnippet>200</a>            };
-<a href=#201 id=201 data-nosnippet>201</a>
-<a href=#202 id=202 data-nosnippet>202</a>            <span class="comment">// Remove keys outside the lock to avoid prolonged lock holding
-<a href=#203 id=203 data-nosnippet>203</a>            </span><span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
-<a href=#204 id=204 data-nosnippet>204</a>            <span class="kw">for </span>key <span class="kw">in </span>keys_to_remove {
-<a href=#205 id=205 data-nosnippet>205</a>                cache.pop(<span class="kw-2">&amp;</span>key);
-<a href=#206 id=206 data-nosnippet>206</a>            }
-<a href=#207 id=207 data-nosnippet>207</a>        } <span class="kw">else </span>{
-<a href=#208 id=208 data-nosnippet>208</a>            <span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
+<a href=#96 id=96 data-nosnippet>96</a>    <span class="doccomment">/// L1 cache hit rate: ratio of L1 hits to total cache lookups.
+<a href=#97 id=97 data-nosnippet>97</a>    </span><span class="kw">pub fn </span>l1_hit_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; f64 {
+<a href=#98 id=98 data-nosnippet>98</a>        <span class="kw">let </span>total = <span class="self">self</span>.hits_l1 + <span class="self">self</span>.hits_l2 + <span class="self">self</span>.hits_l3 + <span class="self">self</span>.misses;
+<a href=#99 id=99 data-nosnippet>99</a>        <span class="kw">if </span>total == <span class="number">0 </span>{
+<a href=#100 id=100 data-nosnippet>100</a>            <span class="number">0.0
+<a href=#101 id=101 data-nosnippet>101</a>        </span>} <span class="kw">else </span>{
+<a href=#102 id=102 data-nosnippet>102</a>            <span class="self">self</span>.hits_l1 <span class="kw">as </span>f64 / total <span class="kw">as </span>f64
+<a href=#103 id=103 data-nosnippet>103</a>        }
+<a href=#104 id=104 data-nosnippet>104</a>    }
+<a href=#105 id=105 data-nosnippet>105</a>
+<a href=#106 id=106 data-nosnippet>106</a>    <span class="doccomment">/// L2 cache hit rate: ratio of L2 hits to requests that missed L1.
+<a href=#107 id=107 data-nosnippet>107</a>    </span><span class="kw">pub fn </span>l2_hit_rate(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; f64 {
+<a href=#108 id=108 data-nosnippet>108</a>        <span class="kw">let </span>l2_total = <span class="self">self</span>.hits_l2 + <span class="self">self</span>.hits_l3 + <span class="self">self</span>.misses;
+<a href=#109 id=109 data-nosnippet>109</a>        <span class="kw">if </span>l2_total == <span class="number">0 </span>{
+<a href=#110 id=110 data-nosnippet>110</a>            <span class="number">0.0
+<a href=#111 id=111 data-nosnippet>111</a>        </span>} <span class="kw">else </span>{
+<a href=#112 id=112 data-nosnippet>112</a>            <span class="self">self</span>.hits_l2 <span class="kw">as </span>f64 / l2_total <span class="kw">as </span>f64
+<a href=#113 id=113 data-nosnippet>113</a>        }
+<a href=#114 id=114 data-nosnippet>114</a>    }
+<a href=#115 id=115 data-nosnippet>115</a>}
+<a href=#116 id=116 data-nosnippet>116</a>
+<a href=#117 id=117 data-nosnippet>117</a><span class="doccomment">/// Cache result type
+<a href=#118 id=118 data-nosnippet>118</a></span><span class="kw">pub type </span>CacheResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, CacheError&gt;;
+<a href=#119 id=119 data-nosnippet>119</a>
+<a href=#120 id=120 data-nosnippet>120</a><span class="doccomment">/// Multi-tier cache implementation
+<a href=#121 id=121 data-nosnippet>121</a></span><span class="kw">pub struct </span>Cache {
+<a href=#122 id=122 data-nosnippet>122</a>    <span class="comment">// L1: In-memory cache using LRU (async-safe)
+<a href=#123 id=123 data-nosnippet>123</a>    </span>l1: Arc&lt;RwLock&lt;lru::LruCache&lt;String, Vec&lt;u8&gt;&gt;&gt;&gt;,
+<a href=#124 id=124 data-nosnippet>124</a>    <span class="comment">// L2 address for connection
+<a href=#125 id=125 data-nosnippet>125</a>    </span>l2_addr: String,
+<a href=#126 id=126 data-nosnippet>126</a>    <span class="comment">// Statistics (async-safe)
+<a href=#127 id=127 data-nosnippet>127</a>    </span>stats: Arc&lt;RwLock&lt;CacheStats&gt;&gt;,
+<a href=#128 id=128 data-nosnippet>128</a>}
+<a href=#129 id=129 data-nosnippet>129</a>
+<a href=#130 id=130 data-nosnippet>130</a><span class="kw">impl </span>Cache {
+<a href=#131 id=131 data-nosnippet>131</a>    <span class="doccomment">/// Create new cache instance with only L1 cache enabled
+<a href=#132 id=132 data-nosnippet>132</a>    </span><span class="kw">pub fn </span>new_l1_only(l1_capacity: usize) -&gt; CacheResult&lt;<span class="self">Self</span>&gt; {
+<a href=#133 id=133 data-nosnippet>133</a>        <span class="kw">let </span>capacity = std::num::NonZeroUsize::new(l1_capacity)
+<a href=#134 id=134 data-nosnippet>134</a>            .ok_or_else(|| CacheError::ConfigError(<span class="string">"L1 capacity must be &gt; 0"</span>.to_string()))<span class="question-mark">?</span>;
+<a href=#135 id=135 data-nosnippet>135</a>
+<a href=#136 id=136 data-nosnippet>136</a>        <span class="prelude-val">Ok</span>(Cache {
+<a href=#137 id=137 data-nosnippet>137</a>            l1: Arc::new(RwLock::new(lru::LruCache::new(capacity))),
+<a href=#138 id=138 data-nosnippet>138</a>            l2_addr: String::new(),
+<a href=#139 id=139 data-nosnippet>139</a>            stats: Arc::new(RwLock::new(CacheStats::default())),
+<a href=#140 id=140 data-nosnippet>140</a>        })
+<a href=#141 id=141 data-nosnippet>141</a>    }
+<a href=#142 id=142 data-nosnippet>142</a>
+<a href=#143 id=143 data-nosnippet>143</a>    <span class="doccomment">/// Create new cache instance (L1 only, Redis URL stored for later)
+<a href=#144 id=144 data-nosnippet>144</a>    </span><span class="kw">pub fn </span>new(l2_addr: <span class="kw-2">&amp;</span>str, l1_capacity: usize) -&gt; CacheResult&lt;<span class="self">Self</span>&gt; {
+<a href=#145 id=145 data-nosnippet>145</a>        <span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">Self</span>::new_l1_only(l1_capacity)<span class="question-mark">?</span>;
+<a href=#146 id=146 data-nosnippet>146</a>        cache.l2_addr = l2_addr.to_string();
+<a href=#147 id=147 data-nosnippet>147</a>        <span class="prelude-val">Ok</span>(cache)
+<a href=#148 id=148 data-nosnippet>148</a>    }
+<a href=#149 id=149 data-nosnippet>149</a>
+<a href=#150 id=150 data-nosnippet>150</a>    <span class="doccomment">/// Generate versioned cache key
+<a href=#151 id=151 data-nosnippet>151</a>    </span><span class="kw">pub fn </span>versioned_key(namespace: <span class="kw-2">&amp;</span>str, version: u32, id: <span class="kw-2">&amp;</span>str) -&gt; String {
+<a href=#152 id=152 data-nosnippet>152</a>        <span class="macro">format!</span>(<span class="string">"{}:v{}:{}"</span>, namespace, version, id)
+<a href=#153 id=153 data-nosnippet>153</a>    }
+<a href=#154 id=154 data-nosnippet>154</a>
+<a href=#155 id=155 data-nosnippet>155</a>    <span class="doccomment">/// Get value from cache (tries L1, then L2)
+<a href=#156 id=156 data-nosnippet>156</a>    </span><span class="kw">pub async fn </span>get(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;Vec&lt;u8&gt;&gt; {
+<a href=#157 id=157 data-nosnippet>157</a>        <span class="comment">// Try L1 - minimize lock scope by cloning before releasing
+<a href=#158 id=158 data-nosnippet>158</a>        </span>{
+<a href=#159 id=159 data-nosnippet>159</a>            <span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
+<a href=#160 id=160 data-nosnippet>160</a>            <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = cache.get(key) {
+<a href=#161 id=161 data-nosnippet>161</a>                <span class="kw">let </span>value = value.clone();
+<a href=#162 id=162 data-nosnippet>162</a>                <span class="comment">// Update stats outside the lock to avoid blocking
+<a href=#163 id=163 data-nosnippet>163</a>                </span>drop(cache);
+<a href=#164 id=164 data-nosnippet>164</a>                {
+<a href=#165 id=165 data-nosnippet>165</a>                    <span class="kw">let </span><span class="kw-2">mut </span>stats = <span class="self">self</span>.stats.write().<span class="kw">await</span>;
+<a href=#166 id=166 data-nosnippet>166</a>                    stats.hits_l1 += <span class="number">1</span>;
+<a href=#167 id=167 data-nosnippet>167</a>                }
+<a href=#168 id=168 data-nosnippet>168</a>                <span class="kw">return </span><span class="prelude-val">Some</span>(value);
+<a href=#169 id=169 data-nosnippet>169</a>            }
+<a href=#170 id=170 data-nosnippet>170</a>        }
+<a href=#171 id=171 data-nosnippet>171</a>
+<a href=#172 id=172 data-nosnippet>172</a>        <span class="comment">// Miss in L1
+<a href=#173 id=173 data-nosnippet>173</a>        </span>{
+<a href=#174 id=174 data-nosnippet>174</a>            <span class="kw">let </span><span class="kw-2">mut </span>stats = <span class="self">self</span>.stats.write().<span class="kw">await</span>;
+<a href=#175 id=175 data-nosnippet>175</a>            stats.misses += <span class="number">1</span>;
+<a href=#176 id=176 data-nosnippet>176</a>        }
+<a href=#177 id=177 data-nosnippet>177</a>        <span class="prelude-val">None
+<a href=#178 id=178 data-nosnippet>178</a>    </span>}
+<a href=#179 id=179 data-nosnippet>179</a>
+<a href=#180 id=180 data-nosnippet>180</a>    <span class="doccomment">/// Set value in L1 cache.
+<a href=#181 id=181 data-nosnippet>181</a>    ///
+<a href=#182 id=182 data-nosnippet>182</a>    /// Note: The `ttl` parameter is accepted for API compatibility but is
+<a href=#183 id=183 data-nosnippet>183</a>    /// currently unused since only L1 (in-memory LRU) caching is implemented.
+<a href=#184 id=184 data-nosnippet>184</a>    /// L2 (Redis) support will use TTL when enabled.
+<a href=#185 id=185 data-nosnippet>185</a>    </span><span class="kw">pub async fn </span>set(<span class="kw-2">&amp;</span><span class="self">self</span>, key: <span class="kw-2">&amp;</span>str, value: Vec&lt;u8&gt;, _ttl: CacheTTL) -&gt; CacheResult&lt;()&gt; {
+<a href=#186 id=186 data-nosnippet>186</a>        <span class="comment">// Store in L1
+<a href=#187 id=187 data-nosnippet>187</a>        </span><span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
+<a href=#188 id=188 data-nosnippet>188</a>        cache.put(key.to_string(), value);
+<a href=#189 id=189 data-nosnippet>189</a>        <span class="prelude-val">Ok</span>(())
+<a href=#190 id=190 data-nosnippet>190</a>    }
+<a href=#191 id=191 data-nosnippet>191</a>
+<a href=#192 id=192 data-nosnippet>192</a>    <span class="doccomment">/// Invalidate cache entry from L1.
+<a href=#193 id=193 data-nosnippet>193</a>    ///
+<a href=#194 id=194 data-nosnippet>194</a>    /// Supports wildcard patterns ending with `*` to remove all keys
+<a href=#195 id=195 data-nosnippet>195</a>    /// matching a given prefix.
+<a href=#196 id=196 data-nosnippet>196</a>    </span><span class="kw">pub async fn </span>invalidate(<span class="kw-2">&amp;</span><span class="self">self</span>, pattern: <span class="kw-2">&amp;</span>str) -&gt; CacheResult&lt;()&gt; {
+<a href=#197 id=197 data-nosnippet>197</a>        <span class="kw">let </span><span class="kw-2">mut </span>cache = <span class="self">self</span>.l1.write().<span class="kw">await</span>;
+<a href=#198 id=198 data-nosnippet>198</a>        <span class="kw">if </span>pattern.ends_with(<span class="string">'*'</span>) {
+<a href=#199 id=199 data-nosnippet>199</a>            <span class="kw">let </span>prefix = pattern.trim_end_matches(<span class="string">'*'</span>);
+<a href=#200 id=200 data-nosnippet>200</a>            <span class="kw">let </span>keys_to_remove: Vec&lt;String&gt; = cache
+<a href=#201 id=201 data-nosnippet>201</a>                .iter()
+<a href=#202 id=202 data-nosnippet>202</a>                .filter(|(k, <span class="kw">_</span>)| k.starts_with(prefix))
+<a href=#203 id=203 data-nosnippet>203</a>                .map(|(k, <span class="kw">_</span>)| k.clone())
+<a href=#204 id=204 data-nosnippet>204</a>                .collect();
+<a href=#205 id=205 data-nosnippet>205</a>            <span class="kw">for </span>key <span class="kw">in </span>keys_to_remove {
+<a href=#206 id=206 data-nosnippet>206</a>                cache.pop(<span class="kw-2">&amp;</span>key);
+<a href=#207 id=207 data-nosnippet>207</a>            }
+<a href=#208 id=208 data-nosnippet>208</a>        } <span class="kw">else </span>{
 <a href=#209 id=209 data-nosnippet>209</a>            cache.pop(pattern);
 <a href=#210 id=210 data-nosnippet>210</a>        }
 <a href=#211 id=211 data-nosnippet>211</a>
