@@ -41,11 +41,10 @@ pub fn load_config<P: AsRef<Path>>(path: P) -> Result<DNSConfig, DNSError> {
 mod tests {
     use super::*;
     use std::fs;
-    use std::path::PathBuf;
 
     #[test]
     fn test_load_json_config() {
-        let temp_dir = PathBuf::from("/tmp/test_dns_config");
+        let temp_dir = std::env::temp_dir().join("test_dns_config");
         fs::create_dir_all(&temp_dir).ok();
         let config_path = temp_dir.join("config.json");
 

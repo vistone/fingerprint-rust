@@ -97,7 +97,7 @@ impl VersionDetector {
     /// Extract Chrome version from User-Agent
     fn extract_chrome_version(user_agent: &str) -> Option<u32> {
         // Chrome 133.0.0.0 or Chromium/133.0.0.0
-        let pattern = static_regex(r"Chrome[/\s]+(\d+)");
+        let pattern = static_regex(r"Chrome[/\s]+(\d+)")?;
         pattern
             .captures(user_agent)
             .and_then(|c| c.get(1))
@@ -107,7 +107,7 @@ impl VersionDetector {
     /// Extract Firefox version from User-Agent
     fn extract_firefox_version(user_agent: &str) -> Option<u32> {
         // Firefox/133.0 or Thunderbird/138.0
-        let pattern = static_regex(r"Firefox[/\s]+(\d+)");
+        let pattern = static_regex(r"Firefox[/\s]+(\d+)")?;
         pattern
             .captures(user_agent)
             .and_then(|c| c.get(1))
@@ -122,7 +122,7 @@ impl VersionDetector {
         }
 
         // Version pattern for Safari
-        let pattern = static_regex(r"Version[/\s]+(\d+)");
+        let pattern = static_regex(r"Version[/\s]+(\d+)")?;
         pattern
             .captures(user_agent)
             .and_then(|c| c.get(1))
@@ -132,7 +132,7 @@ impl VersionDetector {
     /// Extract Edge version from User-Agent
     fn extract_edge_version(user_agent: &str) -> Option<u32> {
         // Edg/133.0.0.0 (note: lowercase 'dg')
-        let pattern = static_regex(r"Edg[e]?[/\s]+(\d+)");
+        let pattern = static_regex(r"Edg[e]?[/\s]+(\d+)")?;
         pattern
             .captures(user_agent)
             .and_then(|c| c.get(1))
@@ -142,7 +142,7 @@ impl VersionDetector {
     /// Extract Opera version from User-Agent
     fn extract_opera_version(user_agent: &str) -> Option<u32> {
         // OPR/94.0.0.0 or Opera/94.0.0.0
-        let pattern = static_regex(r"(?:OPR|Opera)[/\s]+(\d+)");
+        let pattern = static_regex(r"(?:OPR|Opera)[/\s]+(\d+)")?;
         pattern
             .captures(user_agent)
             .and_then(|c| c.get(1))
@@ -204,38 +204,32 @@ impl VersionDetector {
 ///
 /// This function maintains static regex instances for performance.
 /// It only accepts known patterns from the browser detection code.
-fn static_regex(pattern: &str) -> &'static Regex {
+/// Returns `None` for unknown patterns instead of panicking.
+fn static_regex(pattern: &str) -> Option<&'static Regex> {
     // This function is internal and only called with known patterns
     // from the detect_* methods in this module
     match pattern {
         r"Chrome[/\s]+(\d+)" => {
             static CHROME: OnceLock<Regex> = OnceLock::new();
-            CHROME.get_or_init(|| Regex::new(r"Chrome[/\s]+(\d+)").unwrap())
+            Some(CHROME.get_or_init(|| Regex::new(r"Chrome[/\s]+(\d+)").unwrap()))
         }
         r"Firefox[/\s]+(\d+)" => {
             static FIREFOX: OnceLock<Regex> = OnceLock::new();
-            FIREFOX.get_or_init(|| Regex::new(r"Firefox[/\s]+(\d+)").unwrap())
+            Some(FIREFOX.get_or_init(|| Regex::new(r"Firefox[/\s]+(\d+)").unwrap()))
         }
         r"Version[/\s]+(\d+)" => {
             static VERSION: OnceLock<Regex> = OnceLock::new();
-            VERSION.get_or_init(|| Regex::new(r"Version[/\s]+(\d+)").unwrap())
+            Some(VERSION.get_or_init(|| Regex::new(r"Version[/\s]+(\d+)").unwrap()))
         }
         r"Edg[e]?[/\s]+(\d+)" => {
             static EDGE: OnceLock<Regex> = OnceLock::new();
-            EDGE.get_or_init(|| Regex::new(r"Edg[e]?[/\s]+(\d+)").unwrap())
+            Some(EDGE.get_or_init(|| Regex::new(r"Edg[e]?[/\s]+(\d+)").unwrap()))
         }
         r"(?:OPR|Opera)[/\s]+(\d+)" => {
             static OPERA: OnceLock<Regex> = OnceLock::new();
-            OPERA.get_or_init(|| Regex::new(r"(?:OPR|Opera)[/\s]+(\d+)").unwrap())
+            Some(OPERA.get_or_init(|| Regex::new(r"(?:OPR|Opera)[/\s]+(\d+)").unwrap()))
         }
-        _ => {
-            // This should never happen as function is only called internally with known patterns
-            // If you see this panic, a new browser pattern was added but not registered here
-            panic!(
-                "Unknown regex pattern: '{}'. Add this pattern to static_regex() match arms.",
-                pattern
-            )
-        }
+        _ => None,
     }
 }
 

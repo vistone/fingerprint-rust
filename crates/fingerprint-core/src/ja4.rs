@@ -1,7 +1,8 @@
-//! JA4+ fingerprintseriesimplement
+//! JA4+ fingerprint series implementation
 //!
-//! including JA4 (TLS), JA4H (HTTP), JA4T (TCP) etc.algorithmabstract and Calculatelogic.
-//! reference自 FoxIO JA4+ specification.
+//! Including JA4 (TLS), JA4H (HTTP), JA4T (TCP), JA4TS (TCP Server) etc.
+//! Algorithm abstractions and calculation logic.
+//! Reference: FoxIO JA4+ specification.
 
 use serde::{Deserialize, Serialize};
 
@@ -392,6 +393,182 @@ impl ConsistencyReport {
         if self.score < 60 {
             self.bot_detected = true;
         }
+    }
+}
+
+/// TLS Extension Order Fingerprint
+///
+/// The ordering of extensions in TLS ClientHello is a strong fingerprinting signal.
+/// Different browsers and TLS libraries have distinct extension orderings that
+/// remain consistent across versions. This is particularly useful for:
+/// - Distinguishing browsers even when cipher suites/curves are identical
+/// - Detecting TLS client impersonation (e.g., bot pretending to be Chrome)
+/// - Complementing JA3/JA4 fingerprints with ordering information
+///
+/// ## Known Browser Extension Patterns
+/// - Chrome: SNI(0), extended_master_secret(23), renegotiation_info(65281), supported_groups(10)...
+/// - Firefox: SNI(0), extended_master_secret(23), renegotiation_info(65281), supported_groups(10)...
+///   (similar start but diverges after ~5 extensions)
+/// - Safari: SNI(0), supported_groups(10), ec_point_formats(11)...
+///
+/// ## Examples
+/// ```
+/// use fingerprint_core::ja4::TlsExtensionOrderFingerprint;
+///
+/// let extensions = vec![0, 23, 65281, 10, 11, 35, 16, 5, 13, 18, 51, 45, 43, 27, 21];
+/// let fp = TlsExtensionOrderFingerprint::generate(&extensions);
+/// assert!(!fp.fingerprint_string().is_empty());
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct TlsExtensionOrderFingerprint {
+    /// Original extension order (GREASE filtered)
+    pub extension_order: Vec<u16>,
+    /// SHA256 hash of the extension order (first 16 hex chars)
+    pub order_hash: String,
+    /// Number of extensions
+    pub count: usize,
+}
+
+impl TlsExtensionOrderFingerprint {
+    /// Generate extension order fingerprint from a list of TLS extension IDs
+    /// in the order they appear in the ClientHello
+    pub fn generate(extensions: &[u16]) -> Self {
+        use sha2::{Digest, Sha256};
+
+        // Filter GREASE values but preserve ordering
+        let filtered: Vec<u16> = extensions
+            .iter()
+            .filter(|&&e| !crate::grease::is_grease_value(e))
+            .cloned()
+            .collect();
+
+        let count = filtered.len();
+
+        // Create ordered string representation
+        let order_string = filtered
+            .iter()
+            .map(|e| format!("{:04x}", e))
+            .collect::<Vec<_>>()
+            .join("-");
+
+        let mut hasher = Sha256::new();
+        hasher.update(order_string.as_bytes());
+        let hash_result = hasher.finalize();
+        let hash_hex = format!("{:x}", hash_result);
+        let order_hash = hash_hex[..16.min(hash_hex.len())].to_string();
+
+        Self {
+            extension_order: filtered,
+            order_hash,
+            count,
+        }
+    }
+
+    /// Convert to fingerprint string
+    /// format: {count:02}_{order_hash}
+    pub fn fingerprint_string(&self) -> String {
+        format!("{:02}_{}", self.count, self.order_hash)
+    }
+
+    /// Calculate similarity with another extension order (0.0 - 1.0)
+    /// Uses longest common subsequence ratio for ordering comparison
+    pub fn similarity(&self, other: &TlsExtensionOrderFingerprint) -> f64 {
+        if self.extension_order.is_empty() || other.extension_order.is_empty() {
+            return 0.0;
+        }
+
+        // LCS-based ordering similarity
+        let lcs_len = longest_common_subsequence_len(&self.extension_order, &other.extension_order);
+        let max_len = self.extension_order.len().max(other.extension_order.len());
+
+        lcs_len as f64 / max_len as f64
+    }
+}
+
+/// Calculate length of longest common subsequence
+fn longest_common_subsequence_len(a: &[u16], b: &[u16]) -> usize {
+    let m = a.len();
+    let n = b.len();
+    let mut dp = vec![vec![0usize; n + 1]; m + 1];
+
+    for i in 1..=m {
+        for j in 1..=n {
+            if a[i - 1] == b[j - 1] {
+                dp[i][j] = dp[i - 1][j - 1] + 1;
+            } else {
+                dp[i][j] = dp[i - 1][j].max(dp[i][j - 1]);
+            }
+        }
+    }
+
+    dp[m][n]
+}
+
+impl std::fmt::Display for TlsExtensionOrderFingerprint {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+#[cfg(test)]
+mod extension_order_tests {
+    use super::*;
+
+    #[test]
+    fn test_extension_order_generation() {
+        let extensions = vec![0, 23, 65281, 10, 11, 35, 16, 5, 13, 18, 51, 45, 43, 27, 21];
+        let fp = TlsExtensionOrderFingerprint::generate(&extensions);
+        assert_eq!(fp.count, 15);
+        assert_eq!(fp.order_hash.len(), 16);
+        assert_eq!(fp.extension_order, extensions);
+    }
+
+    #[test]
+    fn test_extension_order_grease_filtered() {
+        let extensions = vec![0x0a0a, 0, 23, 0x1a1a, 65281, 10];
+        let fp = TlsExtensionOrderFingerprint::generate(&extensions);
+        assert_eq!(fp.count, 4);
+        assert_eq!(fp.extension_order, vec![0, 23, 65281, 10]);
+    }
+
+    #[test]
+    fn test_extension_order_preserves_ordering() {
+        let ext1 = vec![0, 23, 10, 11];
+        let ext2 = vec![0, 10, 23, 11]; // Different order
+
+        let fp1 = TlsExtensionOrderFingerprint::generate(&ext1);
+        let fp2 = TlsExtensionOrderFingerprint::generate(&ext2);
+
+        // Different orderings should produce different hashes
+        assert_ne!(fp1.order_hash, fp2.order_hash);
+    }
+
+    #[test]
+    fn test_extension_order_similarity_identical() {
+        let extensions = vec![0, 23, 65281, 10, 11];
+        let fp1 = TlsExtensionOrderFingerprint::generate(&extensions);
+        let fp2 = TlsExtensionOrderFingerprint::generate(&extensions);
+        assert!((fp1.similarity(&fp2) - 1.0).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn test_extension_order_similarity_different() {
+        let ext1 = vec![0, 23, 65281, 10, 11, 35, 16];
+        let ext2 = vec![0, 10, 11, 16, 35, 23, 65281];
+
+        let fp1 = TlsExtensionOrderFingerprint::generate(&ext1);
+        let fp2 = TlsExtensionOrderFingerprint::generate(&ext2);
+
+        let sim = fp1.similarity(&fp2);
+        assert!(sim > 0.0 && sim < 1.0);
+    }
+
+    #[test]
+    fn test_extension_order_display() {
+        let extensions = vec![0, 23, 10];
+        let fp = TlsExtensionOrderFingerprint::generate(&extensions);
+        let displayed = format!("{}", fp);
+        assert_eq!(displayed, fp.fingerprint_string());
     }
 }
 
@@ -1016,5 +1193,187 @@ mod ja4l_tests {
 
         // insidesaveusageshouldverysmall
         assert!(footprint < 200); // 少于 200 bytes
+    }
+}
+
+/// JA4TS - TCP Server Response Fingerprint
+///
+/// Captures the server's SYN-ACK TCP characteristics for server-side fingerprinting.
+/// Complementary to JA4T (client-side TCP fingerprint).
+/// format: \[WindowSize\]_\[TCP_Options\]_\[MSS\]_\[TTL\]_\[WScale\]
+///
+/// ## Key Differences from JA4T (Client)
+/// - Captures server SYN-ACK response parameters
+/// - Includes window scaling factor (WScale) for server identification
+/// - Server TCP stacks have distinct default configurations
+///
+/// ## OS Identification via JA4TS
+/// - Linux: TTL=64, WScale=7, MSS=1460
+/// - Windows: TTL=128, WScale=8, MSS=1460
+/// - macOS/iOS: TTL=64, WScale=6, MSS=1460
+/// - FreeBSD: TTL=64, WScale=6, MSS=1460
+///
+/// ## Examples
+/// ```
+/// use fingerprint_core::ja4::JA4TS;
+///
+/// let ja4ts = JA4TS::generate(65535, "mss,nop,ws,nop,nop,ts", 1460, 64, 7);
+/// assert!(!ja4ts.fingerprint_string().is_empty());
+///
+/// let os = ja4ts.infer_os();
+/// assert!(!os.is_empty());
+/// ```
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+pub struct JA4TS {
+    /// Server SYN-ACK window size
+    pub window_size: u16,
+    /// TCP options in SYN-ACK (ordered, comma-separated)
+    pub options: String,
+    /// Maximum Segment Size from server
+    pub mss: u16,
+    /// Time-To-Live (initial TTL before routing)
+    pub ttl: u8,
+    /// Window scaling factor (from TCP WScale option)
+    pub wscale: u8,
+}
+
+impl JA4TS {
+    /// Generate JA4TS server TCP fingerprint from SYN-ACK parameters
+    pub fn generate(window_size: u16, options: &str, mss: u16, ttl: u8, wscale: u8) -> Self {
+        Self {
+            window_size,
+            options: options.to_string(),
+            mss,
+            ttl,
+            wscale,
+        }
+    }
+
+    /// Convert to standard JA4TS fingerprint string
+    /// format: {window_size}_{options}_{mss}_{ttl}_{wscale}
+    pub fn fingerprint_string(&self) -> String {
+        format!(
+            "{}_{}_{}_{}_{}",
+            self.window_size, self.options, self.mss, self.ttl, self.wscale
+        )
+    }
+
+    /// Normalize TTL to likely initial value (nearest power-of-2 boundary)
+    /// Routers decrement TTL, so we estimate the original value
+    pub fn normalized_ttl(&self) -> u8 {
+        match self.ttl {
+            0..=32 => 32,
+            33..=64 => 64,
+            65..=128 => 128,
+            _ => 255,
+        }
+    }
+
+    /// Infer server operating system based on TCP stack characteristics
+    pub fn infer_os(&self) -> String {
+        let norm_ttl = self.normalized_ttl();
+        match (norm_ttl, self.wscale) {
+            (128, 8) => "Windows".to_string(),
+            (128, _) => "Windows (variant)".to_string(),
+            (64, 7) => "Linux".to_string(),
+            (64, 6) => "macOS/FreeBSD".to_string(),
+            (64, _) => "Unix-like".to_string(),
+            (255, _) => "Solaris/AIX".to_string(),
+            _ => "Unknown".to_string(),
+        }
+    }
+
+    /// Calculate similarity between two JA4TS fingerprints (0.0 - 1.0)
+    pub fn similarity(&self, other: &JA4TS) -> f64 {
+        let mut score = 0.0;
+        let total = 5.0;
+
+        if self.normalized_ttl() == other.normalized_ttl() {
+            score += 1.0;
+        }
+        if self.wscale == other.wscale {
+            score += 1.0;
+        }
+        if self.mss == other.mss {
+            score += 1.0;
+        }
+        if self.options == other.options {
+            score += 1.0;
+        }
+        if self.window_size == other.window_size {
+            score += 1.0;
+        }
+
+        score / total
+    }
+}
+
+impl std::fmt::Display for JA4TS {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+#[cfg(test)]
+mod ja4ts_tests {
+    use super::*;
+
+    #[test]
+    fn test_ja4ts_generation() {
+        let ja4ts = JA4TS::generate(65535, "mss,nop,ws,nop,nop,ts", 1460, 64, 7);
+        assert_eq!(ja4ts.window_size, 65535);
+        assert_eq!(ja4ts.mss, 1460);
+        assert_eq!(ja4ts.ttl, 64);
+        assert_eq!(ja4ts.wscale, 7);
+    }
+
+    #[test]
+    fn test_ja4ts_fingerprint_string() {
+        let ja4ts = JA4TS::generate(65535, "mss,nop,ws", 1460, 64, 7);
+        let fp = ja4ts.fingerprint_string();
+        assert_eq!(fp, "65535_mss,nop,ws_1460_64_7");
+    }
+
+    #[test]
+    fn test_ja4ts_display() {
+        let ja4ts = JA4TS::generate(65535, "mss,nop,ws", 1460, 128, 8);
+        assert_eq!(format!("{}", ja4ts), ja4ts.fingerprint_string());
+    }
+
+    #[test]
+    fn test_ja4ts_normalized_ttl() {
+        assert_eq!(JA4TS::generate(0, "", 0, 64, 0).normalized_ttl(), 64);
+        assert_eq!(JA4TS::generate(0, "", 0, 128, 0).normalized_ttl(), 128);
+        assert_eq!(JA4TS::generate(0, "", 0, 60, 0).normalized_ttl(), 64);
+        assert_eq!(JA4TS::generate(0, "", 0, 120, 0).normalized_ttl(), 128);
+        assert_eq!(JA4TS::generate(0, "", 0, 250, 0).normalized_ttl(), 255);
+    }
+
+    #[test]
+    fn test_ja4ts_infer_os_linux() {
+        let ja4ts = JA4TS::generate(65535, "mss,nop,ws,nop,nop,ts", 1460, 64, 7);
+        assert_eq!(ja4ts.infer_os(), "Linux");
+    }
+
+    #[test]
+    fn test_ja4ts_infer_os_windows() {
+        let ja4ts = JA4TS::generate(65535, "mss,nop,ws,nop,nop,ts", 1460, 128, 8);
+        assert_eq!(ja4ts.infer_os(), "Windows");
+    }
+
+    #[test]
+    fn test_ja4ts_infer_os_macos() {
+        let ja4ts = JA4TS::generate(65535, "mss,nop,ws,nop,nop,ts", 1460, 64, 6);
+        assert_eq!(ja4ts.infer_os(), "macOS/FreeBSD");
+    }
+
+    #[test]
+    fn test_ja4ts_similarity() {
+        let ja4ts1 = JA4TS::generate(65535, "mss,nop,ws", 1460, 64, 7);
+        let ja4ts2 = JA4TS::generate(65535, "mss,nop,ws", 1460, 64, 7);
+        assert!((ja4ts1.similarity(&ja4ts2) - 1.0).abs() < f64::EPSILON);
+
+        let ja4ts3 = JA4TS::generate(65535, "mss,nop,ws", 1460, 128, 8);
+        assert!(ja4ts1.similarity(&ja4ts3) < 1.0);
     }
 }
