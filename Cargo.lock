@@ -1157,12 +1157,10 @@ dependencies = [
  "dashmap 5.5.3",
  "fingerprint-parsers",
  "hex",
- "lazy_static",
  "lru",
  "md5",
  "once_cell",
  "parking_lot",
- "prometheus",
  "proptest",
  "rand 0.8.5",
  "redis",
@@ -1293,6 +1291,16 @@ dependencies = [
 [[package]]
 name = "fingerprint-ml"
 version = "2.1.0"
+
+[[package]]
+name = "fingerprint-observability"
+version = "2.1.0"
+dependencies = [
+ "fingerprint-core",
+ "lazy_static",
+ "prometheus",
+ "serde_json",
+]
 
 [[package]]
 name = "fingerprint-parsers"

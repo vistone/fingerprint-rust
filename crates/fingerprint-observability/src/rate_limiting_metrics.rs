@@ -1,29 +1,17 @@
-/// Prometheus Metrics for Rate Limiting
-///
-/// Exports rate limiting metrics in Prometheus format for monitoring and alerting.
-/// Integrates with Phase 9.2 monitoring stack.
-use super::rate_limiting::{MetricsSnapshot, QuotaTier};
+use fingerprint_core::rate_limiting::{MetricsSnapshot, QuotaTier};
 use std::fmt::Write as FmtWrite;
 
-/// Prometheus metric collection
 #[derive(Debug, Clone)]
 pub struct PrometheusMetrics {
-    /// Total requests processed
     pub total_requests: u64,
-    /// Total rejected requests
     pub total_rejected: u64,
-    /// Cache hits
     pub cache_hits: u64,
-    /// Cache misses
     pub cache_misses: u64,
-    /// Active users tracked
     pub active_users: usize,
-    /// Active IPs tracked
     pub active_ips: usize,
 }
 
 impl PrometheusMetrics {
-    /// Create from rate limiter metrics snapshot
     pub fn from_snapshot(snapshot: MetricsSnapshot) -> Self {
         Self {
             total_requests: snapshot.total_requests,
@@ -35,13 +23,10 @@ impl PrometheusMetrics {
         }
     }
 
-    /// Export metrics in Prometheus text format
     pub fn to_prometheus_format(&self) -> String {
         use std::fmt::Write;
         let mut output = String::new();
 
-        // HELP and TYPE comments
-        // 注意：对String的write操作不会失败，所以使用let _忽略Result
         let _ = writeln!(
             output,
             "# HELP rate_limiter_requests_total Total number of requests processed"
@@ -72,55 +57,42 @@ impl PrometheusMetrics {
             "# HELP rate_limiter_cache_hits_total Total number of cache hits"
         );
         let _ = writeln!(output, "# TYPE rate_limiter_cache_hits_total counter");
-        let _ = writeln!(
-            &mut output,
-            "rate_limiter_cache_hits_total {}",
-            self.cache_hits
-        );
+        let _ = writeln!(output, "rate_limiter_cache_hits_total {}", self.cache_hits);
 
         let _ = writeln!(
-            &mut output,
+            output,
             "# HELP rate_limiter_cache_misses_total Total number of cache misses"
         );
+        let _ = writeln!(output, "# TYPE rate_limiter_cache_misses_total counter");
         let _ = writeln!(
-            &mut output,
-            "# TYPE rate_limiter_cache_misses_total counter"
-        );
-        let _ = writeln!(
-            &mut output,
+            output,
             "rate_limiter_cache_misses_total {}",
             self.cache_misses
         );
 
         let _ = writeln!(
-            &mut output,
+            output,
             "# HELP rate_limiter_active_users_gauge Current number of active users"
         );
         let _ = writeln!(output, "# TYPE rate_limiter_active_users_gauge gauge");
         let _ = writeln!(
-            &mut output,
+            output,
             "rate_limiter_active_users_gauge {}",
             self.active_users
         );
 
         let _ = writeln!(
-            &mut output,
+            output,
             "# HELP rate_limiter_active_ips_gauge Current number of active IP addresses"
         );
         let _ = writeln!(output, "# TYPE rate_limiter_active_ips_gauge gauge");
-        let _ = writeln!(
-            &mut output,
-            "rate_limiter_active_ips_gauge {}",
-            self.active_ips
-        );
+        let _ = writeln!(output, "rate_limiter_active_ips_gauge {}", self.active_ips);
 
-        // Calculated metrics
         let rejection_rate = if self.total_requests == 0 {
             0.0
         } else {
             (self.total_rejected as f64 / self.total_requests as f64) * 100.0
         };
-
         let cache_hit_ratio = if self.cache_hits + self.cache_misses == 0 {
             0.0
         } else {
@@ -128,29 +100,23 @@ impl PrometheusMetrics {
         };
 
         let _ = writeln!(
-            &mut output,
+            output,
             "# HELP rate_limiter_rejection_rate_percent Percentage of requests rejected"
         );
+        let _ = writeln!(output, "# TYPE rate_limiter_rejection_rate_percent gauge");
         let _ = writeln!(
-            &mut output,
-            "# TYPE rate_limiter_rejection_rate_percent gauge"
-        );
-        let _ = writeln!(
-            &mut output,
+            output,
             "rate_limiter_rejection_rate_percent {:.2}",
             rejection_rate
         );
 
         let _ = writeln!(
-            &mut output,
+            output,
             "# HELP rate_limiter_cache_hit_ratio_percent Percentage of cache hits"
         );
+        let _ = writeln!(output, "# TYPE rate_limiter_cache_hit_ratio_percent gauge");
         let _ = writeln!(
-            &mut output,
-            "# TYPE rate_limiter_cache_hit_ratio_percent gauge"
-        );
-        let _ = writeln!(
-            &mut output,
+            output,
             "rate_limiter_cache_hit_ratio_percent {:.2}",
             cache_hit_ratio
         );
@@ -158,7 +124,6 @@ impl PrometheusMetrics {
         output
     }
 
-    /// Export as JSON for alternative monitoring systems
     pub fn to_json(&self) -> serde_json::Value {
         serde_json::json!({
             "total_requests": self.total_requests,
@@ -181,21 +146,15 @@ impl PrometheusMetrics {
     }
 }
 
-/// Per-tier quota metrics
 #[derive(Debug, Clone)]
 pub struct TierMetrics {
-    /// Tier name
     pub tier: QuotaTier,
-    /// Users in this tier
     pub user_count: usize,
-    /// Total requests from this tier
     pub total_requests: u64,
-    /// Rejected requests from this tier
     pub rejected_requests: u64,
 }
 
 impl TierMetrics {
-    /// Export as Prometheus metrics
     pub fn to_prometheus_format(&self) -> String {
         let mut output = String::new();
         let tier_name = format!("{:?}", self.tier).to_lowercase();
@@ -220,11 +179,9 @@ impl TierMetrics {
     }
 }
 
-/// HTTP handler for Prometheus metrics endpoint
 pub struct MetricsHandler;
 
 impl MetricsHandler {
-    /// Generate HTTP 200 response with metrics
     pub fn prometheus_response(metrics: &PrometheusMetrics) -> String {
         format!(
             "HTTP/1.1 200 OK\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: {}\r\n\r\n{}",
@@ -233,7 +190,6 @@ impl MetricsHandler {
         )
     }
 
-    /// Generate HTTP 200 response with JSON metrics
     pub fn json_response(metrics: &PrometheusMetrics) -> String {
         let json = metrics.to_json();
         let body = json.to_string();
@@ -244,7 +200,6 @@ impl MetricsHandler {
         )
     }
 
-    /// Generate HTTP 503 response for unhealthy status
     pub fn unavailable_response() -> String {
         let body = "Rate limiter service unavailable";
         format!(
@@ -289,7 +244,6 @@ mod tests {
         };
 
         let output = metrics.to_prometheus_format();
-        // 50/1000 = 5.0%
         assert!(output.contains("rate_limiter_rejection_rate_percent 5.00"));
     }
 
@@ -305,7 +259,6 @@ mod tests {
         };
 
         let output = metrics.to_prometheus_format();
-        // 800 / (800+200) = 80.0%
         assert!(output.contains("rate_limiter_cache_hit_ratio_percent 80.00"));
     }
 
