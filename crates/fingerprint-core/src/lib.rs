@@ -37,8 +37,6 @@
 pub mod benchmark;
 #[cfg(feature = "service-cache")]
 pub mod cache; // Multi-tier caching (L1/L2/L3)
-#[cfg(feature = "service-cache")]
-pub mod cache_redis; // Redis-backed cache implementation
 pub mod database;
 pub mod dicttls;
 pub mod error; // Comprehensive error types
@@ -57,8 +55,6 @@ pub mod metadata;
 pub mod pqc; // Post-Quantum Cryptography detection
 #[cfg(feature = "service-rate-limiting")]
 pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
-#[cfg(feature = "service-rate-limiting")]
-pub mod rate_limiting_redis; // Redis integration for rate limiting
 pub mod signature;
 pub mod stable_hash;
 pub mod system;
@@ -147,32 +143,13 @@ pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics,
 // rate limiting service (Phase 9.4)
 #[cfg(feature = "service-rate-limiting")]
 pub use rate_limiting::{
-    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitResponse,
-    RateLimiter, UserQuota,
-};
-
-// rate limiting Redis backend
-#[cfg(feature = "service-rate-limiting")]
-pub use rate_limiting_redis::{
-    RedisBackendError, RedisConfig, RedisQuotaEntry, RedisRateLimitBackend, RedisResult,
+    current_unix_timestamp, DistributedRateLimitBackend, EndpointConfig, MetricsSnapshot,
+    QuotaTier, RateLimitResponse, RateLimiter, UserQuota,
 };
 
 // cache (Phase 9.3)
 #[cfg(feature = "service-cache")]
 pub use cache::{Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard};
-
-// Redis cache (optional, requires redis-cache feature)
-#[cfg(feature = "service-cache")]
-pub use cache_redis::RedisCacheConfig;
-
-#[cfg(feature = "redis-cache")]
-pub use cache_redis::RedisCache;
-
-#[cfg(feature = "redis-cache")]
-pub use cache_redis::RedisClusterCache;
-
-#[cfg(feature = "redis-cache")]
-pub use cache_redis::RedisClusterConfig;
 
 // system-level abstractions
 pub use system::{

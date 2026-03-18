@@ -17,6 +17,7 @@ members = [
     "crates/fingerprint-observability",
     "crates/fingerprint-parsers",
     "crates/fingerprint-profiles",
+    "crates/fingerprint-redis",
     "crates/fingerprint-storage",
     "crates/fingerprint-tls",
     "crates/fingerprint-webgl",

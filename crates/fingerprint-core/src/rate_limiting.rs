@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use dashmap::DashMap;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
@@ -155,6 +156,21 @@ impl EndpointConfig {
     }
 }
 
+#[async_trait]
+pub trait DistributedRateLimitBackend: Send + Sync {
+    async fn get_user_quota(&self, user_id: &str) -> Result<Option<UserQuota>, String>;
+    async fn set_user_quota(
+        &self,
+        user_id: &str,
+        quota: &UserQuota,
+        ttl_seconds: u64,
+    ) -> Result<(), String>;
+
+    async fn health_check(&self) -> Result<bool, String> {
+        Ok(true)
+    }
+}
+
 /// Rate limiter state container
 pub struct RateLimiter {
     /// User quotas (in-process cache)
@@ -165,11 +181,11 @@ pub struct RateLimiter {
     endpoints: Arc<RwLock<Vec<EndpointConfig>>>,
     /// Metrics
     metrics: Arc<RateLimiterMetrics>,
-    /// Redis URL for distributed state
+    /// Distributed backend URL for shared state
     #[allow(dead_code)]
-    redis_url: String,
-    /// Redis backend for distributed quota management
-    redis_backend: Option<super::rate_limiting_redis::RedisRateLimitBackend>,
+    distributed_backend_url: String,
+    /// Optional distributed backend for quota synchronization
+    distributed_backend: Option<Arc<dyn DistributedRateLimitBackend>>,
 }
 
 /// Metrics for rate limiter
@@ -186,41 +202,41 @@ pub struct RateLimiterMetrics {
 }
 
 impl RateLimiter {
-    /// Create new rate limiter (without Redis backend)
-    pub fn new(redis_url: String) -> Self {
+    /// Create new rate limiter (without distributed backend)
+    pub fn new(distributed_backend_url: String) -> Self {
         Self {
             user_quotas: DashMap::new(),
             ip_quotas: DashMap::new(),
             endpoints: Arc::new(RwLock::new(Vec::new())),
             metrics: Arc::new(RateLimiterMetrics::default()),
-            redis_url,
-            redis_backend: None,
+            distributed_backend_url,
+            distributed_backend: None,
         }
     }
 
-    /// Create new rate limiter with Redis backend
-    pub fn with_redis(
-        redis_url: String,
-        backend: super::rate_limiting_redis::RedisRateLimitBackend,
+    /// Create new rate limiter with a distributed quota backend
+    pub fn with_backend(
+        distributed_backend_url: String,
+        backend: Arc<dyn DistributedRateLimitBackend>,
     ) -> Self {
         Self {
             user_quotas: DashMap::new(),
             ip_quotas: DashMap::new(),
             endpoints: Arc::new(RwLock::new(Vec::new())),
             metrics: Arc::new(RateLimiterMetrics::default()),
-            redis_url,
-            redis_backend: Some(backend),
+            distributed_backend_url,
+            distributed_backend: Some(backend),
         }
     }
 
-    /// Check if Redis backend is enabled
-    pub fn is_redis_enabled(&self) -> bool {
-        self.redis_backend.is_some()
+    /// Check if a distributed backend is enabled
+    pub fn is_distributed_enabled(&self) -> bool {
+        self.distributed_backend.is_some()
     }
 
-    /// Get Redis backend reference
-    pub fn redis_backend(&self) -> Option<&super::rate_limiting_redis::RedisRateLimitBackend> {
-        self.redis_backend.as_ref()
+    /// Get distributed backend reference
+    pub fn distributed_backend(&self) -> Option<&Arc<dyn DistributedRateLimitBackend>> {
+        self.distributed_backend.as_ref()
     }
 
     /// Register endpoint configuration
@@ -424,56 +440,41 @@ impl RateLimiter {
             .retain(|_, quota| quota.last_request > threshold);
     }
 
-    /// Sync quota to Redis backend (async)
+    /// Sync quota to distributed backend (async)
     ///
     /// This should be called after a quota change to ensure
     /// distributed consistency across multiple instances.
-    pub async fn sync_quota_to_redis(&self, user_id: &str) -> Result<(), String> {
-        if let Some(ref backend) = self.redis_backend {
+    pub async fn sync_quota_to_backend(&self, user_id: &str) -> Result<(), String> {
+        if let Some(ref backend) = self.distributed_backend {
             if let Some(quota) = self.user_quotas.get(user_id) {
-                let entry = super::rate_limiting_redis::RedisQuotaEntry::from_user_quota(
-                    user_id.to_string(),
-                    &quota,
-                );
-                // Store with 1 hour TTL
-                backend
-                    .set_user_quota(user_id, &entry, 3600)
-                    .await
-                    .map_err(|e| e.to_string())?;
+                backend.set_user_quota(user_id, &quota, 3600).await?;
             }
         }
         Ok(())
     }
 
-    /// Load quota from Redis backend (async)
+    /// Load quota from distributed backend (async)
     ///
     /// This should be called when a user is not found in local cache
-    /// to check if they have existing quota state in Redis.
-    pub async fn load_quota_from_redis(&self, user_id: &str) -> Option<UserQuota> {
-        if let Some(ref backend) = self.redis_backend {
-            if let Ok(Some(entry)) = backend.get_user_quota(user_id).await {
-                // Convert RedisQuotaEntry back to UserQuota
-                // Note: This is a simplified conversion
-                let tier = match entry.tier.as_str() {
-                    "Pro" => QuotaTier::Pro,
-                    "Enterprise" => QuotaTier::Enterprise,
-                    "Partner" => QuotaTier::Partner,
-                    _ => QuotaTier::Free,
-                };
-
-                let mut quota = UserQuota::new(entry.user_id.clone(), tier);
-                quota.available_tokens = entry.available_tokens;
-                quota.last_refill = entry.last_refill;
-                quota.month_requests = entry.month_requests;
-                quota.month_start = entry.month_start;
-
-                // Update local cache
+    /// to check if they have existing quota state in the shared backend.
+    pub async fn load_quota_from_backend(&self, user_id: &str) -> Option<UserQuota> {
+        if let Some(ref backend) = self.distributed_backend {
+            if let Ok(Some(quota)) = backend.get_user_quota(user_id).await {
                 self.user_quotas.insert(user_id.to_string(), quota.clone());
-
                 return Some(quota);
             }
         }
         None
+    }
+
+    /// Legacy alias kept for compatibility with older call sites.
+    pub async fn sync_quota_to_redis(&self, user_id: &str) -> Result<(), String> {
+        self.sync_quota_to_backend(user_id).await
+    }
+
+    /// Legacy alias kept for compatibility with older call sites.
+    pub async fn load_quota_from_redis(&self, user_id: &str) -> Option<UserQuota> {
+        self.load_quota_from_backend(user_id).await
     }
 }
 

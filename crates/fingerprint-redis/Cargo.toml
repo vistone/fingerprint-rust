@@ -1,0 +1,20 @@
+[package]
+name = "fingerprint-redis"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Redis-backed infrastructure adapters for fingerprint-rust"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core", features = ["service-cache", "service-rate-limiting"] }
+async-trait = "0.1"
+redis = { version = "1.0", features = ["tokio-comp", "connection-manager"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json.workspace = true
+
