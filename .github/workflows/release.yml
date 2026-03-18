@@ -1,9 +1,6 @@
-name: Release
+name: Release Assets (Manual)
 
 on:
-  push:
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:

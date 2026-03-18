@@ -2,6 +2,16 @@
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use fingerprint_core::{grease, ja3_database::JA3Database, packet_capture::*, pcap_generator::*};
 
+fn first_packet_from_pcap(path: &std::path::Path) -> Vec<u8> {
+    let mut first_packet = None;
+    PacketParser::stream_pcap_file(path, |packet| {
+        first_packet = Some(packet.data.to_vec());
+        Ok(())
+    })
+    .expect("Failed to stream PCAP");
+    first_packet.expect("PCAP contained no packets")
+}
+
 // ========== Packet Parsing Benchmarks ==========
 
 fn bench_packet_parsing(c: &mut Criterion) {
@@ -14,20 +24,20 @@ fn bench_packet_parsing(c: &mut Criterion) {
     gen.write_to_file(&pcap_path)
         .expect("Failed to write test PCAP");
 
-    let pcap_data = std::fs::read(&pcap_path).expect("Failed to read PCAP");
-    let packet_data = &pcap_data[24 + 16..]; // Skip global + packet headers
+    let packet_data = first_packet_from_pcap(&pcap_path);
 
     group.throughput(Throughput::Bytes(packet_data.len() as u64));
 
     // Benchmark Ethernet parsing
     group.bench_function("parse_ethernet", |b| {
-        b.iter(|| PacketParser::parse_ethernet(black_box(packet_data)));
+        b.iter(|| PacketParser::parse_ethernet(black_box(packet_data.as_slice())));
     });
 
     // Complete parsing chain benchmark
     group.bench_function("parse_complete_packet", |b| {
         b.iter(|| {
-            if let Some((_, rest)) = PacketParser::parse_ethernet(black_box(packet_data)) {
+            if let Some((_, rest)) = PacketParser::parse_ethernet(black_box(packet_data.as_slice()))
+            {
                 if let Some((_, rest)) = PacketParser::parse_ipv4(rest) {
                     PacketParser::parse_tcp(rest)
                 } else {
@@ -87,22 +97,12 @@ fn bench_complete_fingerprinting(c: &mut Criterion) {
     let pcap_path = std::env::temp_dir().join("bench_complete.pcap");
     gen.write_to_file(&pcap_path).expect("Failed to write PCAP");
 
-    let pcap_data = std::fs::read(&pcap_path).expect("Failed to read PCAP");
+    let packet_data = first_packet_from_pcap(&pcap_path);
 
     group.bench_function("complete_pipeline", |b| {
         b.iter(|| {
-            let offset = 24 + 16;
-            let incl_len = u32::from_le_bytes([
-                pcap_data[24 + 8],
-                pcap_data[24 + 9],
-                pcap_data[24 + 10],
-                pcap_data[24 + 11],
-            ]) as usize;
-
-            let packet_data = &pcap_data[offset..offset + incl_len];
-
             // Parse layers
-            if let Some((_, rest)) = PacketParser::parse_ethernet(packet_data) {
+            if let Some((_, rest)) = PacketParser::parse_ethernet(packet_data.as_slice()) {
                 if let Some((ipv4, rest)) = PacketParser::parse_ipv4(rest) {
                     let _ttl = ipv4.ttl;
                     if let Some((tcp, _)) = PacketParser::parse_tcp(rest) {
@@ -131,7 +131,6 @@ fn bench_scalability(c: &mut Criterion) {
 
         let pcap_path = std::env::temp_dir().join(format!("bench_scale_{}.pcap", packet_count));
         gen.write_to_file(&pcap_path).expect("Failed to write PCAP");
-        let pcap_data = std::fs::read(&pcap_path).expect("Failed to read PCAP");
 
         group.throughput(Throughput::Elements(*packet_count as u64));
 
@@ -140,34 +139,20 @@ fn bench_scalability(c: &mut Criterion) {
             packet_count,
             |b, _| {
                 b.iter(|| {
-                    let mut offset = 24;
                     let mut parsed_count = 0;
 
-                    while offset + 16 <= pcap_data.len() {
-                        let incl_len = u32::from_le_bytes([
-                            pcap_data[offset + 8],
-                            pcap_data[offset + 9],
-                            pcap_data[offset + 10],
-                            pcap_data[offset + 11],
-                        ]) as usize;
-                        offset += 16;
-
-                        if offset + incl_len <= pcap_data.len() {
-                            let packet_data = &pcap_data[offset..offset + incl_len];
-
-                            if let Some((_, rest)) = PacketParser::parse_ethernet(packet_data) {
-                                if let Some((_, rest)) = PacketParser::parse_ipv4(rest) {
-                                    if PacketParser::parse_tcp(rest).is_some() {
-                                        parsed_count += 1;
-                                    }
+                    PacketParser::stream_pcap_file(&pcap_path, |packet| {
+                        let packet_data = packet.data;
+                        if let Some((_, rest)) = PacketParser::parse_ethernet(packet_data) {
+                            if let Some((_, rest)) = PacketParser::parse_ipv4(rest) {
+                                if PacketParser::parse_tcp(rest).is_some() {
+                                    parsed_count += 1;
                                 }
                             }
-
-                            offset += incl_len;
-                        } else {
-                            break;
                         }
-                    }
+                        Ok(())
+                    })
+                    .expect("Failed to stream PCAP");
 
                     black_box(parsed_count);
                 });

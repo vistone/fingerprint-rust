@@ -6,6 +6,7 @@
 use crate::tls_config::grease::{filter_grease_values, is_grease_value};
 use crate::tls_config::version::TlsVersion;
 use fingerprint_core::dicttls::supported_groups::CurveID;
+use fingerprint_core::stable_hash::StableHashBuilder;
 
 /// TLS ClientHello signature
 /// including from ClientHello message in Extractallclosekeyinfo
@@ -91,18 +92,15 @@ impl ClientHelloSignature {
     /// Calculatesignaturehashvalue ( for fastcompare)
     /// usefilter GREASE backvalue
     pub fn hash(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-
-        let mut hasher = DefaultHasher::new();
-        self.version.to_u16().hash(&mut hasher);
-        self.cipher_suites_without_grease().hash(&mut hasher);
-        self.extensions_without_grease().hash(&mut hasher);
-        self.signature_algorithms_without_grease().hash(&mut hasher);
-        self.elliptic_curves.hash(&mut hasher);
-        self.elliptic_curve_point_formats.hash(&mut hasher);
-        self.sni.hash(&mut hasher);
-        self.alpn.hash(&mut hasher);
+        let mut hasher = StableHashBuilder::new();
+        hasher.write_u16(self.version.to_u16());
+        hasher.write_u16_slice(&self.cipher_suites_without_grease());
+        hasher.write_u16_slice(&self.extensions_without_grease());
+        hasher.write_u16_slice(&self.signature_algorithms_without_grease());
+        hasher.write_u16_slice(&self.elliptic_curves);
+        hasher.write_u8_slice(&self.elliptic_curve_point_formats);
+        hasher.write_option_str(self.sni.as_deref());
+        hasher.write_option_str(self.alpn.as_deref());
         hasher.finish()
     }
 }

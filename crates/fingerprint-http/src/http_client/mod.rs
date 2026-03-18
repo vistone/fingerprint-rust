@@ -49,19 +49,28 @@ use fingerprint_profiles::BrowserProfile;
 use std::io as std_io;
 use std::time::Duration;
 
-// Fix: use global singleton Runtime avoid frequent Create (for HTTP/2 and HTTP/3 connection pool scenario)
-// Note: only in connection-pool enabled when need, because only connection pool scenario needs sync wrap async code
-#[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
+// Use a shared Tokio runtime for sync wrappers around HTTP/2 and HTTP/3 code paths.
+#[cfg(any(feature = "http2", feature = "http3"))]
 use once_cell::sync::Lazy;
 
-#[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
+#[cfg(any(feature = "http2", feature = "http3"))]
 static SHARED_RUNTIME: Lazy<Result<tokio::runtime::Runtime>> = Lazy::new(|| {
-    tokio::runtime::Runtime::new().map_err(|e| {
-        HttpClientError::ConnectionFailed(format!("Failed to create Tokio runtime: {}", e))
-    })
+    tokio::runtime::Runtime::new()
+        .or_else(|err| {
+            eprintln!(
+                "warning: failed to create multi-thread Tokio runtime: {}. Falling back to current-thread runtime.",
+                err
+            );
+            tokio::runtime::Builder::new_current_thread()
+                .enable_all()
+                .build()
+        })
+        .map_err(|e| {
+            HttpClientError::ConnectionFailed(format!("Failed to create Tokio runtime: {}", e))
+        })
 });
 
-#[cfg(all(feature = "connection-pool", any(feature = "http2", feature = "http3")))]
+#[cfg(any(feature = "http2", feature = "http3"))]
 fn get_shared_runtime() -> Result<&'static tokio::runtime::Runtime> {
     SHARED_RUNTIME.as_ref().map_err(|e| match e {
         HttpClientError::ConnectionFailed(msg) => HttpClientError::ConnectionFailed(msg.clone()),

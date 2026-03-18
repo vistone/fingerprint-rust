@@ -3,6 +3,8 @@
 # 完全遵循 GitHub Actions 的规则运行本地检查
 # 同步 .github/workflows/ci.yml 和 security-audit.yml 的检查项
 
+set -euo pipefail
+
 echo "=========================================="
 echo "🔍 提交前检查（遵循 GitHub Actions 规则）"
 echo "=========================================="
@@ -22,30 +24,38 @@ NC='\033[0m' # No Color
 # 测试计数器
 PASSED=0
 FAILED=0
+TEST_OUTPUT_LOG="$(mktemp /tmp/fingerprint-pre-commit.XXXXXX.log)"
+TEST_FEATURES="rustls-tls,compression,http2,connection-pool,dns"
+
+cleanup() {
+    rm -f "$TEST_OUTPUT_LOG"
+}
+
+trap cleanup EXIT
 
 # 测试函数
 run_test() {
     local test_name="$1"
-    local test_command="$2"
+    shift
     
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "🧪 $test_name"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     
     # 执行测试命令
-    if eval "$test_command" > /tmp/test_output.log 2>&1; then
+    if "$@" > "$TEST_OUTPUT_LOG" 2>&1; then
         echo -e "${GREEN}✅ 通过${NC}"
-        ((PASSED++))
+        PASSED=$((PASSED + 1))
         echo ""
         return 0
     else
         echo -e "${RED}❌ 失败${NC}"
         # 显示最后几行输出以便调试
-        if [ -f /tmp/test_output.log ]; then
+        if [ -f "$TEST_OUTPUT_LOG" ]; then
             echo "错误输出:"
-            tail -20 /tmp/test_output.log | sed 's/^/  /'
+            tail -20 "$TEST_OUTPUT_LOG" | sed 's/^/  /'
         fi
-        ((FAILED++))
+        FAILED=$((FAILED + 1))
         echo ""
         return 1
     fi
@@ -54,43 +64,42 @@ run_test() {
 # ========== LINT 检查（来自 ci.yml:lint job）==========
 
 # 1. 代码格式化检查（对应 GitHub Actions: Check formatting）
-run_test "格式化检查 (cargo fmt)" "cargo fmt --all -- --check"
+run_test "格式化检查 (cargo fmt)" cargo fmt --all -- --check
 
 # 2. Clippy 检查（对应 GitHub Actions: Run clippy）
 # 注意：不使用 --all-features 避免 http3 版本兼容性问题，而是使用特定的特性集合
-run_test "Linter 检查 (cargo clippy)" "cargo clippy --workspace --all-targets --features 'rustls-tls,compression,http2,connection-pool,dns' -- -D warnings"
+run_test "Linter 检查 (cargo clippy)" cargo clippy --workspace --all-targets --features "$TEST_FEATURES" -- -D warnings
 
 # ========== 编译检查（来自 ci.yml:test job）==========
 
 # 3. 编译检查（对应 GitHub Actions: Check workspace）
 # 在默认情况下不包含 http3（由于版本兼容性问题）
 # 使用完整的特性集合，与 TEST_FEATURES 环变量相同
-TEST_FEATURES="rustls-tls,compression,http2,connection-pool,dns"
-run_test "编译检查 (cargo check)" "cargo check --workspace --features '$TEST_FEATURES'"
+run_test "编译检查 (cargo check)" cargo check --workspace --features "$TEST_FEATURES"
 
 # ========== 测试（来自 ci.yml:test job）==========
 
 # 5. 库单元测试（对应 GitHub Actions: Test workspace with nextest）
 # 首先尝试使用 nextest（更快），如果不可用则回退到 cargo test
 if command -v cargo-nextest &> /dev/null; then
-    run_test "单元测试 (cargo nextest --lib)" "cargo nextest run --workspace --features '$TEST_FEATURES' --lib --no-fail-fast"
+    run_test "单元测试 (cargo nextest --lib)" cargo nextest run --workspace --features "$TEST_FEATURES" --lib --no-fail-fast
 else
-    run_test "单元测试 (cargo test --lib)" "cargo test --workspace --lib --features '$TEST_FEATURES'"
+    run_test "单元测试 (cargo test --lib)" cargo test --workspace --lib --features "$TEST_FEATURES"
 fi
 
 # 6. 集成测试（对应 GitHub Actions: Test workspace 测试完整套件）
 # 使用 --skip examples 来排除编译示例（这些应该在单独的构建步骤中测试）
 if command -v cargo-nextest &> /dev/null; then
-    run_test "集成测试 (cargo nextest)" "cargo nextest run --workspace --features '$TEST_FEATURES' --no-fail-fast"
+    run_test "集成测试 (cargo nextest)" cargo nextest run --workspace --features "$TEST_FEATURES" --no-fail-fast
 else
-    run_test "集成测试 (cargo test)" "cargo test --workspace --features '$TEST_FEATURES' --lib --tests"
+    run_test "集成测试 (cargo test)" cargo test --workspace --features "$TEST_FEATURES" --lib --tests
 fi
 
 # ========== 安全审计（来自 security-audit.yml）==========
 
 # 6. cargo-deny 检查（对应 GitHub Actions: cargo deny check）
 if command -v cargo-deny &> /dev/null; then
-    run_test "安全审计 (cargo-deny)" "cargo deny check advisories bans licenses sources"
+    run_test "安全审计 (cargo-deny)" cargo deny check advisories bans licenses sources
 else
     echo -e "${YELLOW}⚠️  cargo-deny 未安装，跳过此检查${NC}"
     echo "  安装: cargo install cargo-deny"
@@ -100,7 +109,7 @@ fi
 # ========== 构建检查（来自 ci.yml:build job，可选）==========
 
 # 7. 构建发布版本（主要特性组合）
-run_test "构建检查 (cargo build --release)" "cargo build --workspace --features '$TEST_FEATURES' --release"
+run_test "构建检查 (cargo build --release)" cargo build --workspace --features "$TEST_FEATURES" --release
 
 # 总结
 echo "=========================================="

@@ -12,6 +12,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  TEST_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 jobs:
   unit-tests:
@@ -45,11 +46,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-test-
       
-      - name: Run unit tests
-        run: cargo nextest run --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --lib
+      - name: Run full-workspace unit tests
+        run: cargo nextest run --workspace --features "${{ env.TEST_FEATURES }}" --lib
       
-      - name: Run doc tests
-        run: cargo test --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --doc
+      - name: Run full-workspace doc tests
+        run: cargo test --workspace --features "${{ env.TEST_FEATURES }}" --doc
 
   integration-tests:
     name: Integration Tests
@@ -79,11 +80,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-integration-
       
-      - name: Run integration tests
-        run: cargo nextest run --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --test '*' --no-fail-fast
+      - name: Run full-workspace integration tests
+        run: cargo nextest run --workspace --features "${{ env.TEST_FEATURES }}" --test '*' --no-fail-fast
 
   example-tests:
-    name: Example Tests
+    name: Workspace Example Tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -107,28 +108,22 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-examples-
       
-      - name: Build all examples
-        run: cargo build --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --examples
+      - name: Build full-workspace examples
+        run: cargo build --workspace --features "${{ env.TEST_FEATURES }}" --examples
       
       - name: Test fingerprint-core examples
         run: |
           cargo run -p fingerprint-core --example modern_fingerprinting || true
         continue-on-error: true
       
-      - name: Test fingerprint-ai-models examples
+      - name: Note specialized example validation
         run: |
-          cargo run -p fingerprint-ai-models --example detect_ai_content || true
-          cargo run -p fingerprint-ai-models --example detect_ai_providers || true
-          cargo run -p fingerprint-ai-models --example detect_global_providers || true
-          cargo run -p fingerprint-ai-models --example analyze_real_image || true
-          cargo run -p fingerprint-ai-models --example analyze_short_video || true
-          cargo run -p fingerprint-ai-models --example unified_ai_detector || true
-          cargo run -p fingerprint-ai-models --example learn_model_fingerprints || true
-          cargo run -p fingerprint-ai-models --example train_characteristic_library || true
+          echo "fingerprint-ai-models examples are validated in ai-models-validation.yml"
+          echo "Prototype crates are validated in prototype-crates-validation.yml"
         continue-on-error: true
 
   feature-tests:
-    name: Feature Combination Tests
+    name: Full Workspace Feature Combination Tests
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -200,13 +195,13 @@ jobs:
             ${{ runner.os }}-cargo-minimal-
       
       - name: Check with minimal versions
-        run: cargo minimal-versions check --workspace --features "rustls-tls,compression,http2,connection-pool,dns"
+        run: cargo minimal-versions check --workspace --features "${{ env.TEST_FEATURES }}"
         continue-on-error: true
 
   test-summary:
     name: Test Summary
     runs-on: ubuntu-latest
-    needs: [unit-tests, integration-tests, example-tests, feature-tests]
+    needs: [unit-tests, integration-tests, example-tests, feature-tests, minimal-versions]
     if: always()
     permissions:
       contents: read
@@ -222,6 +217,7 @@ jobs:
           echo "- Integration Tests: ${{ needs.integration-tests.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Example Tests: ${{ needs.example-tests.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Feature Tests: ${{ needs.feature-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Minimal Versions: ${{ needs.minimal-versions.result }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           
           if [ "${{ needs.unit-tests.result }}" = "success" ] && [ "${{ needs.integration-tests.result }}" = "success" ]; then

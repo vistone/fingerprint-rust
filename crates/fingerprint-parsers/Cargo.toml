@@ -1,0 +1,16 @@
+[package]
+name = "fingerprint-parsers"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "协议解析与 PCAP 处理模块"
+
+[dependencies]
+serde = { workspace = true, features = ["derive"] }
+pcap-file.workspace = true

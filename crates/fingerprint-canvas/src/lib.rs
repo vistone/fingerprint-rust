@@ -1,4 +1,4 @@
-#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+#![allow(dead_code, unused_variables, unused_parens)]
 
 //! # Canvas Fingerprint Module
 //!
@@ -10,9 +10,8 @@
 //! - 预生成指纹库匹配
 //! - 浏览器版本识别
 
-use std::collections::hash_map::DefaultHasher;
 use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
+use xxhash_rust::xxh3::Xxh3;
 
 /// Canvas 2D fingerprintinfo
 #[derive(Debug, Clone, PartialEq)]
@@ -112,9 +111,10 @@ impl CanvasAnalyzer {
 
     /// calculatefingerprinthash
     fn compute_hash(&self, canvas_data: &str) -> Result<String, CanvasError> {
-        let mut hasher = DefaultHasher::new();
-        canvas_data.hash(&mut hasher);
-        let hash_value = hasher.finish();
+        let mut hasher = Xxh3::new();
+        hasher.update(&(canvas_data.len() as u64).to_be_bytes());
+        hasher.update(canvas_data.as_bytes());
+        let hash_value = hasher.digest();
         Ok(format!("{:x}", hash_value))
     }
 

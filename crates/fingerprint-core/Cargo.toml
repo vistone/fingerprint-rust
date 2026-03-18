@@ -16,24 +16,37 @@ rand.workspace = true
 once_cell.workspace = true
 sha2.workspace = true
 md5.workspace = true
+xxhash-rust.workspace = true
 hex = "0.4"
 thiserror.workspace = true
 chrono = { workspace = true, features = ["serde"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
-dashmap = "5.5"
-parking_lot = "0.12"
-lru = "0.16"
+fingerprint-parsers = { path = "../fingerprint-parsers" }
+dashmap = { version = "5.5", optional = true }
+parking_lot = { version = "0.12", optional = true }
+lru = { version = "0.16", optional = true }
 tokio = { workspace = true, features = ["sync"] }
-prometheus = "0.14"
-lazy_static = "1.4"
+prometheus = { version = "0.14", optional = true }
+lazy_static = { version = "1.4", optional = true }
 
 # Optional Redis support
-redis = { version = "0.25", features = ["tokio-comp", "connection-manager"], optional = true }
+redis = { version = "1.0", features = ["tokio-comp", "connection-manager"], optional = true }
 
 [features]
 default = []
-redis-cache = ["redis"]
+# Compatibility escape hatches. Prefer the layered service features below for
+# new consumers so the supported feature matrix stays finite and testable.
+service-cache = ["dep:lru"]
+service-metrics = ["dep:lazy_static", "dep:prometheus"]
+service-rate-limiting = ["dep:dashmap", "dep:parking_lot"]
+redis-cache = ["dep:redis", "service-cache"]
+
+# Recommended layered service features.
+service-runtime = ["service-cache", "service-rate-limiting"]
+service-observability = ["service-runtime", "service-metrics"]
+service-distributed = ["service-runtime", "redis-cache"]
+service-full = ["service-observability", "service-distributed"]
 
 [dev-dependencies]
 serde = { workspace = true, features = ["derive"] }
@@ -44,5 +57,3 @@ criterion = { version = "0.5", features = ["html_reports"] }
 [[bench]]
 name = "fingerprint_benchmark"
 harness = false
-
-

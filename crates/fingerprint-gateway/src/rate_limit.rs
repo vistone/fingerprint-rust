@@ -1,8 +1,8 @@
-//! Rate limiting module using Token Bucket algorithm with Redis backend
+//! Rate limiting module using Redis-backed fixed-window counters
 
 use crate::error::{GatewayError, Result};
 use crate::models::{QuotaTier, RateLimitResponse, RateLimitStatus};
-use chrono::{Datelike, Duration, Timelike, Utc};
+use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
 use redis::AsyncCommands;
 use tracing::{debug, error, warn};
 
@@ -11,6 +11,25 @@ pub use crate::models::QuotaTier as QuotaTierEnum;
 /// Rate limiter with Redis backend
 pub struct RateLimiter {
     redis_pool: bb8::Pool<bb8_redis::RedisConnectionManager>,
+}
+
+fn next_minute_reset(now: DateTime<Utc>) -> DateTime<Utc> {
+    let next_minute_ts = ((now.timestamp() / 60) + 1) * 60;
+    Utc.timestamp_opt(next_minute_ts, 0)
+        .single()
+        .unwrap_or(now + Duration::minutes(1))
+}
+
+fn next_month_reset(now: DateTime<Utc>) -> DateTime<Utc> {
+    let (year, month) = if now.month() == 12 {
+        (now.year() + 1, 1)
+    } else {
+        (now.year(), now.month() + 1)
+    };
+
+    Utc.with_ymd_and_hms(year, month, 1, 0, 0, 0)
+        .single()
+        .unwrap_or(now + Duration::days(31))
 }
 
 impl RateLimiter {
@@ -35,18 +54,18 @@ impl RateLimiter {
         {
             let mut conn = pool.get().await.map_err(|e| {
                 GatewayError::RedisError(redis::RedisError::from((
-                    redis::ErrorKind::IoError,
+                    redis::ErrorKind::Io,
                     "Connection pool error",
                     e.to_string(),
                 )))
             })?;
 
             redis::cmd("PING")
-                .query_async::<_, String>(&mut *conn)
+                .query_async::<String>(&mut *conn)
                 .await
                 .map_err(|e| {
                     GatewayError::RedisError(redis::RedisError::from((
-                        redis::ErrorKind::IoError,
+                        redis::ErrorKind::Io,
                         "Redis PING failed",
                         e.to_string(),
                     )))
@@ -89,7 +108,7 @@ impl RateLimiter {
             error!("Failed to get Redis connection: {}", e);
             crate::metrics::record_redis_operation("get_connection", false);
             GatewayError::RedisError(redis::RedisError::from((
-                redis::ErrorKind::IoError,
+                redis::ErrorKind::Io,
                 "Connection pool error",
                 e.to_string(),
             )))
@@ -101,13 +120,15 @@ impl RateLimiter {
 
         // Check per-minute rate limit
         let minute_key = format!("ratelimit:{}:minute:{}", api_key, now.format("%Y%m%d%H%M"));
-        let current_count: u32 = conn.get(&minute_key).await.unwrap_or(0);
+        let current_count: u32 = conn.get(&minute_key).await.map_err(|e| {
+            error!("Failed to read minute rate limit counter: {}", e);
+            GatewayError::RedisError(e)
+        })?;
 
         let minute_limit = quota_tier.minute_limit().unwrap_or(u32::MAX);
 
         if current_count >= minute_limit {
-            let reset_at =
-                now.with_second(0).unwrap().with_nanosecond(0).unwrap() + Duration::minutes(1);
+            let reset_at = next_minute_reset(now);
 
             warn!(
                 "Rate limit exceeded for API key {} (tier: {:?}): {}/{}",
@@ -129,18 +150,14 @@ impl RateLimiter {
 
         // Check monthly quota
         let month_key = format!("ratelimit:{}:month:{}", api_key, now.format("%Y%m"));
-        let month_count: u64 = conn.get(&month_key).await.unwrap_or(0);
+        let month_count: u64 = conn.get(&month_key).await.map_err(|e| {
+            error!("Failed to read monthly rate limit counter: {}", e);
+            GatewayError::RedisError(e)
+        })?;
 
         if let Some(monthly_quota) = quota_tier.monthly_quota() {
             if month_count >= monthly_quota {
-                let next_month = if now.month() == 12 {
-                    now.with_year(now.year() + 1)
-                        .unwrap()
-                        .with_month(1)
-                        .unwrap()
-                } else {
-                    now.with_month(now.month() + 1).unwrap()
-                };
+                let next_month = next_month_reset(now);
 
                 warn!(
                     "Monthly quota exceeded for API key {} (tier: {:?}): {}/{}",
@@ -180,8 +197,7 @@ impl RateLimiter {
             })?;
 
         let remaining = minute_limit.saturating_sub(current_count + 1);
-        let reset_at =
-            now.with_second(0).unwrap().with_nanosecond(0).unwrap() + Duration::minutes(1);
+        let reset_at = next_minute_reset(now);
 
         debug!(
             "Rate limit check passed for API key {} (tier: {:?}): {}/{}",
@@ -214,7 +230,7 @@ impl RateLimiter {
     ) -> Result<RateLimitStatus> {
         let mut conn = self.redis_pool.get().await.map_err(|e| {
             GatewayError::RedisError(redis::RedisError::from((
-                redis::ErrorKind::IoError,
+                redis::ErrorKind::Io,
                 "Connection pool error",
                 e.to_string(),
             )))
@@ -225,25 +241,17 @@ impl RateLimiter {
         let minute_key = format!("ratelimit:{}:minute:{}", api_key, now.format("%Y%m%d%H%M"));
         let month_key = format!("ratelimit:{}:month:{}", api_key, now.format("%Y%m"));
 
-        let current_minute_requests: u32 = conn.get(&minute_key).await.unwrap_or(0);
-        let current_month_requests: u64 = conn.get(&month_key).await.unwrap_or(0);
+        let current_minute_requests: u32 = conn.get(&minute_key).await.map_err(|e| {
+            error!("Failed to read minute rate limit status: {}", e);
+            GatewayError::RedisError(e)
+        })?;
+        let current_month_requests: u64 = conn.get(&month_key).await.map_err(|e| {
+            error!("Failed to read monthly rate limit status: {}", e);
+            GatewayError::RedisError(e)
+        })?;
 
-        let minute_reset_at =
-            now.with_second(0).unwrap().with_nanosecond(0).unwrap() + Duration::minutes(1);
-
-        let month_reset_at = if now.month() == 12 {
-            now.with_year(now.year() + 1)
-                .unwrap()
-                .with_month(1)
-                .unwrap()
-                .with_day(1)
-                .unwrap()
-        } else {
-            now.with_month(now.month() + 1)
-                .unwrap()
-                .with_day(1)
-                .unwrap()
-        };
+        let minute_reset_at = next_minute_reset(now);
+        let month_reset_at = next_month_reset(now);
 
         Ok(RateLimitStatus {
             api_key: api_key.to_string(),
@@ -261,7 +269,7 @@ impl RateLimiter {
     pub async fn reset_limits(&self, api_key: &str) -> Result<()> {
         let mut conn = self.redis_pool.get().await.map_err(|e| {
             GatewayError::RedisError(redis::RedisError::from((
-                redis::ErrorKind::IoError,
+                redis::ErrorKind::Io,
                 "Connection pool error",
                 e.to_string(),
             )))
@@ -284,7 +292,7 @@ impl RateLimiter {
             if !keys.is_empty() {
                 redis::cmd("DEL")
                     .arg(&keys)
-                    .query_async::<_, ()>(&mut *conn)
+                    .query_async::<()>(&mut *conn)
                     .await
                     .map_err(GatewayError::RedisError)?;
             }

@@ -1,0 +1,3 @@
+[alias]
+gateway-release = "build -p fingerprint-gateway --bin gateway --profile release-service"
+gateway-run-release = "run -p fingerprint-gateway --bin gateway --profile release-service"

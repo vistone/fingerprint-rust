@@ -1,4 +1,4 @@
-#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+#![allow(dead_code, unused_variables, unused_parens)]
 
 //! # Hardware Fingerprint Module
 //!
@@ -112,7 +112,7 @@ impl HardwareDetector {
     fn identify_device_type(width: u32, height: u32, memory: u64) -> DeviceType {
         match (width, height, memory) {
             // 手机条件要在Tablet之前，因to更具体
-            (w, h, _) if (w <= 480 && h <= 960) || (w <= 540 && h <= 960) => DeviceType::Phone,
+            (w, h, _) if w <= 540 && h <= 960 => DeviceType::Phone,
             // Tablet: 7-13 英寸屏幕通常to 600-1024 宽
             (w, h, _) if (w <= 800 && h <= 1280) || (w <= 1280 && h <= 800) => DeviceType::Tablet,
             // 桌面: memory多于16GB

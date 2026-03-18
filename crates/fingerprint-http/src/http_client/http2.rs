@@ -8,22 +8,6 @@ use super::{HttpClientConfig, HttpClientError, HttpRequest, HttpResponse, Result
 #[cfg(feature = "http2")]
 use h2::client;
 
-// 修复：使用全局单例 Runtime 避免频繁创建
-#[cfg(feature = "http2")]
-use once_cell::sync::Lazy;
-
-#[cfg(feature = "http2")]
-static RUNTIME: Lazy<tokio::runtime::Runtime> = Lazy::new(|| {
-    tokio::runtime::Runtime::new().unwrap_or_else(|err| {
-        // 记录错误并创建最小化运行时作为后备
-        eprintln!("警告：无法创建最优 Tokio 运行时：{}。使用基础运行时。", err);
-        tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .expect("无法创建基础 Tokio 运行时 - 系统资源耗尽")
-    })
-});
-
 /// 发送 HTTP/2 请求
 #[cfg(feature = "http2")]
 pub fn send_http2_request(
@@ -33,8 +17,8 @@ pub fn send_http2_request(
     request: &HttpRequest,
     config: &HttpClientConfig,
 ) -> Result<HttpResponse> {
-    // Fix: useglobalsingleton Runtime, avoideach timerequest都Create a newrun when
-    RUNTIME.block_on(async { send_http2_request_async(host, port, path, request, config).await })
+    let runtime = super::get_shared_runtime()?;
+    runtime.block_on(async { send_http2_request_async(host, port, path, request, config).await })
 }
 
 #[cfg(feature = "http2")]
@@ -149,8 +133,10 @@ async fn send_http2_request_async(
 
     // 6. sendrequest (Get SendStream for send body)
     // Fix: end_of_stream must as false, otherwisestreamwillimmediatelyclose, unable tosend body
-    let has_body = request_with_cookies.body.is_some()
-        && !request_with_cookies.body.as_ref().unwrap().is_empty();
+    let has_body = request_with_cookies
+        .body
+        .as_ref()
+        .is_some_and(|body| !body.is_empty());
     let (response_future, mut send_stream) = client
         .send_request(http_request, false) // Fix: 改 as false，only in send完 body back才endstream
         .map_err(|e| HttpClientError::ConnectionFailed(format!("sendrequestfailure: {}", e)))?;

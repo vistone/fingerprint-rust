@@ -117,21 +117,6 @@ fn main() {
 }
 
 fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
-    // Read PCAP file
-    let pcap_data = fs::read(path).map_err(|e| format!("Failed to read file: {}", e))?;
-
-    if pcap_data.len() < 24 {
-        return Err("File too small to be valid PCAP".to_string());
-    }
-
-    // Verify magic number
-    let magic = u32::from_le_bytes([pcap_data[0], pcap_data[1], pcap_data[2], pcap_data[3]]);
-    if magic != 0xa1b2c3d4 {
-        return Err(format!("Invalid PCAP magic number: 0x{:08x}", magic));
-    }
-
-    // Parse packets
-    let mut offset = 24; // Skip global header
     let mut packet_count = 0;
     let mut tcp_packets = Vec::new();
     let mut window_sizes = Vec::new();
@@ -150,25 +135,9 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
     // Initialize JA3 database
     let ja3_db = JA3Database::new();
 
-    while offset + 16 <= pcap_data.len() {
-        // Parse packet header
-        let incl_len = u32::from_le_bytes([
-            pcap_data[offset + 8],
-            pcap_data[offset + 9],
-            pcap_data[offset + 10],
-            pcap_data[offset + 11],
-        ]) as usize;
-
-        offset += 16;
-
-        if offset + incl_len > pcap_data.len() {
-            break;
-        }
-
-        let packet_data = &pcap_data[offset..offset + incl_len];
-
+    PacketParser::stream_pcap_file(path, |packet| {
         // Parse Ethernet → IPv4 → TCP
-        if let Some((_, rest)) = PacketParser::parse_ethernet(packet_data) {
+        if let Some((_, rest)) = PacketParser::parse_ethernet(packet.data) {
             if let Some((ipv4, rest)) = PacketParser::parse_ipv4(rest) {
                 ttls.push(ipv4.ttl);
 
@@ -222,9 +191,8 @@ fn analyze_pcap(path: &Path) -> Result<BrowserFingerprint, String> {
                 }
             }
         }
-
-        offset += incl_len;
-    }
+        Ok(())
+    })?;
 
     if packet_count == 0 {
         return Err("No TCP packets found".to_string());

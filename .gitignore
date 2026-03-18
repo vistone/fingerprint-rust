@@ -10,6 +10,12 @@ Cargo.lock
 *.swp
 *.swo
 *~
+venv/
+phase7_api/api_env/
+
+# Python cache
+__pycache__/
+*.pyc
 
 # OS
 .DS_Store
@@ -42,6 +48,8 @@ core.*
 
 # Vendor/Third-party code
 vendor/rustls/
+vendor/netconnpool-rust/target/
+vendor/netconnpool-rust/.cargo-ok
 
 # DNS 数据文件（不应提交到版本控制）
 dns_output/

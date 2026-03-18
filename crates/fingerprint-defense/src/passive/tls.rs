@@ -3,6 +3,7 @@
 //! implement TLS ClientHello passiveanalysis and JA4 fingerprintGenerate.
 
 use crate::passive::packet::Packet;
+use fingerprint_core::stable_hash::StableHashBuilder;
 
 /// TLS analysiser
 pub struct TlsAnalyzer;
@@ -49,11 +50,9 @@ impl fingerprint_core::fingerprint::Fingerprint for TlsFingerprint {
     }
 
     fn hash(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        let mut hasher = DefaultHasher::new();
-        self.ja4.hash(&mut hasher);
-        self.version.hash(&mut hasher);
+        let mut hasher = StableHashBuilder::new();
+        hasher.write_option_str(self.ja4.as_deref());
+        hasher.write_option_u16(self.version);
         hasher.finish()
     }
 

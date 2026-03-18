@@ -1,4 +1,4 @@
-#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+#![allow(dead_code, unused_variables, unused_parens)]
 
 //! # fingerprint-ml
 //!
@@ -15,7 +15,8 @@
 pub mod pretrained_models;
 
 pub use pretrained_models::{
-    EnsemblePredictor, ModelMetrics, ModelPrediction, PreTrainedModel, PreTrainedModelManager,
+    EnsemblePredictor, ModelCacheStats, ModelMetrics, ModelPrediction, PreTrainedModel,
+    PreTrainedModelManager,
 };
 
 use std::collections::HashMap;
@@ -116,6 +117,12 @@ impl AdvancedAnomalyDetector {
     }
 }
 
+impl Default for AdvancedAnomalyDetector {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 /// ML fingerprint matcher
 pub struct FingerprintMatcher {
     profiles: HashMap<String, FingerprintVector>,
@@ -171,6 +178,12 @@ impl FingerprintMatcher {
                 }
             })
             .collect()
+    }
+}
+
+impl Default for FingerprintMatcher {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

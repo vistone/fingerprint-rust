@@ -122,7 +122,7 @@ pub mod redis_impl {
                 .arg(key)
                 .arg(ttl_secs)
                 .arg(value)
-                .query_async::<_, ()>(&mut conn)
+                .query_async::<()>(&mut conn)
                 .await
                 .map_err(|e| CacheError::RedisError(format!("SETEX failed: {}", e)))?;
 
@@ -139,7 +139,7 @@ pub mod redis_impl {
             let mut conn = conn.clone();
             redis::cmd("DEL")
                 .arg(key)
-                .query_async::<_, ()>(&mut conn)
+                .query_async::<()>(&mut conn)
                 .await
                 .map_err(|e| CacheError::RedisError(format!("DEL failed: {}", e)))?;
 

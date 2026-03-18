@@ -1,0 +1,90 @@
+name: Prototype Crates Validation
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'crates/fingerprint-audio/**'
+      - 'crates/fingerprint-canvas/**'
+      - 'crates/fingerprint-fonts/**'
+      - 'crates/fingerprint-hardware/**'
+      - 'crates/fingerprint-ml/**'
+      - 'crates/fingerprint-storage/**'
+      - 'crates/fingerprint-webgl/**'
+      - 'crates/fingerprint-webrtc/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/prototype-crates-validation.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'crates/fingerprint-audio/**'
+      - 'crates/fingerprint-canvas/**'
+      - 'crates/fingerprint-fonts/**'
+      - 'crates/fingerprint-hardware/**'
+      - 'crates/fingerprint-ml/**'
+      - 'crates/fingerprint-storage/**'
+      - 'crates/fingerprint-webgl/**'
+      - 'crates/fingerprint-webrtc/**'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/prototype-crates-validation.yml'
+  schedule:
+    - cron: '0 3 * * 1'
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  validate:
+    name: Validate ${{ matrix.crate }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        crate:
+          - fingerprint-audio
+          - fingerprint-canvas
+          - fingerprint-fonts
+          - fingerprint-hardware
+          - fingerprint-ml
+          - fingerprint-storage
+          - fingerprint-webgl
+          - fingerprint-webrtc
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Install cargo-nextest
+        uses: taiki-e/install-action@nextest
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-prototype-${{ matrix.crate }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-prototype-${{ matrix.crate }}-
+            ${{ runner.os }}-cargo-prototype-
+
+      - name: Check crate
+        run: cargo check -p ${{ matrix.crate }}
+
+      - name: Test crate
+        run: cargo nextest run -p ${{ matrix.crate }} --lib
+
+      - name: Lint crate
+        run: cargo clippy -p ${{ matrix.crate }} --all-targets -- -D warnings

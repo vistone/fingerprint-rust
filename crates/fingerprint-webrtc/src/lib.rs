@@ -1,4 +1,4 @@
-#![allow(clippy::all, dead_code, unused_variables, unused_parens)]
+#![allow(dead_code, unused_variables, unused_parens)]
 
 //! # WebRTC Fingerprint Module
 //!

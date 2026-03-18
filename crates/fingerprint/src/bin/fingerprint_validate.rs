@@ -121,21 +121,8 @@ fn validate_capture(
     pcap_path: &Path,
     expected: &ExpectedResult,
 ) -> Result<ValidationResult, String> {
-    // Read PCAP file
-    let pcap_data = fs::read(pcap_path).map_err(|e| format!("Failed to read file: {}", e))?;
-
-    if pcap_data.len() < 24 {
-        return Err("File too small".to_string());
-    }
-
-    // Verify magic number
-    let magic = u32::from_le_bytes([pcap_data[0], pcap_data[1], pcap_data[2], pcap_data[3]]);
-    if magic != 0xa1b2c3d4 {
-        return Err("Invalid PCAP file".to_string());
-    }
-
-    // Simple packet count analysis
-    let packet_count = count_packets(&pcap_data);
+    let packet_count =
+        fingerprint_core::packet_capture::PacketParser::count_pcap_packets(pcap_path)?;
 
     // Calculate confidence based on packet count and quality
     let confidence = if packet_count >= 50 {
@@ -173,30 +160,6 @@ fn validate_capture(
         passed,
         details,
     })
-}
-
-fn count_packets(pcap_data: &[u8]) -> usize {
-    let mut count = 0;
-    let mut offset = 24; // Skip global header
-
-    while offset + 16 <= pcap_data.len() {
-        let incl_len = u32::from_le_bytes([
-            pcap_data[offset + 8],
-            pcap_data[offset + 9],
-            pcap_data[offset + 10],
-            pcap_data[offset + 11],
-        ]) as usize;
-
-        offset += 16 + incl_len;
-
-        if offset > pcap_data.len() {
-            break;
-        }
-
-        count += 1;
-    }
-
-    count
 }
 
 fn print_validation_result(result: &ValidationResult) {

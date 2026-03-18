@@ -9,7 +9,10 @@
 //! - Anomaly detector: Behavioral anomaly detection
 //! - Ensemble: Combined predictions from multiple models
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
+use std::sync::Mutex;
+
+const DEFAULT_MODEL_CACHE_CAPACITY: usize = 3;
 
 /// Model performance metrics
 #[derive(Debug, Clone)]
@@ -57,6 +60,14 @@ pub enum PreTrainedModel {
 }
 
 impl PreTrainedModel {
+    const ALL: [PreTrainedModel; 5] = [
+        PreTrainedModel::AuthenticityClassifier,
+        PreTrainedModel::BrowserTypeClassifier,
+        PreTrainedModel::BehaviorAnomalyDetector,
+        PreTrainedModel::OSClassifier,
+        PreTrainedModel::DeviceTypeClassifier,
+    ];
+
     /// Get model name
     pub fn name(&self) -> &'static str {
         match self {
@@ -124,6 +135,17 @@ impl PreTrainedModel {
             },
         }
     }
+
+    /// Approximate in-memory footprint used by the loaded model artifact.
+    pub fn estimated_size_bytes(&self) -> usize {
+        match self {
+            Self::AuthenticityClassifier => 24 * 1024 * 1024,
+            Self::BrowserTypeClassifier => 32 * 1024 * 1024,
+            Self::BehaviorAnomalyDetector => 28 * 1024 * 1024,
+            Self::OSClassifier => 20 * 1024 * 1024,
+            Self::DeviceTypeClassifier => 18 * 1024 * 1024,
+        }
+    }
 }
 
 /// Model prediction result
@@ -141,53 +163,189 @@ pub struct ModelPrediction {
 
 /// Pre-trained models loader and manager
 pub struct PreTrainedModelManager {
-    models: HashMap<PreTrainedModel, ModelMetrics>,
+    registry: HashMap<PreTrainedModel, ModelDescriptor>,
+    cache: Mutex<ModelCache>,
+}
+
+#[derive(Debug, Clone)]
+struct ModelDescriptor {
+    metrics: ModelMetrics,
+    estimated_size_bytes: usize,
+}
+
+#[derive(Debug, Clone)]
+struct LoadedModel {
+    metrics: ModelMetrics,
+    estimated_size_bytes: usize,
+}
+
+#[derive(Debug)]
+struct ModelCache {
+    loaded: HashMap<PreTrainedModel, LoadedModel>,
+    lru: VecDeque<PreTrainedModel>,
+    capacity: usize,
+    loaded_bytes: usize,
+    evictions: usize,
+}
+
+#[derive(Debug, Clone)]
+pub struct ModelCacheStats {
+    pub capacity: usize,
+    pub loaded_models: usize,
+    pub loaded_bytes: usize,
+    pub evictions: usize,
+}
+
+impl ModelCache {
+    fn new(capacity: usize) -> Self {
+        Self {
+            loaded: HashMap::new(),
+            lru: VecDeque::new(),
+            capacity: capacity.max(1),
+            loaded_bytes: 0,
+            evictions: 0,
+        }
+    }
+
+    fn touch(&mut self, model: PreTrainedModel) {
+        self.lru.retain(|cached| *cached != model);
+        self.lru.push_back(model);
+    }
+
+    fn get(&mut self, model: PreTrainedModel) -> Option<ModelMetrics> {
+        let metrics = self.loaded.get(&model).map(|entry| entry.metrics.clone())?;
+        self.touch(model);
+        Some(metrics)
+    }
+
+    fn insert(&mut self, model: PreTrainedModel, descriptor: &ModelDescriptor) -> ModelMetrics {
+        while self.loaded.len() >= self.capacity {
+            self.evict_oldest();
+        }
+
+        let metrics = descriptor.metrics.clone();
+        let entry = LoadedModel {
+            metrics: metrics.clone(),
+            estimated_size_bytes: descriptor.estimated_size_bytes,
+        };
+
+        self.loaded_bytes += entry.estimated_size_bytes;
+        self.loaded.insert(model, entry);
+        self.touch(model);
+        metrics
+    }
+
+    fn evict_oldest(&mut self) {
+        if let Some(oldest) = self.lru.pop_front() {
+            if let Some(removed) = self.loaded.remove(&oldest) {
+                self.loaded_bytes = self
+                    .loaded_bytes
+                    .saturating_sub(removed.estimated_size_bytes);
+                self.evictions += 1;
+            }
+        }
+    }
+
+    fn stats(&self) -> ModelCacheStats {
+        ModelCacheStats {
+            capacity: self.capacity,
+            loaded_models: self.loaded.len(),
+            loaded_bytes: self.loaded_bytes,
+            evictions: self.evictions,
+        }
+    }
 }
 
 impl PreTrainedModelManager {
     /// Create new model manager
     pub fn new() -> Self {
-        let mut models = HashMap::new();
+        Self::with_cache_capacity(DEFAULT_MODEL_CACHE_CAPACITY)
+    }
 
-        // Initialize all models
-        for &model in &[
-            PreTrainedModel::AuthenticityClassifier,
-            PreTrainedModel::BrowserTypeClassifier,
-            PreTrainedModel::BehaviorAnomalyDetector,
-            PreTrainedModel::OSClassifier,
-            PreTrainedModel::DeviceTypeClassifier,
-        ] {
-            models.insert(model, model.metrics());
+    /// Create a manager with an explicit loaded-model cache capacity.
+    pub fn with_cache_capacity(capacity: usize) -> Self {
+        let mut registry = HashMap::new();
+
+        for model in PreTrainedModel::ALL {
+            registry.insert(
+                model,
+                ModelDescriptor {
+                    metrics: model.metrics(),
+                    estimated_size_bytes: model.estimated_size_bytes(),
+                },
+            );
         }
 
-        Self { models }
+        Self {
+            registry,
+            cache: Mutex::new(ModelCache::new(capacity)),
+        }
     }
 
     /// Load model from disk
     ///
     /// In production, this would load actual model weights from disk
     pub fn load_model(&self, model: PreTrainedModel) -> Result<ModelMetrics, String> {
-        self.models
+        let descriptor = self
+            .registry
             .get(&model)
             .cloned()
-            .ok_or_else(|| format!("Model {} not found", model.name()))
+            .ok_or_else(|| format!("Model {} not found", model.name()))?;
+
+        let mut cache = self
+            .cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        if let Some(metrics) = cache.get(model) {
+            return Ok(metrics);
+        }
+
+        Ok(cache.insert(model, &descriptor))
     }
 
     /// Get available models
     pub fn available_models(&self) -> Vec<(PreTrainedModel, ModelMetrics)> {
-        self.models
+        PreTrainedModel::ALL
             .iter()
-            .map(|(model, metrics)| (*model, metrics.clone()))
+            .filter_map(|model| {
+                self.registry
+                    .get(model)
+                    .map(|descriptor| (*model, descriptor.metrics.clone()))
+            })
             .collect()
     }
 
     /// Get model metrics
     pub fn get_metrics(&self, model: PreTrainedModel) -> Option<ModelMetrics> {
-        self.models.get(&model).cloned()
+        self.registry
+            .get(&model)
+            .map(|descriptor| descriptor.metrics.clone())
+    }
+
+    /// Return cache state for observability and tuning.
+    pub fn cache_stats(&self) -> ModelCacheStats {
+        self.cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .stats()
+    }
+
+    /// Check whether a model is currently resident in the loaded-model cache.
+    pub fn is_model_loaded(&self, model: PreTrainedModel) -> bool {
+        self.cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .loaded
+            .contains_key(&model)
+    }
+
+    fn ensure_model_loaded(&self, model: PreTrainedModel) {
+        let _ = self.load_model(model);
     }
 
     /// Predict fingerprint authenticity
     pub fn predict_authenticity(&self, features: &[f32]) -> ModelPrediction {
+        self.ensure_model_loaded(PreTrainedModel::AuthenticityClassifier);
         let confidence = self.calculate_confidence(features);
 
         ModelPrediction {
@@ -211,6 +369,7 @@ impl PreTrainedModelManager {
 
     /// Predict browser type
     pub fn predict_browser(&self, features: &[f32]) -> ModelPrediction {
+        self.ensure_model_loaded(PreTrainedModel::BrowserTypeClassifier);
         let browsers = ["Chrome", "Firefox", "Safari", "Edge", "Opera", "Other"];
 
         let scores: Vec<f32> = features
@@ -246,6 +405,7 @@ impl PreTrainedModelManager {
 
     /// Predict anomalies in behavior
     pub fn predict_anomaly(&self, features: &[f32]) -> ModelPrediction {
+        self.ensure_model_loaded(PreTrainedModel::BehaviorAnomalyDetector);
         let anomaly_score = features.iter().map(|f| f.abs()).sum::<f32>() / features.len() as f32;
         let confidence = (anomaly_score / 2.0).min(1.0);
 
@@ -279,7 +439,7 @@ impl PreTrainedModelManager {
             features.iter().map(|f| (f - mean).powi(2)).sum::<f32>() / features.len() as f32;
 
         let confidence = 1.0 / (1.0 + variance);
-        confidence.min(1.0).max(0.0)
+        confidence.clamp(0.0, 1.0)
     }
 }
 
@@ -347,6 +507,45 @@ mod tests {
         let manager = PreTrainedModelManager::new();
         let models = manager.available_models();
         assert_eq!(models.len(), 5);
+        assert_eq!(manager.cache_stats().loaded_models, 0);
+    }
+
+    #[test]
+    fn test_lazy_loading_populates_cache_on_demand() {
+        let manager = PreTrainedModelManager::with_cache_capacity(2);
+
+        assert!(!manager.is_model_loaded(PreTrainedModel::AuthenticityClassifier));
+        let metrics = manager
+            .load_model(PreTrainedModel::AuthenticityClassifier)
+            .expect("load model");
+
+        assert_eq!(metrics.version, "2.1.0");
+        assert!(manager.is_model_loaded(PreTrainedModel::AuthenticityClassifier));
+        assert_eq!(manager.cache_stats().loaded_models, 1);
+    }
+
+    #[test]
+    fn test_lru_eviction_keeps_loaded_models_bounded() {
+        let manager = PreTrainedModelManager::with_cache_capacity(2);
+
+        manager
+            .load_model(PreTrainedModel::AuthenticityClassifier)
+            .expect("load authenticity");
+        manager
+            .load_model(PreTrainedModel::BrowserTypeClassifier)
+            .expect("load browser");
+        manager
+            .load_model(PreTrainedModel::BehaviorAnomalyDetector)
+            .expect("load anomaly");
+
+        assert!(!manager.is_model_loaded(PreTrainedModel::AuthenticityClassifier));
+        assert!(manager.is_model_loaded(PreTrainedModel::BrowserTypeClassifier));
+        assert!(manager.is_model_loaded(PreTrainedModel::BehaviorAnomalyDetector));
+
+        let stats = manager.cache_stats();
+        assert_eq!(stats.capacity, 2);
+        assert_eq!(stats.loaded_models, 2);
+        assert_eq!(stats.evictions, 1);
     }
 
     #[test]
@@ -357,6 +556,7 @@ mod tests {
 
         assert!(!pred.label.is_empty());
         assert!(pred.confidence >= 0.0 && pred.confidence <= 1.0);
+        assert!(manager.is_model_loaded(PreTrainedModel::AuthenticityClassifier));
     }
 
     #[test]

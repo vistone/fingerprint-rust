@@ -35,7 +35,9 @@
 //! - **utility functions**: GREASE process, randomly select etc.utility functions
 
 pub mod benchmark;
+#[cfg(feature = "service-cache")]
 pub mod cache; // Multi-tier caching (L1/L2/L3)
+#[cfg(feature = "service-cache")]
 pub mod cache_redis; // Redis-backed cache implementation
 pub mod database;
 pub mod dicttls;
@@ -46,19 +48,25 @@ pub mod hassh;
 pub mod hpack;
 pub mod http;
 pub mod http2_frame_parser;
+pub mod incremental_fingerprint;
 pub mod ja3;
 pub mod ja3_database;
 pub mod ja4;
 pub mod jarm;
 pub mod metadata;
+#[cfg(feature = "service-metrics")]
 pub mod metrics; // Prometheus metrics collection
 pub mod packet_capture;
 pub mod pcap_generator;
 pub mod pqc; // Post-Quantum Cryptography detection
+#[cfg(feature = "service-rate-limiting")]
 pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
+#[cfg(feature = "service-rate-limiting")]
 pub mod rate_limiting_metrics; // Prometheus metrics for rate limiting
+#[cfg(feature = "service-rate-limiting")]
 pub mod rate_limiting_redis; // Redis integration for rate limiting
 pub mod signature;
+pub mod stable_hash;
 pub mod system;
 pub mod tcp;
 pub mod tcp_handshake;
@@ -76,10 +84,11 @@ pub use error::{
     Result, TcpError, TlsError, ValidationError,
 };
 
-// Cache error from cache module
+#[cfg(feature = "service-cache")]
 pub use cache::CacheError;
 
 // Metrics
+#[cfg(feature = "service-metrics")]
 pub use metrics::{
     record_cache_hit, record_cache_miss, record_db_operation, record_error,
     record_fingerprint_duration, record_ml_inference, ANOMALY_DETECTION_TOTAL,
@@ -112,6 +121,7 @@ pub use ja4::{
     ConsistencyReport, TlsExtensionOrderFingerprint, JA4, JA4H, JA4L, JA4S, JA4T, JA4TS, JA4X,
 };
 pub use signature::ClientHelloSignature;
+pub use stable_hash::{hash_str, StableHashBuilder};
 pub use version::TlsVersion;
 
 // Post-Quantum Cryptography
@@ -133,10 +143,11 @@ pub use http2_frame_parser::{
     Http2FrameHeader, Http2FrameType, Http2ParseError, Http2PriorityFrame, Http2SettingsFrame,
     Http2SettingsMatcher, Http2WindowUpdateFrame, HTTP2_PREFACE,
 };
+pub use incremental_fingerprint::{IncrementalFingerprintResult, IncrementalTcpFingerprint};
 pub use packet_capture::{
     EthernetHeader, Ipv4Header, Ipv6Header, NetworkProtocol, PacketFlowAnalyzer, PacketParser,
-    ParsedPacket, PcapGlobalHeader, PcapPacketHeader, TcpFlow, TcpHeader, TransportProtocol,
-    UdpHeader,
+    ParsedPacket, ParsedTcpOption, ParsedTcpOptionKind, PcapGlobalHeader, PcapPacketHeader,
+    TcpFlow, TcpHeader, TransportProtocol, UdpHeader,
 };
 
 // TCP related
@@ -161,23 +172,28 @@ pub use utils::{
 pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics, Timer};
 
 // rate limiting service (Phase 9.4)
+#[cfg(feature = "service-rate-limiting")]
 pub use rate_limiting::{
     current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitResponse,
     RateLimiter, UserQuota,
 };
 
 // rate limiting Redis backend
+#[cfg(feature = "service-rate-limiting")]
 pub use rate_limiting_redis::{
     RedisBackendError, RedisConfig, RedisQuotaEntry, RedisRateLimitBackend, RedisResult,
 };
 
 // rate limiting Prometheus metrics
+#[cfg(feature = "service-rate-limiting")]
 pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // cache (Phase 9.3)
+#[cfg(feature = "service-cache")]
 pub use cache::{Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard};
 
 // Redis cache (optional, requires redis-cache feature)
+#[cfg(feature = "service-cache")]
 pub use cache_redis::RedisCacheConfig;
 
 #[cfg(feature = "redis-cache")]

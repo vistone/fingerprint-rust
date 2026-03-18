@@ -13,7 +13,7 @@ categories = ["network-programming", "security"]
 
 [dependencies]
 # 核心依赖
-fingerprint-core = { path = "../fingerprint-core" }
+fingerprint-core = { path = "../fingerprint-core", features = ["service-rate-limiting"] }
 fingerprint-tls = { path = "../fingerprint-tls" }
 fingerprint-http = { path = "../fingerprint-http" }
 # fingerprint-ja4 = { path = "../fingerprint-ja4" } # Replaced by fingerprint-tls internal JA4

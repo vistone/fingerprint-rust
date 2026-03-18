@@ -3,12 +3,12 @@
 # Phase 9.2 Deployment Script - Service Mesh Advanced Features
 # This script deploys Jaeger, Kiali, canary deployments, and advanced monitoring
 
-set -e
+set -euo pipefail
 
-NAMESPACE_API="fingerprint-api"
-NAMESPACE_MONITORING="monitoring"
-NAMESPACE_KIALI="kiali"
-NAMESPACE_TRACING="tracing"
+NAMESPACE_API="${NAMESPACE_API:-fingerprint-api}"
+NAMESPACE_MONITORING="${NAMESPACE_MONITORING:-monitoring}"
+NAMESPACE_KIALI="${NAMESPACE_KIALI:-kiali}"
+NAMESPACE_TRACING="${NAMESPACE_TRACING:-tracing}"
 
 # Color output
 RED='\033[0;31m'
@@ -36,7 +36,7 @@ deploy_jaeger() {
   
   # Wait for Jaeger deployment
   kubectl wait --for=condition=available --timeout=300s \
-    deployment/jaeger -n $NAMESPACE_TRACING || {
+    deployment/jaeger -n "$NAMESPACE_TRACING" || {
     log_error "Jaeger deployment failed"
     return 1
   }
@@ -53,7 +53,7 @@ deploy_kiali() {
   
   # Wait for Kiali deployment
   kubectl wait --for=condition=available --timeout=300s \
-    deployment/kiali -n $NAMESPACE_KIALI || {
+    deployment/kiali -n "$NAMESPACE_KIALI" || {
     log_error "Kiali deployment failed"
     return 1
   }
@@ -67,7 +67,7 @@ deploy_istio_telemetry() {
   log_info "Step 3: Deploying Istio telemetry and security policies..."
   
   # Create namespaces if they don't exist
-  kubectl create namespace $NAMESPACE_API --dry-run=client -o yaml | kubectl apply -f -
+  kubectl create namespace "$NAMESPACE_API" --dry-run=client -o yaml | kubectl apply -f -
   
   # Deploy telemetry configuration
   kubectl apply -f k8s/networking/istio/telemetry-config.yaml
@@ -116,12 +116,12 @@ verify_jaeger() {
   log_info "Verifying Jaeger deployment..."
   
   # Check pod status
-  if kubectl get pods -n $NAMESPACE_TRACING | grepjaeger | grep Running; then
+  if kubectl get pods -n "$NAMESPACE_TRACING" --no-headers | awk '$1 ~ /jaeger/ && $3 == "Running" { found=1 } END { exit(found ? 0 : 1) }'; then
     log_info "✓ Jaeger pods running"
     
     # Test collector endpoint
-    JAEGER_POD=$(kubectl get pod -n $NAMESPACE_TRACING -l app=jaeger -o jsonpath='{.items[0].metadata.name}')
-    kubectl exec -n $NAMESPACE_TRACING $JAEGER_POD -- curl -s http://localhost:16686/ > /dev/null && \
+    JAEGER_POD=$(kubectl get pod -n "$NAMESPACE_TRACING" -l app=jaeger -o jsonpath='{.items[0].metadata.name}')
+    kubectl exec -n "$NAMESPACE_TRACING" "$JAEGER_POD" -- curl -s http://localhost:16686/ > /dev/null && \
       log_info "✓ Jaeger UI accessible" || log_warn "⚠ Jaeger UI not responding"
     
     return 0
@@ -135,12 +135,12 @@ verify_kiali() {
   log_info "Verifying Kiali deployment..."
   
   # Check pod status
-  if kubectl get pods -n $NAMESPACE_KIALI | grep kiali | grep Running; then
+  if kubectl get pods -n "$NAMESPACE_KIALI" --no-headers | awk '$1 ~ /kiali/ && $3 == "Running" { found=1 } END { exit(found ? 0 : 1) }'; then
     log_info "✓ Kiali pods running"
     
     # Test UI endpoint
-    KIALI_POD=$(kubectl get pod -n $NAMESPACE_KIALI -l app=kiali -o jsonpath='{.items[0].metadata.name}')
-    kubectl exec -n $NAMESPACE_KIALI $KIALI_POD -- curl -s http://localhost:20001/kiali/healthz > /dev/null && \
+    KIALI_POD=$(kubectl get pod -n "$NAMESPACE_KIALI" -l app=kiali -o jsonpath='{.items[0].metadata.name}')
+    kubectl exec -n "$NAMESPACE_KIALI" "$KIALI_POD" -- curl -s http://localhost:20001/kiali/healthz > /dev/null && \
       log_info "✓ Kiali health check passed" || log_warn "⚠ Kiali health check failed"
     
     return 0
@@ -153,7 +153,7 @@ verify_kiali() {
 verify_telemetry() {
   log_info "Verifying telemetry configuration..."
   
-  if kubectl get telemetries.telemetry.istio.io -n $NAMESPACE_API > /dev/null 2>&1; then
+  if kubectl get telemetries.telemetry.istio.io -n "$NAMESPACE_API" > /dev/null 2>&1; then
     log_info "✓ Telemetry policies found"
     return 0
   else
@@ -165,13 +165,13 @@ verify_telemetry() {
 verify_canary() {
   log_info "Verifying canary deployment..."
   
-  if kubectl get vs fingerprint-api-canary -n $NAMESPACE_API > /dev/null 2>&1; then
+  if kubectl get vs fingerprint-api-canary -n "$NAMESPACE_API" > /dev/null 2>&1; then
     log_info "✓ Canary VirtualService deployed"
   else
     log_warn "⚠ Canary VirtualService not found"
   fi
   
-  if kubectl get envoyfilters -n $NAMESPACE_API | grep rate-limiting > /dev/null; then
+  if kubectl get envoyfilters -n "$NAMESPACE_API" --no-headers | grep -q "rate-limiting"; then
     log_info "✓ Rate limiting EnvoyFilter deployed"
   else
     log_warn "⚠ Rate limiting EnvoyFilter not found"
@@ -181,13 +181,13 @@ verify_canary() {
 verify_monitoring() {
   log_info "Verifying monitoring deployment..."
   
-  if kubectl get prometheusrules -n $NAMESPACE_MONITORING | grep service-mesh > /dev/null; then
+  if kubectl get prometheusrules -n "$NAMESPACE_MONITORING" --no-headers | grep -q "service-mesh"; then
     log_info "✓ Prometheus rules deployed"
   else
     log_warn "⚠ Prometheus rules not found"
   fi
   
-  if kubectl get servicemonitors | grep -E "istio-mesh|jaeger|kiali" > /dev/null; then
+  if kubectl get servicemonitors --all-namespaces --no-headers | grep -Eq "istio-mesh|jaeger|kiali"; then
     log_info "✓ ServiceMonitors deployed"
   else
     log_warn "⚠ ServiceMonitors not found"
@@ -208,7 +208,7 @@ main() {
     exit 1
   fi
   
-  if ! kubectl get ns $NAMESPACE_MONITORING > /dev/null 2>&1; then
+  if ! kubectl get ns "$NAMESPACE_MONITORING" > /dev/null 2>&1; then
     log_error "Monitoring namespace not found. Run Phase 8 deployment first."
     exit 1
   fi
