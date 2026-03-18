@@ -4,6 +4,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::Path;
 
+use fingerprint_parsers::packet_capture::PacketParser;
+
 #[derive(Debug)]
 struct ExpectedResult {
     browser: String,
@@ -121,8 +123,7 @@ fn validate_capture(
     pcap_path: &Path,
     expected: &ExpectedResult,
 ) -> Result<ValidationResult, String> {
-    let packet_count =
-        fingerprint_core::packet_capture::PacketParser::count_pcap_packets(pcap_path)?;
+    let packet_count = PacketParser::count_pcap_packets(pcap_path)?;
 
     // Calculate confidence based on packet count and quality
     let confidence = if packet_count >= 50 {

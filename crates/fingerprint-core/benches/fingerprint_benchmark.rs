@@ -1,6 +1,7 @@
 /// Performance Benchmarks for Fingerprinting Framework
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
-use fingerprint_core::{grease, ja3_database::JA3Database, packet_capture::*, pcap_generator::*};
+use fingerprint_core::{grease, ja3_database::JA3Database};
+use fingerprint_parsers::{packet_capture::*, pcap_generator::*};
 
 fn first_packet_from_pcap(path: &std::path::Path) -> Vec<u8> {
     let mut first_packet = None;

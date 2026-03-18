@@ -2,7 +2,7 @@
 /// Tests captured browser traffic against expected fingerprints
 #[cfg(test)]
 mod real_traffic_validation {
-    use fingerprint_core::packet_capture::PacketParser;
+    use fingerprint_parsers::packet_capture::PacketParser;
     use serde::Deserialize;
     use std::collections::HashMap;
     use std::fs;

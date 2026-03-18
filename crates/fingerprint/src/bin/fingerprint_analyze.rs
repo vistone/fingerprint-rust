@@ -1,10 +1,10 @@
 /// PCAP Traffic Analyzer
 /// Analyzes captured browser traffic and generates fingerprint reports
 use fingerprint_core::ja3_database::{BrowserMatch, JA3Database};
-use fingerprint_core::packet_capture::*;
 use fingerprint_core::signature::ClientHelloSignature;
 use fingerprint_core::tls_parser::find_client_hello;
 use fingerprint_core::{find_settings_frame, Http2SettingsMatcher};
+use fingerprint_parsers::packet_capture::*;
 use std::collections::HashMap;
 use std::fs;
 use std::path::Path;

@@ -1099,6 +1099,7 @@ dependencies = [
  "fingerprint-dns",
  "fingerprint-headers",
  "fingerprint-http",
+ "fingerprint-parsers",
  "fingerprint-profiles",
  "fingerprint-tls",
  "hex",

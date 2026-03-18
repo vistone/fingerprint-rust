@@ -1,8 +1,8 @@
 //! End-to-End Integration Tests
 //! Tests the complete fingerprinting pipeline from PCAP → Browser Detection
 
-use fingerprint_core::packet_capture::PacketParser;
-use fingerprint_core::pcap_generator::*;
+use fingerprint_parsers::packet_capture::PacketParser;
+use fingerprint_parsers::pcap_generator::*;
 use std::fs;
 
 fn first_packet_data(pcap_path: &str) -> Vec<u8> {

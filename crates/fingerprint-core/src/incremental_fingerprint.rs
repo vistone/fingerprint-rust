@@ -1,8 +1,10 @@
-use crate::packet_capture::{ParsedPacket, ParsedTcpOption, ParsedTcpOptionKind};
 use crate::tcp::TcpFingerprint;
 use crate::tcp_handshake::{
     AckCharacteristics, IpCharacteristics, SynAckCharacteristics, SynCharacteristics, TcpFlags,
     TcpHandshakeAnalyzer, TcpHandshakeFingerprint, TcpOption, TcpOptionType,
+};
+use fingerprint_parsers::packet_capture::{
+    Ipv4Header, ParsedPacket, ParsedTcpOption, ParsedTcpOptionKind,
 };
 
 #[derive(Debug, Clone)]
@@ -173,7 +175,7 @@ impl IncrementalTcpFingerprint {
     }
 }
 
-fn build_ip_characteristics(ipv4: &crate::packet_capture::Ipv4Header) -> IpCharacteristics {
+fn build_ip_characteristics(ipv4: &Ipv4Header) -> IpCharacteristics {
     IpCharacteristics {
         ttl: ipv4.ttl,
         dont_fragment: ipv4.df_flag(),
@@ -286,7 +288,7 @@ fn is_common_initial_ttl(ttl: u8) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::packet_capture::PacketParser;
+    use fingerprint_parsers::packet_capture::PacketParser;
 
     struct TestTcpFrame {
         src_ip: [u8; 4],

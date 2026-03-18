@@ -56,8 +56,6 @@ pub mod jarm;
 pub mod metadata;
 #[cfg(feature = "service-metrics")]
 pub mod metrics; // Prometheus metrics collection
-pub mod packet_capture;
-pub mod pcap_generator;
 pub mod pqc; // Post-Quantum Cryptography detection
 #[cfg(feature = "service-rate-limiting")]
 pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
@@ -144,11 +142,6 @@ pub use http2_frame_parser::{
     Http2SettingsMatcher, Http2WindowUpdateFrame, HTTP2_PREFACE,
 };
 pub use incremental_fingerprint::{IncrementalFingerprintResult, IncrementalTcpFingerprint};
-pub use packet_capture::{
-    EthernetHeader, Ipv4Header, Ipv6Header, NetworkProtocol, PacketFlowAnalyzer, PacketParser,
-    ParsedPacket, ParsedTcpOption, ParsedTcpOptionKind, PcapGlobalHeader, PcapPacketHeader,
-    TcpFlow, TcpHeader, TransportProtocol, UdpHeader,
-};
 
 // TCP related
 pub use tcp::{TcpFingerprint, TcpProfile};
