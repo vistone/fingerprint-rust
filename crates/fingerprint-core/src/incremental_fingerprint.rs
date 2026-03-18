@@ -3,9 +3,118 @@ use crate::tcp_handshake::{
     AckCharacteristics, IpCharacteristics, SynAckCharacteristics, SynCharacteristics, TcpFlags,
     TcpHandshakeAnalyzer, TcpHandshakeFingerprint, TcpOption, TcpOptionType,
 };
-use fingerprint_parsers::packet_capture::{
-    Ipv4Header, ParsedPacket, ParsedTcpOption, ParsedTcpOptionKind,
-};
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct IncrementalIpv4Packet {
+    pub ttl: u8,
+    pub dont_fragment: bool,
+    pub identification: u16,
+}
+
+impl IncrementalIpv4Packet {
+    pub fn new(ttl: u8, dont_fragment: bool, identification: u16) -> Self {
+        Self {
+            ttl,
+            dont_fragment,
+            identification,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct IncrementalTcpSegment {
+    pub window_size: u16,
+    pub data_offset_flags: u16,
+}
+
+impl IncrementalTcpSegment {
+    pub fn new(window_size: u16, data_offset_flags: u16) -> Self {
+        Self {
+            window_size,
+            data_offset_flags,
+        }
+    }
+
+    pub fn syn(&self) -> bool {
+        (self.data_offset_flags & 0x0002) != 0
+    }
+
+    pub fn ack(&self) -> bool {
+        (self.data_offset_flags & 0x0010) != 0
+    }
+
+    pub fn fin(&self) -> bool {
+        (self.data_offset_flags & 0x0001) != 0
+    }
+
+    pub fn rst(&self) -> bool {
+        (self.data_offset_flags & 0x0004) != 0
+    }
+
+    pub fn psh(&self) -> bool {
+        (self.data_offset_flags & 0x0008) != 0
+    }
+
+    pub fn urg(&self) -> bool {
+        (self.data_offset_flags & 0x0020) != 0
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum IncrementalTcpOptionKind {
+    EndOfList,
+    NoOperation,
+    MSS,
+    WindowScale,
+    SackPermitted,
+    Timestamp,
+    TcpFastOpen,
+    Unknown(u8),
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IncrementalTcpOption {
+    pub kind: IncrementalTcpOptionKind,
+    pub length: u8,
+    pub data: Vec<u8>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct IncrementalPacket {
+    pub ipv4: Option<IncrementalIpv4Packet>,
+    pub tcp: Option<IncrementalTcpSegment>,
+    pub tcp_options: Vec<IncrementalTcpOption>,
+}
+
+impl IncrementalPacket {
+    pub fn new(
+        ipv4: Option<IncrementalIpv4Packet>,
+        tcp: Option<IncrementalTcpSegment>,
+        tcp_options: Vec<IncrementalTcpOption>,
+    ) -> Self {
+        Self {
+            ipv4,
+            tcp,
+            tcp_options,
+        }
+    }
+
+    pub fn is_syn(&self) -> bool {
+        self.tcp.as_ref().is_some_and(IncrementalTcpSegment::syn)
+    }
+
+    pub fn is_ack(&self) -> bool {
+        self.tcp.as_ref().is_some_and(IncrementalTcpSegment::ack)
+    }
+
+    pub fn is_syn_ack(&self) -> bool {
+        self.is_syn() && self.is_ack()
+    }
+
+    pub fn is_rst(&self) -> bool {
+        self.tcp.as_ref().is_some_and(IncrementalTcpSegment::rst)
+    }
+}
 
 #[derive(Debug, Clone)]
 pub struct IncrementalFingerprintResult {
@@ -33,7 +142,7 @@ impl IncrementalTcpFingerprint {
         Self::default()
     }
 
-    pub fn update(&mut self, packet: &ParsedPacket) -> Result<(), String> {
+    pub fn update(&mut self, packet: &IncrementalPacket) -> Result<(), String> {
         let tcp = packet
             .tcp
             .as_ref()
@@ -140,7 +249,7 @@ impl IncrementalTcpFingerprint {
         }
     }
 
-    fn evaluate_syn(&mut self, packet: &ParsedPacket, syn: &SynCharacteristics) {
+    fn evaluate_syn(&mut self, packet: &IncrementalPacket, syn: &SynCharacteristics) {
         if syn.window_size == 0 {
             self.raise_alert("zero_window_on_syn", 0.45);
         }
@@ -175,16 +284,16 @@ impl IncrementalTcpFingerprint {
     }
 }
 
-fn build_ip_characteristics(ipv4: &Ipv4Header) -> IpCharacteristics {
+fn build_ip_characteristics(ipv4: &IncrementalIpv4Packet) -> IpCharacteristics {
     IpCharacteristics {
         ttl: ipv4.ttl,
-        dont_fragment: ipv4.df_flag(),
+        dont_fragment: ipv4.dont_fragment,
         ip_id: ipv4.identification as u32,
         ip_id_increment: None,
     }
 }
 
-fn build_tcp_flags(packet: &ParsedPacket) -> TcpFlags {
+fn build_tcp_flags(packet: &IncrementalPacket) -> TcpFlags {
     let tcp = packet.tcp.as_ref().expect("tcp packet already validated");
     TcpFlags {
         syn: tcp.syn(),
@@ -192,54 +301,56 @@ fn build_tcp_flags(packet: &ParsedPacket) -> TcpFlags {
         fin: tcp.fin(),
         rst: tcp.rst(),
         psh: tcp.psh(),
-        urg: (tcp.data_offset_flags & 0x0020) != 0,
+        urg: tcp.urg(),
     }
 }
 
-fn option_order(options: &[ParsedTcpOption]) -> String {
+fn option_order(options: &[IncrementalTcpOption]) -> String {
     options
         .iter()
         .filter_map(|option| match option.kind {
-            ParsedTcpOptionKind::MSS => Some("MSS"),
-            ParsedTcpOptionKind::WindowScale => Some("WSCALE"),
-            ParsedTcpOptionKind::SackPermitted => Some("SACK"),
-            ParsedTcpOptionKind::Timestamp => Some("Timestamp"),
-            ParsedTcpOptionKind::TcpFastOpen => Some("TFO"),
+            IncrementalTcpOptionKind::MSS => Some("MSS"),
+            IncrementalTcpOptionKind::WindowScale => Some("WSCALE"),
+            IncrementalTcpOptionKind::SackPermitted => Some("SACK"),
+            IncrementalTcpOptionKind::Timestamp => Some("Timestamp"),
+            IncrementalTcpOptionKind::TcpFastOpen => Some("TFO"),
             _ => None,
         })
         .collect::<Vec<_>>()
         .join(",")
 }
 
-fn map_options(options: &[ParsedTcpOption]) -> Vec<TcpOption> {
+fn map_options(options: &[IncrementalTcpOption]) -> Vec<TcpOption> {
     options
         .iter()
         .filter_map(|option| match option.kind {
-            ParsedTcpOptionKind::MSS if option.data.len() >= 2 => {
+            IncrementalTcpOptionKind::MSS if option.data.len() >= 2 => {
                 Some(TcpOption::mss(u16::from_be_bytes([
                     option.data[0],
                     option.data[1],
                 ])))
             }
-            ParsedTcpOptionKind::WindowScale if !option.data.is_empty() => {
+            IncrementalTcpOptionKind::WindowScale if !option.data.is_empty() => {
                 Some(TcpOption::wscale(option.data[0]))
             }
-            ParsedTcpOptionKind::SackPermitted => Some(TcpOption::sack_permitted()),
-            ParsedTcpOptionKind::Timestamp if option.data.len() >= 8 => Some(TcpOption::timestamp(
-                u32::from_be_bytes([
-                    option.data[0],
-                    option.data[1],
-                    option.data[2],
-                    option.data[3],
-                ]),
-                u32::from_be_bytes([
-                    option.data[4],
-                    option.data[5],
-                    option.data[6],
-                    option.data[7],
-                ]),
-            )),
-            ParsedTcpOptionKind::TcpFastOpen => Some(TcpOption {
+            IncrementalTcpOptionKind::SackPermitted => Some(TcpOption::sack_permitted()),
+            IncrementalTcpOptionKind::Timestamp if option.data.len() >= 8 => {
+                Some(TcpOption::timestamp(
+                    u32::from_be_bytes([
+                        option.data[0],
+                        option.data[1],
+                        option.data[2],
+                        option.data[3],
+                    ]),
+                    u32::from_be_bytes([
+                        option.data[4],
+                        option.data[5],
+                        option.data[6],
+                        option.data[7],
+                    ]),
+                ))
+            }
+            IncrementalTcpOptionKind::TcpFastOpen => Some(TcpOption {
                 option_type: TcpOptionType::TFO,
                 length: option.length,
                 value: if option.data.is_empty() {
@@ -288,7 +399,9 @@ fn is_common_initial_ttl(ttl: u8) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use fingerprint_parsers::packet_capture::PacketParser;
+    use fingerprint_parsers::packet_capture::{
+        PacketParser, ParsedPacket, ParsedTcpOption, ParsedTcpOptionKind,
+    };
 
     struct TestTcpFrame {
         src_ip: [u8; 4],
@@ -335,6 +448,40 @@ mod tests {
         frame
     }
 
+    fn option_kind_from_parsed(kind: ParsedTcpOptionKind) -> IncrementalTcpOptionKind {
+        match kind {
+            ParsedTcpOptionKind::EndOfList => IncrementalTcpOptionKind::EndOfList,
+            ParsedTcpOptionKind::NoOperation => IncrementalTcpOptionKind::NoOperation,
+            ParsedTcpOptionKind::MSS => IncrementalTcpOptionKind::MSS,
+            ParsedTcpOptionKind::WindowScale => IncrementalTcpOptionKind::WindowScale,
+            ParsedTcpOptionKind::SackPermitted => IncrementalTcpOptionKind::SackPermitted,
+            ParsedTcpOptionKind::Timestamp => IncrementalTcpOptionKind::Timestamp,
+            ParsedTcpOptionKind::TcpFastOpen => IncrementalTcpOptionKind::TcpFastOpen,
+            ParsedTcpOptionKind::Unknown(value) => IncrementalTcpOptionKind::Unknown(value),
+        }
+    }
+
+    fn option_from_parsed(option: &ParsedTcpOption) -> IncrementalTcpOption {
+        IncrementalTcpOption {
+            kind: option_kind_from_parsed(option.kind),
+            length: option.length,
+            data: option.data.clone(),
+        }
+    }
+
+    fn packet_from_parsed(packet: &ParsedPacket) -> IncrementalPacket {
+        IncrementalPacket::new(
+            packet.ipv4.as_ref().map(|ipv4| {
+                IncrementalIpv4Packet::new(ipv4.ttl, ipv4.df_flag(), ipv4.identification)
+            }),
+            packet
+                .tcp
+                .as_ref()
+                .map(|tcp| IncrementalTcpSegment::new(tcp.window_size, tcp.data_offset_flags)),
+            packet.tcp_options.iter().map(option_from_parsed).collect(),
+        )
+    }
+
     #[test]
     fn incremental_tcp_fingerprint_tracks_syn_before_flow_completion() {
         let syn_options = [0x02, 0x04, 0x05, 0xb4, 0x03, 0x03, 0x08, 0x04, 0x02];
@@ -351,9 +498,10 @@ mod tests {
             &syn_options,
         );
         let parsed = PacketParser::parse_packet(&syn, 1, 0).unwrap();
+        let observation = packet_from_parsed(&parsed);
 
         let mut incremental = IncrementalTcpFingerprint::new();
-        incremental.update(&parsed).unwrap();
+        incremental.update(&observation).unwrap();
 
         let current = incremental.current_fingerprint().unwrap();
         assert_eq!(current.ttl, 64);
@@ -411,7 +559,8 @@ mod tests {
         let mut incremental = IncrementalTcpFingerprint::new();
         for (idx, bytes) in packets.iter().enumerate() {
             let packet = PacketParser::parse_packet(bytes, idx as u32 + 1, 0).unwrap();
-            incremental.update(&packet).unwrap();
+            let observation = packet_from_parsed(&packet);
+            incremental.update(&observation).unwrap();
         }
 
         let result = incremental.finalize();
@@ -437,9 +586,10 @@ mod tests {
             &[],
         );
         let parsed = PacketParser::parse_packet(&ack, 1, 0).unwrap();
+        let observation = packet_from_parsed(&parsed);
 
         let mut incremental = IncrementalTcpFingerprint::new();
-        incremental.update(&parsed).unwrap();
+        incremental.update(&observation).unwrap();
 
         assert!(incremental.anomaly_score() >= 0.65);
         assert!(incremental
