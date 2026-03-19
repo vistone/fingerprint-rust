@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["NetworkProtocol","TransportProtocol"],"struct":["EthernetHeader","Ipv4Header","Ipv6Header","PacketFlowAnalyzer","PacketParser","ParsedPacket","PcapGlobalHeader","PcapPacketHeader","TcpFlow","TcpHeader","UdpHeader"]};

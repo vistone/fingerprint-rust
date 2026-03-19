@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["SecurityLevel"],"fn":["check_sdk_version_security","detect_sdk_from_user_agent"]};

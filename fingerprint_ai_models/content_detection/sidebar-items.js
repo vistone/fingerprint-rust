@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PatternType"],"fn":["detect_ai_content"],"struct":["ContentFingerprint","ContentMetadata","DetectedPattern"]};

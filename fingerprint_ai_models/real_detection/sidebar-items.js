@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["RealImageAnalysis","RealImageAnalyzer","RealTextAnalysis","RealTextAnalyzer"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AnomalyClassification","BehaviorClass"],"mod":["pretrained_models"],"struct":["AdvancedAnomalyDetector","AnomalyDetectionResult","BehaviorClassifier","FingerprintMatcher","FingerprintVector"]};

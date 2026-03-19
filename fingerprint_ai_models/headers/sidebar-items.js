@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"fn":["detect_from_headers"]};

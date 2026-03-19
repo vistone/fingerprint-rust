@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["CacheError","CacheTTL","CacheTier"],"struct":["Cache","CacheStats","DistributedLock","LockGuard"],"type":["CacheResult"]};

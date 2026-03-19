@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["PreTrainedModel"],"struct":["EnsemblePredictor","ModelMetrics","ModelPrediction","PreTrainedModelManager"]};

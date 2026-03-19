@@ -1,0 +1,1 @@
+searchState.loadedDescShard("gateway", 0, "API Gateway binary")

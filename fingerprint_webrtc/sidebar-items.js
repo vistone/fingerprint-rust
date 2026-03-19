@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ConnectionState","WebRTCError"],"struct":["CandidateStats","WebRTCAnalyzer","WebRTCFingerprint","WebRTCLeakReport","WebRTCProtection"]};

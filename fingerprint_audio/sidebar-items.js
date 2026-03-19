@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["AudioError"],"struct":["AudioAnalyzer","AudioFingerprint","AudioProfileLibrary"]};

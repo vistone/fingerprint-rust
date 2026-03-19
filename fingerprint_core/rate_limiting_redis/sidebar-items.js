@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["RedisBackendError"],"struct":["RedisConfig","RedisQuotaEntry","RedisRateLimitBackend"],"type":["RedisResult"]};
