@@ -233,10 +233,11 @@ impl CacheBenchmark {
     }
 
     /// Benchmark cache set operation
-    pub async fn benchmark_set<F, Fut>(&mut self, mut f: F)
+    pub async fn benchmark_set<F, Fut, E>(&mut self, mut f: F)
     where
         F: FnMut() -> Fut,
-        Fut: std::future::Future<Output = Result<(), crate::cache::CacheError>>,
+        Fut: std::future::Future<Output = Result<(), E>>,
+        E: std::error::Error,
     {
         for i in 0..self.iterations {
             let start = Instant::now();

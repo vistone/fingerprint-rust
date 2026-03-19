@@ -49,7 +49,7 @@
 //! ### As a binary
 //!
 //! ```bash
-//! cargo run --bin gateway --release
+//! cargo run --bin gateway --profile release-service
 //! ```
 
 #![warn(missing_docs)]
@@ -96,13 +96,19 @@ pub use rate_limit::RateLimiter;
 /// ```
 pub async fn run_server(config: GatewayConfig) -> Result<()> {
     // Initialize tracing
-    tracing_subscriber::fmt()
+    if let Err(err) = tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
                 .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
         )
         .json()
-        .init();
+        .try_init()
+    {
+        eprintln!(
+            "tracing subscriber already initialized or unavailable: {}",
+            err
+        );
+    }
 
     info!(
         "Starting fingerprint-gateway v{}",

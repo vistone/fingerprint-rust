@@ -18,6 +18,10 @@
 /// - HTTP headers extraction
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use std::fs::File;
+use std::path::Path;
+
+use pcap_file::pcap::PcapReader;
 
 /// PCAP global header (for PCAP file format)
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -213,6 +217,27 @@ impl TcpHeader {
     }
 }
 
+/// Parsed TCP option kind.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub enum ParsedTcpOptionKind {
+    EndOfList,
+    NoOperation,
+    MSS,
+    WindowScale,
+    SackPermitted,
+    Timestamp,
+    TcpFastOpen,
+    Unknown(u8),
+}
+
+/// Parsed TCP option extracted from a packet.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ParsedTcpOption {
+    pub kind: ParsedTcpOptionKind,
+    pub length: u8,
+    pub data: Vec<u8>,
+}
+
 /// UDP header
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UdpHeader {
@@ -271,12 +296,22 @@ pub struct ParsedPacket {
     pub transport_protocol: TransportProtocol,
     /// TCP header (if TCP)
     pub tcp: Option<TcpHeader>,
+    /// Parsed TCP options (if TCP)
+    pub tcp_options: Vec<ParsedTcpOption>,
     /// UDP header (if UDP)
     pub udp: Option<UdpHeader>,
     /// Payload data
     pub payload: Vec<u8>,
     /// Total packet size (bytes)
     pub total_size: usize,
+}
+
+/// Streamed PCAP packet view.
+pub struct PcapPacketView<'a> {
+    pub timestamp_sec: u32,
+    pub timestamp_usec: u32,
+    pub original_len: u32,
+    pub data: &'a [u8],
 }
 
 impl ParsedPacket {
@@ -591,6 +626,32 @@ impl PacketParser {
         Some((tcp, &data[header_len..]))
     }
 
+    /// Parse a TCP segment including its options and payload.
+    pub fn parse_tcp_with_options(data: &[u8]) -> Option<(TcpHeader, Vec<ParsedTcpOption>, &[u8])> {
+        if data.len() < 20 {
+            return None;
+        }
+
+        let tcp = TcpHeader {
+            src_port: u16::from_be_bytes([data[0], data[1]]),
+            dst_port: u16::from_be_bytes([data[2], data[3]]),
+            sequence_number: u32::from_be_bytes([data[4], data[5], data[6], data[7]]),
+            acknowledgment_number: u32::from_be_bytes([data[8], data[9], data[10], data[11]]),
+            data_offset_flags: u16::from_be_bytes([data[12], data[13]]),
+            window_size: u16::from_be_bytes([data[14], data[15]]),
+            checksum: u16::from_be_bytes([data[16], data[17]]),
+            urgent_pointer: u16::from_be_bytes([data[18], data[19]]),
+        };
+
+        let header_len = tcp.data_offset() as usize * 4;
+        if data.len() < header_len || header_len < 20 {
+            return None;
+        }
+
+        let options = Self::parse_tcp_options(&data[20..header_len]);
+        Some((tcp, options, &data[header_len..]))
+    }
+
     /// Parse UDP packet
     pub fn parse_udp(data: &[u8]) -> Option<(UdpHeader, &[u8])> {
         if data.len() < 8 {
@@ -610,6 +671,219 @@ impl PacketParser {
         }
 
         Some((udp, &data[8..8 + payload_len]))
+    }
+
+    /// Parse a full packet into a structured representation.
+    pub fn parse_packet(
+        data: &[u8],
+        timestamp_sec: u32,
+        timestamp_usec: u32,
+    ) -> Option<ParsedPacket> {
+        let total_size = data.len();
+        let (ethernet, network_payload) = Self::parse_ethernet(data)?;
+        match ethernet.ether_type {
+            0x0800 => {
+                let (ipv4, transport_payload) = Self::parse_ipv4(network_payload)?;
+                match ipv4.protocol {
+                    6 => {
+                        let (tcp, tcp_options, payload) =
+                            Self::parse_tcp_with_options(transport_payload)?;
+                        Some(ParsedPacket {
+                            timestamp_sec,
+                            timestamp_usec,
+                            ethernet: Some(ethernet),
+                            network_protocol: NetworkProtocol::IPv4,
+                            ipv4: Some(ipv4),
+                            ipv6: None,
+                            transport_protocol: TransportProtocol::TCP,
+                            tcp: Some(tcp),
+                            tcp_options,
+                            udp: None,
+                            payload: payload.to_vec(),
+                            total_size,
+                        })
+                    }
+                    17 => {
+                        let (udp, payload) = Self::parse_udp(transport_payload)?;
+                        Some(ParsedPacket {
+                            timestamp_sec,
+                            timestamp_usec,
+                            ethernet: Some(ethernet),
+                            network_protocol: NetworkProtocol::IPv4,
+                            ipv4: Some(ipv4),
+                            ipv6: None,
+                            transport_protocol: TransportProtocol::UDP,
+                            tcp: None,
+                            tcp_options: Vec::new(),
+                            udp: Some(udp),
+                            payload: payload.to_vec(),
+                            total_size,
+                        })
+                    }
+                    protocol => Some(ParsedPacket {
+                        timestamp_sec,
+                        timestamp_usec,
+                        ethernet: Some(ethernet),
+                        network_protocol: NetworkProtocol::IPv4,
+                        ipv4: Some(ipv4),
+                        ipv6: None,
+                        transport_protocol: TransportProtocol::Unknown(protocol),
+                        tcp: None,
+                        tcp_options: Vec::new(),
+                        udp: None,
+                        payload: transport_payload.to_vec(),
+                        total_size,
+                    }),
+                }
+            }
+            0x86dd => {
+                let (ipv6, transport_payload) = Self::parse_ipv6(network_payload)?;
+                let next_header = ipv6.next_header;
+                Some(ParsedPacket {
+                    timestamp_sec,
+                    timestamp_usec,
+                    ethernet: Some(ethernet),
+                    network_protocol: NetworkProtocol::IPv6,
+                    ipv4: None,
+                    ipv6: Some(ipv6),
+                    transport_protocol: TransportProtocol::Unknown(next_header),
+                    tcp: None,
+                    tcp_options: Vec::new(),
+                    udp: None,
+                    payload: transport_payload.to_vec(),
+                    total_size,
+                })
+            }
+            ether_type => Some(ParsedPacket {
+                timestamp_sec,
+                timestamp_usec,
+                ethernet: Some(ethernet),
+                network_protocol: NetworkProtocol::Unknown((ether_type >> 8) as u8),
+                ipv4: None,
+                ipv6: None,
+                transport_protocol: TransportProtocol::Unknown(0),
+                tcp: None,
+                tcp_options: Vec::new(),
+                udp: None,
+                payload: network_payload.to_vec(),
+                total_size,
+            }),
+        }
+    }
+
+    fn parse_ipv6(data: &[u8]) -> Option<(Ipv6Header, &[u8])> {
+        if data.len() < 40 {
+            return None;
+        }
+
+        let ipv6 = Ipv6Header {
+            version_traffic_class_high: data[0],
+            traffic_class_flow_label_high: data[1],
+            flow_label: u16::from_be_bytes([data[2], data[3]]),
+            payload_length: u16::from_be_bytes([data[4], data[5]]),
+            next_header: data[6],
+            hop_limit: data[7],
+            src_ip: data[8..24].try_into().ok()?,
+            dst_ip: data[24..40].try_into().ok()?,
+        };
+
+        Some((ipv6, &data[40..]))
+    }
+
+    fn parse_tcp_options(data: &[u8]) -> Vec<ParsedTcpOption> {
+        let mut options = Vec::new();
+        let mut idx = 0usize;
+
+        while idx < data.len() {
+            let kind = data[idx];
+            match kind {
+                0 => {
+                    options.push(ParsedTcpOption {
+                        kind: ParsedTcpOptionKind::EndOfList,
+                        length: 1,
+                        data: Vec::new(),
+                    });
+                    break;
+                }
+                1 => {
+                    options.push(ParsedTcpOption {
+                        kind: ParsedTcpOptionKind::NoOperation,
+                        length: 1,
+                        data: Vec::new(),
+                    });
+                    idx += 1;
+                }
+                _ => {
+                    if idx + 1 >= data.len() {
+                        break;
+                    }
+                    let length = data[idx + 1] as usize;
+                    if length < 2 || idx + length > data.len() {
+                        break;
+                    }
+
+                    let payload = data[idx + 2..idx + length].to_vec();
+                    options.push(ParsedTcpOption {
+                        kind: match kind {
+                            2 => ParsedTcpOptionKind::MSS,
+                            3 => ParsedTcpOptionKind::WindowScale,
+                            4 => ParsedTcpOptionKind::SackPermitted,
+                            8 => ParsedTcpOptionKind::Timestamp,
+                            34 => ParsedTcpOptionKind::TcpFastOpen,
+                            other => ParsedTcpOptionKind::Unknown(other),
+                        },
+                        length: length as u8,
+                        data: payload,
+                    });
+                    idx += length;
+                }
+            }
+        }
+
+        options
+    }
+
+    /// Stream packets from a PCAP file without loading the entire file into memory.
+    pub fn stream_pcap_file<P, F>(path: P, mut on_packet: F) -> Result<(), String>
+    where
+        P: AsRef<Path>,
+        F: FnMut(PcapPacketView<'_>) -> Result<(), String>,
+    {
+        let file = File::open(path.as_ref()).map_err(|e| {
+            format!(
+                "Failed to open PCAP file {}: {}",
+                path.as_ref().display(),
+                e
+            )
+        })?;
+        let mut reader =
+            PcapReader::new(file).map_err(|e| format!("Failed to parse PCAP file: {}", e))?;
+
+        while let Some(packet) = reader.next_packet() {
+            let packet = packet.map_err(|e| format!("Failed to read PCAP packet: {}", e))?;
+            let packet_view = PcapPacketView {
+                timestamp_sec: packet.timestamp.as_secs() as u32,
+                timestamp_usec: packet.timestamp.subsec_micros(),
+                original_len: packet.orig_len,
+                data: &packet.data,
+            };
+            on_packet(packet_view)?;
+        }
+
+        Ok(())
+    }
+
+    /// Count packets in a PCAP file using streaming IO.
+    pub fn count_pcap_packets<P>(path: P) -> Result<usize, String>
+    where
+        P: AsRef<Path>,
+    {
+        let mut count = 0usize;
+        Self::stream_pcap_file(path, |_| {
+            count += 1;
+            Ok(())
+        })?;
+        Ok(count)
     }
 }
 
@@ -738,5 +1012,57 @@ mod tests {
         assert_eq!(tcp.dst_port, 60072); // 0xea << 8 | 0xa8
         assert_eq!(tcp.data_offset(), 5);
         assert!(tcp.syn());
+    }
+
+    #[test]
+    fn test_parse_tcp_with_options_extracts_mss_and_window_scale() {
+        let data = [
+            0x00, 0x50, 0xea, 0xa8, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x70, 0x02,
+            0xfa, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x02, 0x04, 0x05, 0xb4, 0x03, 0x03, 0x08, 0x01,
+        ];
+
+        let (_, options, payload) = PacketParser::parse_tcp_with_options(&data).unwrap();
+        assert!(payload.is_empty());
+        assert_eq!(options.len(), 3);
+        assert_eq!(options[0].kind, ParsedTcpOptionKind::MSS);
+        assert_eq!(options[1].kind, ParsedTcpOptionKind::WindowScale);
+    }
+
+    #[test]
+    fn test_parse_packet_builds_structured_tcp_packet() {
+        let packet = [
+            0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x08, 0x00,
+            0x45, 0x00, 0x00, 0x30, 0x00, 0x00, 0x40, 0x00, 0x40, 0x06, 0x00, 0x00, 192, 168, 1, 1,
+            192, 168, 1, 2, 0x00, 0x50, 0xea, 0xa8, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
+            0x70, 0x02, 0xfa, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x02, 0x04, 0x05, 0xb4, 0x03, 0x03,
+            0x08, 0x01,
+        ];
+
+        let parsed = PacketParser::parse_packet(&packet, 1, 2).unwrap();
+        assert_eq!(parsed.timestamp_sec, 1);
+        assert_eq!(parsed.network_protocol, NetworkProtocol::IPv4);
+        assert_eq!(parsed.transport_protocol, TransportProtocol::TCP);
+        assert_eq!(parsed.tcp_options.len(), 3);
+        assert!(parsed.is_syn());
+    }
+
+    #[test]
+    fn test_stream_pcap_file() {
+        let path = std::env::temp_dir().join("packet_capture_stream_test.pcap");
+        let mut generator = crate::pcap_generator::PcapGenerator::new();
+        generator.add_chrome_syn();
+        generator.write_to_file(&path).unwrap();
+
+        let mut packet_count = 0usize;
+        PacketParser::stream_pcap_file(&path, |packet| {
+            packet_count += 1;
+            assert!(!packet.data.is_empty());
+            Ok(())
+        })
+        .unwrap();
+
+        assert_eq!(packet_count, 1);
+
+        std::fs::remove_file(path).unwrap();
     }
 }

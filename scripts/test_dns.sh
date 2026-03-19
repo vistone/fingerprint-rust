@@ -3,7 +3,7 @@
 # DNS 模块测试脚本
 # 测试 DNS 预解析库的功能
 
-set -e
+set -euo pipefail
 
 echo "🔍 DNS 模块测试脚本"
 echo "===================="
@@ -25,13 +25,13 @@ TESTS_FAILED=0
 
 # 测试函数
 run_test() {
-    local test_name=$1
-    local test_command=$2
+    local test_name="$1"
+    shift
     
     echo -e "${BLUE}📡 测试: ${test_name}${NC}"
     echo "----------------------------------------"
     
-    if eval "$test_command" 2>&1; then
+    if "$@" 2>&1; then
         echo -e "${GREEN}✅ ${test_name} - 通过${NC}"
         ((TESTS_PASSED++))
         return 0
@@ -44,20 +44,20 @@ run_test() {
 
 # 测试 1: IPInfo.io 集成
 run_test "IPInfo.io 集成" \
-    "cargo run --example test_ipinfo --features ${FEATURES}"
+    cargo run --example test_ipinfo --features "$FEATURES"
 
 echo ""
 
 # 测试 2: DNS 服务器收集器（从 public-dns.info 获取）
 run_test "DNS 服务器收集器 (public-dns.info)" \
-    "cargo run --example test_collector_only --features ${FEATURES}"
+    cargo run --example test_collector_only --features "$FEATURES"
 
 echo ""
 
 # 测试 3: 单元测试
 echo -e "${BLUE}📡 测试: DNS 模块单元测试${NC}"
 echo "----------------------------------------"
-if cargo test --features ${FEATURES} --lib dns 2>&1; then
+if cargo test --features "$FEATURES" --lib dns 2>&1; then
     echo -e "${GREEN}✅ DNS 模块单元测试 - 通过${NC}"
     ((TESTS_PASSED++))
 else
@@ -70,7 +70,7 @@ echo ""
 # 测试 4: 编译检查
 echo -e "${BLUE}📡 测试: 编译检查${NC}"
 echo "----------------------------------------"
-if cargo check --features ${FEATURES} 2>&1 | grep -q "Finished"; then
+if cargo check --features "$FEATURES" 2>&1; then
     echo -e "${GREEN}✅ 编译检查 - 通过${NC}"
     ((TESTS_PASSED++))
 else

@@ -175,7 +175,7 @@ fn test_https_get_request() {
 
     // 3. send HTTPS 请求
     let start = Instant::now();
-    let response = client.get("https:// httpbin.org/get").expect("请求failure");
+    let response = client.get("https://httpbin.org/get").expect("请求failure");
     let duration = start.elapsed();
 
     // 4. validate响应

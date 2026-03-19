@@ -4,7 +4,7 @@
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
-use std::hash::{Hash, Hasher};
+use crate::stable_hash::StableHashBuilder;
 
 /// TCP configuration
 /// for configuring TCP parameters for connections
@@ -300,12 +300,11 @@ impl Fingerprint for TcpFingerprint {
     }
 
     fn hash(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        let mut hasher = DefaultHasher::new();
-        self.ttl.hash(&mut hasher);
-        self.window_size.hash(&mut hasher);
-        self.mss.hash(&mut hasher);
-        self.window_scale.hash(&mut hasher);
+        let mut hasher = StableHashBuilder::new();
+        hasher.write_u8(self.ttl);
+        hasher.write_u16(self.window_size);
+        hasher.write_option_u16(self.mss);
+        hasher.write_option_u8(self.window_scale);
         hasher.finish()
     }
 

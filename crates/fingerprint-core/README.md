@@ -1,178 +1,94 @@
 # fingerprint-core
 
-核心类型和基础工具函数库，提供 fingerprint-rust 项目的所有基础设施。
+`fingerprint-core` contains the shared low-level building blocks of the workspace. It is not a single high-level fingerprint engine. Instead, it exposes reusable types, parsers, fingerprint formats, utility functions, cache helpers, metrics, and packet-analysis primitives.
 
-## 功能特性
+## What Lives Here
 
-- ✅ 基础数据结构定义（FingerprintData, BrowserInfo, etc.）
-- ✅ 通用工具函数库
-- ✅ 指纹计算的抽象接口
-- ✅ 核心算法实现
-- 🔧 可选的 Redis 缓存支持（`redis` 特性）
-- 🔧 可选的数据库支持（`database` 特性）
+- browser and operating system types
+- fingerprint traits and metadata
+- JA3, JA4, JA4H, JA4L, JA4S, JARM, HASSH, and related helpers
+- HTTP/2 frame parsing and HPACK analysis
+- TCP fingerprinting and packet capture utilities
+- cache, metrics, and optional Redis-backed helpers
+- rate limiting primitives shared by service layers
 
-## 快速开始
-
-### 添加到 Cargo.toml
+## Quick Start
 
 ```toml
 [dependencies]
-fingerprint-core = { path = "../fingerprint-core" }
+fingerprint-core = "2.1"
 ```
-
-### 基本用法
 
 ```rust
-use fingerprint_core::{FingerprintData, BrowserInfo};
+use fingerprint_core::{infer_browser_from_profile_name, is_mobile_profile, BrowserType, OperatingSystem};
 
-// 创建浏览器信息
-let info = BrowserInfo::new("Chrome", "120.0", "Windows");
+assert_eq!(BrowserType::from_str("chrome"), Some(BrowserType::Chrome));
+assert_eq!(OperatingSystem::Windows10.as_str(), "Windows NT 10.0; Win64; x64");
 
-// 创建指纹数据
-let fingerprint = FingerprintData::new(info);
-println!("Fingerprint ID: {}", fingerprint.id);
+let (browser, version) = infer_browser_from_profile_name("chrome_133");
+assert_eq!(browser, "chrome");
+assert_eq!(version, "133");
+assert!(!is_mobile_profile("chrome_133"));
 ```
 
-## API 概览
+## Main Public Areas
 
-### 主要类型
+| Area | Representative exports |
+| --- | --- |
+| Core types | `BrowserType`, `OperatingSystem`, `UserAgentTemplate` |
+| Fingerprint traits | `Fingerprint`, `FingerprintComparator`, `FingerprintMetadata` |
+| TLS fingerprints | `JA3`, `JA3S`, `JA4`, `JA4H`, `JA4L`, `JA4S`, `JA4T`, `JA4TS`, `JA4X`, `Jarm` |
+| SSH fingerprints | `HASSH`, `HASSHServer`, `JA4SSH` |
+| HTTP analysis | `HttpFingerprint`, `HpackAnalyzer`, `Http2SettingsFrame`, `Http2SettingsMatcher` |
+| Packet/TCP analysis | `PacketParser`, `TcpFingerprint`, `TcpHandshakeAnalyzer` |
+| Cache and metrics | `Cache`, `CacheStats`, `PrometheusMetrics` |
+| Rate limiting | `RateLimiter`, `QuotaTier`, `RateLimitResponse` |
 
-| 类型 | 说明 |
-|-----|------|
-| `FingerprintData` | 指纹数据的核心结构 |
-| `BrowserInfo` | 浏览器信息容器 |
-| `FingerprintError` | 统一错误类型 |
-| `FingerprintResult` | 操作结果类型别名 |
+## Features
 
-### 主要函数
-
-| 函数 | 说明 |
-|-----|------|
-| `hash_fingerprint()` | 计算指纹哈希值 |
-| `normalize_data()` | 标准化指纹数据 |
-| `validate_fingerprint()` | 验证指纹有效性 |
-
-## 项目结构
-
-```
-src/
-├── lib.rs              # 库入口，包含模块声明
-├── types.rs            # 基础数据类型定义
-├── error.rs            # 错误类型和处理
-├── utils.rs            # 工具函数库
-├── hash.rs             # 哈希算法实现
-└── cache.rs            # 缓存支持（可选）
-```
-
-## 依赖关系
-
-| 依赖 | 用途 | 版本 |
-|-----|------|------|
-| `serde` | 序列化/反序列化 | ^1.0 |
-| `sha2` | SHA-256 哈希 | ^0.10 |
-| `redis` | Redis 缓存（可选） | ^0.23 |
-
-## 可选特性
+Recommended Cargo features for this crate follow a layered model:
 
 ```toml
 [features]
 default = []
-redis = ["dep:redis"]
-database = ["sqlx"]
-connection-pool = ["deadpool"]
+service-runtime = ["service-cache", "service-rate-limiting"]
+service-observability = ["service-runtime", "service-metrics"]
+service-distributed = ["service-runtime", "redis-cache"]
+service-full = ["service-observability", "service-distributed"]
 ```
 
-启用特性示例：
+Notes:
+- `service-runtime` is the preferred baseline for service-style consumers.
+- `service-observability` adds metrics on top of the runtime layer.
+- `service-distributed` adds Redis-backed cache helpers on top of the runtime layer.
+- `service-full` is the canonical "all service capabilities" path.
+- The older granular flags `service-cache`, `service-metrics`, `service-rate-limiting`, and `redis-cache` remain available as compatibility escape hatches, but they are no longer the recommended public composition model.
+- CI now validates the layered feature set instead of trying to chase every theoretical combination.
+- This crate already contains a broad set of low-level modules, so consumers should depend on narrower crates when they only need a specific surface.
 
-```toml
-fingerprint-core = { path = "../fingerprint-core", features = ["redis", "database"] }
-```
+## Current Position In The Workspace
 
-## 使用示例
+- `fingerprint-core` is part of the stable workspace surface.
+- It is heavily reused by `fingerprint`, `fingerprint-tls`, `fingerprint-http`, `fingerprint-profiles`, `fingerprint-defense`, and `fingerprint-dns`.
+- It currently includes some service-oriented modules such as cache, metrics, and rate limiting in addition to pure algorithmic primitives.
 
-### 示例 1：基础指纹计算
+## What This README Intentionally Does Not Claim
 
-```rust
-use fingerprint_core::{FingerprintData, BrowserInfo};
+The following historical concepts are not current public APIs of this crate and are no longer documented here as supported entry points:
 
-let info = BrowserInfo {
-    user_agent: "Mozilla/5.0...".to_string(),
-    browser: "Chrome".to_string(),
-    version: "120.0".to_string(),
-    language: "en-US".to_string(),
-};
+- `FingerprintData`
+- `BrowserInfo::new(...)` in this crate
+- `database` and `connection-pool` Cargo features
+- a single all-in-one hash/normalize/validate facade API
 
-let fingerprint = FingerprintData::from_browser_info(&info)?;
-println!("Fingerprint: {:?}", fingerprint);
-```
+## Verification
 
-### 示例 2：使用缓存
+This crate is part of the default workspace and currently passes workspace `check`, `test --lib`, `fmt`, and `clippy` verification.
 
-```rust
-use fingerprint_core::cache::{Cache, InMemoryCache};
+## License
 
-let cache = InMemoryCache::new();
-let key = "browser_fp_123";
-
-// 存储
-cache.set(key, fingerprint_data)?;
-
-// 检索
-let cached = cache.get(key)?;
-```
-
-## 架构设计
-
-### 模块关系
-
-```
-┌─────────────────────────────┐
-│    fingerprint-core         │
-├─────────────────────────────┤
-│  Types Module               │
-│  ├─ FingerprintData        │
-│  ├─ BrowserInfo            │
-│  └─ Error Types            │
-├─────────────────────────────┤
-│  Utils Module               │
-│  ├─ Hash Functions         │
-│  ├─ Validation             │
-│  └─ Conversion             │
-├─────────────────────────────┤
-│  Cache Module (Optional)    │
-│  ├─ In-Memory Cache        │
-│  └─ Redis Cache            │
-└─────────────────────────────┘
-```
-
-## 性能指标
-
-- 指纹计算速度：< 1ms per fingerprint
-- 内存使用：约 2MB steady state
-- 缓存命中率：>95% (with caching enabled)
-
-## 局限性
-
-- 不支持动态 JavaScript 执行
-- 仅基于静态特征计算指纹
-- 对时间戳敏感，需要定期更新
-
-## 贡献指南
-
-欢迎提交 Issue 和 Pull Request！
-
-详见：[CONTRIBUTING.md](../../CONTRIBUTING.md)
-
-## 许可证
-
-本项目采用 MIT 许可证。详见：[LICENSE](../../LICENSE)
-
-## 相关文档
-
-- [Core API 文档](https://docs.rs/fingerprint-core)
-- [架构设计](../../docs/ARCHITECTURE.md)
-- [项目治理规范](../../PROJECT_GOVERNANCE.md)
+BSD-3-Clause. See [LICENSE](../../LICENSE).
 
 ---
 
-**最后更新：** 2026年2月14日
+**Last Updated:** 2026-03-18

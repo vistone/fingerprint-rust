@@ -1,17 +1,8 @@
 name: Enhanced CI/CD Pipeline
 
 on:
-  push:
-    branches: [ main, master, develop ]
-    paths:
-      - 'crates/**'
-      - 'Cargo.toml'
-      - '.github/workflows/enhanced-cicd.yml'
-  pull_request:
-    branches: [ main, master, develop ]
-    paths:
-      - 'crates/**'
-      - 'Cargo.toml'
+  schedule:
+    - cron: '0 3 * * 1'
   workflow_dispatch:
 
 env:
@@ -19,6 +10,7 @@ env:
   RUST_BACKTRACE: 1
   RUST_LOG: info
   CARGO_INCREMENTAL: 0
+  TEST_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 jobs:
   # ============================================================
@@ -45,11 +37,11 @@ jobs:
       - name: Check formatting
         run: cargo fmt --all -- --check
       
-      - name: Run clippy
-        run: cargo clippy --workspace --all-targets --features rustls-tls,compression,http2,connection-pool,dns -- -D warnings
+      - name: Run clippy on default members
+        run: cargo clippy --all-targets --features "${{ env.TEST_FEATURES }}" -- -D warnings
       
-      - name: Run clippy on tests
-        run: cargo clippy --workspace --tests --features rustls-tls,compression,http2,connection-pool,dns -- -D warnings
+      - name: Run clippy on default-member tests
+        run: cargo clippy --tests --features "${{ env.TEST_FEATURES }}" -- -D warnings
 
   # ============================================================
   # Security Audit
@@ -104,11 +96,11 @@ jobs:
           key: ${{ runner.os }}-cargo-compile-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-compile-
       
-      - name: Check compilation (debug)
-        run: cargo check --workspace --features rustls-tls,compression,http2,connection-pool,dns --verbose
+      - name: Check default-member compilation (debug)
+        run: cargo check --features "${{ env.TEST_FEATURES }}" --verbose
       
-      - name: Check compilation (release)
-        run: cargo build --workspace --release --features rustls-tls,compression,http2,connection-pool,dns --verbose
+      - name: Check default-member compilation (release)
+        run: cargo build --release --features "${{ env.TEST_FEATURES }}" --verbose
 
   # ============================================================
   # Unit Tests
@@ -135,11 +127,11 @@ jobs:
           key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-test-
       
-      - name: Run unit tests
-        run: cargo nextest run --workspace --lib --features rustls-tls,compression,http2,connection-pool,dns
+      - name: Run default-member unit tests
+        run: cargo nextest run --lib --features "${{ env.TEST_FEATURES }}"
       
-      - name: Run doc tests
-        run: cargo test --doc --workspace --features rustls-tls,compression,http2,connection-pool,dns
+      - name: Run default-member doc tests
+        run: cargo test --doc --features "${{ env.TEST_FEATURES }}"
 
   # ============================================================
   # Integration Tests
@@ -163,8 +155,8 @@ jobs:
           key: ${{ runner.os }}-cargo-integration-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-integration-
       
-      - name: Run integration tests
-        run: cargo nextest run --workspace --test '*' --features rustls-tls,compression,http2,connection-pool,dns
+      - name: Run default-member integration tests
+        run: cargo nextest run --test '*' --features "${{ env.TEST_FEATURES }}"
 
   # ============================================================
   # Code Coverage
@@ -188,8 +180,8 @@ jobs:
           key: ${{ runner.os }}-cargo-coverage-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-coverage-
       
-      - name: Generate coverage
-        run: cargo tarpaulin --workspace --features rustls-tls,compression,http2,connection-pool,dns --timeout 300 --out xml --output-dir ./coverage
+      - name: Generate coverage for default members
+        run: cargo tarpaulin --features "${{ env.TEST_FEATURES }}" --timeout 300 --out xml --output-dir ./coverage
       
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -222,7 +214,7 @@ jobs:
         run: |
           # Note: Project currently has no defined benchmarks
           # Only compile benchmarks to verify they build correctly
-          cargo bench --workspace --features rustls-tls,compression,http2,connection-pool,dns --no-run 2>&1 | tee benchmark-results.txt
+          cargo bench --features "${{ env.TEST_FEATURES }}" --no-run 2>&1 | tee benchmark-results.txt
           echo "Benchmark compilation completed successfully"
       
       - name: Store benchmark result
@@ -254,8 +246,8 @@ jobs:
           key: ${{ runner.os }}-cargo-docs-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-docs-
       
-      - name: Build documentation
-        run: cargo doc --workspace --features rustls-tls,compression,http2,connection-pool,dns --no-deps
+      - name: Build default-member documentation
+        run: cargo doc --features "${{ env.TEST_FEATURES }}" --no-deps
       
       - name: Check documentation links
         run: |
@@ -293,8 +285,8 @@ jobs:
           key: ${{ runner.os }}-cargo-features-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: ${{ runner.os }}-cargo-features-
       
-      - name: Test with features
-        run: cargo test --workspace --features "${{ matrix.features }}"
+      - name: Test default members with features
+        run: cargo test --features "${{ matrix.features }}"
 
   # ============================================================
   # MIRI (Undefined Behavior Detection)

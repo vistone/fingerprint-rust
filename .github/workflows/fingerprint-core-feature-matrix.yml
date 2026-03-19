@@ -1,0 +1,60 @@
+name: fingerprint-core Feature Matrix
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  feature-matrix:
+    name: fingerprint-core (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: default
+            features: ""
+          - name: legacy-rate-limiting
+            features: "service-rate-limiting"
+          - name: service-runtime
+            features: "service-runtime"
+          - name: service-observability
+            features: "service-observability"
+          - name: service-distributed
+            features: "service-distributed"
+          - name: service-full
+            features: "service-full"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-fingerprint-core-features-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-fingerprint-core-features-
+
+      - name: Check fingerprint-core
+        run: |
+          if [ -z "${{ matrix.features }}" ]; then
+            cargo check -p fingerprint-core
+          else
+            cargo check -p fingerprint-core --features "${{ matrix.features }}"
+          fi

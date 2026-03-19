@@ -13,6 +13,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  RELEASE_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 jobs:
   # ============================================================
@@ -33,13 +34,16 @@ jobs:
         run: cargo fmt --all -- --check
       
       - name: Run clippy
-        run: cargo clippy --workspace --features rustls-tls,compression,http2,connection-pool,dns -- -D warnings
+        run: cargo clippy --features "${{ env.RELEASE_FEATURES }}" -- -D warnings
       
       - name: Run tests
-        run: cargo test --workspace --features rustls-tls,compression,http2,connection-pool,dns
+        run: cargo test --features "${{ env.RELEASE_FEATURES }}"
       
       - name: Build release
-        run: cargo build --workspace --release --features rustls-tls,compression,http2,connection-pool,dns
+        run: cargo build --release --features "${{ env.RELEASE_FEATURES }}"
+
+      - name: Build gateway service profile
+        run: cargo build -p fingerprint-gateway --bin gateway --profile release-service
       
       - name: Generate changelog
         run: |
@@ -92,19 +96,26 @@ jobs:
       
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Build gateway service binary
+        run: cargo build -p fingerprint-gateway --bin gateway --profile release-service --target ${{ matrix.target }}
       
       - name: Create artifact (Unix)
         if: runner.os != 'Windows'
         run: |
           mkdir -p release-artifacts
-          tar -czf release-artifacts/${{ matrix.artifact }} -C target/${{ matrix.target }}/release fingerprint-gateway fingerprint
+          cp target/${{ matrix.target }}/release-service/gateway release-artifacts/fingerprint-gateway
+          cp target/${{ matrix.target }}/release/fingerprint release-artifacts/fingerprint
+          tar -czf release-artifacts/${{ matrix.artifact }} -C release-artifacts fingerprint-gateway fingerprint
           ls -la release-artifacts/
       
       - name: Create artifact (Windows)
         if: runner.os == 'Windows'
         run: |
           mkdir release-artifacts
-          powershell Compress-Archive -Path target/${{ matrix.target }}/release/*.exe -DestinationPath release-artifacts/${{ matrix.artifact }}
+          copy target\${{ matrix.target }}\release-service\gateway.exe release-artifacts\fingerprint-gateway.exe
+          copy target\${{ matrix.target }}\release\fingerprint.exe release-artifacts\fingerprint.exe
+          powershell Compress-Archive -Path release-artifacts\*.exe -DestinationPath release-artifacts\${{ matrix.artifact }}
           dir release-artifacts\
       
       - name: Upload artifacts

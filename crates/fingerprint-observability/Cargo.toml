@@ -1,0 +1,18 @@
+[package]
+name = "fingerprint-observability"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+categories.workspace = true
+description = "Metrics and observability integrations for fingerprint-rust"
+
+[dependencies]
+fingerprint-core = { path = "../fingerprint-core", features = ["service-rate-limiting"] }
+lazy_static = "1.4"
+prometheus = "0.14"
+serde_json.workspace = true

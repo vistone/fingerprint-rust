@@ -7,7 +7,21 @@
 # Includes verification steps and health checks
 #############################################################################
 
-set -e
+set -euo pipefail
+
+API_GATEWAY_NAMESPACE="${API_GATEWAY_NAMESPACE:-api-gateway}"
+CACHING_NAMESPACE="${CACHING_NAMESPACE:-caching}"
+MONITORING_NAMESPACE="${MONITORING_NAMESPACE:-monitoring}"
+KONG_ADMIN_PORT_FORWARD_PORT="${KONG_ADMIN_PORT_FORWARD_PORT:-8001}"
+KONG_STATUS_PORT_FORWARD_PORT="${KONG_STATUS_PORT_FORWARD_PORT:-8100}"
+KONG_ADMIN_INTERNAL_PORT="${KONG_ADMIN_INTERNAL_PORT:-8001}"
+KONG_STATUS_INTERNAL_PORT="${KONG_STATUS_INTERNAL_PORT:-8100}"
+KONG_RATE_LIMIT_PLUGIN_NAME="${KONG_RATE_LIMIT_PLUGIN_NAME:-rate-limiting}"
+KONG_RATE_LIMIT_MINUTE_LIMIT="${KONG_RATE_LIMIT_MINUTE_LIMIT:-3600}"
+KONG_RATE_LIMIT_HOUR_LIMIT="${KONG_RATE_LIMIT_HOUR_LIMIT:-null}"
+KONG_RATE_LIMIT_POLICY="${KONG_RATE_LIMIT_POLICY:-redis}"
+KONG_RATE_LIMIT_REDIS_HOST="${KONG_RATE_LIMIT_REDIS_HOST:-redis-cluster.caching.svc.cluster.local}"
+KONG_RATE_LIMIT_REDIS_PORT="${KONG_RATE_LIMIT_REDIS_PORT:-6379}"
 
 # Color codes for output
 RED='\033[0;31m'
@@ -48,14 +62,14 @@ check_prerequisites() {
     log_success "Kubernetes cluster accessible"
 
     # Check monitoring namespace
-    if ! kubectl get namespace monitoring &> /dev/null; then
+    if ! kubectl get namespace "$MONITORING_NAMESPACE" &> /dev/null; then
         log_error "Monitoring namespace not found - run Phase 9.2 first"
         return 1
     fi
     log_success "Monitoring namespace exists"
 
     # Check Redis availability
-    if ! kubectl get service redis-cluster -n caching &> /dev/null; then
+    if ! kubectl get service redis-cluster -n "$CACHING_NAMESPACE" &> /dev/null; then
         log_error "Redis cluster not found - run Phase 9.3 first"
         return 1
     fi
@@ -72,7 +86,7 @@ deploy_kong_postgres() {
     log_step "STEP 1: Deploying Kong PostgreSQL Database"
 
     log_info "Creating api-gateway namespace..."
-    kubectl create namespace api-gateway --dry-run=client -o yaml | kubectl apply -f -
+    kubectl create namespace "$API_GATEWAY_NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
 
     log_info "Creating Kong PostgreSQL resources..."
     kubectl apply -f k8s/api-gateway/kong-postgres.yaml
@@ -80,10 +94,10 @@ deploy_kong_postgres() {
     log_info "Waiting for PostgreSQL to be ready (max 60 seconds)..."
     kubectl wait --for=condition=ready pod \
         -l app=kong-postgres \
-        -n api-gateway \
+        -n "$API_GATEWAY_NAMESPACE" \
         --timeout=60s || {
         log_error "PostgreSQL failed to start"
-        kubectl logs -n api-gateway -l app=kong-postgres
+        kubectl logs -n "$API_GATEWAY_NAMESPACE" -l app=kong-postgres
         return 1
     }
 
@@ -91,10 +105,10 @@ deploy_kong_postgres() {
 
     log_info "Waiting for Kong migrations job to complete..."
     kubectl wait --for=condition=complete job/kong-migrations \
-        -n api-gateway \
+        -n "$API_GATEWAY_NAMESPACE" \
         --timeout=120s || {
         log_error "Kong migrations failed"
-        kubectl logs -n api-gateway job/kong-migrations
+        kubectl logs -n "$API_GATEWAY_NAMESPACE" job/kong-migrations
         return 1
     }
 
@@ -112,18 +126,18 @@ deploy_kong_gateway() {
     kubectl apply -f k8s/api-gateway/kong-deployment.yaml
 
     log_info "Waiting for Kong pods to be ready (max 120 seconds)..."
-    kubectl rollout status deployment/kong -n api-gateway --timeout=120s || {
+    kubectl rollout status deployment/kong -n "$API_GATEWAY_NAMESPACE" --timeout=120s || {
         log_error "Kong deployment failed"
-        kubectl describe pod -n api-gateway -l app=kong | head -50
+        kubectl describe pod -n "$API_GATEWAY_NAMESPACE" -l app=kong | head -50
         return 1
     }
 
     log_success "Kong gateway deployed (3 replicas ready)"
 
     # Get Kong service info
-    KONG_LB_IP=$(kubectl get svc kong-gateway -n api-gateway -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "pending")
+    KONG_LB_IP=$(kubectl get svc kong-gateway -n "$API_GATEWAY_NAMESPACE" -o jsonpath='{.status.loadBalancer.ingress[0].ip}' 2>/dev/null || echo "pending")
     log_info "Kong gateway accessible at: http://$KONG_LB_IP"
-    log_info "Kong admin API at: http://kong-admin.api-gateway:8001"
+    log_info "Kong admin API at: http://kong-admin.${API_GATEWAY_NAMESPACE}:${KONG_ADMIN_INTERNAL_PORT}"
 }
 
 #############################################################################
@@ -132,6 +146,14 @@ deploy_kong_gateway() {
 
 configure_kong_plugins() {
     log_step "STEP 3: Configuring Kong Plugins & Routes"
+    local pf_pid
+
+    cleanup_port_forward() {
+        if [ -n "${pf_pid:-}" ]; then
+            kill "$pf_pid" 2>/dev/null || true
+            wait "$pf_pid" 2>/dev/null || true
+        fi
+    }
 
     log_info "Applying plugin configurations..."
     kubectl apply -f k8s/api-gateway/kong-plugins.yaml
@@ -141,22 +163,21 @@ configure_kong_plugins() {
     sleep 10
 
     # Port-forward to Kong admin for configuration
-    kubectl port-forward -n api-gateway svc/kong-admin 8001:8001 &
-    PF_PID=$!
+    kubectl port-forward -n "$API_GATEWAY_NAMESPACE" svc/kong-admin "${KONG_ADMIN_PORT_FORWARD_PORT}:${KONG_ADMIN_INTERNAL_PORT}" > /dev/null 2>&1 &
+    pf_pid=$!
     sleep 3
 
     log_info "Configuring rate limiting plugin..."
-    curl -X POST http://localhost:8001/plugins \
-        -d "name=rate-limiting" \
-        -d "config.minute=3600" \
-        -d "config.hour=null" \
-        -d "config.policy=redis" \
-        -d "config.redis_host=redis-cluster.caching.svc.cluster.local" \
-        -d "config.redis_port=6379" \
-        2>/dev/null || log_error "Failed to configure rate limiting (Kong may not be ready yet)"
+    curl --silent --show-error --fail -X POST "http://127.0.0.1:${KONG_ADMIN_PORT_FORWARD_PORT}/plugins" \
+        --data-urlencode "name=${KONG_RATE_LIMIT_PLUGIN_NAME}" \
+        --data-urlencode "config.minute=${KONG_RATE_LIMIT_MINUTE_LIMIT}" \
+        --data-urlencode "config.hour=${KONG_RATE_LIMIT_HOUR_LIMIT}" \
+        --data-urlencode "config.policy=${KONG_RATE_LIMIT_POLICY}" \
+        --data-urlencode "config.redis_host=${KONG_RATE_LIMIT_REDIS_HOST}" \
+        --data-urlencode "config.redis_port=${KONG_RATE_LIMIT_REDIS_PORT}" \
+        > /dev/null || log_error "Failed to configure rate limiting (Kong may not be ready yet)"
 
-    kill $PF_PID 2>/dev/null || true
-
+    cleanup_port_forward
     log_success "Kong plugin configuration complete"
 }
 
@@ -204,9 +225,17 @@ deploy_monitoring() {
 
 verify_kong_health() {
     log_step "Verifying Kong Health"
+    local pf_pid
+
+    cleanup_port_forward() {
+        if [ -n "${pf_pid:-}" ]; then
+            kill "$pf_pid" 2>/dev/null || true
+            wait "$pf_pid" 2>/dev/null || true
+        fi
+    }
 
     # Check pods
-    POD_COUNT=$(kubectl get pod -n api-gateway -l app=kong --no-headers | wc -l)
+    POD_COUNT=$(kubectl get pod -n "$API_GATEWAY_NAMESPACE" -l app=kong --no-headers | wc -l)
     if [ "$POD_COUNT" -ge 2 ]; then
         log_success "Kong pods ready ($POD_COUNT/3)"
     else
@@ -215,19 +244,19 @@ verify_kong_health() {
     fi
 
     # Health check via port-forward
-    kubectl port-forward -n api-gateway svc/kong-status 8100:8100 &
-    PF_PID=$!
+    kubectl port-forward -n "$API_GATEWAY_NAMESPACE" svc/kong-status "${KONG_STATUS_PORT_FORWARD_PORT}:${KONG_STATUS_INTERNAL_PORT}" > /dev/null 2>&1 &
+    pf_pid=$!
     sleep 2
 
-    if curl -s http://localhost:8100/status | grep -q "database=ok"; then
+    if curl --silent --show-error --fail "http://127.0.0.1:${KONG_STATUS_PORT_FORWARD_PORT}/status" | grep -q "database=ok"; then
         log_success "Kong health check passed"
     else
         log_error "Kong health check failed"
-        kill $PF_PID 2>/dev/null || true
+        cleanup_port_forward
         return 1
     fi
 
-    kill $PF_PID 2>/dev/null || true
+    cleanup_port_forward
 }
 
 verify_prometheus_scraping() {
@@ -241,7 +270,7 @@ verify_rate_limiting() {
     log_step "Verifying Rate Limiting Setup"
 
     # Check if rate limiting config is present
-    if kubectl get configmap rate-limiting-config -n api-gateway &> /dev/null; then
+    if kubectl get configmap rate-limiting-config -n "$API_GATEWAY_NAMESPACE" &> /dev/null; then
         log_success "Rate limiting configuration present"
     else
         log_error "Rate limiting configuration missing"
@@ -249,7 +278,7 @@ verify_rate_limiting() {
     fi
 
     log_info "Rate limiting quotas configured:"
-    kubectl get configmap rate-limiting-config -n api-gateway -o jsonpath='{.data.quotas\.yaml}' | grep "name:" | head -4
+    kubectl get configmap rate-limiting-config -n "$API_GATEWAY_NAMESPACE" -o jsonpath='{.data.quotas\.yaml}' | grep "name:" | head -4
 }
 
 #############################################################################
@@ -268,7 +297,7 @@ establish_baseline() {
 
 ## Kong Gateway Status
 - Replicas: 3
-- Admin API: http://kong-admin.api-gateway:8001
+- Admin API: http://kong-admin.${API_GATEWAY_NAMESPACE}:${KONG_ADMIN_INTERNAL_PORT}
 - Gateway Endpoint: Check LoadBalancer status
 
 ## Rate Limiting Configuration

@@ -1,8 +1,19 @@
 //! End-to-End Integration Tests
 //! Tests the complete fingerprinting pipeline from PCAP → Browser Detection
 
-use fingerprint_core::pcap_generator::*;
+use fingerprint_parsers::packet_capture::PacketParser;
+use fingerprint_parsers::pcap_generator::*;
 use std::fs;
+
+fn first_packet_data(pcap_path: &str) -> Vec<u8> {
+    let mut first_packet = None;
+    PacketParser::stream_pcap_file(pcap_path, |packet| {
+        first_packet = Some(packet.data.to_vec());
+        Ok(())
+    })
+    .expect("Failed to stream PCAP");
+    first_packet.expect("PCAP file contained no packets")
+}
 
 /// Test complete fingerprinting pipeline with synthetic Chrome traffic
 #[test]
@@ -11,15 +22,8 @@ fn test_e2e_chrome_synthetic() {
     let pcap_path = "test_data/synthetic/e2e_chrome.pcap";
     setup_test_pcap_chrome(pcap_path);
 
-    // Read PCAP file
-    let pcap_data = fs::read(pcap_path).expect("Failed to read PCAP file");
-
-    // Verify file has global header
-    assert!(pcap_data.len() >= 24, "PCAP file too small");
-
-    // Verify magic number
-    let magic = u32::from_le_bytes([pcap_data[0], pcap_data[1], pcap_data[2], pcap_data[3]]);
-    assert_eq!(magic, 0xa1b2c3d4, "Invalid PCAP magic number");
+    let packet_count = PacketParser::count_pcap_packets(pcap_path).expect("Invalid PCAP file");
+    assert_eq!(packet_count, 1, "Expected exactly one packet");
 
     println!("✓ E2E Chrome synthetic test passed: PCAP file valid");
 }
@@ -30,11 +34,8 @@ fn test_e2e_firefox_synthetic() {
     let pcap_path = "test_data/synthetic/e2e_firefox.pcap";
     setup_test_pcap_firefox(pcap_path);
 
-    let pcap_data = fs::read(pcap_path).expect("Failed to read PCAP file");
-    assert!(pcap_data.len() >= 24, "PCAP file too small");
-
-    let magic = u32::from_le_bytes([pcap_data[0], pcap_data[1], pcap_data[2], pcap_data[3]]);
-    assert_eq!(magic, 0xa1b2c3d4);
+    let packet_count = PacketParser::count_pcap_packets(pcap_path).expect("Invalid PCAP file");
+    assert_eq!(packet_count, 1, "Expected exactly one packet");
 
     println!("✓ E2E Firefox synthetic test passed: PCAP file valid");
 }
@@ -55,10 +56,8 @@ fn test_e2e_pcap_generation() {
     let metadata = fs::metadata(pcap_path).expect("PCAP file not created");
     assert!(metadata.len() > 24, "PCAP file too small");
 
-    // Read back and verify
-    let pcap_data = fs::read(pcap_path).expect("Failed to read PCAP");
-    let magic = u32::from_le_bytes([pcap_data[0], pcap_data[1], pcap_data[2], pcap_data[3]]);
-    assert_eq!(magic, 0xa1b2c3d4);
+    let packet_count = PacketParser::count_pcap_packets(pcap_path).expect("Invalid PCAP file");
+    assert_eq!(packet_count, 1, "Expected exactly one packet");
 
     println!(
         "✓ E2E PCAP generation test passed: {} bytes",
@@ -81,9 +80,9 @@ fn test_e2e_multi_packet_pcap() {
 
     // Verify file
     let metadata = fs::metadata(pcap_path).expect("PCAP file not created");
-    let _pcap_data = fs::read(pcap_path).expect("Failed to read PCAP");
+    let packet_count = PacketParser::count_pcap_packets(pcap_path).expect("Invalid PCAP file");
+    assert_eq!(packet_count, 3, "Expected exactly three packets");
 
-    // Count packets (simple heuristic - not perfect parser)
     let expected_min_size = 24 + (16 + 60) * 3; // Global header + 3 packets (min)
     assert!(
         metadata.len() >= expected_min_size as u64,
@@ -119,9 +118,8 @@ fn test_e2e_browser_differentiation() {
         .write_to_file(firefox_path)
         .expect("Failed to write Firefox PCAP");
 
-    // Read both
-    let chrome_data = fs::read(chrome_path).expect("Failed to read Chrome PCAP");
-    let firefox_data = fs::read(firefox_path).expect("Failed to read Firefox PCAP");
+    let chrome_data = first_packet_data(chrome_path);
+    let firefox_data = first_packet_data(firefox_path);
 
     // They should be different (different TCP options)
     assert_ne!(
@@ -129,21 +127,12 @@ fn test_e2e_browser_differentiation() {
         "Chrome and Firefox PCAPs should differ"
     );
 
-    // Both should have valid magic numbers
-    let chrome_magic = u32::from_le_bytes([
-        chrome_data[0],
-        chrome_data[1],
-        chrome_data[2],
-        chrome_data[3],
-    ]);
-    let firefox_magic = u32::from_le_bytes([
-        firefox_data[0],
-        firefox_data[1],
-        firefox_data[2],
-        firefox_data[3],
-    ]);
-    assert_eq!(chrome_magic, 0xa1b2c3d4);
-    assert_eq!(firefox_magic, 0xa1b2c3d4);
+    let chrome_packets =
+        PacketParser::count_pcap_packets(chrome_path).expect("Invalid Chrome PCAP");
+    let firefox_packets =
+        PacketParser::count_pcap_packets(firefox_path).expect("Invalid Firefox PCAP");
+    assert_eq!(chrome_packets, 1);
+    assert_eq!(firefox_packets, 1);
 
     println!("✓ E2E browser differentiation test passed: Chrome ≠ Firefox");
 }

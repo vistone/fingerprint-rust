@@ -17,6 +17,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
+  TEST_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 jobs:
   check-docs:
@@ -44,8 +45,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-docs-
       
-      - name: Check documentation
-        run: cargo doc --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --no-deps
+      - name: Check default-member documentation
+        run: cargo doc --features "${{ env.TEST_FEATURES }}" --no-deps
         env:
           RUSTDOCFLAGS: "-D warnings"
       
@@ -88,7 +89,7 @@ jobs:
       
       - name: Build documentation
         run: |
-          cargo doc --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --no-deps
+          cargo doc --features "${{ env.TEST_FEATURES }}" --no-deps
           echo '<meta http-equiv="refresh" content="0; url=fingerprint">' > target/doc/index.html
       
       - name: Deploy to GitHub Pages

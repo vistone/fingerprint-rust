@@ -2,6 +2,8 @@
 # 性能指标验证脚本
 # 自动验证文档中声称的性能数据
 
+set -euo pipefail
+
 echo "=========================================="
 echo "🚀 性能指标验证测试"
 echo "=========================================="
@@ -18,6 +20,13 @@ NC='\033[0m' # No Color
 TEST_URL="https://httpbin.org/get"
 ITERATIONS=20
 TIMEOUT=30
+PERF_LOG_FILE="$(mktemp /tmp/fingerprint-perf.XXXXXX.log)"
+
+cleanup() {
+    rm -f "$PERF_LOG_FILE"
+}
+
+trap cleanup EXIT
 
 # 性能指标标准（来自文档）
 EXPECTED_HTTP3_TIME=40.3  # ms
@@ -32,28 +41,32 @@ declare -a HTTP3_TIMES
 
 # 测试函数
 test_protocol_performance() {
-    local protocol=$1
-    local prefer_http3=$2
-    local prefer_http2=$3
-    local times_array=$4
+    local protocol="$1"
+    local prefer_http3="$2"
+    local prefer_http2="$3"
+    local -n times_ref="$4"
     
     echo "🧪 测试 ${protocol} 性能..."
     
-    for i in $(seq 1 $ITERATIONS); do
+    for i in $(seq 1 "$ITERATIONS"); do
         # 使用超时命令防止hang住
-        local start_time=$(date +%s%3N)  # 毫秒时间戳
+        local start_time
+        start_time=$(date +%s%3N)  # 毫秒时间戳
         
         # 执行HTTP请求测试
-        timeout ${TIMEOUT}s cargo run --example test_http_performance \
-            -- "$TEST_URL" "$prefer_http3" "$prefer_http2" > /tmp/perf_test_$$.log 2>&1
-        
-        local exit_code=$?
-        local end_time=$(date +%s%3N)
+        local exit_code=0
+        if ! timeout "${TIMEOUT}s" cargo run --example test_http_performance \
+            -- "$TEST_URL" "$prefer_http3" "$prefer_http2" > "$PERF_LOG_FILE" 2>&1; then
+            exit_code=$?
+        fi
+
+        local end_time
+        end_time=$(date +%s%3N)
         local duration=$((end_time - start_time))
         
         if [ $exit_code -eq 0 ] && [ $duration -lt $((TIMEOUT * 1000)) ]; then
             echo -e "${GREEN}✓${NC} ${protocol} 请求 #$i: ${duration}ms"
-            eval "$times_array+=(\$duration)"
+            times_ref+=("$duration")
         else
             echo -e "${RED}✗${NC} ${protocol} 请求 #$i: 失败或超时 (${duration}ms)"
         fi
@@ -108,9 +121,9 @@ calculate_stats() {
 
 # 验证性能指标
 verify_performance() {
-    local protocol=$1
-    local actual_avg=$2
-    local expected_avg=$3
+    local protocol="$1"
+    local actual_avg="$2"
+    local expected_avg="$3"
     local tolerance=5  # 5ms容差
     
     local lower_bound=$((expected_avg - tolerance))
@@ -167,8 +180,7 @@ EOF
 
 # 编译测试程序
 echo "🔨 编译测试程序..."
-cargo build --example test_http_performance --quiet
-if [ $? -ne 0 ]; then
+if ! cargo build --example test_http_performance --quiet; then
     echo -e "${RED}❌ 编译失败${NC}"
     exit 1
 fi
@@ -191,8 +203,11 @@ if [ ${#HTTP3_TIMES[@]} -gt 0 ]; then
     echo "   最慢响应时间: ${http3_max}ms"
     echo "   中位数响应时间: ${http3_median}ms"
     echo "   成功率: $((100 * ${#HTTP3_TIMES[@]} / ITERATIONS))%"
-    verify_performance "HTTP/3" $http3_avg $EXPECTED_HTTP3_TIME
-    http3_result=$?
+    if verify_performance "HTTP/3" "$http3_avg" "$EXPECTED_HTTP3_TIME"; then
+        http3_result=0
+    else
+        http3_result=1
+    fi
 else
     echo -e "${RED}HTTP/3: 无有效测试数据${NC}"
     http3_result=1
@@ -209,8 +224,11 @@ if [ ${#HTTP1_TIMES[@]} -gt 0 ]; then
     echo "   最慢响应时间: ${http1_max}ms"  
     echo "   中位数响应时间: ${http1_median}ms"
     echo "   成功率: $((100 * ${#HTTP1_TIMES[@]} / ITERATIONS))%"
-    verify_performance "HTTP/1.1" $http1_avg $EXPECTED_HTTP1_TIME
-    http1_result=$?
+    if verify_performance "HTTP/1.1" "$http1_avg" "$EXPECTED_HTTP1_TIME"; then
+        http1_result=0
+    else
+        http1_result=1
+    fi
 else
     echo -e "${RED}HTTP/1.1: 无有效测试数据${NC}"
     http1_result=1
@@ -227,8 +245,11 @@ if [ ${#HTTP2_TIMES[@]} -gt 0 ]; then
     echo "   最慢响应时间: ${http2_max}ms"
     echo "   中位数响应时间: ${http2_median}ms"
     echo "   成功率: $((100 * ${#HTTP2_TIMES[@]} / ITERATIONS))%"
-    verify_performance "HTTP/2" $http2_avg $EXPECTED_HTTP2_TIME
-    http2_result=$?
+    if verify_performance "HTTP/2" "$http2_avg" "$EXPECTED_HTTP2_TIME"; then
+        http2_result=0
+    else
+        http2_result=1
+    fi
 else
     echo -e "${RED}HTTP/2: 无有效测试数据${NC}"
     http2_result=1

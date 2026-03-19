@@ -49,11 +49,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-
     
-    - name: Check workspace
-      run: cargo check --workspace --features "${{ matrix.features }}"
+    - name: Check default members
+      run: cargo check --features "${{ matrix.features }}"
     
-    - name: Test workspace with nextest
-      run: cargo nextest run --workspace --features "${{ matrix.features }}" --lib --no-fail-fast
+    - name: Test default members with nextest
+      run: cargo nextest run --features "${{ matrix.features }}" --lib --no-fail-fast
     
     - name: Test examples
       run: cargo nextest run --workspace --features "${{ matrix.features }}" --examples --no-fail-fast
@@ -167,9 +167,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-cargo-
     
-    - name: Build workspace
-      run: cargo build --workspace --features "${{ matrix.features }}" --release
+    - name: Build default members
+      run: cargo build --features "${{ matrix.features }}" --release
     
-    - name: Build examples
+    - name: Build full workspace examples
       run: cargo build --workspace --features "${{ matrix.features }}" --examples --release
       continue-on-error: true

@@ -35,8 +35,8 @@
 //! - **utility functions**: GREASE process, randomly select etc.utility functions
 
 pub mod benchmark;
+#[cfg(feature = "service-cache")]
 pub mod cache; // Multi-tier caching (L1/L2/L3)
-pub mod cache_redis; // Redis-backed cache implementation
 pub mod database;
 pub mod dicttls;
 pub mod error; // Comprehensive error types
@@ -46,19 +46,17 @@ pub mod hassh;
 pub mod hpack;
 pub mod http;
 pub mod http2_frame_parser;
+pub mod incremental_fingerprint;
 pub mod ja3;
 pub mod ja3_database;
 pub mod ja4;
 pub mod jarm;
 pub mod metadata;
-pub mod metrics; // Prometheus metrics collection
-pub mod packet_capture;
-pub mod pcap_generator;
 pub mod pqc; // Post-Quantum Cryptography detection
+#[cfg(feature = "service-rate-limiting")]
 pub mod rate_limiting; // Distributed rate limiting service (Phase 9.4)
-pub mod rate_limiting_metrics; // Prometheus metrics for rate limiting
-pub mod rate_limiting_redis; // Redis integration for rate limiting
 pub mod signature;
+pub mod stable_hash;
 pub mod system;
 pub mod tcp;
 pub mod tcp_handshake;
@@ -76,23 +74,8 @@ pub use error::{
     Result, TcpError, TlsError, ValidationError,
 };
 
-// Cache error from cache module
+#[cfg(feature = "service-cache")]
 pub use cache::CacheError;
-
-// Metrics
-pub use metrics::{
-    record_cache_hit, record_cache_miss, record_db_operation, record_error,
-    record_fingerprint_duration, record_ml_inference, ANOMALY_DETECTION_TOTAL,
-    ANOMALY_FALSE_POSITIVE_RATE, ANOMALY_SCORE, CACHE_EVICTIONS_TOTAL, CACHE_HIT_RATE,
-    CACHE_MISS_RATE, CACHE_SIZE_BYTES, CPU_USAGE_PERCENT, DB_CONNECTIONS_ACTIVE,
-    DB_OPERATION_DURATION_MS, DB_QUERIES_TOTAL, DNS_CACHE_HIT_RATE, DNS_RESOLUTION_DURATION_MS,
-    DNS_RESOLUTION_TOTAL, ERRORS_TOTAL, ERROR_RATE, FINGERPRINT_RECOGNITION_DURATION_MS,
-    FINGERPRINT_RECOGNITION_TOTAL, FINGERPRINT_SIMILARITY_SCORE, GOROUTINES_ACTIVE,
-    HTTP_POOL_CONNECTIONS, HTTP_REQUEST_DURATION_MS, HTTP_REQUEST_TOTAL, JA_FINGERPRINT_CALC_TOTAL,
-    MEMORY_USAGE_MB, ML_INFERENCE_DURATION_MS, ML_PREDICTION_ACCURACY, ML_PREDICTION_TOTAL,
-    RATE_LIMIT_CHECK_TOTAL, RATE_LIMIT_QUOTA_USAGE, RATE_LIMIT_REJECTIONS_TOTAL,
-    TLS_CLIENTHELLO_PARSE_MS, TLS_FINGERPRINT_GENERATION_TOTAL,
-};
 
 // fingerprint abstractions
 pub use fingerprint::{Fingerprint, FingerprintComparator, FingerprintComparison, FingerprintType};
@@ -112,6 +95,7 @@ pub use ja4::{
     ConsistencyReport, TlsExtensionOrderFingerprint, JA4, JA4H, JA4L, JA4S, JA4T, JA4TS, JA4X,
 };
 pub use signature::ClientHelloSignature;
+pub use stable_hash::{hash_str, StableHashBuilder};
 pub use version::TlsVersion;
 
 // Post-Quantum Cryptography
@@ -133,11 +117,7 @@ pub use http2_frame_parser::{
     Http2FrameHeader, Http2FrameType, Http2ParseError, Http2PriorityFrame, Http2SettingsFrame,
     Http2SettingsMatcher, Http2WindowUpdateFrame, HTTP2_PREFACE,
 };
-pub use packet_capture::{
-    EthernetHeader, Ipv4Header, Ipv6Header, NetworkProtocol, PacketFlowAnalyzer, PacketParser,
-    ParsedPacket, PcapGlobalHeader, PcapPacketHeader, TcpFlow, TcpHeader, TransportProtocol,
-    UdpHeader,
-};
+pub use incremental_fingerprint::{IncrementalFingerprintResult, IncrementalTcpFingerprint};
 
 // TCP related
 pub use tcp::{TcpFingerprint, TcpProfile};
@@ -161,33 +141,15 @@ pub use utils::{
 pub use benchmark::{Benchmark, CacheBenchmark, CacheBenchmarkSuite, HttpMetrics, Timer};
 
 // rate limiting service (Phase 9.4)
+#[cfg(feature = "service-rate-limiting")]
 pub use rate_limiting::{
-    current_unix_timestamp, EndpointConfig, MetricsSnapshot, QuotaTier, RateLimitResponse,
-    RateLimiter, UserQuota,
+    current_unix_timestamp, DistributedRateLimitBackend, EndpointConfig, MetricsSnapshot,
+    QuotaTier, RateLimitResponse, RateLimiter, UserQuota,
 };
-
-// rate limiting Redis backend
-pub use rate_limiting_redis::{
-    RedisBackendError, RedisConfig, RedisQuotaEntry, RedisRateLimitBackend, RedisResult,
-};
-
-// rate limiting Prometheus metrics
-pub use rate_limiting_metrics::{MetricsHandler, PrometheusMetrics, TierMetrics};
 
 // cache (Phase 9.3)
+#[cfg(feature = "service-cache")]
 pub use cache::{Cache, CacheResult, CacheStats, CacheTTL, CacheTier, DistributedLock, LockGuard};
-
-// Redis cache (optional, requires redis-cache feature)
-pub use cache_redis::RedisCacheConfig;
-
-#[cfg(feature = "redis-cache")]
-pub use cache_redis::RedisCache;
-
-#[cfg(feature = "redis-cache")]
-pub use cache_redis::RedisClusterCache;
-
-#[cfg(feature = "redis-cache")]
-pub use cache_redis::RedisClusterConfig;
 
 // system-level abstractions
 pub use system::{

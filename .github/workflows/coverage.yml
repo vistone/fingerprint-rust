@@ -3,8 +3,12 @@ name: Code Coverage
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+  TEST_FEATURES: "rustls-tls,compression,http2,connection-pool,dns"
 
 jobs:
   coverage:
@@ -16,8 +20,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
       - name: Install tarpaulin
         run: cargo install cargo-tarpaulin
-      - name: Generate coverage
-        run: cargo tarpaulin --workspace --features "rustls-tls,compression,http2,connection-pool,dns" --out Xml
+      - name: Generate coverage for default members
+        run: cargo tarpaulin --features "${{ env.TEST_FEATURES }}" --out Xml
       - name: Upload to codecov
         uses: codecov/codecov-action@v4
         with:

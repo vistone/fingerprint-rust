@@ -1,141 +1,154 @@
 # GitHub Actions CI/CD Workflows
 
-This directory contains comprehensive GitHub Actions workflows for the fingerprint-rust project.
+This directory contains the GitHub Actions workflows used to validate, audit, and release `fingerprint-rust`.
 
 ## Workflow Overview
 
-### 🔄 Continuous Integration
+The workflow set is intentionally split into four lanes:
 
-#### **ci.yml** - Main CI Pipeline
-- **Triggers**: Push/PR to main, master, develop branches
+1. `ci.yml`: routine default-member CI for the stable crate set.
+2. `required-checks.yml`: strict full-workspace merge gate.
+3. Specialized workflows: focused validation for AI models, prototype crates, core feature matrices, docs, coverage, and benchmarks.
+4. Scheduled or manual deep audits: security scanning and the broader enhanced pipeline.
+
+### Continuous Integration
+
+#### `ci.yml` - Main Stable-Member CI
+- **Triggers**: Push/PR to `main`, `master`, `develop`
+- **Scope**: Default workspace members
+- **Purpose**: Fast cross-platform validation for the stable support path
 - **Jobs**:
-  - ✅ Test (Ubuntu/Windows/macOS, stable/beta Rust)
-  - ✅ Coverage (Code coverage with llvm-cov)
-  - ✅ Lint (fmt check, clippy)
-  - ✅ Build (Release builds with various features)
-- **Features Tested**: rustls-tls, compression, http2, http3, connection-pool, dns
+  - Test on Ubuntu, Windows, and macOS with stable and beta Rust
+  - Coverage with `cargo-llvm-cov`
+  - Lint with `rustfmt` and `clippy`
+  - Release-profile builds
+- **Feature combinations**:
+  - `rustls-tls,compression,http2`
+  - `rustls-tls,compression,http2,connection-pool`
+  - `rustls-tls,compression,http2,connection-pool,dns`
 
-#### **comprehensive-testing.yml** - Extended Test Suite
+#### `required-checks.yml` - Full Workspace Merge Gate
+- **Triggers**: Push/PR to `main`, `master`, `develop`
+- **Scope**: Entire workspace
+- **Purpose**: Required branch-protection gate covering preview and prototype crates as well as stable crates
+- **Jobs**:
+  - Full-workspace tests
+  - Full-workspace formatting and clippy
+  - Full-workspace build on Ubuntu, Windows, and macOS
+  - Merge-blocking security advisory check
+
+#### `comprehensive-testing.yml` - Full Workspace Regression Suite
 - **Triggers**: Push/PR, daily schedule
+- **Scope**: Entire workspace
+- **Purpose**: Broader regression and compatibility coverage beyond the default-member CI path
 - **Jobs**:
-  - 🧪 Unit Tests (cross-platform)
-  - 🔗 Integration Tests
-  - 📝 Example Tests
-  - 🎯 Feature Combination Tests
-  - 📦 Minimal Versions Test
-- **Purpose**: Comprehensive testing across platforms and feature combinations
+  - Unit, integration, and doc tests
+  - Example builds
+  - Feature-combination checks
+  - Minimal-version validation
 
-### 🤖 AI Models Specific
+### Focused Validation
 
-#### **ai-models-validation.yml** - AI Models Testing
-- **Triggers**: Push/PR to AI models code, weekly schedule
+#### `ai-models-validation.yml` - AI Models Validation
+- **Triggers**: Push/PR touching AI model assets, weekly schedule
+- **Purpose**: Validate fingerprint datasets, crate behavior, and model-specific quality signals
+
+#### `prototype-crates-validation.yml` - Prototype Crates Validation
+- **Triggers**: Push/PR touching prototype crates, weekly schedule
+- **Purpose**: Keep prototype crates explicitly tested without pushing them into the default stable-member lane
+
+#### `fingerprint-core-feature-matrix.yml` - `fingerprint-core` Service Feature Matrix
+- **Triggers**: Push/PR touching `fingerprint-core`, weekly schedule
+- **Purpose**: Guard the split between core functionality and opt-in service features
+
+#### `coverage.yml` - Tarpaulin Coverage
+- **Triggers**: Push to `main`, manual dispatch
+- **Scope**: Default workspace members
+- **Purpose**: Publish coverage metrics independently from the main CI workflow without duplicating PR coverage runs
+
+#### `benchmark.yml` - Benchmark Build Validation
+- **Triggers**: Push to `main`, manual dispatch
+- **Scope**: Default workspace members
+- **Purpose**: Track benchmark regressions and ensure benchmark targets still build without making every PR pay the benchmark cost
+
+#### `documentation.yml` - Documentation Build and Checks
+- **Triggers**: Push/PR affecting docs or crate source
+- **Scope**: Default members for `cargo doc`; repository-wide markdown and link checks remain unchanged
+- **Purpose**: Keep generated Rust docs and repository documentation healthy
+
+#### `dependencies.yml` - Dependency Review
+- **Triggers**: Pull requests to `main`
+- **Purpose**: Review dependency changes through GitHub's dependency-review action
+
+#### `fuzz.yml` - Fuzz Testing
+- **Triggers**: Push/PR to `main`, weekly schedule
+- **Purpose**: Discover crashes and edge cases with fuzz targets
+
+### Scheduled and Manual Deep Audits
+
+#### `security-audit.yml` - Security Scanning
+- **Triggers**: Daily schedule, manual dispatch
+- **Purpose**: Run security monitoring outside the PR path to avoid duplicating merge-gate checks
 - **Jobs**:
-  - ✅ Validate fingerprint databases (JSON validation)
-  - 🧪 Test AI models crate
-  - 📊 Test detection accuracy
-  - ⚡ Benchmark performance
-  - 📈 Validate model coverage
-- **Purpose**: Ensure AI detection quality and accuracy
+  - RustSec audit
+  - `cargo-deny` advisories, bans, licenses, and sources checks
 
-### 🔒 Security
-
-#### **security-audit.yml** - Security Scanning
-- **Triggers**: Daily schedule, push/PR to main
+#### `enhanced-cicd.yml` - Deep Validation Pipeline
+- **Triggers**: Weekly schedule, manual dispatch
+- **Scope**: Primarily default members, plus deep checks such as Miri
+- **Purpose**: Consolidated heavyweight validation lane for periodic audits and on-demand investigation
 - **Jobs**:
-  - 🔍 Security audit (rustsec)
-  - 🚫 Cargo deny (advisories, licenses)
-- **Purpose**: Continuous security monitoring
+  - Lint and formatting
+  - Security audit with `cargo-audit` and `cargo-deny`
+  - Multi-platform compile and test
+  - Coverage, docs, feature matrix, benchmarks
+  - Miri undefined-behavior checks
 
-### 📊 Quality & Performance
+### Release
 
-#### **coverage.yml** - Code Coverage
-- **Triggers**: Push/PR to main
+#### `release-automation.yml` - Primary Release Automation
+- **Triggers**: Version tags matching `vX.Y.Z`, manual dispatch
+- **Purpose**: Main release path for validated stable-member releases
 - **Jobs**:
-  - 📈 Generate coverage with tarpaulin
-  - ☁️ Upload to Codecov
-- **Purpose**: Track code coverage metrics
+  - Release validation
+  - Binary builds
+  - Crates publishing
+  - GitHub release creation
 
-#### **benchmark.yml** - Performance Benchmarks
-- **Triggers**: Push/PR to main
-- **Jobs**:
-  - ⚡ Run cargo bench
-- **Purpose**: Track performance regressions
+#### `release.yml` - Manual Release Assets
+- **Triggers**: Manual dispatch
+- **Purpose**: Manual fallback and extended artifact build workflow; intentionally not tag-triggered to avoid duplicate releases
+- **Platforms**:
+  - `x86_64-linux`
+  - `x86_64-linux-musl`
+  - `x86_64-macos`
+  - `aarch64-macos`
+  - `x86_64-windows`
 
-### 📚 Documentation
-
-#### **documentation.yml** - Documentation Build & Deploy
-- **Triggers**: Push/PR affecting docs
-- **Jobs**:
-  - 📖 Check documentation
-  - 🚀 Build and deploy docs (main branch only)
-  - 🔗 Check documentation links
-  - 📊 Generate documentation summary
-- **Purpose**: Maintain high-quality documentation
-
-### 📦 Dependencies
-
-#### **dependencies.yml** - Dependency Review
-- **Triggers**: Pull requests to main
-- **Jobs**:
-  - 🔍 Dependency review action
-- **Purpose**: Review dependency changes
-
-#### **dependabot.yml** - Automated Dependency Updates
-- **Schedule**: Weekly
-- **Ecosystems**:
-  - 📦 Cargo dependencies
-  - 🔄 GitHub Actions
-- **Purpose**: Keep dependencies up-to-date
-
-### 🚀 Release
-
-#### **release.yml** - Release Automation
-- **Triggers**: Version tags (v*.*.*), manual dispatch
-- **Jobs**:
-  - 📝 Create GitHub release with changelog
-  - 🏗️ Build binaries (Linux, macOS, Windows)
-  - 📤 Upload release assets
-  - 📦 Publish to crates.io
-- **Platforms**: x86_64-linux, x86_64-linux-musl, x86_64-macos, aarch64-macos, x86_64-windows
-- **Purpose**: Automated release process
-
-### 🐛 Fuzzing
-
-#### **fuzz.yml** - Fuzz Testing
-- **Triggers**: Push/PR to main, weekly schedule
-- **Purpose**: Discover edge cases and crashes
-
-## Workflow Dependencies
+## Workflow Topology
 
 ```mermaid
 graph TD
-    A[Push/PR] --> B[CI]
-    A --> C[Comprehensive Testing]
-    A --> D[AI Models Validation]
-    A --> E[Security Audit]
-    A --> F[Documentation]
-    
-    B --> G[Coverage]
-    C --> G
-    
-    H[Tag] --> I[Release]
-    I --> J[Build Binaries]
-    I --> K[Publish Crates]
-    
-    L[Schedule] --> D
-    L --> E
-    L --> M[Benchmark]
-```
+    A[Push or PR] --> B[ci.yml]
+    A --> C[required-checks.yml]
+    A --> D[comprehensive-testing.yml]
+    A --> G[documentation.yml]
+    A --> H[dependencies.yml]
+    A --> I[ai-models-validation.yml]
+    A --> J[prototype-crates-validation.yml]
+    A --> K[fingerprint-core-feature-matrix.yml]
 
-## Status Badges
+    L[Schedule or Manual] --> M[security-audit.yml]
+    L --> N[enhanced-cicd.yml]
+    L --> E[coverage.yml]
+    L --> F[benchmark.yml]
+    L --> D
+    L --> I
+    L --> J
+    L --> O[fuzz.yml]
 
-Add these to your README.md:
-
-```markdown
-![CI](https://github.com/vistone/fingerprint-rust/workflows/CI/badge.svg)
-![Security Audit](https://github.com/vistone/fingerprint-rust/workflows/Security%20Audit/badge.svg)
-![Coverage](https://codecov.io/gh/vistone/fingerprint-rust/branch/main/graph/badge.svg)
-![AI Models Validation](https://github.com/vistone/fingerprint-rust/workflows/AI%20Models%20Validation/badge.svg)
+    P[Version Tag] --> Q[release-automation.yml]
+    R[Manual] --> S[release.yml]
 ```
 
 ## Configuration Files
@@ -162,13 +175,13 @@ brew install act  # macOS
 # or
 curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
 
-# Run CI workflow
+# Run the main CI test job
 act -j test
 
 # Run linting
 act -j lint
 
-# Run specific job
+# Run a specific specialized job
 act -j ai-models-test
 ```
 
@@ -202,7 +215,7 @@ act -j ai-models-test
 
 Some workflows require secrets. For fork PRs:
 - CI will run with limited permissions
-- Security audits will work
+- Scheduled and manual audit workflows remain maintainers-only
 - Release workflows won't trigger
 
 ### Build Times
@@ -254,5 +267,5 @@ For workflow issues:
 
 ---
 
-**Last Updated**: 2026-02-16
+**Last Updated**: 2026-03-18
 **Maintained By**: fingerprint-rust team

@@ -1,6 +1,4 @@
 [toolchain]
-# 项目使用最新稳定版 Rust
-# 说明：使用最新稳定版，无需兼容低版本
-channel = "stable"
+# 固定工具链版本，避免 CI 与本地环境漂移
+channel = "1.90.0"
 components = ["rustfmt", "clippy"]
-

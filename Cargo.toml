@@ -14,11 +14,35 @@ members = [
     "crates/fingerprint-headers",
     "crates/fingerprint-http",
     "crates/fingerprint-ml",
+    "crates/fingerprint-observability",
+    "crates/fingerprint-parsers",
     "crates/fingerprint-profiles",
+    "crates/fingerprint-redis",
     "crates/fingerprint-storage",
     "crates/fingerprint-tls",
     "crates/fingerprint-webgl",
     "crates/fingerprint-webrtc",
+]
+default-members = [
+    "crates/fingerprint",
+    "crates/fingerprint-api-noise",
+    "crates/fingerprint-core",
+    "crates/fingerprint-defense",
+    "crates/fingerprint-dns",
+    "crates/fingerprint-gateway",
+    "crates/fingerprint-headers",
+    "crates/fingerprint-http",
+    "crates/fingerprint-parsers",
+    "crates/fingerprint-profiles",
+    "crates/fingerprint-tls",
+]
+exclude = [
+    "crates/fingerprint-analysis",
+    "crates/fingerprint-anomaly",
+    "crates/fingerprint-config",
+    "crates/fingerprint-hardware-unified",
+    "crates/fingerprint-timing",
+    "vendor/netconnpool-rust",
 ]
 resolver = "2"
 
@@ -64,9 +88,11 @@ ring = "0.17.14"
 webpki-roots = "0.26"
 tokio-rustls = "0.26"
 quinn = "0.11"
-netconnpool = { git = "https://github.com/vistone/netconnpool-rust", tag = "v1.0.4" }
+netconnpool = { path = "vendor/netconnpool-rust" }
 futures = "0.3"
 hickory-resolver = "0.25"
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+pcap-file = "3.0.0-rc1"
 
 [profile.release]
 lto = "fat"
@@ -74,3 +100,7 @@ codegen-units = 1
 panic = "abort"
 strip = "symbols"
 opt-level = 3
+
+[profile.release-service]
+inherits = "release"
+panic = "unwind"

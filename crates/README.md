@@ -1,6 +1,16 @@
 # Rust Crates 工作区
 
-这是 fingerprint-rust 项目的 Rust 工作区，包含所有功能模块的 crate。
+这是 fingerprint-rust 项目的 Rust 工作区，包含稳定主链、预览模块和原型模块。
+
+## Workspace Scope
+
+当前 `Cargo.toml` 将稳定主链 crate 设为默认 member 集，用于根目录下的默认 `cargo check` / `cargo build`。预览和原型 crate 仍保留在 workspace 内，可通过 `--workspace` 或 `-p` 显式验证。以下 crate 仍保留在仓库中，但已在 workspace 中显式 `exclude`（实验/草稿状态，暂不纳入 CI 强制门禁）：
+
+- `fingerprint-analysis`
+- `fingerprint-anomaly`
+- `fingerprint-config`
+- `fingerprint-hardware-unified`
+- `fingerprint-timing`
 
 ## 📦 Crate 结构
 
@@ -70,7 +80,10 @@ fingerprint-audio/     # Audio指纹
 
 ### 构建项目
 ```bash
-# 构建所有crate
+# 构建默认稳定主链
+cargo build
+
+# 构建所有 workspace crate（含预览/原型）
 cargo build --workspace
 
 # 构建特定crate
@@ -82,7 +95,7 @@ cargo build --workspace --features "rustls-tls,http2,http3"
 
 ### 运行测试
 ```bash
-# 运行所有测试
+# 运行所有 workspace 测试
 cargo test --workspace
 
 # 运行特定crate测试
@@ -94,6 +107,9 @@ cargo test --doc
 
 ### 代码质量检查
 ```bash
+# 检查默认稳定主链
+cargo check
+
 # 格式化代码
 cargo fmt --all
 

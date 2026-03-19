@@ -5,15 +5,38 @@
 //! Reference: FoxIO JA4+ specification.
 
 use serde::{Deserialize, Serialize};
+use xxhash_rust::xxh3::Xxh3;
 
 /// Safe string slicing function that prevents panics
-/// Returns slice[start..min(end, slice.len())] or entire slice if start is out of bounds
-fn safe_slice(s: &str, start: usize, end: usize) -> &str {
-    let len = s.len();
-    if start >= len {
-        return s;
+/// Returns a character-boundary-safe substring using character indices.
+fn safe_slice(s: &str, start: usize, end: usize) -> String {
+    if start >= end {
+        return String::new();
     }
-    &s[start..end.min(len)]
+
+    s.chars().skip(start).take(end - start).collect()
+}
+
+fn hash_u16s_hex(values: &[u16], width: usize) -> String {
+    let mut hasher = Xxh3::new();
+    hasher.update(&(values.len() as u64).to_be_bytes());
+    for &value in values {
+        hasher.update(&value.to_be_bytes());
+    }
+    let full = format!("{:016x}", hasher.digest());
+    safe_slice(&full, 0, width)
+}
+
+fn hash_lowercase_strings_hex(values: &[String], width: usize) -> String {
+    let mut hasher = Xxh3::new();
+    hasher.update(&(values.len() as u64).to_be_bytes());
+    for value in values {
+        let lower = value.to_lowercase();
+        hasher.update(&(lower.len() as u64).to_be_bytes());
+        hasher.update(lower.as_bytes());
+    }
+    let full = format!("{:016x}", hasher.digest());
+    safe_slice(&full, 0, width)
 }
 
 /// JA4 TLS clientfingerprint
@@ -81,33 +104,15 @@ impl JA4 {
         let e_count = filtered_extensions.len().min(99);
 
         let first_alpn = alpn.unwrap_or("00");
-        let alpn_id = if first_alpn.len() >= 2 {
-            &first_alpn[0..2]
+        let alpn_id = if first_alpn.chars().count() >= 2 {
+            safe_slice(first_alpn, 0, 2)
         } else {
-            first_alpn
+            first_alpn.to_string()
         };
 
-        // Calculatehash
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-
-        let mut c_hasher = DefaultHasher::new();
-        for c in &filtered_ciphers {
-            c.hash(&mut c_hasher);
-        }
-        let c_hash_full = format!("{:012x}", c_hasher.finish());
-
-        let mut e_hasher = DefaultHasher::new();
-        for e in &filtered_extensions {
-            e.hash(&mut e_hasher);
-        }
-        let e_hash_full = format!("{:012x}", e_hasher.finish());
-
-        let mut s_hasher = DefaultHasher::new();
-        for s in signature_algorithms {
-            s.hash(&mut s_hasher);
-        }
-        let s_hash_full = format!("{:04x}", s_hasher.finish());
+        let c_hash_full = hash_u16s_hex(&filtered_ciphers, 12);
+        let e_hash_full = hash_u16s_hex(&filtered_extensions, 12);
+        let s_hash_full = hash_u16s_hex(signature_algorithms, 4);
 
         Self {
             transport,
@@ -115,10 +120,10 @@ impl JA4 {
             destination: d,
             cipher_count: c_count,
             extension_count: e_count,
-            alpn: alpn_id.to_string(),
-            cipher_hash: safe_slice(&c_hash_full, 0, 12).to_string(),
-            extension_hash: safe_slice(&e_hash_full, 0, 12).to_string(),
-            signature_hash: safe_slice(&s_hash_full, 0, 4).to_string(),
+            alpn: alpn_id,
+            cipher_hash: c_hash_full,
+            extension_hash: e_hash_full,
+            signature_hash: s_hash_full,
         }
     }
 
@@ -196,16 +201,10 @@ impl JA4H {
         let r = if has_referer { "r" } else { "n" };
         let count = format!("{:02}", headers.len().min(99));
 
-        // simplify版 Header Hash
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        let mut hasher = DefaultHasher::new();
-        for (k, _) in headers {
-            k.to_lowercase().hash(&mut hasher);
-        }
-        let hash = format!("{:012x}", hasher.finish());
+        let header_names: Vec<String> = headers.iter().map(|(k, _)| k.to_string()).collect();
+        let hash = hash_lowercase_strings_hex(&header_names, 12);
 
-        format!("{}{}{}{}{}_{}", m, v, c, r, count, &hash[0..12])
+        format!("{}{}{}{}{}_{}", m, v, c, r, count, hash)
     }
 }
 
@@ -507,6 +506,31 @@ fn longest_common_subsequence_len(a: &[u16], b: &[u16]) -> usize {
 impl std::fmt::Display for TlsExtensionOrderFingerprint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.fingerprint_string())
+    }
+}
+
+#[cfg(test)]
+mod helper_tests {
+    use super::*;
+
+    #[test]
+    fn safe_slice_handles_multibyte_boundaries() {
+        assert_eq!(safe_slice("你好世界", 0, 2), "你好");
+        assert_eq!(safe_slice("你好世界", 1, 3), "好世");
+    }
+
+    #[test]
+    fn ja4_generate_handles_multibyte_alpn_without_panicking() {
+        let ja4 = JA4::generate(
+            't',
+            "1.3",
+            true,
+            &[0x1301],
+            &[0, 10],
+            Some("你好"),
+            &[0x0403],
+        );
+        assert_eq!(ja4.alpn, "你好");
     }
 }
 

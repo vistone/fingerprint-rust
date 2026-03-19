@@ -2,6 +2,7 @@
 /// Tests captured browser traffic against expected fingerprints
 #[cfg(test)]
 mod real_traffic_validation {
+    use fingerprint_parsers::packet_capture::PacketParser;
     use serde::Deserialize;
     use std::collections::HashMap;
     use std::fs;
@@ -46,41 +47,13 @@ mod real_traffic_validation {
 
     /// Test helper: Validate PCAP file format
     fn validate_pcap_format(pcap_path: &Path) -> Result<usize, String> {
-        let pcap_data = fs::read(pcap_path).map_err(|e| format!("Failed to read file: {}", e))?;
-
-        if pcap_data.len() < 24 {
+        let metadata =
+            fs::metadata(pcap_path).map_err(|e| format!("Failed to stat file: {}", e))?;
+        if metadata.len() < 24 {
             return Err("File too small to be valid PCAP".to_string());
         }
 
-        // Verify magic number
-        let magic = u32::from_le_bytes([pcap_data[0], pcap_data[1], pcap_data[2], pcap_data[3]]);
-
-        if magic != 0xa1b2c3d4 {
-            return Err(format!("Invalid PCAP magic number: 0x{:08x}", magic));
-        }
-
-        // Count packets
-        let mut packet_count = 0;
-        let mut offset = 24; // Skip global header
-
-        while offset + 16 <= pcap_data.len() {
-            let incl_len = u32::from_le_bytes([
-                pcap_data[offset + 8],
-                pcap_data[offset + 9],
-                pcap_data[offset + 10],
-                pcap_data[offset + 11],
-            ]) as usize;
-
-            offset += 16 + incl_len;
-
-            if offset > pcap_data.len() {
-                break;
-            }
-
-            packet_count += 1;
-        }
-
-        Ok(packet_count)
+        PacketParser::count_pcap_packets(pcap_path)
     }
 
     #[test]

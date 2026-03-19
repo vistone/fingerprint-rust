@@ -2,7 +2,7 @@
 /// Generates test PCAP files with known browser fingerprints for validation
 use crate::packet_capture::*;
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{self, IoSlice, Write};
 use std::path::Path;
 
 /// Generate a complete PCAP file with synthetic browser traffic
@@ -65,14 +65,24 @@ impl PcapGenerator {
     pub fn write_to_file<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
         let mut file = File::create(path)?;
 
-        // Write global header
-        file.write_all(&self.global_header.magic_number.to_le_bytes())?;
-        file.write_all(&self.global_header.version_major.to_le_bytes())?;
-        file.write_all(&self.global_header.version_minor.to_le_bytes())?;
-        file.write_all(&self.global_header.timezone_offset.to_le_bytes())?;
-        file.write_all(&self.global_header.timestamp_accuracy.to_le_bytes())?;
-        file.write_all(&self.global_header.snapshot_length.to_le_bytes())?;
-        file.write_all(&self.global_header.data_link_type.to_le_bytes())?;
+        // Batch fixed-width header fields to cut syscall overhead on large PCAP writes.
+        let magic_number = self.global_header.magic_number.to_le_bytes();
+        let version_major = self.global_header.version_major.to_le_bytes();
+        let version_minor = self.global_header.version_minor.to_le_bytes();
+        let timezone_offset = self.global_header.timezone_offset.to_le_bytes();
+        let timestamp_accuracy = self.global_header.timestamp_accuracy.to_le_bytes();
+        let snapshot_length = self.global_header.snapshot_length.to_le_bytes();
+        let data_link_type = self.global_header.data_link_type.to_le_bytes();
+        let mut global_header = [
+            IoSlice::new(&magic_number),
+            IoSlice::new(&version_major),
+            IoSlice::new(&version_minor),
+            IoSlice::new(&timezone_offset),
+            IoSlice::new(&timestamp_accuracy),
+            IoSlice::new(&snapshot_length),
+            IoSlice::new(&data_link_type),
+        ];
+        write_all_vectored(&mut file, &mut global_header)?;
 
         // Write packets
         for (idx, packet_data) in self.packets.iter().enumerate() {
@@ -83,11 +93,18 @@ impl PcapGenerator {
                 orig_len: packet_data.len() as u32,
             };
 
-            file.write_all(&packet_header.timestamp_sec.to_le_bytes())?;
-            file.write_all(&packet_header.timestamp_usec.to_le_bytes())?;
-            file.write_all(&packet_header.incl_len.to_le_bytes())?;
-            file.write_all(&packet_header.orig_len.to_le_bytes())?;
-            file.write_all(packet_data)?;
+            let timestamp_sec = packet_header.timestamp_sec.to_le_bytes();
+            let timestamp_usec = packet_header.timestamp_usec.to_le_bytes();
+            let incl_len = packet_header.incl_len.to_le_bytes();
+            let orig_len = packet_header.orig_len.to_le_bytes();
+            let mut packet_buffers = [
+                IoSlice::new(&timestamp_sec),
+                IoSlice::new(&timestamp_usec),
+                IoSlice::new(&incl_len),
+                IoSlice::new(&orig_len),
+                IoSlice::new(packet_data),
+            ];
+            write_all_vectored(&mut file, &mut packet_buffers)?;
         }
 
         Ok(())
@@ -339,6 +356,23 @@ fn calculate_tcp_checksum(src_ip: &[u8; 4], dst_ip: &[u8; 4], tcp_segment: &[u8]
     }
 
     !(sum as u16)
+}
+
+fn write_all_vectored<W: Write>(writer: &mut W, bufs: &mut [IoSlice<'_>]) -> io::Result<()> {
+    let mut remaining = bufs;
+
+    while !remaining.is_empty() {
+        let written = writer.write_vectored(remaining)?;
+        if written == 0 {
+            return Err(io::Error::new(
+                io::ErrorKind::WriteZero,
+                "failed to write buffered PCAP data",
+            ));
+        }
+        IoSlice::advance_slices(&mut remaining, written);
+    }
+
+    Ok(())
 }
 
 #[cfg(test)]

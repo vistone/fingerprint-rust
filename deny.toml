@@ -99,6 +99,7 @@ allow = [
     "BSD-3-Clause",
     "0BSD",
     "ISC",
+    "BSL-1.0",
     "MPL-2.0",
     "Unlicense",
     "Zlib",
@@ -243,16 +244,10 @@ skip-tree = [
 # 未知注册表的处理级别
 unknown-registry = "warn"
 # 未知 Git 源的处理级别
-unknown-git = "warn"
+unknown-git = "deny"
 # 允许的注册表
 allow-registry = ["https://github.com/rust-lang/crates.io-index"]
-# 允许的 Git 源（项目使用的 netconnpool-rust）
-# 注意：只有在启用 connection-pool feature 时才会使用此源
-# 如果出现 unmatched-source 警告，这是正常的（因为默认构建可能不包含此依赖）
-# 这个警告不影响功能，可以安全忽略
-allow-git = [
-    "https://github.com/vistone/netconnpool-rust",
-]
+allow-git = []
 
 [sources.allow-org]
 # github.com organizations to allow git sources for

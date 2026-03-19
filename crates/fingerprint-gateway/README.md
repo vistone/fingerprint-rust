@@ -58,11 +58,11 @@ fingerprint-gateway = { path = "../fingerprint-gateway" }
 # 开发模式
 cargo run --bin gateway
 
-# 生产模式
-cargo run --bin gateway --release
+# 生产模式（服务进程，使用 unwind 以保留清理/析构路径）
+cargo gateway-run-release
 
 # 指定配置
-GATEWAY_PORT=9000 REDIS_URL=redis://localhost:6379 cargo run --bin gateway --release
+GATEWAY_PORT=9000 REDIS_URL=redis://localhost:6379 cargo gateway-run-release
 ```
 
 ## 🚀 快速开始
@@ -77,8 +77,13 @@ docker run -d -p 6379:6379 redis:7-alpine
 
 ```bash
 cd crates/fingerprint-gateway
-cargo run --bin gateway --release
+cargo run --bin gateway --profile release-service
 ```
+
+## 构建策略
+
+- workspace 通用 `release` profile 仍使用 `panic = "abort"`，适合 CLI 和体积敏感产物。
+- `fingerprint-gateway` 这类长运行服务应使用 `release-service` profile，显式启用 `panic = "unwind"`，避免在 panic 时跳过清理与析构逻辑。
 
 ### 3. 测试 API
 
@@ -268,7 +273,7 @@ cargo tarpaulin --out Html
 FROM rust:1.75 AS builder
 WORKDIR /app
 COPY . .
-RUN cargo build --release --bin gateway
+RUN cargo build --profile release-service --bin gateway
 
 FROM debian:bookworm-slim
 COPY --from=builder /app/target/release/gateway /usr/local/bin/

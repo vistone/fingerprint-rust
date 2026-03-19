@@ -5,6 +5,7 @@
 use crate::passive::packet::{Packet, TcpHeader};
 use std::collections::HashMap;
 
+use fingerprint_core::stable_hash::hash_str;
 use serde::{Deserialize, Serialize};
 
 /// TCP signature (simplify版, for match)
@@ -66,11 +67,7 @@ impl fingerprint_core::fingerprint::Fingerprint for TcpFingerprint {
     }
 
     fn hash(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-        let mut hasher = DefaultHasher::new();
-        self.id().hash(&mut hasher);
-        hasher.finish()
+        hash_str(&self.id())
     }
 
     fn similar_to(&self, other: &dyn fingerprint_core::fingerprint::Fingerprint) -> bool {

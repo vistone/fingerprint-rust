@@ -1,0 +1,94 @@
+[package]
+name = "netconnpool"
+version = "1.0.4"
+edition = "2021"
+authors = ["vistone"]
+description = "一个功能全面、高性能的 Rust 语言网络连接池管理库"
+license = "BSD-3-Clause"
+repository = "https://github.com/vistone/netconnpool-rust"
+keywords = ["connection-pool", "network", "tcp", "udp", "ipv4", "ipv6"]
+categories = ["network-programming"]
+
+[dependencies]
+thiserror = "1.0"
+crossbeam = "0.8"
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[lib]
+name = "netconnpool"
+path = "src/lib.rs"
+
+# 集成测试配置 - 使用test目录
+[[test]]
+name = "stress_test"
+path = "test/stress_test.rs"
+
+[[test]]
+name = "benchmark_test"
+path = "test/benchmark_test.rs"
+
+[[test]]
+name = "integration_test"
+path = "test/integration_test.rs"
+
+[[test]]
+name = "stats_stress_test"
+path = "test/stats_stress_test.rs"
+
+[[test]]
+name = "stats_race_test"
+path = "test/stats_race_test.rs"
+
+[[test]]
+name = "performance_test"
+path = "test/performance_test.rs"
+
+[[test]]
+name = "performance_report"
+path = "test/performance_report.rs"
+
+[[test]]
+name = "stats_test"
+path = "test/stats_test.rs"
+
+[[test]]
+name = "comprehensive_stress_test"
+path = "test/comprehensive_stress_test.rs"
+
+[[test]]
+name = "comprehensive_client_test"
+path = "test/comprehensive_client_test.rs"
+
+[[test]]
+name = "fuzzing_client_test"
+path = "test/fuzzing_client_test.rs"
+
+[[test]]
+name = "quick_fuzzing_test"
+path = "test/quick_fuzzing_test.rs"
+
+[[test]]
+name = "stats_utilization_test"
+path = "test/stats_utilization_test.rs"
+
+[[test]]
+name = "real_world_stress_test"
+path = "test/real_world_stress_test.rs"
+
+[[test]]
+name = "extreme_stress_test"
+path = "test/extreme_stress_test.rs"
+
+[[test]]
+name = "idle_counts_cas_test"
+path = "test/idle_counts_cas_test.rs"
+
+[[test]]
+name = "vulnerability_check"
+path = "test/vulnerability_check.rs"
+
+[[test]]
+name = "final_verification"
+path = "test/final_verification.rs"

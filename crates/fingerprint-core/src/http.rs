@@ -4,8 +4,8 @@
 
 use crate::fingerprint::{Fingerprint, FingerprintType};
 use crate::metadata::FingerprintMetadata;
+use crate::stable_hash::StableHashBuilder;
 use std::collections::HashMap;
-use std::hash::{Hash, Hasher};
 
 /// HTTP fingerprint
 #[derive(Debug, Clone)]
@@ -105,25 +105,27 @@ impl Fingerprint for HttpFingerprint {
     }
 
     fn hash(&self) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        let mut hasher = DefaultHasher::new();
-        self.user_agent.hash(&mut hasher);
+        let mut hasher = StableHashBuilder::new();
+        hasher.write_str(&self.user_agent);
 
         // pair headers performsortbackhash
         let mut header_vec: Vec<_> = self.headers.iter().collect();
         header_vec.sort_by_key(|(k, _)| *k);
         for (k, v) in header_vec {
-            k.hash(&mut hasher);
-            v.hash(&mut hasher);
+            hasher.write_str(k);
+            hasher.write_str(v);
         }
 
         if let Some(ref settings) = self.http2_settings {
-            settings.header_table_size.hash(&mut hasher);
-            settings.enable_push.hash(&mut hasher);
-            settings.max_concurrent_streams.hash(&mut hasher);
-            settings.initial_window_size.hash(&mut hasher);
-            settings.max_frame_size.hash(&mut hasher);
-            settings.max_header_list_size.hash(&mut hasher);
+            hasher.write_bool(true);
+            hasher.write_u32(settings.header_table_size);
+            hasher.write_bool(settings.enable_push);
+            hasher.write_u32(settings.max_concurrent_streams);
+            hasher.write_u32(settings.initial_window_size);
+            hasher.write_u32(settings.max_frame_size);
+            hasher.write_u32(settings.max_header_list_size);
+        } else {
+            hasher.write_bool(false);
         }
 
         hasher.finish()
