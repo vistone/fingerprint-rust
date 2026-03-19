@@ -23,7 +23,7 @@ jobs:
       - name: Generate coverage for default members
         run: cargo tarpaulin --features "${{ env.TEST_FEATURES }}" --out Xml
       - name: Upload to codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: cobertura.xml
           token: ${{ secrets.CODECOV_TOKEN }}
