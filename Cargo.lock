@@ -1282,7 +1282,7 @@ dependencies = [
  "quinn",
  "ring",
  "rustls",
- "socket2 0.5.10",
+ "socket2 0.6.3",
  "tokio",
  "tokio-rustls",
  "webpki-roots 0.26.11",
