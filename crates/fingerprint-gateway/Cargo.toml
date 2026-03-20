@@ -54,7 +54,7 @@ fingerprint = { path = "../fingerprint" }
 [dev-dependencies]
 actix-web = "4.9"
 mockall = "0.13"
-criterion = "0.5"
+criterion = "0.8"
 
 [features]
 default = ["redis-backend"]
